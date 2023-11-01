@@ -16,8 +16,8 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <BrowserRouter>
     <Routes>
-      <Route path="/admin/*" element={<AdminLayout />} />
       <Route path="/" element={<Login/>} />
+      <Route path="/admin/*" element={<AdminLayout />} />
       <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
     </Routes>
   </BrowserRouter>
