@@ -1,28 +1,11 @@
-/*!
-
-=========================================================
-* Paper Dashboard React - v1.3.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/paper-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-* Licensed under MIT (https://github.com/creativetimofficial/paper-dashboard-react/blob/main/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Nav } from "reactstrap";
-// javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from "perfect-scrollbar";
 
-import logo from "logo.svg";
+// import logo from "logo.svg";
+import mainLogoWhite from "../../assets/img/main_header_logo_white.png";
+import mainLogoBlack from "../../assets/img/main_header_logo_black.png";
 
 var ps;
 
@@ -34,14 +17,14 @@ function Sidebar(props) {
     return location.pathname.indexOf(routeName) > -1 ? "active" : "";
   };
   React.useEffect(() => {
-    if (navigator.platform.indexOf("Win") > -1) {
+    if (navigator.userAgentData.platform.indexOf("Win") > -1) {
       ps = new PerfectScrollbar(sidebar.current, {
         suppressScrollX: true,
         suppressScrollY: false,
       });
     }
     return function cleanup() {
-      if (navigator.platform.indexOf("Win") > -1) {
+      if (navigator.userAgentData.platform.indexOf("Win") > -1) {
         ps.destroy();
       }
     };
@@ -58,14 +41,14 @@ function Sidebar(props) {
           className="simple-text logo-mini"
         >
           <div className="logo-img">
-            <img src={logo} alt="react-logo" />
+            <img src={props.bgColor === 'black' ? mainLogoBlack : mainLogoWhite} alt="react-logo" />
           </div>
         </a>
         <a
           href="https://www.creative-tim.com"
           className="simple-text logo-normal"
         >
-          Creative Tim
+          TEA:FORM
         </a>
       </div>
       <div className="sidebar-wrapper" ref={sidebar}>

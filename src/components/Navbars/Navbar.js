@@ -1,21 +1,3 @@
-/*!
-
-=========================================================
-* Paper Dashboard React - v1.3.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/paper-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-* Licensed under MIT (https://github.com/creativetimofficial/paper-dashboard-react/blob/main/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -41,6 +23,7 @@ import routes from "routes.js";
 function Header(props) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const [bookmarkDropdownOpen, setBookmarkDropdownOpen] = React.useState(false);
   const [color, setColor] = React.useState("transparent");
   const sidebarToggle = React.useRef();
   const location = useLocation();
@@ -52,9 +35,15 @@ function Header(props) {
     }
     setIsOpen(!isOpen);
   };
+
   const dropdownToggle = (e) => {
     setDropdownOpen(!dropdownOpen);
   };
+  
+  const bookmarkDropdownToggle = (e) => {
+    setBookmarkDropdownOpen(!bookmarkDropdownOpen);
+  };
+
   const getBrand = () => {
     let brandName = "Default Brand";
     routes.map((prop, key) => {
@@ -144,6 +133,23 @@ function Header(props) {
                 </p>
               </Link>
             </NavItem>
+            <Dropdown
+              nav
+              isOpen={bookmarkDropdownOpen}
+              toggle={(e) => bookmarkDropdownToggle(e)}
+            >
+              <DropdownToggle caret nav>
+                <i className="nc-icon nc-bookmark-2" />
+                <p>
+                  <span className="d-lg-none d-md-block">Some Actions</span>
+                </p>
+              </DropdownToggle>
+              <DropdownMenu right>
+                <DropdownItem tag="a">Action</DropdownItem>
+                <DropdownItem tag="a">Another Action</DropdownItem>
+                <DropdownItem tag="a">Something else here</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
             <Dropdown
               nav
               isOpen={dropdownOpen}

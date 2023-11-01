@@ -1,21 +1,3 @@
-/*!
-
-=========================================================
-* Paper Dashboard React - v1.3.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/paper-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-* Licensed under MIT (https://github.com/creativetimofficial/paper-dashboard-react/blob/main/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import Dashboard from "views/Dashboard.js";
 import Notifications from "views/Notifications.js";
 import Icons from "views/Icons.js";
@@ -28,35 +10,70 @@ import UpgradeToPro from "views/Upgrade.js";
 var routes = [
   {
     path: "/dashboard",
-    name: "Dashboard",
-    icon: "nc-icon nc-bank",
+    name: "대시보드",
+    icon: "nc-icon nc-layout-11",
     component: <Dashboard />,
     layout: "/admin",
   },
   {
-    path: "/icons",
-    name: "Icons",
-    icon: "nc-icon nc-diamond",
+    path: "/workNote",
+    name: "보건일지",
+    icon: "nc-icon nc-paper",
     component: <Icons />,
     layout: "/admin",
   },
   {
-    path: "/maps",
-    name: "Maps",
-    icon: "nc-icon nc-pin-3",
+    path: "/workSchedule",
+    name: "보건일정",
+    icon: "nc-icon nc-calendar-60",
     component: <Maps />,
     layout: "/admin",
   },
   {
+    path: "/medicineInfo",
+    name: "약품정보",
+    icon: "nc-icon nc-atom",
+    component: <Notifications />,
+    layout: "/admin",
+  },
+  {
+    path: "/healthCheck",
+    name: "건강검진",
+    icon: "nc-icon nc-ambulance",
+    component: <Notifications />,
+    layout: "/admin",
+  },
+  {
+    path: "/certificate",
+    name: "증명서 발급",
+    icon: "nc-icon nc-badge",
+    component: <Notifications />,
+    layout: "/admin",
+  },
+  {
+    path: "/community",
+    name: "커뮤니티",
+    icon: "nc-icon nc-globe",
+    component: <Notifications />,
+    layout: "/admin",
+  },
+  {
+    path: "/requestBoard",
+    name: "문의 및 요청",
+    icon: "nc-icon nc-send",
+    component: <Notifications />,
+    layout: "/admin",
+  },
+  {
     path: "/notifications",
-    name: "Notifications",
+    name: "알림",
     icon: "nc-icon nc-bell-55",
     component: <Notifications />,
     layout: "/admin",
   },
   {
     path: "/user-page",
-    name: "User Profile",
+    name: "사용자 정보",
     icon: "nc-icon nc-single-02",
     component: <UserPage />,
     layout: "/admin",
@@ -73,6 +90,13 @@ var routes = [
     name: "Typography",
     icon: "nc-icon nc-caps-small",
     component: <Typography />,
+    layout: "/admin",
+  },
+  {
+    path: "/icons",
+    name: "Icons",
+    icon: "nc-icon nc-diamond",
+    component: <Icons />,
     layout: "/admin",
   },
   {
