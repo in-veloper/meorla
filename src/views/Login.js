@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/login.css';
+import axios from 'axios';
 
 function Login() {
 
@@ -18,7 +19,19 @@ function Login() {
     const handleLogin = () => {
         // 로그인 로직 처리한 후 dashboard 화면으로 이동
         navigate('/admin/dashboard');
-    }
+    };
+
+    const registUser = () => {
+        axios.post('http://localhost:8000/user/insert', {
+            id: 'admin',
+            schoolName: '송촌중학교',
+            name: '정영인',
+            email: 'yiniwinidev@gmail.com',
+            password: '1234'
+        }).then(() => {
+            alert('사용자 등록 완료');
+        })
+    };
 
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
@@ -32,7 +45,7 @@ function Login() {
                     <input type="email" placeholder="아이디" />
                     <input type="password" placeholder="비밀번호" />
                     <br/>
-                    <Button>회원가입</Button>
+                    <Button onClick={registUser}>회원가입</Button>
                     </Form>
                 </Col>
                 <Col className={`form-container sign-in-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
