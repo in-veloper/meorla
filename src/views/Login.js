@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/login.css';
-import axios from 'axios';
+// import axios from 'axios';
 
 function Login() {
 
@@ -22,15 +22,15 @@ function Login() {
     };
 
     const registUser = () => {
-        axios.post('http://localhost:8000/user/insert', {
-            id: 'admin',
-            schoolName: '송촌중학교',
-            name: '정영인',
-            email: 'yiniwinidev@gmail.com',
-            password: '1234'
-        }).then(() => {
-            alert('사용자 등록 완료');
-        })
+        // axios.post('http://localhost:8000/user/insert', {
+        //     id: 'admin',
+        //     schoolName: '송촌중학교',
+        //     name: '정영인',
+        //     email: 'yiniwinidev@gmail.com',
+        //     password: '1234'
+        // }).then(() => {
+        //     alert('사용자 등록 완료');
+        // })
     };
 
     return (
