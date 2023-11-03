@@ -36,7 +36,7 @@ const MyCalendar = () => {
     }
 
     return (
-        <div>
+        <div className="mt-5">
             <FullCalendar
                 // defaultView="dayGridMonth"
                 height={'70vh'} // calendar 영역 크기
