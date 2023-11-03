@@ -10,19 +10,19 @@ function Footer(props) {
           <nav className="footer-nav">
             <ul>
               <li>
-                <a href="https://www.creative-tim.com" target="_blank">
+                {/* <a href="https://www.creative-tim.com" target="_blank"> */}
                   TEA : FORM
-                </a>
-              </li>
+                {/* </a> */}
+              </li>&nbsp;&nbsp;
               <li>
-                <a href="https://blog.creative-tim.com" target="_blank">
+                {/* <a href="https://blog.creative-tim.com" target="_blank"> */}
                   Blog
-                </a>
-              </li>
+                {/* </a> */}
+              </li>&nbsp;&nbsp;
               <li>
-                <a href="https://www.creative-tim.com/license" target="_blank">
+                {/* <a href="https://www.creative-tim.com/license" target="_blank"> */}
                   Licenses
-                </a>
+                {/* </a> */}
               </li>
             </ul>
           </nav>

@@ -46,9 +46,9 @@ function Sidebar(props) {
         </a>
         <a
           href="https://www.creative-tim.com"
-          className="simple-text logo-normal"
+          className="simple-text logo-normal text-muted"
         >
-          TEA:FORM
+          <b>TEA:FORM</b>
         </a>
       </div>
       <div className="sidebar-wrapper" ref={sidebar}>

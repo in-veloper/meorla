@@ -1,0 +1,14 @@
+/* calendar 배경 색상 */
+.fc-view-harness {
+    background-color: white;
+}
+
+/* 토요일 표시 색상 */
+.fc-day-sat a {
+    color: blue;
+}
+
+/* 일요일 표시 색상 */
+.fc-day-sun a {
+    color: red;
+}
