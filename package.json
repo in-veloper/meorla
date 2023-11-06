@@ -9,6 +9,7 @@
     "@fullcalendar/interaction": "^6.1.9",
     "@fullcalendar/react": "^6.1.9",
     "@fullcalendar/timegrid": "^6.1.9",
+    "@my-school.info/neis-api": "^1.0.0",
     "axios": "^1.6.0",
     "bootstrap": "4.6.2",
     "chart.js": "3.9.1",

@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/login.css';
+import Neis from "@my-school.info/neis-api";
 // import axios from 'axios';
+
+const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
 function Login() {
 
     // useNavigate를 사용하여 routing 사용하기 위한 함수 생성
     const navigate = useNavigate();
-
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
+    const [schoolName, setSchoolName] = useState("");   // 입력한 학교명
+    const [schoolList, setSchoolList] = useState([]);   // 검색 결과 학교 리스트
 
     // 좌우 패널 전환 함수 (Sign In <-> Sign Up)
     const togglePanel = () => {
@@ -33,6 +37,70 @@ function Login() {
         // })
     };
 
+    // const SearchSchoolResultBox = () => {
+    //     const schoolListData = [];
+    //     if(schoolList.length > 0 && !isSelected) {
+    //         if(schoolList.length > 20) {
+    //             return <div className='box'>
+    //                 <ul>
+    //                     <li>해당하는 학교의 수가 많아 표시할 수 없습니다.</li>
+    //                 </ul>
+    //             </div>
+    //         }else{
+    //             for(let i = 0; i < schoolList.length; i++) {
+    //                 let info = schoolList[i];
+    //                 schoolListData.push(<li key={i} onClick={(event) => {selectSchool(info.SCHUL_NM)}} style={{ cursor: 'pointer'}}><b>{info.SCHUL_NM}</b> [{ info.ORG_RDNMA }]</li>)
+    //             }
+    
+    //             return <div className='box'>
+    //                 <ul>{schoolListData}</ul>
+    //             </div>
+    //         }
+    //     }
+    // }
+
+    const searchSchool = async (e) => {
+        const searchKeyword = e.target.value;
+        setSchoolName(searchKeyword);   // 입력한 학교명으로 업데이트
+
+        if(searchKeyword) {
+            try{
+                const response = await neis.getSchoolInfo({ SCHUL_NM: searchKeyword},{pIndex: 1, pSize: 100});
+                if(response.length > 20) {
+                    setSchoolList([]);
+                }else{
+                    const schoolList = response.map((school) => school.SCHUL_NM);
+                    setSchoolList(schoolList);
+                }
+            }catch (error) {
+                console.log("회원가입 > 학교검색 중 ERROR", error);
+            }   
+        }else{
+            setSchoolList([]);
+        }
+        // if(searchKeyword) {
+        //     neis.searchSchool({ searchKeyword })
+        //         .then((respose) => {
+        //             setSchoolList(respose.schoolList);
+        //         })
+        //         .catch((error) => {
+        //             console.log("학교 검색 오류", error);
+        //         })
+        // }else{
+        //     setSchoolList([]);
+        // }
+    }
+
+    const handleSchoolSelect = (selectedSchool) => {
+        setSchoolName(selectedSchool);
+        setSchoolList([]);
+    }
+
+    // const selectSchool = (props) => {
+    //     setSchoolName(props);
+    //     setIsSelected(true);
+    // }
+
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
             <Container id="container">
@@ -41,6 +109,24 @@ function Login() {
                     <Form action="#">
                     <h1>회원가입</h1>
                     <br/>
+                    <input type="text" placeholder="소속학교" value={schoolName} onChange={searchSchool}/>
+                    <div className='search-results'>
+                        {schoolList.length > 0 && (
+                            schoolList.length > 20 ? (
+                                <p>검색된 결과가 너무 많아 표시할 수 없습니다.</p>
+                            ) : (
+                                schoolList.map((school, index) => (
+                                    <div
+                                        key={index}
+                                        className="search-result-item"
+                                        onClick={() => handleSchoolSelect(school)}
+                                    >
+                                        {school}
+                                    </div>
+                                ))
+                            )
+                        )}
+                    </div>
                     <input type="text" placeholder="이름" />
                     <input type="email" placeholder="아이디" />
                     <input type="password" placeholder="비밀번호" />
