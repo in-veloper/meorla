@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { urlencoded } = require('body-parser');
@@ -18,19 +18,23 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/user/insert", (req, res) => {
-    const id = req.body.id;
     const schoolName = req.body.schoolName;
     const name = req.body.name;
     const email = req.body.email;
-    const password = req.body.email;
+    const userId = req.body.userId;
+    const password = req.body.password;
     const schoolCode = req.body.schoolCode;
     const refresh_token = req.body.refresh_token;
-    const createAt = req.body.createAt;
+    const createdAt = req.body.createAt;
     const updatedAt = req.body.updatedAt;
     
-    const sqlQuery = "INSERT INTO teaform_db (id, schoolName, name, email, password, schoolCode, refresh_token, createAt, updatedAt) VALUES (?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [id, schoolName, name, email, password, schoolCode, refresh_token, createAt, updatedAt], (err, result) => {
-        res.send('success');
+    const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, refresh_token, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [schoolName, name, email, userId, password, schoolCode, refresh_token, createdAt, updatedAt], (err, result) => {
+        if(err) {
+            console.log(err);
+        }else{
+            res.send('success');
+        }
     });
 });
 

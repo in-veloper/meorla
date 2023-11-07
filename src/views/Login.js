@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { Typeahead } from 'react-bootstrap-typeahead';
+import 'react-bootstrap-typeahead/css/Typeahead.css'; 
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/login.css';
 import Neis from "@my-school.info/neis-api";
-// import axios from 'axios';
+import axios from 'axios';
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
@@ -14,6 +16,29 @@ function Login() {
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
     const [schoolName, setSchoolName] = useState("");   // 입력한 학교명
     const [schoolList, setSchoolList] = useState([]);   // 검색 결과 학교 리스트
+    const [name, setName] = useState("");
+    const [userId, setUserId] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confPassword, setConfPassword] = useState("");
+    const [schoolCode, setSchoolCode] = useState("");
+    const [dynamicOptions, setDynamicOptions] = useState([]);
+
+    useEffect(() => {
+        if (schoolName) {
+            try {
+                // 학교명 검색 및 결과에서 학교 이름만 추출하여 배열 생성
+                const searchOptions = schoolList.map((school) => school.SCHUL_NM);
+                setDynamicOptions(searchOptions);
+            } catch (error) {
+                console.log("학교명 검색 중 에러", error);
+            }
+        } else {
+            // 검색어가 없을 때는 빈 배열로 초기화
+            setDynamicOptions([]);
+        }
+    }, [schoolName, schoolList]);
+
 
     // 좌우 패널 전환 함수 (Sign In <-> Sign Up)
     const togglePanel = () => {
@@ -26,80 +51,52 @@ function Login() {
     };
 
     const registUser = () => {
-        // axios.post('http://localhost:8000/user/insert', {
-        //     id: 'admin',
-        //     schoolName: '송촌중학교',
-        //     name: '정영인',
-        //     email: 'yiniwinidev@gmail.com',
-        //     password: '1234'
-        // }).then(() => {
-        //     alert('사용자 등록 완료');
-        // })
+        if(password === confPassword) {
+            try {
+                axios.post('http://localhost:8000/user/insert', {
+                    schoolName: schoolName,
+                    name: name,
+                    userId: userId,
+                    email: email,
+                    password: password,
+                    confPassword: confPassword,
+                    schoolCode: schoolCode
+                });
+                navigate("/");
+            } catch (error) {
+                console.log("회원가입 중 Error", error);
+            }
+        }else{
+            alert("입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다.<br/> 확인 후 다시 입력해 주시기 바랍니다.");
+        }
     };
 
-    // const SearchSchoolResultBox = () => {
-    //     const schoolListData = [];
-    //     if(schoolList.length > 0 && !isSelected) {
-    //         if(schoolList.length > 20) {
-    //             return <div className='box'>
-    //                 <ul>
-    //                     <li>해당하는 학교의 수가 많아 표시할 수 없습니다.</li>
-    //                 </ul>
-    //             </div>
-    //         }else{
-    //             for(let i = 0; i < schoolList.length; i++) {
-    //                 let info = schoolList[i];
-    //                 schoolListData.push(<li key={i} onClick={(event) => {selectSchool(info.SCHUL_NM)}} style={{ cursor: 'pointer'}}><b>{info.SCHUL_NM}</b> [{ info.ORG_RDNMA }]</li>)
-    //             }
-    
-    //             return <div className='box'>
-    //                 <ul>{schoolListData}</ul>
-    //             </div>
-    //         }
-    //     }
-    // }
-
-    const searchSchool = async (e) => {
-        const searchKeyword = e.target.value;
+    const searchSchool = async (input) => {
+        const searchKeyword = input;
         setSchoolName(searchKeyword);   // 입력한 학교명으로 업데이트
-
-        if(searchKeyword) {
-            try{
-                const response = await neis.getSchoolInfo({ SCHUL_NM: searchKeyword},{pIndex: 1, pSize: 100});
-                if(response.length > 20) {
+    
+        if (searchKeyword) {
+            try {
+                const response = await neis.getSchoolInfo({ SCHUL_NM: searchKeyword }, { pIndex: 1, pSize: 100 });
+                if (response.length > 20) {
                     setSchoolList([]);
-                }else{
-                    const schoolList = response.map((school) => school.SCHUL_NM);
-                    setSchoolList(schoolList);
+                } else {
+                    // const schoolList = response.map((school) => school.SCHUL_NM);
+                    setSchoolList(response);
                 }
-            }catch (error) {
+            } catch (error) {
                 console.log("회원가입 > 학교검색 중 ERROR", error);
-            }   
-        }else{
+            }
+        } else {
             setSchoolList([]);
         }
-        // if(searchKeyword) {
-        //     neis.searchSchool({ searchKeyword })
-        //         .then((respose) => {
-        //             setSchoolList(respose.schoolList);
-        //         })
-        //         .catch((error) => {
-        //             console.log("학교 검색 오류", error);
-        //         })
-        // }else{
-        //     setSchoolList([]);
-        // }
     }
 
     const handleSchoolSelect = (selectedSchool) => {
-        setSchoolName(selectedSchool);
+        setSchoolName(selectedSchool.SCHUL_NM);
+        setSchoolCode(selectedSchool.SD_SCHUL_CODE);
         setSchoolList([]);
     }
-
-    // const selectSchool = (props) => {
-    //     setSchoolName(props);
-    //     setIsSelected(true);
-    // }
 
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
@@ -107,31 +104,26 @@ function Login() {
                 <Row>
                 <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
                     <Form action="#">
-                    <h1>회원가입</h1>
-                    <br/>
-                    <input type="text" placeholder="소속학교" value={schoolName} onChange={searchSchool}/>
-                    <div className='search-results'>
-                        {schoolList.length > 0 && (
-                            schoolList.length > 20 ? (
-                                <p>검색된 결과가 너무 많아 표시할 수 없습니다.</p>
-                            ) : (
-                                schoolList.map((school, index) => (
-                                    <div
-                                        key={index}
-                                        className="search-result-item"
-                                        onClick={() => handleSchoolSelect(school)}
-                                    >
-                                        {school}
-                                    </div>
-                                ))
-                            )
-                        )}
-                    </div>
-                    <input type="text" placeholder="이름" />
-                    <input type="email" placeholder="아이디" />
-                    <input type="password" placeholder="비밀번호" />
-                    <br/>
-                    <Button onClick={registUser}>회원가입</Button>
+                        {/* <h5>회원가입</h5> */}
+                        <div style={{ width: '100%'}}>
+                            <Typeahead
+                                id="basic-typeahead-single"
+                                labelKey="name"
+                                onChange={handleSchoolSelect}
+                                options={dynamicOptions}
+                                placeholder="소속학교"
+                                onInputChange={(input) => {
+                                    searchSchool(input);
+                                }}
+
+                            />
+                        </div>
+                        <input type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
+                        <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <input type="email" placeholder="아이디" value={userId} onChange={(e) => setUserId(e.target.value)} />
+                        <input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={(e) => setConfPassword(e.target.value)} />
+                        <Button onClick={registUser}>회원가입</Button>
                     </Form>
                 </Col>
                 <Col className={`form-container sign-in-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
@@ -152,8 +144,8 @@ function Login() {
                     <button className="ghost" onClick={togglePanel}>로그인</button>
                     </div>
                     <div className="overlay-panel overlay-right">
-                    <h1>안녕하세요 보건교사님!</h1>
-                    <p>회원가입 후 저희의 회원이 되신다면 더욱 더 편한 업무로 안내해 드립니다!</p><br/>
+                    <h1>안녕하세요<br/>보건교사님!</h1>
+                    <p>회원가입 후 저희의 회원이 되신다면<br/>더욱 더 편한 업무로 안내해 드립니다!</p><br/>
                     <button className="ghost" onClick={togglePanel}>회원가입</button>
                     </div>
                 </div>
