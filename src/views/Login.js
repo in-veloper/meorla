@@ -45,11 +45,13 @@ function Login() {
       setIsRightPanelActive(!isRightPanelActive);
     };
 
+    // 계정 확인 후 로그인하는 함수 (계정 확인 및 Token 확인 로직 필요 -> 추가)
     const handleLogin = () => {
         // 로그인 로직 처리한 후 dashboard 화면으로 이동
         navigate('/admin/dashboard');
     };
 
+    // 회원가입 Form 전송
     const registUser = () => {
         if(password === confPassword) {
             try {
@@ -71,6 +73,7 @@ function Login() {
         }
     };
 
+    // 회원가입 항목 > 소속학교 (+ 필요 데이터) 검색 함수
     const searchSchool = async (input) => {
         const searchKeyword = input;
         setSchoolName(searchKeyword);   // 입력한 학교명으로 업데이트
@@ -92,6 +95,7 @@ function Login() {
         }
     }
 
+    // 검색 항목 중 학교 선택 함수
     const handleSchoolSelect = (selectedSchool) => {
         setSchoolName(selectedSchool.SCHUL_NM);
         setSchoolCode(selectedSchool.SD_SCHUL_CODE);
@@ -115,7 +119,7 @@ function Login() {
                                 onInputChange={(input) => {
                                     searchSchool(input);
                                 }}
-
+                                emptyLabel="검색 결과가 없습니다."
                             />
                         </div>
                         <input type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
