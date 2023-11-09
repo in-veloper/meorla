@@ -38,6 +38,28 @@ app.post("/user/insert", (req, res) => {
     });
 });
 
+app.post("/user/login", (req, res) => {
+    const userId = req.body.userId;
+    const sqlQuery = "SELECT * FROM teaform_db.users WHERE userId = ?";
+
+    db.query(sqlQuery, [userId], (err, results) => {
+        if (err) {
+            console.error("로그인 Query 실행 중 Error " + err);
+            res.status(500).json({ error: "내부 Server Error" });
+        } else {
+            console.log(results)
+            if (results.length > 0) {
+                const user = results[0]; // 첫 번째 사용자 정보만 사용 (userId는 고유해야 함)
+                res.json({ user });
+            } else {
+                const user = "N";
+                res.json({ user });
+                // res.status(404).json({ error: "일치하는 사용자를 찾을 수 없음" });
+            }
+        }
+    })
+})
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

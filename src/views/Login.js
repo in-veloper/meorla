@@ -14,15 +14,18 @@ function Login() {
     // useNavigate를 사용하여 routing 사용하기 위한 함수 생성
     const navigate = useNavigate();
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
-    const [schoolName, setSchoolName] = useState("");   // 입력한 학교명
-    const [schoolList, setSchoolList] = useState([]);   // 검색 결과 학교 리스트
-    const [name, setName] = useState("");
-    const [userId, setUserId] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confPassword, setConfPassword] = useState("");
-    const [schoolCode, setSchoolCode] = useState("");
-    const [dynamicOptions, setDynamicOptions] = useState([]);
+    const [schoolList, setSchoolList] = useState([]);           // 검색 결과 학교 리스트
+    const [schoolName, setSchoolName] = useState("");           // 입력한 학교명
+    const [name, setName] = useState("");                       // 입력한 이름
+    const [userId, setUserId] = useState("");                   // 입력한 ID
+    const [email, setEmail] = useState("");                     // 입력한 Email
+    const [password, setPassword] = useState("");               // 입력한 Password
+    const [confPassword, setConfPassword] = useState("");       // 입력한 확인 Password
+    const [schoolCode, setSchoolCode] = useState("");           // 입력한 학교명과 일치하는 학교 코드
+    const [dynamicOptions, setDynamicOptions] = useState([]);   // 학교 검색 시 Typeahead options에 값 Setting 위함
+
+    const [confirmUserId, setConfirmUserId] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
 
     useEffect(() => {
         if (schoolName) {
@@ -46,9 +49,28 @@ function Login() {
     };
 
     // 계정 확인 후 로그인하는 함수 (계정 확인 및 Token 확인 로직 필요 -> 추가)
-    const handleLogin = () => {
-        // 로그인 로직 처리한 후 dashboard 화면으로 이동
-        navigate('/admin/dashboard');
+    const handleLogin = async (e) => {
+        e.preventDefault();
+
+        try {
+            // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
+            if(confirmUserId && confirmPassword) {
+                const response = await axios.post('http://localhost:8000/user/login', { userId: confirmUserId });
+                const responseData = response.data.user;
+
+                if(responseData.password === confirmPassword) {
+                    // 계정 정보 일치할 경우 dashboard 화면으로 이동
+                    navigate('/admin/dashboard');
+                }else{
+                    if(responseData === 'N') alert("해당 ID로 가입된 내역이 없습니다.");    // users 테이블에 일치하는 userId 없는 경우
+                    else alert("비밀번호가 일치하지 않습니다.");    // 비밀번호가 일치하지 않는 경우
+                }
+            }else{
+                alert("ID와 비밀번호를 입력해주세요."); // ID 또는 비밀번호를 입력하지 않은 경우
+            }
+        } catch (error) {
+            console.log("로그인 중 Error", error);
+        }
     };
 
     // 회원가입 Form 전송
@@ -133,8 +155,8 @@ function Login() {
                 <Col className={`form-container sign-in-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
                     <Form action="#">
                     <h1>로그인</h1>
-                    <input type="email" placeholder="아이디" />
-                    <input type="password" placeholder="비밀번호" />
+                    <input type="email" placeholder="아이디" value={confirmUserId} onChange={(e) => setConfirmUserId(e.target.value)} />
+                    <input type="password" placeholder="비밀번호" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                     <a href="/forgot-password">비밀번호를 잊으셨나요?</a>
                     <Button onClick={handleLogin}>로그인</Button>
                     </Form>

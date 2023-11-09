@@ -1,11 +1,11 @@
 import Dashboard from "views/Dashboard.js";
 import WorkNote from "views/WorkNote";
+import MedicalInfo from "views/MedicineInfo";
 import Notifications from "views/Notifications.js";
 import Icons from "views/Icons.js";
 import Typography from "views/Typography.js";
 import TableList from "views/Tables.js";
 import WorkSchedule from "views/WorkSchedule";
-// import Maps from "views/Map.js";
 import UserPage from "views/User.js";
 import UpgradeToPro from "views/Upgrade.js";
 
@@ -35,7 +35,7 @@ var routes = [
     path: "/medicineInfo",
     name: "약품정보",
     icon: "nc-icon nc-atom",
-    component: <Notifications />,
+    component: <MedicalInfo />,
     layout: "/admin",
   },
   {
