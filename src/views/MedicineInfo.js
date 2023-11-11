@@ -1,71 +1,53 @@
-import React, { useState } from "react";
+/* 
+  - 스크롤 시 스크롤 포지션이 최상단으로 이동되는 이슈 
+*/
+
+import React, { useMemo, useRef, useState } from "react";
 import 'tui-grid/dist/tui-grid.css';
 import Grid from '@toast-ui/react-grid';
-import ReactSearchBox from "react-search-box";
 import axios from "axios";
-import { FiSearch } from 'react-icons/fi';
-// import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
-
-// import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
-// import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import {
-  Input,
-  Row
-} from "reactstrap";
+import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
+import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
+import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import { Input, Row, Col, Button } from "reactstrap";
 
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
-const data = [
-  {id: 1, name: 'Editor'},
-  {id: 2, name: 'Grid'},
-  {id: 3, name: 'Chart'}
-];
-
-const columns = [
-  {name: 'itemName', header: '제품명'},
-  {name: 'entpName', header: '업체명'},
-  {name: 'itemSeq', header: '품목코드'},
-  {name: 'efcyQesitm', header: '효능'},
-  {name: 'useMethodQesitm', header: '사용법'},
-  {name: 'atpnQesitm', header: '주의사항'},
-  {name: 'intrcQesitm', header: '상호작용'},
-  {name: 'seQesitm', header: '부작용'},
-  {name: 'depositMethodQesitm', header: '보관법'}
-];
-
-const searchData = [
-  {
-    key: "john",
-    value: "John Doe",
-  },
-  {
-    key: "jane",
-    value: "Jane Doe",
-  },
-  {
-    key: "mary",
-    value: "Mary Phillips",
-  },
-  {
-    key: "robert",
-    value: "Robert",
-  },
-  {
-    key: "karius",
-    value: "Karius",
-  },
-]
-
-
-
-
-
 function MedicalInfo() {
-
   const [searchCategory, setSearchCategory] = useState("");
   const [searchText, setSearchText] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [searchResultCount, setSearchResultCount] = useState(0);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const gridRef = useRef();
+
+  const [columnDefs] = useState([
+    {field: 'itemName', headerName: '제품명'},
+    {field: 'entpName', headerName: '업체명'},
+    {field: 'itemSeq', headerName: '품목코드'},
+    {field: 'efcyQesitm', headerName: '효능'},
+    {field: 'useMethodQesitm', headerName: '사용법'},
+    {field: 'atpnQesitm', headerName: '주의사항'},
+    {field: 'intrcQesitm', headerName: '상호작용'},
+    {field: 'seQesitm', headerName: '부작용'},
+    {field: 'depositMethodQesitm', headerName: '보관법'}
+  ]);
+
+  const defaultColDef = {
+    sortable: true,
+    filter: true,
+    flex: 1,
+    minWidth: 100,
+    resizable: true,
+  };
+
+  const handleScroll = (e) => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    getMedicineInfo(nextPage);
+  }
 
   const handleSearchCategory = (e) => {
     const selectedCategory = e.target.value;
@@ -73,22 +55,26 @@ function MedicalInfo() {
   }
 
   const handleSearch = (e) => {
-    console.log(searchCategory);
-    console.log(searchText)
-
     getMedicineInfo();
   }
 
-  const handleSearchText = (keyword) => {
-    setSearchText(keyword);
+  const handleKeyDown = (e) => {
+    if(e.key === 'Enter') {
+      getMedicineInfo();
+    }
   }
 
-  const getMedicineInfo = async () => {
+  const handleSearchText = (e) => {
+    e.preventDefault();
+    setSearchText(e.target.value);
+  }
+
+  const getMedicineInfo = async (page) => {
     try {
       const response = await axios.get(URL, {
         params: {
           serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-          pageNo: 1,
+          pageNo: page,
           numOfRows: 100,
           entpName: searchCategory === 'mCompany' ? searchText : '',  // 업체명
           itemName: searchCategory === 'mName' ? searchText : '',     // 제품명
@@ -99,9 +85,10 @@ function MedicalInfo() {
       });
 
       if(response.data.hasOwnProperty('body')) {
-        setSearchResult(response.data.body.items);
-        console.log(response.data.body)
-        setSearchResultCount(response.data.body.items.length);
+        const newItems = response.data.body.items;
+
+        setSearchResult((prevResult) => [...prevResult, ...newItems]);
+        setSearchResultCount(searchResult.length + newItems.length);
       }
     } catch (error) {
       console.log("약품 정보 조회 중 Error", error);
@@ -127,25 +114,41 @@ function MedicalInfo() {
             <option value='mEffect'>효능</option>
             <option value='mCode'>품목기준코드</option>
           </Input>
-          <ReactSearchBox
-            placeholder="검색 키워드를 입력하세요"
+          <Input
+            type="search"
             value={searchText}
-            data={searchData}
+            placeholder="검색 키워들르 입력하세요"
+            onKeyDown={handleKeyDown}
+            autoFocus={true}
+            style={{ width: '200px', height: '40px'}}
             onChange={handleSearchText}
-            callback={(record) => console.log(record)}
           />
-          <FiSearch className="ml-2 mt-2" style={{ fontSize : 20, cursor : 'pointer' }} onClick={handleSearch}/>
+          <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
         </Row>
         <br/>
-        <Grid
-          data={searchResult}
+        <Row>
+         <Col md="12">
+            <div className="ag-theme-alpine" style={{ height: '100vh' }}>
+              <AgGridReact
+                ref={gridRef}
+                rowData={searchResult}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                // onBodyScrollEnd={handleScroll}
+              />
+            </div>
+          </Col>
+        </Row>
+        {/* <Grid
+          rowData={searchResult}
+          onScrollEnd={handleScroll}
+          // fixedScroll={true}
           columns={columns}
           rowHeight={25}
           bodyHeight={1010}
-          
-          heightResizable={true}
+          heightResizable={false}
           rowHeaders={['rowNum']}
-        />
+        /> */}
       </div>
     </>
   );
