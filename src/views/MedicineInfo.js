@@ -3,8 +3,6 @@
 */
 
 import React, { useMemo, useRef, useState } from "react";
-import 'tui-grid/dist/tui-grid.css';
-import Grid from '@toast-ui/react-grid';
 import axios from "axios";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -26,8 +24,8 @@ function MedicalInfo() {
 
   const [columnDefs] = useState([
     {field: 'itemName', headerName: '제품명'},
-    {field: 'entpName', headerName: '업체명'},
-    {field: 'itemSeq', headerName: '품목코드'},
+    {field: 'entpName', headerName: '업체명', flex: 1},
+    {field: 'itemSeq', headerName: '품목코드', flex: 1},
     {field: 'efcyQesitm', headerName: '효능'},
     {field: 'useMethodQesitm', headerName: '사용법'},
     {field: 'atpnQesitm', headerName: '주의사항'},
@@ -39,8 +37,8 @@ function MedicalInfo() {
   const defaultColDef = {
     sortable: true,
     filter: true,
-    flex: 1,
-    minWidth: 100,
+    // flex: 1,
+    // minWidth: 100,
     resizable: true,
   };
 
@@ -86,10 +84,10 @@ function MedicalInfo() {
       });
 
       if(response.data.hasOwnProperty('body')) {
-        const newItems = response.data.body.items;
-
-        setSearchResult((prevResult) => [...prevResult, ...newItems]);
-        setSearchResultCount(searchResult.length + newItems.length);
+        const resultItems = response.data.body.items;
+        
+        setSearchResult(resultItems);
+        setSearchResultCount(resultItems.length);
       }
     } catch (error) {
       console.log("약품 정보 조회 중 Error", error);
@@ -121,7 +119,7 @@ function MedicalInfo() {
             placeholder="검색 키워들르 입력하세요"
             onKeyDown={handleKeyDown}
             autoFocus={true}
-            style={{ width: '200px', height: '40px'}}
+            style={{ width: '300px', height: '40px'}}
             onChange={handleSearchText}
           />
           <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
@@ -135,21 +133,15 @@ function MedicalInfo() {
                 rowData={searchResult}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
+                overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                pagination={true}       // Pagination 사용 설정
+                paginationPageSize={28} // 한 페이지에 표시하고 싶은 데이터 Row 수
+                domLayout="autoHeight"  // Grid의 높이를 자동으로 조정
                 // onBodyScrollEnd={handleScroll}
               />
             </div>
           </Col>
         </Row>
-        {/* <Grid
-          rowData={searchResult}
-          onScrollEnd={handleScroll}
-          // fixedScroll={true}
-          columns={columns}
-          rowHeight={25}
-          bodyHeight={1010}
-          heightResizable={false}
-          rowHeaders={['rowNum']}
-        /> */}
       </div>
     </>
   );

@@ -34,7 +34,7 @@ var routes = [
   {
     path: "/medicineInfo",
     name: "약품정보",
-    icon: "nc-icon nc-atom",
+    icon: "nc-icon nc-zoom-split",
     component: <MedicalInfo />,
     layout: "/admin",
   },
