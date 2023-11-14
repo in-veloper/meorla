@@ -1,14 +1,17 @@
 /* 
-  - 스크롤 시 스크롤 포지션이 최상단으로 이동되는 이슈 
+  - 약품정보 북마크 상태가 모든 Row 공통으로 적용되는 문제점 처리 필요
+  - pagination으로 하니 page를 동적으로 계속해서 로드하는 문제 처리 필요
 */
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { Input, Row, Col, Button } from "reactstrap";
+import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem } from "reactstrap";
 import '../assets/css/medicalInfo.css';
+import { FaRegStar } from "react-icons/fa6";
+import { FaStar } from "react-icons/fa6";
 
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
@@ -17,21 +20,43 @@ function MedicalInfo() {
   const [searchText, setSearchText] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [searchResultCount, setSearchResultCount] = useState(0);
+  const [modal, setModal] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
+  const [liked, setLiked] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    const fetchLikedData = async () => {
+      try {
+        const response = await axios.post('http://localhost:8000/medicine/checkLikedMedicine', {
+          itemName: selectedRowData.itemName,
+          itemSeq: selectedRowData.itemSeq
+        });
+        
+        setLiked(response.data.liked); 
+      } catch (error) {
+        console.log("약품 정보 조회 중 ERROR", error);
+      }
+    };
+
+    if (selectedRowData) {
+      fetchLikedData();
+    }
+  }, [selectedRowData]);
 
   const gridRef = useRef();
 
   const [columnDefs] = useState([
-    {field: 'itemName', headerName: '제품명'},
-    {field: 'entpName', headerName: '업체명', flex: 1},
-    {field: 'itemSeq', headerName: '품목코드', flex: 1},
-    {field: 'efcyQesitm', headerName: '효능'},
-    {field: 'useMethodQesitm', headerName: '사용법'},
-    {field: 'atpnQesitm', headerName: '주의사항'},
-    {field: 'intrcQesitm', headerName: '상호작용'},
-    {field: 'seQesitm', headerName: '부작용'},
-    {field: 'depositMethodQesitm', headerName: '보관법'}
+    {field: 'itemName', headerName: '제품명', tooltipValueGetter: (params) => params.value},
+    {field: 'entpName', headerName: '업체명', flex: 1, tooltipValueGetter: (params) => params.value},
+    {field: 'itemSeq', headerName: '품목코드', flex: 1, tooltipValueGetter: (params) => params.value},
+    {field: 'efcyQesitm', headerName: '효능', tooltipValueGetter: (params) => params.value},
+    {field: 'useMethodQesitm', headerName: '사용법', tooltipValueGetter: (params) => params.value},
+    {field: 'atpnQesitm', headerName: '주의사항', tooltipValueGetter: (params) => params.value},
+    {field: 'intrcQesitm', headerName: '상호작용', tooltipValueGetter: (params) => params.value},
+    {field: 'seQesitm', headerName: '부작용', tooltipValueGetter: (params) => params.value},
+    {field: 'depositMethodQesitm', headerName: '보관법', tooltipValueGetter: (params) => params.value}
   ]);
 
   const defaultColDef = {
@@ -90,8 +115,50 @@ function MedicalInfo() {
         setSearchResultCount(resultItems.length);
       }
     } catch (error) {
-      console.log("약품 정보 조회 중 Error", error);
+      console.log("약품 정보 조회 중 ERROR", error);
     }
+  }
+
+  const toggleModal = () => setModal(!modal);
+
+  const handleRowDoubleClick = (params) => {
+    setSelectedRowData(params.data);
+    toggleModal();
+  }
+
+  const handleLikeMedicine = () => {
+    if(liked) {
+      try{
+        const currentDate = new Date();
+        const formattedDate = currentDate.toISOString();
+        console.log(currentDate);
+        console.log(formattedDate)
+        axios.post('http://localhost:8000/medicine/bookmarkMedicine', {
+          itemName: selectedRowData.itemName,
+          entpName: selectedRowData.entpName,
+          itemSeq: selectedRowData.itemSeq,
+          efcyQesitm: selectedRowData.efcyQesitm,
+          useMethodQesitm: selectedRowData.useMethodQesitm,
+          atpnQesitm: selectedRowData.atpnQesitm,
+          intrcQesitm: selectedRowData.intrcQesitm,
+          seQesitm: selectedRowData.seQesitm,
+          depositMethodQesitm: selectedRowData.depositMethodQesitm,
+          createdAt: formattedDate
+        });
+      }catch(error) {
+        console.log("약품정보 북마크 중 ERROR",error);
+      }
+    }else{
+      try{
+        axios.post('http://localhost:8000/medicine/unbookmarkMedicine', {
+          itemName: selectedRowData.itemName,
+          itemSeq: selectedRowData.itemSeq
+        });
+      }catch(error) {
+        console.log("약품정보 북마크 해제 중 ERROR", error);
+      }
+    }
+    setLiked(!liked);
   }
 
   return (
@@ -137,11 +204,43 @@ function MedicalInfo() {
                 pagination={true}       // Pagination 사용 설정
                 paginationPageSize={28} // 한 페이지에 표시하고 싶은 데이터 Row 수
                 domLayout="autoHeight"  // Grid의 높이를 자동으로 조정
+                enableBrowserTooltips="true"
+                onRowDoubleClicked={handleRowDoubleClick}
                 // onBodyScrollEnd={handleScroll}
               />
             </div>
           </Col>
         </Row>
+
+        <Modal isOpen={modal} toggle={toggleModal} centered>
+          <ModalHeader toggle={toggleModal}>상세 정보{' '} 
+            {liked ? (
+              <FaRegStar className="mb-1 ml-2" style={{ fontSize: 19}} onClick={handleLikeMedicine}/>
+            ) : (
+              <FaStar className="mb-1 ml-2" style={{ fontSize: 19}} onClick={handleLikeMedicine}/>
+            )}
+          </ModalHeader>
+          <ModalBody>
+            {selectedRowData && (
+              <div>
+                <ListGroup className="text-muted">
+                  <ListGroupItem><span className="mr-2 row-detail-span">제품명</span> <div className="row-detail-div">{selectedRowData.itemName}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">업체명</span> <div className="row-detail-div">{selectedRowData.entpName}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">품목코드</span> <div className="row-detail-div">{selectedRowData.itemSeq}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">효능</span> <div className="row-detail-div">{selectedRowData.efcyQesitm}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">사용법</span> <div className="row-detail-div">{selectedRowData.useMethodQesitm}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">주의사항</span> <div className="row-detail-div">{selectedRowData.atpnQesitm}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">상호작용</span> <div className="row-detail-div">{selectedRowData.intrcQesitm}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">부작용</span> <div className="row-detail-div">{selectedRowData.seQesitm}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-2 row-detail-span">보관법</span> <div className="row-detail-div">{selectedRowData.depositMethodQesitm}</div></ListGroupItem>
+                </ListGroup>
+              </div>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={toggleModal}>닫기</Button>
+          </ModalFooter>
+        </Modal>
       </div>
     </>
   );

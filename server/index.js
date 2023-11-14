@@ -44,8 +44,8 @@ app.post("/user/login", (req, res) => {
 
     db.query(sqlQuery, [userId], (err, results) => {
         if (err) {
-            console.error("로그인 Query 실행 중 Error " + err);
-            res.status(500).json({ error: "내부 Server Error" });
+            console.error("로그인 Query 실행 중 ERROR " + err);
+            res.status(500).json({ error: "내부 Server ERROR" });
         } else {
             console.log(results)
             if (results.length > 0) {
@@ -58,7 +58,65 @@ app.post("/user/login", (req, res) => {
             }
         }
     })
-})
+});
+
+app.post("/medicine/checkLikedMedicine", (req, res) => {
+    const itemName = req.body.itemName;
+    const itemSeq = req.body.itemSeq;
+    
+    const sqlQuery = "SELECT COUNT(*) AS count FROM teaform_db.likedMedicine WHERE itemName = ? AND itemSeq = ?";
+    db.query(sqlQuery, [itemName, itemSeq], (err, result) => {
+        if(err) {
+            console.log("약품정보 북마크 여부 체크 Query 실행 중 ERROR", err);
+            res.status(500).send('Internal Server Error');
+        }else{
+            const count = result[0].count;
+            if(count > 0) {
+                res.send('true');
+            }else{
+                res.send('false');
+            }
+        }
+    });
+});
+
+app.post("/medicine/bookmarkMedicine", (req, res) => {
+    const itemName = req.body.itemName;
+    const entpName = req.body.entpName;
+    const itemSeq = req.body.itemSeq;
+    const efcyQesitm = req.body.efcyQesitm;
+    const useMethodQesitm = req.body.useMethodQesitm;
+    const atpnQesitm = req.body.atpnQesitm;
+    const intrcQesitm = req.body.intrcQesitm;
+    const seQesitm = req.body.seQesitm;
+    const depositMethodQesitm = req.body.depositMethodQesitm;
+    const createdAt = req.body.createAt;
+    
+    const sqlQuery = "INSERT INTO teaform_db.likedMedicine (itemName, entpName, itemSeq, efcyQesitm, useMethodQesitm, atpnQesitm, intrcQesitm, seQesitm, depositMethodQesitm, createdAt) VALUES (?,?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [itemName, entpName, itemSeq, efcyQesitm, useMethodQesitm, atpnQesitm, intrcQesitm, seQesitm, depositMethodQesitm, createdAt], (err, result) => {
+        if(err) {
+            console.log("약품정보 북마크 Query 실행 중 ERROR", err);
+            res.status(500).send('내부 Server ERROR');
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/medicine/unbookmarkMedicine", (req, res) => {
+    const itemName = req.body.itemName;
+    const itemSeq = req.body.itemSeq;
+    
+    const sqlQuery = "DELETE FROM teaform_db.likedMedicine WHERE itemName = ? AND itemSeq = ?";
+    db.query(sqlQuery, [itemName, itemSeq], (err, result) => {
+        if(err) {
+            console.log("약품정보 북마크 해제 Query 실행 중 ERROR", err);
+            res.status(500).send('Internal Server Error');
+        }else{
+            res.send('success');
+        }
+    });
+});
 
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
