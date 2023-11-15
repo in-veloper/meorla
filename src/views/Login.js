@@ -69,7 +69,7 @@ function Login() {
                 alert("ID와 비밀번호를 입력해주세요."); // ID 또는 비밀번호를 입력하지 않은 경우
             }
         } catch (error) {
-            console.log("로그인 중 Error", error);
+            console.log("로그인 중 ERROR", error);
         }
     };
 
@@ -77,6 +77,9 @@ function Login() {
     const registUser = () => {
         if(password === confPassword) {
             try {
+                const currentDate = new Date();
+                const formattedDate = currentDate.toISOString();
+
                 axios.post('http://localhost:8000/user/insert', {
                     schoolName: schoolName,
                     name: name,
@@ -84,11 +87,12 @@ function Login() {
                     email: email,
                     password: password,
                     confPassword: confPassword,
-                    schoolCode: schoolCode
+                    schoolCode: schoolCode,
+                    createdAt: formattedDate
                 });
                 navigate("/");
             } catch (error) {
-                console.log("회원가입 중 Error", error);
+                console.log("회원가입 중 ERROR", error);
             }
         }else{
             alert("입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다.<br/> 확인 후 다시 입력해 주시기 바랍니다.");

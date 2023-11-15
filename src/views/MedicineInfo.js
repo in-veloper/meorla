@@ -25,25 +25,32 @@ function MedicalInfo() {
   const [liked, setLiked] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const fetchLikedData = async () => {
-      try {
-        const response = await axios.post('http://localhost:8000/medicine/checkLikedMedicine', {
-          itemName: selectedRowData.itemName,
-          itemSeq: selectedRowData.itemSeq
-        });
+  const [gridApi, setGridApi] = useState(null);
+
+  // useEffect(() => {
+  //   const fetchLikedData = async () => {
+  //     try {
+  //       const response = await axios.post('http://localhost:8000/medicine/checkLikedMedicine', {
+  //         itemName: selectedRowData.itemName,
+  //         itemSeq: selectedRowData.itemSeq
+  //       });
         
-        setLiked(response.data.liked); 
-      } catch (error) {
-        console.log("약품 정보 조회 중 ERROR", error);
-      }
-    };
+  //       setLiked(response.data.liked); 
+  //     } catch (error) {
+  //       console.log("약품 정보 조회 중 ERROR", error);
+  //     }
+  //   };
 
-    if (selectedRowData) {
-      fetchLikedData();
-    }
-  }, [selectedRowData]);
+  //   if (selectedRowData) {
+  //     fetchLikedData();
+  //   }
+  // }, [selectedRowData]);
+
+  // useEffect(() => {
+  //   getMedicineInfo(currentPage);
+  // }, [currentPage]);
 
   const gridRef = useRef();
 
@@ -68,10 +75,45 @@ function MedicalInfo() {
   };
 
   const handleScroll = (e) => {
-    const nextPage = currentPage + 1;
-    setCurrentPage(nextPage);
-    getMedicineInfo(nextPage);
+    const api = e.api;
+    debugger
+    if(e.direction === 'vertical' && e.top >= api.getVerticalPixelRange().bottom) { // e.direction => 스크롤 방향, api.getVerticalPixelRange().bottom => 그리드 하단의 범위
+      // debugger
+      const totalRowCount = api.getDisplayedRowCount();     // 현재 표시된 전체 Row 수
+      const pageSize = api.paginationGetPageSize();         // 페이지당 표시되는 Row 수
+      const lastRowIndex = api.getDisplayedRowCount() - 1;  // 페이지에서 마지막으로 표시된 Row의 Index
+      const currentPage = api.paginationGetCurrentPage();   // 현재 페이지
+
+      if(lastRowIndex >= totalRowCount - pageSize) {
+        debugger;
+        const nextPage = currentPage + 1;
+        getMedicineInfo(nextPage);
+      }
+    }
   }
+
+
+  // const handleScrollEnd = (event) => {
+  //   const api = event.api;
+  //   const totalRowCount = api.paginationGetRowCount();
+  //   const lastDisplayedRowIndex = api.paginationGetCurrentPage() * api.paginationGetPageSize() + api.getDisplayedRowCount() - 1;
+    
+  //   if (lastDisplayedRowIndex >= totalRowCount - 1) {
+  //     const nextPage = currentPage + 1;
+      
+  //     // 여기에서 추가 데이터를 가져와서 rowModel에 추가하는 작업을 수행
+  //     // 예를 들어, getAdditionalData 함수가 추가 데이터를 가져오는 비동기 함수일 때
+  //     getMedicineInfo(nextPage).then((additionalData) => {
+  //       debugger
+  //       // additionalData를 기존 rowModel에 추가
+  //       api.rowModel.setRowData(api.rowModel.getRowCount(), additionalData, true);
+  //     });
+      
+  //     setCurrentPage(nextPage);
+  //   }
+  // };
+
+
 
   const handleSearchCategory = (e) => {
     const selectedCategory = e.target.value;
@@ -99,7 +141,7 @@ function MedicalInfo() {
         params: {
           serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
           pageNo: page,
-          numOfRows: 100,
+          numOfRows: 50,
           entpName: searchCategory === 'mCompany' ? searchText : '',  // 업체명
           itemName: searchCategory === 'mName' ? searchText : '',     // 제품명
           itemSeq: searchCategory === 'mCode' ? searchText : '',      // 품목기준코드
@@ -109,10 +151,10 @@ function MedicalInfo() {
       });
 
       if(response.data.hasOwnProperty('body')) {
-        const resultItems = response.data.body.items;
-        
-        setSearchResult(resultItems);
-        setSearchResultCount(resultItems.length);
+        const newItems = response.data.body.items;
+
+        setSearchResult((prevResult) => [...prevResult, ...newItems]);
+        setSearchResultCount(searchResult.length + newItems.length);
       }
     } catch (error) {
       console.log("약품 정보 조회 중 ERROR", error);
@@ -201,12 +243,17 @@ function MedicalInfo() {
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                pagination={true}       // Pagination 사용 설정
-                paginationPageSize={28} // 한 페이지에 표시하고 싶은 데이터 Row 수
-                domLayout="autoHeight"  // Grid의 높이를 자동으로 조정
+                // pagination={true}       // Pagination 사용 설정
+                // paginationPageSize={28} // 한 페이지에 표시하고 싶은 데이터 Row 수
+                // domLayout="autoHeight"  // Grid의 높이를 자동으로 조정
                 enableBrowserTooltips="true"
                 onRowDoubleClicked={handleRowDoubleClick}
                 // onBodyScrollEnd={handleScroll}
+                onBodyScroll={handleScroll}
+                // onBodyScrollEnd={handleScrollEnd}
+                // onBodyScroll={handleBodyScroll}
+                // onGridReady={onGridReady}  
+                // domLayout="autoHeight"  
               />
             </div>
           </Col>
