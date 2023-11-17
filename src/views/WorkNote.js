@@ -138,32 +138,20 @@ function WorkNote() {
           </Col>
         </Row>
         <Row>
-          <Col md="12">
-            <Card>
-              <CardHeader>
-                <CardTitle tag="h5">Users Behavior</CardTitle>
-                <p className="card-category">24 Hours performance</p>
-              </CardHeader>
-              <CardBody>
-                <Line
-                  data={dashboard24HoursPerformanceChart.data}
-                  options={dashboard24HoursPerformanceChart.options}
-                  width={400}
-                  height={100}
-                />
-              </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="fa fa-history" /> Updated 3 minutes ago
-                </div>
-              </CardFooter>
+          <Col className="pr-2" md="4">
+            <Card style={{ height: '700px'}}>
+                <span>학생조회 Card</span>
+            </Card>
+          </Col>
+          <Col className="pl-2" md="8">
+            <Card style={{ height: '700px'}}>
+                <span>보건일지 등록 Card</span>
             </Card>
           </Col>
         </Row>
         <Row>
           <Col md="12">
-            <div className="ag-theme-alpine" style={{ height: 400 }}>
+            <div className="ag-theme-alpine" style={{ height: '100vh' }}>
               <AgGridReact
                 ref={gridRef}
                 rowData={rowData} 
