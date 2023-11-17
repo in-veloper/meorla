@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "reactstrap";
 
 function FixedPlugin(props) {
-  const [classes, setClasses] = React.useState("dropdown show");
+  const [classes, setClasses] = React.useState("dropdown"); // 초기 상태 dropdown show -> dropdown 으로 수정 (처음 load될때 열려있지 않도록 수정)
   const handleClick = () => {
     if (classes === "dropdown") {
       setClasses("dropdown show");
