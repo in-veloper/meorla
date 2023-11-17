@@ -201,5 +201,5 @@ function MedicalInfo() {
     </>
   );
 }
- 
+  
 export default MedicalInfo;
