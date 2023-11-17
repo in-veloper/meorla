@@ -1,6 +1,5 @@
 /* 
-  - 약품정보 북마크 상태가 모든 Row 공통으로 적용되는 문제점 처리 필요
-  - pagination으로 하니 page를 동적으로 계속해서 로드하는 문제 처리 필요
+  - 분류 선택하지 않은 채로 조회 시 해당 키워드가 모든 카테고리에 포함된 경우 가정 -> 동작하도록 처리
 */
 
 import React, { useCallback, useRef, useState } from "react";
@@ -175,7 +174,7 @@ function MedicalInfo() {
         </Row>
 
         <Modal isOpen={modal} toggle={toggleModal} centered style={{ minWidth: '35%' }}>
-          <ModalHeader toggle={toggleModal}><b>상세 정보</b></ModalHeader>
+          <ModalHeader toggle={toggleModal}><b className="text-muted">상세 정보</b></ModalHeader>
           <ModalBody>
             {selectedRowData && (
               <div>

@@ -1,45 +1,28 @@
-/*!
-
-=========================================================
-* Paper Dashboard React - v1.3.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/paper-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-* Licensed under MIT (https://github.com/creativetimofficial/paper-dashboard-react/blob/main/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-import React from "react";
-
-// reactstrap components
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  CardTitle,
-  FormGroup,
-  Form,
-  Input,
-  Row,
-  Col,
-} from "reactstrap";
+import React, {useState} from "react";
+import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col} from "reactstrap";
+import '../assets/css/users.css';
 
 function User() {
+
+  const [schoolGrade, setSchoolGrade] = useState("송촌중학교");
+
+  const generateNameTableButtons = () => {
+    if(schoolGrade.includes("초등학교")) {
+      return Array.from({ length: 6 }, (_, index) => index + 1);
+    }else if(schoolGrade.includes("중학교") || schoolGrade.includes("고등학교")) {
+      return Array.from({ length: 3 }, (_, index) => index + 1);
+    }else{
+      return Array.from({ length: 3 }, (_, index) => index + 1);
+    }
+  };
+
+
   return (
     <>
       <div className="content">
         <Row>
           <Col md="4">
-            <Card className="card-user">
+            <Card className="card-user" style={{ height: '565px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <img alt="..." src={require("assets/img/damir-bosnjak.jpg")} />
               </div>
@@ -51,9 +34,9 @@ function User() {
                       className="avatar border-gray"
                       src={require("assets/img/mike.jpg")}
                     />
-                    <h5 className="title">Chet Faker</h5>
+                    <h5 className="title">정영인</h5>
                   </a>
-                  <p className="description">@chetfaker</p>
+                  <p className="description">송촌중학교</p>
                 </div>
                 <p className="description text-center">
                   "I like the way you work it <br />
@@ -88,68 +71,10 @@ function User() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle tag="h4">Team Members</CardTitle>
+                <CardTitle className="text-muted" tag="h6">관리자 문의</CardTitle>
               </CardHeader>
               <CardBody>
                 <ul className="list-unstyled team-members">
-                  <li>
-                    <Row>
-                      <Col md="2" xs="2">
-                        <div className="avatar">
-                          <img
-                            alt="..."
-                            className="img-circle img-no-padding img-responsive"
-                            src={require("assets/img/faces/ayo-ogunseinde-2.jpg")}
-                          />
-                        </div>
-                      </Col>
-                      <Col md="7" xs="7">
-                        DJ Khaled <br />
-                        <span className="text-muted">
-                          <small>Offline</small>
-                        </span>
-                      </Col>
-                      <Col className="text-right" md="3" xs="3">
-                        <Button
-                          className="btn-round btn-icon"
-                          color="success"
-                          outline
-                          size="sm"
-                        >
-                          <i className="fa fa-envelope" />
-                        </Button>
-                      </Col>
-                    </Row>
-                  </li>
-                  <li>
-                    <Row>
-                      <Col md="2" xs="2">
-                        <div className="avatar">
-                          <img
-                            alt="..."
-                            className="img-circle img-no-padding img-responsive"
-                            src={require("assets/img/faces/joe-gardner-2.jpg")}
-                          />
-                        </div>
-                      </Col>
-                      <Col md="7" xs="7">
-                        Creative Tim <br />
-                        <span className="text-success">
-                          <small>Available</small>
-                        </span>
-                      </Col>
-                      <Col className="text-right" md="3" xs="3">
-                        <Button
-                          className="btn-round btn-icon"
-                          color="success"
-                          outline
-                          size="sm"
-                        >
-                          <i className="fa fa-envelope" />
-                        </Button>
-                      </Col>
-                    </Row>
-                  </li>
                   <li>
                     <Row>
                       <Col md="2" xs="2">
@@ -162,12 +87,12 @@ function User() {
                         </div>
                       </Col>
                       <Col className="col-ms-7" xs="7">
-                        Flume <br />
-                        <span className="text-danger">
-                          <small>Busy</small>
+                        관리자 <br />
+                        <span className="text-success">
+                          <small>online</small>
                         </span>
                       </Col>
-                      <Col className="text-right" md="3" xs="3">
+                      <Col className="text-right" md="3" xs="3" style={{ marginTop: -6}}>
                         <Button
                           className="btn-round btn-icon"
                           color="success"
@@ -186,16 +111,16 @@ function User() {
           <Col md="8">
             <Card className="card-user">
               <CardHeader>
-                <CardTitle tag="h5">Edit Profile</CardTitle>
+                <CardTitle className="text-muted" tag="h5"><b>사용자 정보</b></CardTitle>
               </CardHeader>
               <CardBody>
                 <Form>
                   <Row>
                     <Col className="pr-1" md="5">
                       <FormGroup>
-                        <label>Company (disabled)</label>
+                        <label>소속학교</label>
                         <Input
-                          defaultValue="Creative Code Inc."
+                          defaultValue="송촌중학교"
                           disabled
                           placeholder="Company"
                           type="text"
@@ -204,9 +129,9 @@ function User() {
                     </Col>
                     <Col className="px-1" md="3">
                       <FormGroup>
-                        <label>Username</label>
+                        <label>이름</label>
                         <Input
-                          defaultValue="michael23"
+                          defaultValue="정영인"
                           placeholder="Username"
                           type="text"
                         />
@@ -215,7 +140,7 @@ function User() {
                     <Col className="pl-1" md="4">
                       <FormGroup>
                         <label htmlFor="exampleInputEmail1">
-                          Email address
+                          Email
                         </label>
                         <Input placeholder="Email" type="email" />
                       </FormGroup>
@@ -224,9 +149,9 @@ function User() {
                   <Row>
                     <Col className="pr-1" md="6">
                       <FormGroup>
-                        <label>First Name</label>
+                        <label>가입된 서비스</label>
                         <Input
-                          defaultValue="Chet"
+                          defaultValue="Standard"
                           placeholder="Company"
                           type="text"
                         />
@@ -234,9 +159,9 @@ function User() {
                     </Col>
                     <Col className="pl-1" md="6">
                       <FormGroup>
-                        <label>Last Name</label>
+                        <label>서비스 사용기간</label>
                         <Input
-                          defaultValue="Faker"
+                          defaultValue="2023.11.17 ~ 2024.11.16"
                           placeholder="Last Name"
                           type="text"
                         />
@@ -248,7 +173,7 @@ function User() {
                       <FormGroup>
                         <label>Address</label>
                         <Input
-                          defaultValue="Melbourne, Australia"
+                          defaultValue="Faker"
                           placeholder="Home Address"
                           type="text"
                         />
@@ -258,28 +183,35 @@ function User() {
                   <Row>
                     <Col className="pr-1" md="4">
                       <FormGroup>
-                        <label>City</label>
+                        <label>이용중인 서비스</label>
                         <Input
-                          defaultValue="Melbourne"
+                          defaultValue="Standard"
                           placeholder="City"
                           type="text"
+                          disabled
                         />
                       </FormGroup>
                     </Col>
                     <Col className="px-1" md="4">
                       <FormGroup>
-                        <label>Country</label>
+                        <label>서비스 사용기간</label>
                         <Input
-                          defaultValue="Australia"
+                          defaultValue="2023.11.17 - 2024.11.16"
                           placeholder="Country"
                           type="text"
+                          disabled
                         />
                       </FormGroup>
                     </Col>
                     <Col className="pl-1" md="4">
                       <FormGroup>
-                        <label>Postal Code</label>
-                        <Input placeholder="ZIP Code" type="number" />
+                        <label>서비스 이용상태</label>
+                        <Input 
+                          defaultValue="사용중"
+                          placeholder="ZIP Code" 
+                          type="text" 
+                          disabled
+                        />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -295,13 +227,36 @@ function User() {
                     </Col>
                   </Row>
                   <Row>
+                    <Col md="12">
+                      <FormGroup>
+                        <label>명렬표</label>
+                        <div style={{ marginTop: -12}}>
+                          <ButtonGroup className="" size="md">
+                            {generateNameTableButtons().map((buttonNumber) => (
+                              <Button key={buttonNumber} className="btn-outline-default">
+                                {buttonNumber}
+                              </Button>
+                            ))}
+                          </ButtonGroup>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
                     <div className="update ml-auto mr-auto">
                       <Button
                         className="btn-round"
-                        color="primary"
+                        color="secondary"
                         type="submit"
                       >
-                        Update Profile
+                        사용자 정보 수정
+                      </Button>
+                      <Button
+                        className="btn-round ml-2"
+                        color="secondary"
+                        type="submit"
+                      >
+                        비밀번호 재설정
                       </Button>
                     </div>
                   </Row>

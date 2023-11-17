@@ -1,24 +1,33 @@
-import React from "react";
+import React, {useState, useRef} from "react";
 import { Line } from "react-chartjs-2";
-// reactstrap components
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  CardTitle,
-  Table,
-  Row,
-  Col,
-} from "reactstrap";
-// core components
-import {
-  dashboard24HoursPerformanceChart,
-  // dashboardEmailStatisticsChart,
-  // dashboardNASDAQChart,
-} from "variables/charts.js";
+import {Card, CardHeader, CardBody, CardFooter, CardTitle, Row, Col} from "reactstrap";
+import {dashboard24HoursPerformanceChart} from "variables/charts.js";
+import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
+import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
+import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import '../assets/css/worknote.css';
 
-function Dashboard() {
+function WorkNote() {
+
+  const gridRef = useRef();
+
+  const [rowData] = useState([
+    { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
+    { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
+    { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
+  ]);
+
+  const [columnDefs] = useState([
+    { field: "registeredDate", headerName: "등록일" },
+    { field: "studentName", headerName: "이름" },
+    { field: "symptom", headerName: "증상" },
+    { field: "treatAction", headerName: "처치사항" },
+    { field: "dosageAction", headerName: "투약사항" },
+    { field: "measureAction", headerName: "조치사항"},
+    { field: "bedRest", headerName: "침상안정"}
+  ]);
+
+
   return (
     <>
       <div className="content">
@@ -154,67 +163,13 @@ function Dashboard() {
         </Row>
         <Row>
           <Col md="12">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-muted" tag="h5"><b>보건일지 등록내역</b></CardTitle>
-              </CardHeader>
-              <CardBody>
-                <Table responsive>
-                  <thead className="text-primary">
-                    <tr>
-                      <th>Name</th>
-                      <th>Country</th>
-                      <th>City</th>
-                      <th className="text-right">Salary</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Dakota Rice</td>
-                      <td>Niger</td>
-                      <td>Oud-Turnhout</td>
-                      <td className="text-right">$36,738</td>
-                    </tr>
-                    <tr>
-                      <td>Minerva Hooper</td>
-                      <td>Curaçao</td>
-                      <td>Sinaai-Waas</td>
-                      <td className="text-right">$23,789</td>
-                    </tr>
-                    <tr>
-                      <td>Sage Rodriguez</td>
-                      <td>Netherlands</td>
-                      <td>Baileux</td>
-                      <td className="text-right">$56,142</td>
-                    </tr>
-                    <tr>
-                      <td>Philip Chaney</td>
-                      <td>Korea, South</td>
-                      <td>Overland Park</td>
-                      <td className="text-right">$38,735</td>
-                    </tr>
-                    <tr>
-                      <td>Doris Greene</td>
-                      <td>Malawi</td>
-                      <td>Feldkirchen in Kärnten</td>
-                      <td className="text-right">$63,542</td>
-                    </tr>
-                    <tr>
-                      <td>Mason Porter</td>
-                      <td>Chile</td>
-                      <td>Gloucester</td>
-                      <td className="text-right">$78,615</td>
-                    </tr>
-                    <tr>
-                      <td>Jon Porter</td>
-                      <td>Portugal</td>
-                      <td>Gloucester</td>
-                      <td className="text-right">$98,615</td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
+            <div className="ag-theme-alpine" style={{ height: 400 }}>
+              <AgGridReact
+                ref={gridRef}
+                rowData={rowData} 
+                columnDefs={columnDefs} 
+              />
+            </div>
           </Col>
         </Row>
       </div>
@@ -222,4 +177,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default WorkNote;
