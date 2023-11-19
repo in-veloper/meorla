@@ -1,8 +1,11 @@
 import React, {useState} from "react";
 import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col} from "reactstrap";
 import '../assets/css/users.css';
+import { useUser } from "contexts/UserContext";
 
 function User() {
+  const { user } = useUser();
+  console.log(user)
 
   const [schoolGrade, setSchoolGrade] = useState("송촌중학교");
 

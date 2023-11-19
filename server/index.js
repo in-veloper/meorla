@@ -1,3 +1,6 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
@@ -17,7 +20,29 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post("/user/insert", (req, res) => {
+dotenv.config();
+
+app.post("/user/getUser", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolName = req.body.schoolName;
+
+    const query = "SELECT * FROM teaform_db.users WHERE userId = ? OR schoolName = ?";
+    db.query(query, [userId, schoolName], async(Err, results) => {
+        if(Err) {
+            console.log("기존 ID 및 학교명 검사 중 ERROR" + Err);
+        }else{
+            if(results.length > 0) {
+                const user = results[0];
+                res.json({ user });
+            }else{
+                const user = "N";
+                res.json({ user });
+            }
+        }
+    });
+})
+
+app.post("/user/insert", async (req, res) => {
     const schoolName = req.body.schoolName;
     const name = req.body.name;
     const email = req.body.email;
@@ -25,13 +50,14 @@ app.post("/user/insert", (req, res) => {
     const password = req.body.password;
     const schoolCode = req.body.schoolCode;
     const refresh_token = req.body.refresh_token;
-    const createdAt = req.body.createAt;
-    const updatedAt = req.body.updatedAt;
-    
-    const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, refresh_token, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [schoolName, name, email, userId, password, schoolCode, refresh_token, createdAt, updatedAt], (err, result) => {
+
+    const salt = await bcrypt.genSalt();
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, refresh_token) VALUES (?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [schoolName, name, email, userId, hashPassword, schoolCode, refresh_token], (err, result) => {
         if(err) {
-            console.log(err);
+            console.log("회원가입 데이터 Insert 중 ERROR" + err);
         }else{
             res.send('success');
         }
@@ -40,21 +66,52 @@ app.post("/user/insert", (req, res) => {
 
 app.post("/user/login", (req, res) => {
     const userId = req.body.userId;
+    const password = req.body.password;
     const sqlQuery = "SELECT * FROM teaform_db.users WHERE userId = ?";
-
-    db.query(sqlQuery, [userId], (err, results) => {
+    
+    db.query(sqlQuery, [userId], async (err, results) => {
         if (err) {
             console.error("로그인 Query 실행 중 ERROR " + err);
             res.status(500).json({ error: "내부 Server ERROR" });
         } else {
-            console.log(results)
             if (results.length > 0) {
                 const user = results[0]; // 첫 번째 사용자 정보만 사용 (userId는 고유해야 함)
-                res.json({ user });
+                const match = await bcrypt.compare(password, user.password);
+                
+                if(!match) {
+                    const user = "UPW";
+                    res.json({ user });
+                }else{
+                    const userId = user.userId;
+                    const name = user.name;
+                    const email = user.email;
+
+                    const accessToken = jwt.sign({ userId, name, email }, process.env.ACCESS_TOKEN_SECRET, {
+                        expiresIn: '15s'
+                    });
+                    const refreshToken = jwt.sign({ userId, name, email }, process.env.REFRESH_TOKEN_SECRET, {
+                        expiresIn: '1d'
+                    });
+
+                    const updateQuery = "UPDATE teaform_db.users SET refresh_token = ? WHERE userId = ?";
+                    db.query(updateQuery, [refreshToken, userId], (updateErr, updateResults) => {
+                        if(updateErr) {
+                            console.log("Refresh Token 업데이트 중 ERROR" + updateErr);
+                        }else{
+                            console.log("Refresh Token 업데이트 완료");
+                        }
+                    });
+
+                    res.cookie('refreshToken', refreshToken, {
+                        httpOnly: true,
+                        maxAge: 24 * 60 * 60 * 1000
+                    });
+
+                    res.json({ user, accessToken });
+                } 
             } else {
                 const user = "N";
                 res.json({ user });
-                // res.status(404).json({ error: "일치하는 사용자를 찾을 수 없음" });
             }
         }
     })

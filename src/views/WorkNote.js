@@ -1,3 +1,5 @@
+/* 일반 교사가 진입하는 메뉴에서 학생이 침상 안정했는지 보건실 이용했는지 조회할 수 있도록 요청 */
+
 import React, {useState, useRef} from "react";
 import { Line } from "react-chartjs-2";
 import {Card, CardHeader, CardBody, CardFooter, CardTitle, Row, Col} from "reactstrap";

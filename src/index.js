@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { UserProvider } from "contexts/UserContext";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "assets/scss/paper-dashboard.scss?v=1.3.0";
@@ -15,10 +16,12 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Login/>} />
-      <Route path="/admin/*" element={<AdminLayout />} />
-      <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-    </Routes>
+    <UserProvider>
+      <Routes>
+        <Route path="/" element={<Login/>} />
+        <Route path="/admin/*" element={<AdminLayout />} />
+        <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+      </Routes>
+    </UserProvider>
   </BrowserRouter>
 );

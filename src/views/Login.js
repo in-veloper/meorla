@@ -55,15 +55,14 @@ function Login() {
         try {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
-                const response = await axios.post('http://localhost:8000/user/login', { userId: confirmUserId });
+                const response = await axios.post('http://localhost:8000/user/login', { userId: confirmUserId, password: confirmPassword });
                 const responseData = response.data.user;
-
-                if(responseData.password === confirmPassword) {
-                    // 계정 정보 일치할 경우 dashboard 화면으로 이동
-                    navigate('/admin/dashboard');
+                if(responseData === 'N') {
+                    alert("해당 ID로 가입된 내역이 없습니다.");
+                }else if(responseData === "UPW") {
+                    alert("비밀번호가 일치하지 않습니다.");
                 }else{
-                    if(responseData === 'N') alert("해당 ID로 가입된 내역이 없습니다.");    // users 테이블에 일치하는 userId 없는 경우
-                    else alert("비밀번호가 일치하지 않습니다.");    // 비밀번호가 일치하지 않는 경우
+                    navigate('/admin/dashboard');
                 }
             }else{
                 alert("ID와 비밀번호를 입력해주세요."); // ID 또는 비밀번호를 입력하지 않은 경우
@@ -74,28 +73,52 @@ function Login() {
     };
 
     // 회원가입 Form 전송
-    const registUser = () => {
+    const registUser = async () => {
         if(password === confPassword) {
             try {
-                const currentDate = new Date();
-                const formattedDate = currentDate.toISOString();
-
-                axios.post('http://localhost:8000/user/insert', {
-                    schoolName: schoolName,
-                    name: name,
+                const selectResponse = await axios.post('http://localhost:8000/user/getUser', {
                     userId: userId,
-                    email: email,
-                    password: password,
-                    confPassword: confPassword,
-                    schoolCode: schoolCode,
-                    createdAt: formattedDate
+                    schoolName: schoolName
                 });
-                navigate("/");
+                const userData = selectResponse.data.user;
+                
+                if(userData.schoolName === schoolName) {
+                    alert("이미 가입된 학교입니다. 학교당 하나의 계정만 가입 가능합니다.");
+                }else if(userData.userId === userId) {
+                    alert("이미 존재하는 ID입니다. 다른 ID로 가입해 주세요.");
+                }else{
+                    if(schoolName.length === 0) {
+                        alert("학교명을 입력해 주세요.");
+                    }else if(email.length === 0) {
+                        alert("Email을 입력해 주세요.");
+                    }else if(name.length === 0) {
+                        alert("이름을 입력해 주세요.");
+                    }else if(userId.length === 0) {
+                        alert("ID를 입력해 주세요");
+                    }else if(password.length === 0){
+                        alert("Password를 입력해 주세요.");
+                    }else{
+                        const response = await axios.post('http://localhost:8000/user/insert', {
+                            schoolName: schoolName,
+                            name: name,
+                            userId: userId,
+                            email: email,
+                            password: password,
+                            confPassword: confPassword,
+                            schoolCode: schoolCode
+                        });
+                        
+                        if(response.data === "success") {
+                            alert("가입이 정상적으로 처리되었습니다.");
+                        }
+                        navigate("/");
+                    }
+                }
             } catch (error) {
                 console.log("회원가입 중 ERROR", error);
             }
         }else{
-            alert("입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다.<br/> 확인 후 다시 입력해 주시기 바랍니다.");
+            alert("입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다. 확인 후 다시 입력해 주시기 바랍니다.");
         }
     };
 
@@ -123,8 +146,10 @@ function Login() {
 
     // 검색 항목 중 학교 선택 함수
     const handleSchoolSelect = (selectedSchool) => {
-        setSchoolName(selectedSchool.SCHUL_NM);
-        setSchoolCode(selectedSchool.SD_SCHUL_CODE);
+        if(schoolList.length > 0) {
+            setSchoolName(schoolList[0].SCHUL_NM);
+            setSchoolCode(schoolList[0].SD_SCHUL_CODE);
+        }
         setSchoolList([]);
     }
 
