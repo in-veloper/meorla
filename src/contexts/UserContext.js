@@ -1,52 +1,36 @@
-// import React, { createContext, useState } from 'react';
-// import  { useNavigate } from 'react-router-dom';
-// import jwt_decode from 'jwt-decode';
-// import axios from 'axios';
-
-// export const UserContext = createContext();
-
-// const UserStore = (props) => {
-//     const [user, setUser] = useState(null);
-
-//     const getUser = async() => {
-//         try {
-//             const response = await axios.get('http://localhost:8000/token');
-//             const decoded = jwt_decode(response.data.accessToken);
-
-//             setUser({
-//                 userId: decoded.userId,
-//                 userName: decoded.userName,
-//                 schoolName: decoded.schoolName
-//             });
-//         }catch(error) {
-//             if(error.response) {
-//                 // useNavigate("/");
-//                 console.log("UserContext 로직 수행 중 ERROR" + error);
-//             }
-//         }
-//     }
-
-//     if(!user) {
-//         getUser();
-//     }
-
-//     return (
-//         <UserContext.Provider value={user}>{props.children}</UserContext.Provider>
-//     );
-// }
-
-// export default UserStore;
-
-
-
-
-
-import React, { createContext, useContext, useState } from 'react';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+
+    // useEffect(() => {
+        const getUser = async() => {
+            try {
+                const response = await axios.get('http://localhost:8000/token');
+                const decoded = jwtDecode(response.data.accessToken);
+    
+                setUser({
+                    userId: decoded.userId,
+                    name: decoded.name,
+                    email: decoded.email,
+                    schoolName: decoded.schoolName,
+                    schoolCode: decoded.schoolCode
+                });
+            }catch(error) {
+                if(error.response) {
+                    console.log("UserContext 로직 수행 중 ERROR", error);
+                }
+            }
+        }
+        if(!user) {
+            getUser();
+        }
+    // }, [user]);
+
 
     const login = (userData) => {
         setUser(userData);

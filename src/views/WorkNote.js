@@ -1,9 +1,7 @@
 /* 일반 교사가 진입하는 메뉴에서 학생이 침상 안정했는지 보건실 이용했는지 조회할 수 있도록 요청 */
 
 import React, {useState, useRef} from "react";
-import { Line } from "react-chartjs-2";
-import {Card, CardHeader, CardBody, CardFooter, CardTitle, Row, Col} from "reactstrap";
-import {dashboard24HoursPerformanceChart} from "variables/charts.js";
+import {Card, CardBody, CardFooter, CardTitle, Row, Col} from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
@@ -153,7 +151,7 @@ function WorkNote() {
         </Row>
         <Row>
           <Col md="12">
-            <div className="ag-theme-alpine" style={{ height: '100vh' }}>
+            <div className="ag-theme-alpine" style={{ height: '50vh' }}>
               <AgGridReact
                 ref={gridRef}
                 rowData={rowData} 

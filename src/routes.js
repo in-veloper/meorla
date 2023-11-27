@@ -104,8 +104,8 @@ var routes = [
   {
     pro: true,
     path: "/upgrade",
-    name: "Upgrade to PRO",
-    icon: "nc-icon nc-spaceship",
+    name: "로그아웃",
+    icon: "nc-icon nc-button-power",
     component: <UpgradeToPro />,
     layout: "/admin",
   },

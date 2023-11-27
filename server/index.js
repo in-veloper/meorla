@@ -7,7 +7,19 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { urlencoded } = require('body-parser');
+const cookieParser = require('cookie-parser');
 const PORT = process.env.port || 8000;
+const { Cookies } = require('react-cookie');
+const cookies = new Cookies();
+
+const setCookie = (name, value, options) => {
+    const result = cookies.set(name, value, { ...options });
+    return result;
+}
+
+const getCookie = (name) => {
+    return cookies.get(name);
+}
 
 const db = mysql.createPool({
     host: "localhost",
@@ -16,11 +28,47 @@ const db = mysql.createPool({
     database: "teaform_db"
 });
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 dotenv.config();
+
+app.get("/token", async (req, res) => {
+    try {
+        console.log(cookies.get('refreshToken'))
+        const refreshToken = cookies.get('refreshToken');
+        if(!refreshToken) return res.sendStatus(401);
+
+        const query = "SELECT * FROM teaform_db.users WHERE refresh_token = ?";
+        db.query(query, [refreshToken], async(err, results) => {
+            if(err) {
+                console.log("Refresh Token 일치 SELECT 조회 중 ERROR" + err);
+            }else{
+                if(results.length > 0) {
+                    const user = results[0];
+                    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
+                        if(error) return res.sendStatus(403);
+                        const userId = user.userId;
+                        const name = user.name;
+                        const schoolName = user.schoolName;
+                        const schoolCode = user.schoolCode;
+                        const email = user.email;
+                        const accessToken = jwt.sign({ userId, name, email, schoolName, schoolCode }, process.env.ACCESS_TOKEN_SECRET, {
+                            expiresIn: '15s'
+                        });
+                        res.json({ accessToken });
+                    });
+                }else{
+                    return res.sendStatus(403);
+                }
+            }
+        })
+    }catch(error) {
+        console.log("Refresh Token 로직 수행 중 ERROR" + error);
+    }
+});
 
 app.post("/user/getUser", async (req, res) => {
     const userId = req.body.userId;
@@ -64,7 +112,7 @@ app.post("/user/insert", async (req, res) => {
     });
 });
 
-app.post("/user/login", (req, res) => {
+app.post("/user/login", async (req, res) => {
     const userId = req.body.userId;
     const password = req.body.password;
     const sqlQuery = "SELECT * FROM teaform_db.users WHERE userId = ?";
@@ -92,7 +140,7 @@ app.post("/user/login", (req, res) => {
                     const refreshToken = jwt.sign({ userId, name, email }, process.env.REFRESH_TOKEN_SECRET, {
                         expiresIn: '1d'
                     });
-
+                    
                     const updateQuery = "UPDATE teaform_db.users SET refresh_token = ? WHERE userId = ?";
                     db.query(updateQuery, [refreshToken, userId], (updateErr, updateResults) => {
                         if(updateErr) {
@@ -101,13 +149,15 @@ app.post("/user/login", (req, res) => {
                             console.log("Refresh Token 업데이트 완료");
                         }
                     });
-
-                    res.cookie('refreshToken', refreshToken, {
-                        httpOnly: true,
-                        maxAge: 24 * 60 * 60 * 1000
+                    setCookie('refreshToken', refreshToken, {
+                        // path: '/',
+                        secure: true,
+                        sameSite: 'none',
+                        expires: new Date(Date.now() + 3600 * 1000)
                     });
 
-                    res.json({ user, accessToken });
+                    // res.json({ user, accessToken });
+                    res.json({ accessToken });
                 } 
             } else {
                 const user = "N";

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col} from "reactstrap";
 import '../assets/css/users.css';
 import { useUser } from "contexts/UserContext";
@@ -6,8 +6,20 @@ import { useUser } from "contexts/UserContext";
 function User() {
   const { user } = useUser();
   console.log(user)
-
+  
+  const [currentUser, setCurrentUser] = useState(user);
   const [schoolGrade, setSchoolGrade] = useState("송촌중학교");
+  
+  useEffect(() => {
+    setCurrentUser(user);
+  },[user]);
+
+  // user 상태가 존재하면 user 정보를 저장 (위 useEffect 사용 시 초기에 null 값 세팅 방지)
+  useEffect(() => {
+    if(user) {
+      setCurrentUser(user);
+    }
+  }, []);
 
   const generateNameTableButtons = () => {
     if(schoolGrade.includes("초등학교")) {
@@ -37,9 +49,9 @@ function User() {
                       className="avatar border-gray"
                       src={require("assets/img/mike.jpg")}
                     />
-                    <h5 className="title">정영인</h5>
+                    <h5 className="title">{currentUser ? currentUser.name : ''}</h5>
                   </a>
-                  <p className="description">송촌중학교</p>
+                  <p className="description">{currentUser ? currentUser.schoolName : ''}</p>
                 </div>
                 <p className="description text-center">
                   "I like the way you work it <br />
@@ -123,9 +135,9 @@ function User() {
                       <FormGroup>
                         <label>소속학교</label>
                         <Input
-                          defaultValue="송촌중학교"
+                          defaultValue={currentUser ? currentUser.schoolName : ''}
                           disabled
-                          placeholder="Company"
+                          // placeholder="Company"
                           type="text"
                         />
                       </FormGroup>
@@ -134,7 +146,7 @@ function User() {
                       <FormGroup>
                         <label>이름</label>
                         <Input
-                          defaultValue="정영인"
+                          defaultValue={currentUser ? currentUser.name : ''}
                           placeholder="Username"
                           type="text"
                         />
@@ -145,7 +157,11 @@ function User() {
                         <label htmlFor="exampleInputEmail1">
                           Email
                         </label>
-                        <Input placeholder="Email" type="email" />
+                        <Input 
+                          defaultValue={currentUser ? currentUser.email : ''}
+                          placeholder="Email" 
+                          type="email" 
+                        />
                       </FormGroup>
                     </Col>
                   </Row>
