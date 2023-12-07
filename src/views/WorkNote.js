@@ -172,58 +172,64 @@ function WorkNote() {
                 <b>학생 조회</b>
               </CardHeader>
               <CardBody>
-                <Row className="pr-3 align-items-center">
-                  <Col md="2" className="text-center">
-                    <label>학년</label>
+                <Row className="pr-3">
+                  <Col md="3">
+                    <Row className="align-items-center">
+                      <Col md="6" className="text-right">
+                        <label>학년</label>
+                      </Col>
+                      <Col md="6" className="p-0">
+                        <Input
+                          className="text-right"
+                        />
+                      </Col>
+                    </Row>
                   </Col>
-                  <Col md="2" className="p-0">
-                    <Input
-                      className="text-right"
-                    />
+                  <Col md="2">
+                    <Row className="align-items-center">
+                      <Col md="6" className="text-right">
+                        <label>반</label>
+                      </Col>
+                      <Col md="6" className="p-0">
+                        <Input
+                          className="text-right"
+                        />
+                      </Col>
+                    </Row>
                   </Col>
-                  <Col md="2" className="text-center">
-                    <label>반</label>
+                  <Col md="3">
+                    <Row className="align-items-center">
+                      <Col md="6" className="text-right">
+                        <label>번호</label>
+                      </Col>
+                      <Col md="6" className="p-0">
+                        <Input
+                          className="text-right"
+                        />
+                      </Col>
+                    </Row>
                   </Col>
-                  <Col md="2" className="p-0">
-                    <Input
-                      className="text-right"
-                    />
-                  </Col>
-                  <Col md="2" className="text-center">
-                    <label>번호</label>
-                  </Col>
-                  <Col md="2" className="p-0">
-                    <Input
-                      className="text-right"
-                    />
+                  <Col md="4">
+                    <Row className="align-items-center">
+                      <Col md="4" className="text-right">
+                        <label>이름</label>
+                      </Col>
+                      <Col md="8" className="p-0">
+                        <Input
+                          className="text-right"
+                        />
+                      </Col>
+                    </Row>
                   </Col>
                 </Row>
-                <Row className="align-items-center">
-                  <Col md="2" className="text-center">
-                    <label>이름</label>
-                  </Col>
-                  <Col md="4" className="pl-0">
-                    <Input
-                      className="text-right"
-                    />
-                  </Col>
-                  <Col md="6" className="d-flex justify-content-end">
-                    <Button
-                      className="mr-1"
-                    >
-                      초기화
-                    </Button>
-                    <Button
-                      className=""
-                    >
-                      조회
-                    </Button>
-                  </Col>
+                <Row className="d-flex justify-content-center">
+                  <Button className="mr-1">초기화</Button>
+                  <Button>조회</Button>
                 </Row>
                 <Row>
                   <Col md="12">
                   <Alert color="secondary" className="text-center" style={{ color: 'gray' }}>
-                    일부 항목 입력으로도 조회 가능합니다
+                    <i className="nc-icon nc-bulb-63" /> 일부 항목 입력으로도 조회 가능합니다
                   </Alert>
                   </Col>
                 </Row>
@@ -240,13 +246,13 @@ function WorkNote() {
                 </Row>
                 <Row className="pt-2">
                   <Col md="12" className="d-flex justify-content-center">
-                    <Button>초기화</Button>
+                    <Button className="mr-1">초기화</Button>
                     <Button>선택</Button>
                   </Col>
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '480px'}}>
+            <Card style={{ height: '480px', overflowY: 'scroll' }}>
               <CardHeader className="text-muted text-center" tag="h5">
                 <b>보건실 방문 요청 알람</b>
               </CardHeader>
@@ -344,7 +350,7 @@ function WorkNote() {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2">
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
                           <ListGroupItem>
                             증상1
                           </ListGroupItem>
@@ -373,7 +379,7 @@ function WorkNote() {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2">
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
                           <ListGroupItem>
                             처치사항1
                           </ListGroupItem>
@@ -397,14 +403,14 @@ function WorkNote() {
                 <Row>
                   <Col md="6">
                     <Card color="light">
-                      <CardHeader className="text-muted text-left" style={{ fontSize: 17 }}>
+                      <CardHeader className="text-muted text-center" style={{ fontSize: 17 }}>
                         <b>투약사항</b>
                       </CardHeader>
                       <CardBody>
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2">
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
                           <ListGroupItem>
                             투약사항1
                           </ListGroupItem>
@@ -433,7 +439,7 @@ function WorkNote() {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2">
+                        <ListGroup className="pt-2" style={{ maxHeight: '101px', overflowY: 'scroll' }}>
                           <ListGroupItem>
                             조치사항1
                           </ListGroupItem>
@@ -468,7 +474,7 @@ function WorkNote() {
                   </Col>
                 </Row>
                 <Row className="d-flex justify-content-center">
-                  <Button>등록</Button>
+                  <Button className="mr-1">등록</Button>
                   <Button>초기화</Button>
                 </Row>
               </CardBody>
