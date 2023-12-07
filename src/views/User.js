@@ -5,21 +5,15 @@ import { useUser } from "contexts/UserContext";
 
 function User() {
   const { user } = useUser();
-  console.log(user)
-  
-  const [currentUser, setCurrentUser] = useState(user);
+  const [currentUser, setCurrentUser] = useState(null);
   const [schoolGrade, setSchoolGrade] = useState("송촌중학교");
   
   useEffect(() => {
-    setCurrentUser(user);
-  },[user]);
-
-  // user 상태가 존재하면 user 정보를 저장 (위 useEffect 사용 시 초기에 null 값 세팅 방지)
-  useEffect(() => {
     if(user) {
       setCurrentUser(user);
+      setSchoolGrade(user.schoolName);
     }
-  }, []);
+  }, [user]);
 
   const generateNameTableButtons = () => {
     if(schoolGrade.includes("초등학교")) {
@@ -30,7 +24,6 @@ function User() {
       return Array.from({ length: 3 }, (_, index) => index + 1);
     }
   };
-
 
   return (
     <>

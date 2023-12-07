@@ -1,8 +1,8 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Nav } from "reactstrap";
 import PerfectScrollbar from "perfect-scrollbar";
-
+import { useUser } from "contexts/UserContext";
 // import logo from "logo.svg";
 import mainLogoWhite from "../../assets/img/main_header_logo_white.png";
 import mainLogoBlack from "../../assets/img/main_header_logo_black.png";
@@ -10,6 +10,7 @@ import mainLogoBlack from "../../assets/img/main_header_logo_black.png";
 var ps;
 
 function Sidebar(props) {
+  const { user, logout } = useUser();
   const location = useLocation();
   const sidebar = React.useRef();
   // verifies if routeName is the one active (in browser input)
@@ -29,6 +30,15 @@ function Sidebar(props) {
       }
     };
   });
+
+  const onLogout = () => {
+    // 여기서 처음 로그아웃 버튼 누를 때는 user 가 null -> 에러 발생하며 로그아웃 수행 X , 두번째 누를 시 로그아웃 실행 ===> 해결 필요
+    // 추측: 이미 로그인할 때 user 정보를 가져와야함 -> 그래야 사용자정보에서도 처음에 빈값이 아니라 바로 정보가 뜨고 로그아웃도 무리없이 수행됨
+    // 예를 들어 사용자 정보 메뉴에 들어가서 값이 비어있을떄 새로고침을 통해 user 정보가 있는 상태로 로그아웃을 누르면 정상적으로 한번에 로그아웃 수행됨
+    const userId = user.userId;
+    logout(userId);
+  }
+
   return (
     <div
       className="sidebar"
@@ -68,6 +78,12 @@ function Sidebar(props) {
               </li>
             );
           })}
+          <li className="active-pro">
+            <NavLink onClick={onLogout}>
+              <i className="nc-icon nc-button-power"/>
+              <p>로그아웃</p>
+            </NavLink>
+          </li>
         </Nav>
       </div>
     </div>

@@ -7,7 +7,6 @@ import Typography from "views/Typography.js";
 import TableList from "views/Tables.js";
 import WorkSchedule from "views/WorkSchedule";
 import UserPage from "views/User.js";
-import UpgradeToPro from "views/Upgrade.js";
 
 var routes = [
   {
@@ -101,13 +100,13 @@ var routes = [
     component: <Icons />,
     layout: "/admin",
   },
-  {
-    pro: true,
-    path: "/upgrade",
-    name: "로그아웃",
-    icon: "nc-icon nc-button-power",
-    component: <UpgradeToPro />,
-    layout: "/admin",
-  },
+  // {
+  //   pro: true,
+  //   path: "/upgrade",
+  //   name: "로그아웃",
+  //   icon: "nc-icon nc-button-power",
+  //   component: <UpgradeToPro />,
+  //   layout: "/admin",
+  // },
 ];
 export default routes;

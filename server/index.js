@@ -21,6 +21,10 @@ const getCookie = (name) => {
     return cookies.get(name);
 }
 
+const removeCookie = (name) => {
+    return cookies.remove(name);
+}
+
 const db = mysql.createPool({
     host: "localhost",
     user: "root",
@@ -37,8 +41,7 @@ dotenv.config();
 
 app.get("/token", async (req, res) => {
     try {
-        console.log(cookies.get('refreshToken'))
-        const refreshToken = cookies.get('refreshToken');
+        const refreshToken = getCookie('refreshToken');
         if(!refreshToken) return res.sendStatus(401);
 
         const query = "SELECT * FROM teaform_db.users WHERE refresh_token = ?";
@@ -160,12 +163,31 @@ app.post("/user/login", async (req, res) => {
                     res.json({ accessToken });
                 } 
             } else {
-                const user = "N";
-                res.json({ user });
+                res.status(404).json({ msg: "사용자 정보를 찾을 수 없음"});
+                // const user = "N";
+                // res.json({ user });
             }
         }
     })
 });
+
+app.post("/user/logout", (req, res) => {
+    const refreshToken = null;
+    const userId = req.body.userId;
+    const sqlQuery = "UPDATE teaform_db.users SET refresh_token = ? WHERE userId = ?";
+    db.query(sqlQuery, [refreshToken, userId], (err, result) => {
+        if(err) {
+            console.log("REFRESH TOKEN 업데이트 중 ERROR" + err);
+            res.status(500).json({ error: "내부 Server ERROR" });
+        }else{
+            // res.send('success');
+            removeCookie('refreshToken');
+            res.status(200).json({ msg: "로그아웃 - 쿠키 삭제 정상 처리 완료"});
+        }
+    });
+    // removeCookie('refreshToken');
+    // res.status(200).json({ msg: "로그아웃 - 쿠키 삭제 정상 처리 완료"});
+})
 
 app.post("/medicine/checkLikedMedicine", (req, res) => {
     const itemName = req.body.itemName;
