@@ -30,7 +30,7 @@ function User() {
       <div className="content">
         <Row>
           <Col md="4">
-            <Card className="card-user" style={{ height: '565px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
+            <Card className="card-user" style={{ height: '560px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <img alt="..." src={require("assets/img/damir-bosnjak.jpg")} />
               </div>

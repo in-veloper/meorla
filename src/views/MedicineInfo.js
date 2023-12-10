@@ -153,7 +153,7 @@ function MedicalInfo() {
         <br/>
         <Row>
          <Col md="12">
-            <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '99.4vh', maxHeight: '99.4vh' }}>
+            <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '79.3vh', maxHeight: '79.3vh' }}>
               <AgGridReact
                 ref={gridRef}
                 rowData={searchResult}
