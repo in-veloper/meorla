@@ -1,3 +1,36 @@
 .card {
     border-radius: 0.3em;
 }
+
+.card-stats {
+    height: 70px;
+}
+
+.bed-icons-not-use {
+    font-size: 40px;
+    color: grey;
+    margin-left: 10px;
+}
+
+.bed-icons-use {
+    font-size: 40px;
+    color: lightblue;
+    margin-left: 10px;
+}
+
+.work-note-item {
+    height: 27px;
+    display: flex;
+    align-items: center;
+
+}
+
+.card-work-note-header {
+    height: 30px;
+    line-height: 1px;
+    font-size: 14px;
+}
+
+.action-title{
+    font-size: 14px;
+}

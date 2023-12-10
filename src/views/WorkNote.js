@@ -6,6 +6,7 @@ import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../assets/css/worknote.css';
+import { GiBed } from "react-icons/gi";
 
 function WorkNote() {
 
@@ -60,182 +61,177 @@ function WorkNote() {
     <>
       <div className="content">
         <Row>
-          <Col lg="3" md="6" sm="6">
+          <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
               <CardBody>
                 <Row>
                   <Col md="4" xs="5">
-                    <div className="icon-big text-center icon-warning">
-                      <i className="nc-icon nc-globe text-warning" />
-                    </div>
+                    <GiBed className="bed-icons-use"/>
                   </Col>
                   <Col md="8" xs="7">
-                    <div className="numbers">
-                      <p className="card-category">Capacity</p>
-                      <CardTitle tag="p">150GB</CardTitle>
-                      <p />
-                    </div>
+                    <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >
+                      <span>정영인</span>
+                      <br/>
+                      <span style={{ fontSize: '12px' }}>11:00 부터 사용</span>
+                    </p>
                   </Col>
                 </Row>
               </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="fas fa-sync-alt" /> Update Now
-                </div>
-              </CardFooter>
             </Card>
           </Col>
-          <Col lg="3" md="6" sm="6">
+          <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
               <CardBody>
                 <Row>
                   <Col md="4" xs="5">
-                    <div className="icon-big text-center icon-warning">
-                      <i className="nc-icon nc-money-coins text-success" />
-                    </div>
+                    <GiBed className="bed-icons-not-use"/>
                   </Col>
                   <Col md="8" xs="7">
-                    <div className="numbers">
-                      <p className="card-category">Revenue</p>
-                      <CardTitle tag="p">$ 1,345</CardTitle>
-                      <p />
-                    </div>
+                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
                   </Col>
                 </Row>
               </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="far fa-calendar" /> Last day
-                </div>
-              </CardFooter>
             </Card>
           </Col>
-          <Col lg="3" md="6" sm="6">
+          <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
               <CardBody>
                 <Row>
                   <Col md="4" xs="5">
-                    <div className="icon-big text-center icon-warning">
-                      <i className="nc-icon nc-vector text-danger" />
-                    </div>
+                    <GiBed className="bed-icons-not-use"/>
                   </Col>
                   <Col md="8" xs="7">
-                    <div className="numbers">
-                      <p className="card-category">Errors</p>
-                      <CardTitle tag="p">23</CardTitle>
-                      <p />
-                    </div>
+                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
                   </Col>
                 </Row>
               </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="far fa-clock" /> In the last hour
-                </div>
-              </CardFooter>
             </Card>
           </Col>
-          <Col lg="3" md="6" sm="6">
+          <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
               <CardBody>
                 <Row>
                   <Col md="4" xs="5">
-                    <div className="icon-big text-center icon-warning">
-                      <i className="nc-icon nc-favourite-28 text-primary" />
-                    </div>
+                    <GiBed className="bed-icons-not-use"/>
                   </Col>
                   <Col md="8" xs="7">
-                    <div className="numbers">
-                      <p className="card-category">Followers</p>
-                      <CardTitle tag="p">+45K</CardTitle>
-                      <p />
-                    </div>
+                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
                   </Col>
                 </Row>
               </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="fas fa-sync-alt" /> Update now
-                </div>
-              </CardFooter>
+            </Card>
+          </Col>
+          <Col lg="2" md="6" sm="6">
+            <Card className="card-stats">
+              <CardBody>
+                <Row>
+                  <Col md="4" xs="5">
+                    <GiBed className="bed-icons-not-use"/>
+                  </Col>
+                  <Col md="8" xs="7">
+                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                  </Col>
+                </Row>
+              </CardBody>
+            </Card>
+          </Col>
+          <Col lg="2" md="6" sm="6">
+            <Card className="card-stats">
+              <CardBody>
+                <Row>
+                  <Col md="4" xs="5">
+                    <GiBed className="bed-icons-not-use"/>
+                  </Col>
+                  <Col md="8" xs="7">
+                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                  </Col>
+                </Row>
+              </CardBody>
             </Card>
           </Col>
         </Row>
         <Row>
           <Col className="pr-2" md="4">
-            <Card style={{ height: '610px'}}>
-              <CardHeader className="text-muted text-center" tag="h5">
+            <Card style={{ height: '420px'}}>
+              <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
               <CardBody>
                 <Row className="pr-3">
-                  <Col md="3">
-                    <Row className="align-items-center">
-                      <Col md="6" className="text-right">
-                        <label>학년</label>
+                  <Col md="10">
+                    <Row>
+                      <Col md="3">
+                        <Row className="align-items-center">
+                          <Col md="8" className="text-right">
+                            <label>학년</label>
+                          </Col>
+                          <Col md="4" className="p-0">
+                            <Input
+                              className="text-right"
+                            />
+                          </Col>
+                        </Row>
                       </Col>
-                      <Col md="6" className="p-0">
-                        <Input
-                          className="text-right"
-                        />
+                      <Col md="2">
+                        <Row className="align-items-center">
+                          <Col md="6" className="text-right">
+                            <label>반</label>
+                          </Col>
+                          <Col md="6" className="p-0">
+                            <Input
+                              className="text-right"
+                              style={{ width: '45px'}}
+                            />
+                          </Col>
+                        </Row>
+                      </Col>
+                      <Col md="3">
+                        <Row className="align-items-center">
+                          <Col md="7" className="text-right">
+                            <label>번호</label>
+                          </Col>
+                          <Col md="5" className="p-0" style={{ marginLeft: '-7px'}}>
+                            <Input
+                              className="text-right"
+                            />
+                          </Col>
+                        </Row>
+                      </Col>
+                      <Col md="4">
+                        <Row className="align-items-center pr-0">
+                          <Col md="5" className="text-right" style={{ marginLeft: '-15px'}}>
+                            <label>이름</label>
+                          </Col>
+                          <Col md="7" className="p-0" style={{ marginLeft: '-5px'}}>
+                            <Input
+                              className="text-right"
+                            />
+                          </Col>
+                        </Row>
                       </Col>
                     </Row>
                   </Col>
-                  <Col md="2">
-                    <Row className="align-items-center">
-                      <Col md="6" className="text-right">
-                        <label>반</label>
+                  <Col md="2" style={{ marginLeft: '-20px' }}>
+                    <Row>
+                      <Col md="6" style={{ marginTop: '-10px', marginLeft: '-3px', marginRight: '3px' }}>
+                        <Button size="sm" style={{ height: '30px' }}><i className="nc-icon nc-refresh-69"/></Button>
                       </Col>
-                      <Col md="6" className="p-0">
-                        <Input
-                          className="text-right"
-                        />
+                      <Col md="6" style={{ marginTop: '-10px' }}>
+                        <Button size="sm" style={{ height: '30px' }}><i className="nc-icon nc-zoom-split"/></Button>
                       </Col>
                     </Row>
                   </Col>
-                  <Col md="3">
-                    <Row className="align-items-center">
-                      <Col md="6" className="text-right">
-                        <label>번호</label>
-                      </Col>
-                      <Col md="6" className="p-0">
-                        <Input
-                          className="text-right"
-                        />
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col md="4">
-                    <Row className="align-items-center">
-                      <Col md="4" className="text-right">
-                        <label>이름</label>
-                      </Col>
-                      <Col md="8" className="p-0">
-                        <Input
-                          className="text-right"
-                        />
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
-                <Row className="d-flex justify-content-center">
-                  <Button className="mr-1">초기화</Button>
-                  <Button>조회</Button>
                 </Row>
                 <Row>
                   <Col md="12">
-                  <Alert color="secondary" className="text-center" style={{ color: 'gray' }}>
-                    <i className="nc-icon nc-bulb-63" /> 일부 항목 입력으로도 조회 가능합니다
-                  </Alert>
+                    <Alert color="secondary" className="text-center" style={{ color: 'gray' }}>
+                      <i className="nc-icon nc-bulb-63" /> 일부 항목 입력으로도 조회 가능합니다
+                    </Alert>
                   </Col>
                 </Row>
-                <Row className="pt-3">
+                <Row className="pt-1">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '30vh' }}>
+                    <div className="ag-theme-alpine" style={{ height: '17.2vh' }}>
                       <AgGridReact
                         ref={gridRef}
                         rowData={ntRowData} 
@@ -252,8 +248,8 @@ function WorkNote() {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '480px', overflowY: 'scroll' }}>
-              <CardHeader className="text-muted text-center" tag="h5">
+            <Card style={{ height: '275px', overflowY: 'scroll' }}>
+              <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>보건실 방문 요청 알람</b>
               </CardHeader>
               <CardBody>
@@ -276,62 +272,15 @@ function WorkNote() {
             </Card>
           </Col>
           <Col className="pl-2" md="8">
-            <Card style={{ height: '1110px'}}>
-              <CardHeader className="text-muted text-center" tag="h5">
+            {/* <Card style={{ height: '1110px'}}> */}
+            <Card>
+              <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>보건 일지</b>
               </CardHeader>
               <CardBody>
-                <Row className="d-flex justify-content-center pl-3 pr-3">
-                  <Col md="2"></Col>
-                  <Col md="8">
-                    <Row className="align-items-center">
-                      <Col md="1" className="text-right">
-                        <label>학년</label>
-                      </Col>
-                      <Col md="1" className="pl-0">
-                        <Input
-                          readOnly 
-                        />
-                      </Col>
-                      <Col md="1" className="text-right">
-                        <label>반</label>
-                      </Col>
-                      <Col md="1" className="pl-0">
-                        <Input
-                          readOnly
-                        />
-                      </Col>
-                      <Col md="1" className="text-right">
-                        <label>번호</label>
-                      </Col>
-                      <Col md="1" className="pl-0">
-                        <Input
-                          readOnly
-                        />
-                      </Col>
-                      <Col md="1" className="text-right">
-                        <label>성별</label>
-                      </Col>
-                      <Col md="1" className="pl-0">
-                        <Input
-                          readOnly
-                        />
-                      </Col>
-                      <Col md="1" className="text-right">
-                        <label>이름</label>
-                      </Col>
-                      <Col md="2" className="pl-0">
-                        <Input
-                          readOnly
-                        />
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col md="2"></Col>
-                </Row>
-                <Row className="pt-3">
+                <Row className="pt-1">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '20vh' }}>
+                    <div className="ag-theme-alpine" style={{ height: '17.3vh' }}>
                       <AgGridReact
                         ref={gridRef}
                         rowData={wnRowData} 
@@ -341,59 +290,70 @@ function WorkNote() {
                   </Col>
                 </Row>
                 <Row>
-                  <Col md="6" className="pt-3">
-                    <Card color="light">
-                      <CardHeader className="text-muted text-center" style={{ fontSize: 17 }}>
-                        <b>증상</b>
+                  <Col md="3" className="pt-3">
+                    <Card style={{ border: '1px solid lightgrey'}}>
+                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <b className="action-title">증상</b>
                       </CardHeader>
                       <CardBody>
                         <Input
                           placeholder="직접 입력"
                         />
                         <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
-                          <ListGroupItem>
+                          <ListGroupItem className="work-note-item">
                             증상1
                           </ListGroupItem>
-                          <ListGroupItem>
+                          <ListGroupItem className="work-note-item">
                             증상2
                           </ListGroupItem>
-                          <ListGroupItem>
+                          <ListGroupItem className="work-note-item">
                             증상3
-                          </ListGroupItem>
-                          <ListGroupItem>
-                            증상4
-                          </ListGroupItem>
-                          <ListGroupItem>
-                            증상5
                           </ListGroupItem>
                         </ListGroup>
                       </CardBody>
                     </Card>
                   </Col>
-                  <Col md="6" className="pt-3">
-                    <Card color="light">
-                      <CardHeader className="text-muted text-center" style={{ fontSize: 17 }}>
-                        <b>처치사항</b>
+                  <Col md="4" className="pt-3">
+                    <Card style={{ border: '1px solid lightgrey'}}>
+                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <b className="action-title">투약사항</b>
                       </CardHeader>
                       <CardBody>
                         <Input
                           placeholder="직접 입력"
                         />
                         <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
-                          <ListGroupItem>
-                            처치사항1
+                          <ListGroupItem className="work-note-item">
+                            투약사항1
                           </ListGroupItem>
-                          <ListGroupItem>
-                            처치사항2
+                          <ListGroupItem className="work-note-item">
+                            투약사항2
                           </ListGroupItem>
-                          <ListGroupItem>
-                            처치사항3
+                          <ListGroupItem className="work-note-item">
+                            투약사항3
                           </ListGroupItem>
-                          <ListGroupItem>
-                            처치사항4
+                        </ListGroup>
+                      </CardBody>
+                    </Card>
+                  </Col>
+                  <Col md="5" className="pt-3">
+                    <Card style={{ border: '1px solid lightgrey'}}>
+                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <b className="action-title">조치사항</b>
+                      </CardHeader>
+                      <CardBody>
+                        <Input
+                          placeholder="직접 입력"
+                        />
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
+                          <ListGroupItem className="work-note-item">
+                            조치사항1
                           </ListGroupItem>
-                          <ListGroupItem>
-                            처치사항5
+                          <ListGroupItem className="work-note-item">
+                            조치사항2
+                          </ListGroupItem>
+                          <ListGroupItem className="work-note-item">
+                            조치사항3
                           </ListGroupItem>
                         </ListGroup>
                       </CardBody>
@@ -402,71 +362,59 @@ function WorkNote() {
                 </Row>
                 <Row>
                   <Col md="6">
-                    <Card color="light">
-                      <CardHeader className="text-muted text-center" style={{ fontSize: 17 }}>
-                        <b>투약사항</b>
+                    <Card style={{ border: '1px solid lightgrey'}}>
+                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <b className="action-title">처치사항</b>
                       </CardHeader>
                       <CardBody>
                         <Input
                           placeholder="직접 입력"
                         />
                         <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
-                          <ListGroupItem>
-                            투약사항1
+                          <ListGroupItem className="work-note-item">
+                            처치사항1
                           </ListGroupItem>
-                          <ListGroupItem>
-                            투약사항2
+                          <ListGroupItem className="work-note-item">
+                            처치사항2
                           </ListGroupItem>
-                          <ListGroupItem>
-                            투약사항3
-                          </ListGroupItem>
-                          <ListGroupItem>
-                            투약사항4
-                          </ListGroupItem>
-                          <ListGroupItem>
-                            투약사항5
+                          <ListGroupItem className="work-note-item">
+                            처치사항3
                           </ListGroupItem>
                         </ListGroup>
                       </CardBody>
                     </Card>
                   </Col>
                   <Col md="6">
-                    <Card color="light">
-                      <CardHeader className="text-muted text-center" style={{ fontSize: 17 }}>
-                        <b>조치사항</b>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey' }}>
+                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <b className="action-title">침상안정</b>
                       </CardHeader>
-                      <CardBody>
-                        <Input
-                          placeholder="직접 입력"
-                        />
-                        <ListGroup className="pt-2" style={{ maxHeight: '101px', overflowY: 'scroll' }}>
-                          <ListGroupItem>
-                            조치사항1
-                          </ListGroupItem>
-                          <ListGroupItem>
-                            조치사항2
-                          </ListGroupItem>
-                        </ListGroup>
+                      <CardBody style={{ marginTop: '-5px'}}>
+                        <Row>
+                          <h6><Badge color="secondary" className="ml-2 mt-1">시작시간</Badge></h6>
+                          <Input
+                            className="ml-3"
+                            type="time"
+                            style={{ width: '125px', height: '30px' }}
+                          />
+                          <Button size="sm" className="ml-2 m-0" style={{ height: '30px' }}>현재시간</Button>
+                          <h6><Badge color="secondary" className="ml-4 mt-1">종료시간</Badge></h6>
+                          <Input
+                            className="ml-3"
+                            type="time"
+                            style={{ width: '125px', height: '30px' }}
+                          />
+                        </Row>
                       </CardBody>
                     </Card>
-                    <Card className="pb-2" color="light">
-                      <CardHeader className="text-muted text-center" style={{ fontSize: 17 }}>
-                        <b>침상안정</b>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-10px' }}>
+                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <b className="action-title">비고</b>
                       </CardHeader>
-                      <CardBody>
-                        <Row>
-                          <h5><Badge color="secondary" className="ml-2">시작시간</Badge></h5>
+                      <CardBody style={{ marginTop: '-5px'}}>
+                        <Row className="d-flex justify-content-center">
                           <Input
-                            className="ml-3"
-                            type="time"
-                            style={{ width: '100px', height: '37px' }}
-                          />
-                          <Button size="sm" className="ml-2 m-0" style={{ height: '36px' }}>현재시간</Button>
-                          <h5><Badge color="secondary" className="ml-4">종료시간</Badge></h5>
-                          <Input
-                            className="ml-3"
-                            type="time"
-                            style={{ width: '100px', height: '37px' }}
+                          style={{ width: '90%' }}
                           />
                         </Row>
                       </CardBody>
@@ -482,7 +430,7 @@ function WorkNote() {
           </Col>
         </Row>
 
-        <Row>
+        {/* <Row>
           <Col md="12">
             <div className="ag-theme-alpine" style={{ height: '50vh' }}>
               <AgGridReact
@@ -492,7 +440,7 @@ function WorkNote() {
               />
             </div>
           </Col>
-        </Row>
+        </Row> */}
       </div>
     </>
   );
