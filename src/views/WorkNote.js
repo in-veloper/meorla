@@ -1,12 +1,13 @@
 /* 일반 교사가 진입하는 메뉴에서 학생이 침상 안정했는지 보건실 이용했는지 조회할 수 있도록 요청 */
 
 import React, {useState, useRef} from "react";
-import {Card, CardHeader, CardBody, CardFooter, CardTitle, Row, Col, Input, Button, Alert, ListGroup, ListGroupItem, Badge, UncontrolledAlert, Collapse } from "reactstrap";
+import {Card, CardHeader, CardBody, CardFooter, CardTitle, Row, Col, Input, Button, Alert, ListGroup, ListGroupItem, Badge, UncontrolledAlert, Collapse, Table } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../assets/css/worknote.css';
 import { GiBed } from "react-icons/gi";
+import { BiMenu } from "react-icons/bi";
 
 function WorkNote(args) {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,6 +64,40 @@ function WorkNote(args) {
   return (
     <>
       <div className="content">
+        <Row className="pl-3 pr-3">
+          <Table bordered className="stats-table text-center text-muted">
+            <thead>
+              <tr>
+                <th>감염병</th>
+                <th>구강치아계</th>
+                <th>근골격계</th>
+                <th>비뇨생식기계</th>
+                <th>소화기계</th>
+                <th>순환기계</th>
+                <th>안과계</th>
+                <th>이비인후과계</th>
+                <th>정신신경계</th>
+                <th>호흡기계</th>
+                <th>기타</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2</td>
+                <td>3</td>
+                <td>3</td>
+                <td>23</td>
+                <td>12</td>
+                <td>3</td>
+                <td>5</td>
+                <td>7</td>
+                <td>5</td>
+                <td>10</td>
+                <td>17</td>
+              </tr>
+            </tbody>
+          </Table>
+        </Row>
         <Row>
           <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
@@ -251,7 +286,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '275px', overflowY: 'scroll' }}>
+            <Card style={{ height: '278px', overflowY: 'scroll' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>보건실 방문 요청 알람</b>
               </CardHeader>
@@ -275,7 +310,6 @@ function WorkNote(args) {
             </Card>
           </Col>
           <Col className="pl-2" md="8">
-            {/* <Card style={{ height: '1110px'}}> */}
             <Card>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b style={{ marginRight: '-150px'}}>보건 일지</b>
@@ -297,7 +331,8 @@ function WorkNote(args) {
                   <Col md="3" className="pt-3">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title">증상</b>
+                        <b className="action-title" style={{ marginRight: '-15px' }}>증상</b>
+                        <BiMenu style={{ float: 'right', marginTop: '-8px' }}/>
                       </CardHeader>
                       <CardBody>
                         <Input
@@ -320,7 +355,8 @@ function WorkNote(args) {
                   <Col md="4" className="pt-3">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title">투약사항</b>
+                        <b className="action-title" style={{ marginRight: '-15px' }}>투약사항</b>
+                        <BiMenu style={{ float: 'right', marginTop: '-8px' }}/>
                       </CardHeader>
                       <CardBody>
                         <Input
@@ -343,7 +379,8 @@ function WorkNote(args) {
                   <Col md="5" className="pt-3">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title">조치사항</b>
+                        <b className="action-title" style={{ marginRight: '-15px' }}>조치사항</b>
+                        <BiMenu style={{ float: 'right', marginTop: '-8px'}}/>
                       </CardHeader>
                       <CardBody>
                         <Input
@@ -368,7 +405,8 @@ function WorkNote(args) {
                   <Col md="6">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title">처치사항</b>
+                        <b className="action-title" style={{ marginRight: '-15px' }}>처치사항</b>
+                        <BiMenu style={{ float: 'right', marginTop: '-8px' }}/>
                       </CardHeader>
                       <CardBody>
                         <Input

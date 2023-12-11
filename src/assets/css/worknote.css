@@ -34,3 +34,17 @@
 .action-title{
     font-size: 14px;
 }
+
+.stats-table td,
+.stats-table th {
+    border: 1px solid #DEE2E6 !important;
+    padding: 8px;
+}
+
+.stats-table th {
+    background-color: #F8F9FA;
+}
+
+.stats-table td {
+    background-color: white;
+}
