@@ -6,6 +6,7 @@ import Icons from "views/Icons.js";
 import Typography from "views/Typography.js";
 import TableList from "views/Tables.js";
 import WorkSchedule from "views/WorkSchedule";
+import Community from "views/Community";
 import UserPage from "views/User.js";
 
 var routes = [
@@ -55,7 +56,7 @@ var routes = [
     path: "/community",
     name: "커뮤니티",
     icon: "nc-icon nc-globe",
-    component: <Notifications />,
+    component: <Community />,
     layout: "/admin",
   },
   {

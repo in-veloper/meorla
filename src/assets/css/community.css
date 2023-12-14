@@ -1,0 +1,10 @@
+.community-nav .nav-link {
+    color: #66615B;
+    width: 20vh;
+    text-align: center;
+    margin: 5px;
+    border: 1px solid #DEE2E6;
+    font-weight: bold;
+    background-color: #F8F9FA;
+    cursor: pointer;
+}

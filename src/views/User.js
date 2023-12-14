@@ -4,16 +4,31 @@ import '../assets/css/users.css';
 import { useUser } from "contexts/UserContext";
 
 function User() {
-  const { user } = useUser();
+  const { user, getUser } = useUser();
   const [currentUser, setCurrentUser] = useState(null);
   const [schoolGrade, setSchoolGrade] = useState("송촌중학교");
   
   useEffect(() => {
-    if(user) {
+    const fetchData = async () => {
+      try {
+        const userData = await getUser();
+
+        if(userData) {
+          setCurrentUser(userData);
+          setSchoolGrade(userData.schoolName);
+        }
+      }catch(error) {
+        console.error("User 정보 Fetching 중 ERROR", error);
+      }
+    }
+
+    if(!user) {
+      fetchData();
+    }else{
       setCurrentUser(user);
       setSchoolGrade(user.schoolName);
     }
-  }, [user]);
+  }, [user, getUser]);
 
   const generateNameTableButtons = () => {
     if(schoolGrade.includes("초등학교")) {

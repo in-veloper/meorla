@@ -27,7 +27,7 @@ export const UserProvider = ({ children }) => {
                     if(error.response.status === 401) {
                         navigate("/");
                     }
-                    console.log("UserContext 로직 수행 중 ERROR", error);
+                    // console.log("UserContext 로직 수행 중 ERROR", error);
                 }
             }
         }
