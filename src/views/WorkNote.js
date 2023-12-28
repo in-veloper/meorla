@@ -1,7 +1,7 @@
 /* 일반 교사가 진입하는 메뉴에서 학생이 침상 안정했는지 보건실 이용했는지 조회할 수 있도록 요청 */
 
 import React, {useState, useRef} from "react";
-import {Card, CardHeader, CardBody, CardFooter, CardTitle, Row, Col, Input, Button, Alert, ListGroup, ListGroupItem, Badge, UncontrolledAlert, Collapse, Table } from "reactstrap";
+import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, ListGroup, ListGroupItem, Badge, UncontrolledAlert, Collapse, Table } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
@@ -190,7 +190,7 @@ function WorkNote(args) {
         </Row>
         <Row>
           <Col className="pr-2" md="4">
-            <Card style={{ height: '420px'}}>
+            <Card style={{ minHeight: '420px'}}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
@@ -286,7 +286,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '278px', overflowY: 'scroll' }}>
+            <Card style={{ height: '278px', overflowY: 'auto' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>보건실 방문 요청 알람</b>
               </CardHeader>
@@ -312,7 +312,7 @@ function WorkNote(args) {
           <Col className="pl-2" md="8">
             <Card>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
-                <b style={{ marginRight: '-150px'}}>보건 일지</b>
+                <b style={{ marginRight: '-70px'}}>보건 일지</b>
                 <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>1학년&nbsp;&nbsp;2반&nbsp;&nbsp;22번&nbsp;&nbsp;정영인</b>
               </CardHeader>
               <CardBody>
@@ -338,7 +338,7 @@ function WorkNote(args) {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'auto' }}>
                           <ListGroupItem className="work-note-item">
                             증상1
                           </ListGroupItem>
@@ -362,7 +362,7 @@ function WorkNote(args) {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'auto' }}>
                           <ListGroupItem className="work-note-item">
                             투약사항1
                           </ListGroupItem>
@@ -386,7 +386,7 @@ function WorkNote(args) {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'auto' }}>
                           <ListGroupItem className="work-note-item">
                             조치사항1
                           </ListGroupItem>
@@ -412,7 +412,7 @@ function WorkNote(args) {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'scroll' }}>
+                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'auto' }}>
                           <ListGroupItem className="work-note-item">
                             처치사항1
                           </ListGroupItem>

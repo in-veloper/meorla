@@ -8,6 +8,7 @@ import TableList from "views/Tables.js";
 import WorkSchedule from "views/WorkSchedule";
 import Community from "views/Community";
 import UserPage from "views/User.js";
+import QnaRequest from "views/QnaRequest";
 
 var routes = [
   {
@@ -60,10 +61,10 @@ var routes = [
     layout: "/admin",
   },
   {
-    path: "/requestBoard",
+    path: "/qnaRequest",
     name: "문의 및 요청",
     icon: "nc-icon nc-send",
-    component: <Notifications />,
+    component: <QnaRequest />,
     layout: "/admin",
   },
   {

@@ -15,7 +15,7 @@ function Community() {
     // 해야할 부분 : 메뉴 전환될 때 스피너나 로딩화면 찾아서 이곳부터 처리하기 시작해야 함
     useEffect(() => {
         moveCommunityMenu({ target: { id: selectedMenu }});
-    }, [selectedMenu]);
+    }, []);
 
     const gridRef = useRef();
 

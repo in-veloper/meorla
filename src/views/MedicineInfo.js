@@ -36,8 +36,6 @@ function MedicalInfo() {
   const defaultColDef = {
     sortable: true,
     filter: true,
-    // flex: 1,
-    // minWidth: 100,
     resizable: true,
   };
 
@@ -160,14 +158,13 @@ function MedicalInfo() {
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                pagination={true}       // Pagination 사용 설정
-                paginationPageSize={28} // 한 페이지에 표시하고 싶은 데이터 Row 수
+                pagination={true}                                               // Pagination 사용 설정
+                paginationPageSize={28}                                         // 한 페이지에 표시하고 싶은 데이터 Row 수
                 enableBrowserTooltips="true"
                 onRowDoubleClicked={handleRowDoubleClick}
                 overlayLoadingTemplate={
                   '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                 }
-                // domLayout="autoHeight"  // Grid의 높이를 자동으로 조정
               />
             </div>
           </Col>

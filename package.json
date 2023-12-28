@@ -19,6 +19,7 @@
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
     "css-loader": "^6.8.1",
+    "exceljs": "^4.4.0",
     "jwt-decode": "^4.0.0",
     "node-sass": "^9.0.0",
     "perfect-scrollbar": "1.5.5",
@@ -35,7 +36,8 @@
     "reactstrap": "8.10.0",
     "sass": "1.62.1",
     "sass-loader": "^13.3.2",
-    "style-loader": "^3.3.3"
+    "style-loader": "^3.3.3",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",

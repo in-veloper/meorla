@@ -15,13 +15,13 @@ function Dashboard() {
   ]);
 
   const [columnDefs] = useState([
-    { field: "registeredDate", headerName: "등록일" },
-    { field: "studentName", headerName: "이름" },
-    { field: "symptom", headerName: "증상" },
-    { field: "treatAction", headerName: "처치사항" },
-    { field: "dosageAction", headerName: "투약사항" },
-    { field: "measureAction", headerName: "조치사항"},
-    { field: "bedRest", headerName: "침상안정"}
+    { field: "registeredDate", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "studentName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "treatAction", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "dosageAction", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "measureAction", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "bedRest", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
 
   return (
@@ -38,7 +38,7 @@ function Dashboard() {
           <Col md="12">
             <CardTitle><b><h5>공지사항</h5></b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '25vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
                 <AgGridReact 
                   ref={gridRef}
                   rowData={rowData}
@@ -52,7 +52,7 @@ function Dashboard() {
           <Col md="6">
           <CardTitle><b><h5>침상안정 신청내역</h5></b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '25vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
                 <AgGridReact 
                   ref={gridRef}
                   rowData={rowData}
@@ -64,7 +64,7 @@ function Dashboard() {
           <Col md="6">
             <CardTitle><b><h5>커뮤니티 알림</h5></b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '25vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
                 <AgGridReact 
                   ref={gridRef}
                   rowData={rowData}
@@ -78,7 +78,7 @@ function Dashboard() {
           <Col md="12">
             <CardTitle><b><h5>보건일정</h5></b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '25vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
                 <AgGridReact 
                   ref={gridRef}
                   rowData={rowData}

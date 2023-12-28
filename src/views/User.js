@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col} from "reactstrap";
 import '../assets/css/users.css';
 import { useUser } from "contexts/UserContext";
+import ExcelJS from "exceljs";
 
 function User() {
   const { user, getUser } = useUser();
@@ -39,6 +40,45 @@ function User() {
       return Array.from({ length: 3 }, (_, index) => index + 1);
     }
   };
+  
+  const handleDownloadTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    const data = [
+      ["학년", "반", "번호", "성별", "이름"],
+    ];
+
+    worksheet.addRows(data);
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: 'solid',
+        fgColor: { argb: "C0C0C0"}
+      };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+      // 중앙 정렬 적용
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const fileName = "명렬표 템플릿.xlsx";
+
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <>
@@ -253,8 +293,8 @@ function User() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Row>
-                    <Col md="12">
+                  <Row className="align-items-center">
+                    <Col md="8">
                       <FormGroup>
                         <label>명렬표</label>
                         <div style={{ marginTop: -12}}>
@@ -267,6 +307,12 @@ function User() {
                           </ButtonGroup>
                         </div>
                       </FormGroup>
+                    </Col>
+                    <Col md="4" className="">
+                      <Row className="justify-content-end no-gutters">
+                          <Button className="mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button style={{ marginRight : '10px'}}>일괄등록</Button>
+                      </Row>
                     </Col>
                   </Row>
                   <Row>

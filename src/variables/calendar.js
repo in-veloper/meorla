@@ -133,8 +133,8 @@ const MyCalendar = () => {
                         </FormGroup>
                     </ModalBody>
                     <ModalFooter>
-                        <Button className="btn mr-1" color="secondary" onClick={handleAddEvent}>이벤트 추가</Button>
-                        <Button className="btn" color="secondary" onClick={toggleModal}>취소</Button>
+                        <Button className="mr-1" color="secondary" onClick={handleAddEvent}>이벤트 추가</Button>
+                        <Button color="secondary" onClick={toggleModal}>취소</Button>
                         {/* <Button className="btn-neutral" onClick={handleAddEvent}>이벤트 추가</Button>
                         <Button className="btn-neutral" onClick={toggleModal}>취소</Button> */}
                     </ModalFooter>
