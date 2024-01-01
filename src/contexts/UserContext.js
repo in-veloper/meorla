@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const UserContext = createContext();
@@ -9,34 +9,39 @@ export const UserProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
-    // useEffect(() => {
-        const getUser = async() => {
-            try {
-                const response = await axios.get('http://localhost:8000/token');
-                const decoded = jwtDecode(response.data.accessToken);
-    
-                setUser({
-                    userId: decoded.userId,
-                    name: decoded.name,
-                    email: decoded.email,
-                    schoolName: decoded.schoolName,
-                    schoolCode: decoded.schoolCode
-                });
-            }catch(error) {
-                if(error.response) {
-                    if(error.response.status === 401) {
-                        navigate("/");
-                    }
-                    // console.log("UserContext 로직 수행 중 ERROR", error);
+    const getUser = useCallback(async() => {
+        try {
+            const response = await axios.get('http://localhost:8000/token');
+            const decoded = jwtDecode(response.data.accessToken);
+
+            const userInfo = {
+                userId: decoded.userId,
+                name: decoded.name,
+                email: decoded.email,
+                schoolName: decoded.schoolName,
+                schoolCode: decoded.schoolCode
+            };
+
+            setUser(userInfo);
+            return userInfo;
+        }catch(error) {
+            if(error.response) {
+                if(error.response.status === 401) {
+                    navigate("/");
                 }
+                // console.log("UserContext 로직 수행 중 ERROR", error);
             }
         }
+    }, [navigate]);
         
     useEffect(() => {
-        // if(!user) {
-            getUser();
-        // }
-    }, []);
+        const fetchUser = async () => {
+            await getUser();
+        }
+        if(!user) {
+            fetchUser();
+        }
+    }, [user, getUser]);
 
     const login = async (userData) => {
         setUser(userData);

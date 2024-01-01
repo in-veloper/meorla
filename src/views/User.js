@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from "react";
 import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col} from "reactstrap";
-import '../assets/css/users.css';
 import { useUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
+import '../assets/css/users.css';
 
 function User() {
   const { user, getUser } = useUser();
@@ -310,22 +310,22 @@ function User() {
                     </Col>
                     <Col md="4" className="">
                       <Row className="justify-content-end no-gutters">
-                          <Button className="mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
-                          <Button style={{ marginRight : '10px'}}>일괄등록</Button>
+                          <Button className="btn-round mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button className="btn-round" style={{ marginRight : '10px'}}>일괄등록</Button>
                       </Row>
                     </Col>
                   </Row>
                   <Row>
                     <div className="update ml-auto mr-auto">
                       <Button
-                        className="btn-round"
+                        className=""
                         color="secondary"
                         type="submit"
                       >
                         사용자 정보 수정
                       </Button>
                       <Button
-                        className="btn-round ml-2"
+                        className="ml-2"
                         color="secondary"
                         type="submit"
                       >

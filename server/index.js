@@ -78,9 +78,9 @@ app.post("/user/getUser", async (req, res) => {
     const schoolName = req.body.schoolName;
 
     const query = "SELECT * FROM teaform_db.users WHERE userId = ? OR schoolName = ?";
-    db.query(query, [userId, schoolName], async(Err, results) => {
-        if(Err) {
-            console.log("기존 ID 및 학교명 검사 중 ERROR" + Err);
+    db.query(query, [userId, schoolName], async(err, results) => {
+        if(err) {
+            console.log("기존 ID 및 학교명 검사 중 ERROR" + err);
         }else{
             if(results.length > 0) {
                 const user = results[0];
@@ -189,60 +189,38 @@ app.post("/user/logout", (req, res) => {
     // res.status(200).json({ msg: "로그아웃 - 쿠키 삭제 정상 처리 완료"});
 })
 
-app.post("/medicine/checkLikedMedicine", (req, res) => {
-    const itemName = req.body.itemName;
-    const itemSeq = req.body.itemSeq;
-    
-    const sqlQuery = "SELECT COUNT(*) AS count FROM teaform_db.likedMedicine WHERE itemName = ? AND itemSeq = ?";
-    db.query(sqlQuery, [itemName, itemSeq], (err, result) => {
+app.post("/bookmark/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const userEmail = req.body.userEmail;
+    const userName = req.body.userName;
+    const schoolName = req.body.schoolName;
+    const schoolCode = req.body.schoolCode;
+    const bookmarkArray = req.body.bookmarkArray;
+    const bookmarkArrayString = bookmarkArray.map(bookmark => `${bookmark.bookmarkName}::${bookmark.bookmarkAddress}`).join(',');
+
+    const sqlQuery = "INSERT INTO teaform_db.bookmark (userId, email, name, schoolName, schoolCode, bookmark) VALUES (?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, userEmail, userName, schoolName, schoolCode, bookmarkArrayString], (err, result) => {
         if(err) {
-            console.log("약품정보 북마크 여부 체크 Query 실행 중 ERROR", err);
-            res.status(500).send('Internal Server Error');
+            console.log("북마크 데이터 Insert 중 ERROR" + err);
         }else{
-            const count = result[0].count;
-            if(count > 0) {
-                res.send('true');
-            }else{
-                res.send('false');
+            res.send('success');
+        }
+    });
+});
+
+app.post("/bookmark/getBookmark", async (req, res) => {
+    const userId = req.body.userId;
+    const userEmail = req.body.userEmail;
+
+    const sqlQuery = "SELECT * FROM teaform_db.bookmark WHERE userId = ? AND email = ?";
+    db.query(sqlQuery, [userId, userEmail], (err, result) => {
+        if(err) {
+            console.log("기존 ID 및 학교명 검사 중 ERROR" + err);
+        }else{
+            if(result.length > 0) {
+                const bookmark = result[0];
+                res.json({ bookmark });
             }
-        }
-    });
-});
-
-app.post("/medicine/bookmarkMedicine", (req, res) => {
-    const itemName = req.body.itemName;
-    const entpName = req.body.entpName;
-    const itemSeq = req.body.itemSeq;
-    const efcyQesitm = req.body.efcyQesitm;
-    const useMethodQesitm = req.body.useMethodQesitm;
-    const atpnQesitm = req.body.atpnQesitm;
-    const intrcQesitm = req.body.intrcQesitm;
-    const seQesitm = req.body.seQesitm;
-    const depositMethodQesitm = req.body.depositMethodQesitm;
-    const createdAt = req.body.createAt;
-    
-    const sqlQuery = "INSERT INTO teaform_db.likedMedicine (itemName, entpName, itemSeq, efcyQesitm, useMethodQesitm, atpnQesitm, intrcQesitm, seQesitm, depositMethodQesitm, createdAt) VALUES (?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [itemName, entpName, itemSeq, efcyQesitm, useMethodQesitm, atpnQesitm, intrcQesitm, seQesitm, depositMethodQesitm, createdAt], (err, result) => {
-        if(err) {
-            console.log("약품정보 북마크 Query 실행 중 ERROR", err);
-            res.status(500).send('내부 Server ERROR');
-        }else{
-            res.send('success');
-        }
-    });
-});
-
-app.post("/medicine/unbookmarkMedicine", (req, res) => {
-    const itemName = req.body.itemName;
-    const itemSeq = req.body.itemSeq;
-    
-    const sqlQuery = "DELETE FROM teaform_db.likedMedicine WHERE itemName = ? AND itemSeq = ?";
-    db.query(sqlQuery, [itemName, itemSeq], (err, result) => {
-        if(err) {
-            console.log("약품정보 북마크 해제 Query 실행 중 ERROR", err);
-            res.status(500).send('Internal Server Error');
-        }else{
-            res.send('success');
         }
     });
 });
