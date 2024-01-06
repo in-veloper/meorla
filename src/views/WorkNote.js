@@ -57,7 +57,8 @@ function WorkNote(args) {
     { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "dosageMatter", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "actionMatter", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "onBed", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }}
+    { field: "onBed", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "etc", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
 
 

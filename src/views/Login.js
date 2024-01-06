@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css'; 
+import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import { useNavigate } from 'react-router-dom';
 import '../assets/css/login.css';
 import Neis from "@my-school.info/neis-api";
@@ -62,7 +63,7 @@ function Login() {
                 }else if(responseData === "UPW") {
                     alert("비밀번호가 일치하지 않습니다.");
                 }else{
-                    navigate('/admin/dashboard');
+                    navigate('/teaform/dashboard');
                 }
             }else{
                 alert("ID와 비밀번호를 입력해주세요."); // ID 또는 비밀번호를 입력하지 않은 경우

@@ -2,13 +2,12 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, InputGroup, InputGroupText, InputGroupAddon, Input, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
-import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
-import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import Notiflix from "notiflix";
-// import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import '../../assets/css/navbar.css';
 import { useUser } from "contexts/UserContext";
 import axios from "axios";
+import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
+import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import '../../assets/css/navbar.css';
 
 import routes from "routes.js";
 
@@ -16,15 +15,14 @@ function Header(props) {
   const {user} = useUser();
   const [isOpen, setIsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
-  const [bookmarkDropdownOpen, setBookmarkDropdownOpen] = React.useState(false);
-  const [dropdownBookmarkItems, setDropdownBookmarkItems] = useState([]);
   const [color, setColor] = React.useState("transparent");
   const sidebarToggle = React.useRef();
   const location = useLocation();
   const [modal, setModal] = useState(false);
 
+  const [bookmarkDropdownOpen, setBookmarkDropdownOpen] = React.useState(false);
+  const [dropdownBookmarkItems, setDropdownBookmarkItems] = useState([]);
   const gridRef = useRef();
-
   const [rowData, setRowData] = useState([{ bookmarkName: "", bookmarkAddress: "" }]);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -97,65 +95,48 @@ function Header(props) {
     }
   }, [location]);
 
-  useEffect(() => {
-    const fetchBookmarkData = async () => {
-      try {
-        if(user?.userId && user?.email) {
-          const response = await axios.post('http://localhost:8000/bookmark/getBookmark', {
-            userId: user.userId,
-            userEmail: user.email
+  // 북마크 데이터 획득 부분 Function 분리 (저장 후 Dropdown 적용할 경우 호출)
+  const fetchBookmarkData = useCallback(async () => {
+    try {
+      if(user?.userId && user?.email) {
+        const response = await axios.post('http://localhost:8000/bookmark/getBookmark', {
+          userId: user.userId,
+          userEmail: user.email
+        });
+
+        if (response.data) {
+          const bookmarkString = response.data.bookmark.bookmark;
+          const bookmarkArray = bookmarkString.split(',').map(item => {
+            const [bookmarkName, bookmarkAddress] = item.split('::');
+            return { bookmarkName, bookmarkAddress };
           });
 
-          if (response.data) {
-            const bookmarkString = response.data.bookmark.bookmark;
-            const bookmarkArray = bookmarkString.split(',').map(item => {
-              const [bookmarkName, bookmarkAddress] = item.split('::');
-              return { bookmarkName, bookmarkAddress };
-            });
+          setRowData(bookmarkArray);
+          setIsRegistered(true);
 
-            setRowData(bookmarkArray);
-            setIsRegistered(true);
+          // 북마크 데이터를 드랍다운 아이템으로 설정
+          const items = bookmarkArray.map((item, index) => (
+            <DropdownItem key={index} tag="a" onClick={() => goToBookmarkPage(item.bookmarkAddress)}>
+              {item.bookmarkName}
+            </DropdownItem>
+          ));
 
-            // 북마크 데이터를 드랍다운 아이템으로 설정
-            const items = bookmarkArray.map((item, index) => (
-              <DropdownItem key={index} tag="a">
-                {item.bookmarkName}
-              </DropdownItem>
-            ));
-
-            setDropdownBookmarkItems(items);
-          }
+          setDropdownBookmarkItems(items);
         }
-      } catch (error) {
-        console.error('북마크 가져오기 중 ERROR', error);
       }
-    };
+    } catch (error) {
+      console.error('북마크 가져오기 중 ERROR', error);
+    }
+  }, [user?.userId, user?.email]);
 
+  //!! 옵셔널 체이닝 연산자가 무엇인지 알아보고 블로그에 정리하기
+  useEffect(() => {
     // 북마크 데이터를 불러오기
     fetchBookmarkData();
-  }, [user?.userId, user?.email]);
+  }, [fetchBookmarkData]);
 
   // 북마크 설정 클릭 시 Modal Open
   const handleBookmark = async () => {
-    // 여기서 getBookmark로 북마크 데이터 가져와서 Grid에 rowData로 set 해줘야 함
-
-    // const response = await axios.post('http://localhost:8000/bookmark/getBookmark', {
-    //   userId: user.userId,
-    //   userEmail: user.email
-    // });
-
-    // if(response.data) {
-    //   const bookmarkString = response.data.bookmark.bookmark;
-    //   const bookmarkArray = bookmarkString.split(',').map(item => {
-    //     const [bookmarkName, bookmarkAddress] = item.split('::');
-
-    //     return {bookmarkName, bookmarkAddress};
-    //   });
-
-    //   setRowData(bookmarkArray);
-    //   setIsRegistered(true);
-    // }
-
     toggleModal();
   };
 
@@ -209,9 +190,9 @@ function Header(props) {
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
 
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
-      Notiflix.Notify.init();                                                 // Notify 모듈을 초기화
-      Notiflix.Notify.merge({ position: 'center-center', showOnlyTheLastOne: true, plainText: false }); // Position 중앙 배치, 1회 출력, 줄바꿈 위한 plainText - false
-      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.');
+      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false
+      });
       
       return;
     }
@@ -223,15 +204,17 @@ function Header(props) {
   // Grid 행 전체 삭제 Function
   const allRemoveRow = () => {
     const api = gridRef.current.api;
-    const displayedRowCount = api.getDisplayedRowCount();
+    const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
     
-    if(displayedRowCount === 0) {                        // 현재 등록된 북마크가 없을 경우
-      Notiflix.Notify.init();                            // Notify 모듈을 초기화
-      Notiflix.Notify.merge({ position: 'center-center', showOnlyTheLastOne: true, plainText: false }); // Position 중앙 배치, 1회 출력, 줄바꿈 위한 plainText - false
-      Notiflix.Notify.warning('등록된 북마크가 없습니다.');     // 등록된 북마크 없음 Notify
-      return;                                            // return
-    }else{                                               // 등록된 북마크가 있을 경우
-      api.setRowData([]);                                // 북마크 행 전체 삭제 (빈 배열 삽입으로 초기화)
+    if(displayedRowCount === 0) {                         // 현재 등록된 북마크가 없을 경우
+      // 등록된 북마크 없음 Notify
+      Notiflix.Notify.warning('등록된 북마크가 없습니다.', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false
+      });
+
+      return;                                             // return
+    }else{                                                // 등록된 북마크가 있을 경우
+      api.setRowData([]);                                 // 북마크 행 전체 삭제 (빈 배열 삽입으로 초기화)
     }
   };
 
@@ -245,46 +228,84 @@ function Header(props) {
     // debugger
   };
 
-  // Bookmark 저장 Function ([필요] 등록 시만 처리 -> 수정하거나 전체삭제할 경우 일괄 삭제 한 후 다시 처리 혹은 bookmark 컬럼만 업데이트 처리)
+  // Grid에서 변경된 내역만 잡을 수 있는지 보고 잡을 수 있으면 변경 안됐을 때는 저장 안되게 Alert
   const saveBookmark = async (event) => {
     try {
-      event.preventDefault();
-      const api = gridRef.current.api;
-      const paramArray = [];
+      Notiflix.Confirm.show(                                          // Confirm 창 Show
+        '북마크 설정',                                                   // Confirm 창 Title
+        '작성하신 북마크를 저장하시겠습니까?',                                  // Confirm 창 내용
+        '예',                                                          // Confirm 창 버튼
+        '아니요',                                                       // Confirm 창 버튼
+        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
+          event.preventDefault();                                     // 기본 Event 방지
+          const api = gridRef.current.api;                            // Grid api 획득
+          const displayedRowCount = api.getDisplayedRowCount();       // 현재 Grid에 출련된 행 수
+          const paramArray = [];                                      // Parameter 전송 위한 북마크 담을 배열
 
-      api.forEachNode(function(rowNode, index) {
-        const bookmarkName = rowNode.data.bookmarkName;
-        const bookmarkAddress = rowNode.data.bookmarkAddress;
+          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+            const bookmarkName = rowNode.data.bookmarkName;           // 북마크명 획득
+            const bookmarkAddress = rowNode.data.bookmarkAddress;     // 북마크 주소 획득
 
-        if(bookmarkName.length !== 0 && bookmarkAddress.length !== 0 && user) {
-          const paramObject = {bookmarkName: bookmarkName, bookmarkAddress: bookmarkAddress};
-          paramArray.push(paramObject);
+            // 북마크 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 북마크 데이터 생성
+            if(bookmarkName.length !== 0 && bookmarkAddress.length !== 0 && user) {
+              const paramObject = {bookmarkName: bookmarkName, bookmarkAddress: bookmarkAddress};
+              paramArray.push(paramObject);
+            }
+          });
+
+          // Api 호출 시 Parameter로 전송할 수 있도록 Converting
+          const bookmarkArray = paramArray.map(item => ({
+            bookmarkName: item.bookmarkName,
+            bookmarkAddress: item.bookmarkAddress
+          }));
+
+          let response = null;              // response 데이터 담을 변수
+          if(displayedRowCount > 0) {       // 등록된 북마크가 있는 경우 - Update
+            response = await axios.post('http://localhost:8000/bookmark/update', {
+              userId: user.userId,
+              userEmail: user.email,
+              schoolCode: user.schoolCode,
+              bookmarkArray: bookmarkArray
+            });
+          }else{                            // 등록된 북마크가 없는 경우 - Insert
+            response = await axios.post('http://localhost:8000/bookmark/insert', {
+              userId: user.userId,
+              userEmail: user.email,
+              userName: user.name,
+              schoolName: user.schoolName,
+              schoolCode: user.schoolCode,
+              bookmarkArray: bookmarkArray
+            });
+          }
+
+          if(response.data === "success") {   // Api 호출 성공한 경우
+            fetchBookmarkData();              // Dropdown에도 공통 적용되기 위해 북마크 데이터 재조회
+            // 북마크 정상 저장 Notify
+            Notiflix.Notify.info('북마크 설정이 정상적으로 저장되었습니다.', {
+              position: 'center-center', showOnlyTheLastOne: true, plainText: false
+            });
+          }
+        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
+          return;                                                         // return
+        },{                                                               // Confirm 창 Option 설정
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
         }
-      });
-
-      const bookmarkArray = paramArray.map(item => ({
-        bookmarkName: item.bookmarkName,
-        bookmarkAddress: item.bookmarkAddress
-      }));
-
-      const response = await axios.post('http://localhost:8000/bookmark/insert', {
-        userId: user.userId,
-        userEmail: user.email,
-        userName: user.name,
-        schoolName: user.schoolName,
-        schoolCode: user.schoolCode,
-        bookmarkArray: bookmarkArray
-      });
-
-      if(response.data === "success") {
-        Notiflix.Notify.init(); // Notify 모듈을 초기화
-        Notiflix.Notify.merge({ position: 'center-center', showOnlyTheLastOne: true, plainText: false });
-        Notiflix.Notify.info('북마크 설정이 정상적으로 저장되었습니다.');
-      }
+      )
     } catch(error) {
       console.error('북마크 저장 중 ERROR', error);
     }
   };
+
+  // 설정한 북마크 URL로 새창 Open Function
+  const goToBookmarkPage = (bookmarkAddress) => {
+    let address = '';
+    if(bookmarkAddress) {                                                             // 북마크 주소 값 존재할 경우
+      // 브라우저 창을 따로 열어야 할 경우 및 외부 Link(URL)로 연결해야 할 경우 -> 앞에 Localhost 및 Port 번호가 붙는다면 변수에 담아 https를 포함한 전체 주소를 입력하면 해결
+      if(!bookmarkAddress.startsWith('http')) address = 'https://' + bookmarkAddress; // http로 시작하지 않는다면 https:// 를 prefix로 설정
+    }
+
+    window.open(address);                                                             // 해당 북마크 주소로 새창 Open
+  }
   
   return (
     <Navbar

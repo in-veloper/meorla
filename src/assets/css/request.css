@@ -1,0 +1,30 @@
+.request-blockquote {
+    display: block;
+    border-width: 2px 0;
+    border-style: solid;
+    border-color: #f1f3f5;
+    padding: 1.7em 30px;
+    position: relative;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin: 20px 0;
+    width: 100%; /* 추가된 부분 */
+}
+
+.request-blockquote:before {
+    content: '\201C';
+    position: absolute;
+    top: 0em;
+    left: 50%;
+    padding: 5px 0 0 0;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    width: 3rem;
+    height: 2rem;
+    color: #868e96;
+    font: 2.45em/1.1em 'FontAwesome';
+    text-align: center;
+    border-radius: 50px;
+    background-color: #e9ecef;
+    box-shadow: 0 1px 5px #888888;
+}

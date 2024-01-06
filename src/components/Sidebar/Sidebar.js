@@ -3,7 +3,6 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Nav } from "reactstrap";
 import PerfectScrollbar from "perfect-scrollbar";
 import { useUser } from "contexts/UserContext";
-// import logo from "logo.svg";
 import mainLogoWhite from "../../assets/img/main_header_logo_white.png";
 import mainLogoBlack from "../../assets/img/main_header_logo_black.png";
 

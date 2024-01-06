@@ -44,7 +44,7 @@ function QnaRequest() {
                 <Row className="pb-2">
                     <Col>
                         <blockquote>
-                            <p className="blockquote blockquote">
+                            <p className="blockquote">
                                 <FaCheck style={{ color: 'gray' }}/> 주기적으로 선생님(회원)들의 문의나 요청을 확인하고 지속적으로 개선해 나가기 위한 페이지입니다.
                                 <br />
                                 <FaCheck style={{ color: 'gray' }}/> 개선사항이나 오류사항이 있다면 부담없이 이곳에 글을 작성해 주세요. 가능한 빠른 시간 내에 처리하도록 하겠습니다.
