@@ -7,10 +7,13 @@ import { useNavigate } from 'react-router-dom';
 import '../assets/css/login.css';
 import Neis from "@my-school.info/neis-api";
 import axios from 'axios';
+import { useUser } from "contexts/UserContext";
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
 function Login() {
+
+    const { login } = useUser();
 
     // useNavigate를 사용하여 routing 사용하기 위한 함수 생성
     const navigate = useNavigate();
@@ -57,12 +60,15 @@ function Login() {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
                 const response = await axios.post('http://localhost:8000/user/login', { userId: confirmUserId, password: confirmPassword });
-                const responseData = response.data.user;
-                if(responseData === 'N') {
+                const accessToken = response.data.accessToken;
+                const userData = response.data.user;
+                
+                if(accessToken === 'N') {
                     alert("해당 ID로 가입된 내역이 없습니다.");
-                }else if(responseData === "UPW") {
+                }else if(accessToken === "UPW") {
                     alert("비밀번호가 일치하지 않습니다.");
                 }else{
+                    login(userData, accessToken);
                     navigate('/teaform/dashboard');
                 }
             }else{

@@ -128,7 +128,7 @@ app.post("/user/login", async (req, res) => {
             if (results.length > 0) {
                 const user = results[0]; // 첫 번째 사용자 정보만 사용 (userId는 고유해야 함)
                 const match = await bcrypt.compare(password, user.password);
-                
+                console.log(user)
                 if(!match) {
                     const user = "UPW";
                     res.json({ user });
@@ -160,7 +160,7 @@ app.post("/user/login", async (req, res) => {
                     });
 
                     // res.json({ user, accessToken });
-                    res.json({ accessToken });
+                    res.json({ user, accessToken });
                 } 
             } else {
                 res.status(404).json({ msg: "사용자 정보를 찾을 수 없음"});

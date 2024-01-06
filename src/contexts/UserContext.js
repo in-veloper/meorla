@@ -11,25 +11,32 @@ export const UserProvider = ({ children }) => {
 
     const getUser = useCallback(async() => {
         try {
-            const response = await axios.get('http://localhost:8000/token');
-            const decoded = jwtDecode(response.data.accessToken);
-
-            const userInfo = {
-                userId: decoded.userId,
-                name: decoded.name,
-                email: decoded.email,
-                schoolName: decoded.schoolName,
-                schoolCode: decoded.schoolCode
-            };
-
-            setUser(userInfo);
-            return userInfo;
+            const accessToken = sessionStorage.getItem("accessToken");
+            if(accessToken) {
+                const response = await axios.get('http://localhost:8000/token', {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                });
+                const decoded = jwtDecode(response.data.accessToken);
+    
+                const userInfo = {
+                    userId: decoded.userId,
+                    name: decoded.name,
+                    email: decoded.email,
+                    schoolName: decoded.schoolName,
+                    schoolCode: decoded.schoolCode
+                };
+    
+                setUser(userInfo);
+                return userInfo;
+            }
         }catch(error) {
             if(error.response) {
-                if(error.response.status === 401) {
+                sessionStorage.removeItem("accessToken");
+                if(error.response.status !== 200) {
                     navigate("/");
                 }
-                // console.log("UserContext 로직 수행 중 ERROR", error);
             }
         }
     }, [navigate]);
@@ -43,32 +50,19 @@ export const UserProvider = ({ children }) => {
         }
     }, [user, getUser]);
 
-    const login = async (userData) => {
-        setUser(userData);
-    
+    const login = async (userData, accessToken) => {
         try {
-            // 로그인 시 서버로부터 토큰을 받아옴
-            const response = await axios.post('http://localhost:8000/login', userData);
-            const accessToken = response.data.accessToken;
-    
-            // 토큰을 사용하여 사용자 정보를 가져오기
-            const userResponse = await axios.get('http://localhost:8000/token', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
-            const decoded = jwtDecode(userResponse.data.accessToken);
-    
+            sessionStorage.setItem("accessToken", accessToken);
             setUser({
-                userId: decoded.userId,
-                name: decoded.name,
-                email: decoded.email,
-                schoolName: decoded.schoolName,
-                schoolCode: decoded.schoolCode
+                userId: userData.userId,
+                name: userData.name,
+                email: userData.email,
+                schoolName: userData.schoolName,
+                schoolCode: userData.schoolCode
             });
         } catch (error) {
             if (error.response) {
-                if (error.response.status === 401) {
+                if (error.response.status !== 200) {
                     navigate("/");
                 }
                 console.log("UserContext 로직 수행 중 ERROR", error);
@@ -80,10 +74,10 @@ export const UserProvider = ({ children }) => {
         try {
             const response = await axios.post('http://localhost:8000/user/logout', {userId: userId});
             if(response.status === 200) {
+                sessionStorage.removeItem("accessToken");
                 setUser(null);
                 navigate("/");
             }
-            console.log(response);
         }catch(error) {
             console.log("로그아웃 요청 중 ERROR", error);
         }
