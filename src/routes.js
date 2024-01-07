@@ -11,10 +11,10 @@ import UserPage from "views/User.js";
 import QnaRequest from "views/QnaRequest";
 import Request from "views/Request";
 
-const isUser = true;
+const isUser = true;                // 보건교사 / 일반교사 구분 Flag (Flag에 따라 메뉴 숨김)
 var routes = [];
 
-if(isUser) {
+if(isUser) {                        // Login한 User가 보건교사인 경우
   routes = [
     {
       path: "/dashboard",
@@ -123,7 +123,7 @@ if(isUser) {
     //   layout: "/teaform",
     // },
   ];
-}else{
+}else{                              // Login한 User가 일반교사인 경우
   routes = [
     {
       path: "/request",

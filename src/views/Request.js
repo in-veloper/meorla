@@ -99,7 +99,7 @@ function RequesterLogin({onLogin}) {
     return (
         <>
             <div className="content d-flex justify-content-center align-items-center">
-                <Card style={{ width: '50%', height: '32vh' }}>
+                <Card style={{ width: '35%', height: '32vh' }}>
                     <CardBody className="mt-3">
                         <Row className="mt-2 align-items-center">    
                             <Col md="3" className="text-center">
@@ -130,10 +130,8 @@ function RequesterLogin({onLogin}) {
                             </Col>
                         </Row>
                         <Row className="p-3 ml-1 mr-1">
-                            <blockquote className="request-blockquote" style={{ width: '100%' }}>
-                                <p className="text-center">
-                                    <FaCheck className="mr-2" style={{ color: 'gray' }}/>학교 공통 비밀번호를 모르는 경우, 보건교사님께 문의하세요.                                 
-                                </p>
+                            <blockquote className="request-blockquote text-center" style={{ width: '100%' }}>
+                                <FaCheck className="mr-2" style={{ color: 'gray' }}/>학교 공통 비밀번호를 모르는 경우, 보건교사님께 문의하세요.                                 
                             </blockquote>
                         </Row>
                     </CardBody>

@@ -263,7 +263,7 @@ function WorkNote(args) {
                 </Row>
                 <Row>
                   <Col md="12">
-                    <Alert color="secondary" className="text-center" style={{ color: 'gray' }}>
+                    <Alert className="text-center" style={{ color: 'gray', backgroundColor: '#f8f8f8' }}>
                       <i className="nc-icon nc-bulb-63" /> 일부 항목 입력으로도 조회 가능합니다
                     </Alert>
                   </Col>
