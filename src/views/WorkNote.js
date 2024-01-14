@@ -8,34 +8,44 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../assets/css/worknote.css';
 import { GiBed } from "react-icons/gi";
 import { BiMenu } from "react-icons/bi";
+import { useUser } from "contexts/UserContext";
+import axios from "axios";
 
 function WorkNote(args) {
+  const { user, getUser } = useUser();                          // 사용자 정보
   const [isOpen, setIsOpen] = useState(false);
+  const [rowData, setRowData] = useState([]); // 검색 결과를 저장할 state
+  const [searchCriteria, setSearchCriteria] = useState({
+    iGrade: "",
+    iClass: "",
+    iNumber: "",
+    iName: "",
+  });
 
   const toggle = () => setIsOpen(!isOpen);
 
   const gridRef = useRef();
 
-  const [rowData] = useState([
-    { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
-    { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
-    { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
-  ]);
+  // const [rowData] = useState([
+  //   { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
+  //   { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
+  //   { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
+  // ]);
 
-  const [columnDefs] = useState([
-    { field: "registeredDate", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "studentName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "treatAction", headerName: "처치사항", flex: 2, cellStyle: { textAlign: "center" } },
-    { field: "dosageAction", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" } },
-    { field: "measureAction", headerName: "조치사항", flex: 2, cellStyle: { textAlign: "center" } },
-    { field: "bedRest", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" } }
-  ]);
+  // const [columnDefs] = useState([
+  //   { field: "registeredDate", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" } },
+  //   { field: "studentName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" } },
+  //   { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" } },
+  //   { field: "treatAction", headerName: "처치사항", flex: 2, cellStyle: { textAlign: "center" } },
+  //   { field: "dosageAction", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" } },
+  //   { field: "measureAction", headerName: "조치사항", flex: 2, cellStyle: { textAlign: "center" } },
+  //   { field: "bedRest", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" } }
+  // ]);
 
   const [ntRowData] = useState([
-    { stGrade: "2", stClass: "3", stNum: "23", stName: "김은지" },
-    { stGrade: "1", stClass: "5", stNum: "17", stName: "정영인" },
-    { stGrade: "3", stClass: "2", stNum: "15", stName: "홍길동" },
+    // { stGrade: "2", stClass: "3", stNum: "23", stName: "김은지" },
+    // { stGrade: "1", stClass: "5", stNum: "17", stName: "정영인" },
+    // { stGrade: "3", stClass: "2", stNum: "15", stName: "홍길동" },
   ]);
 
   const [ntColumnDefs] = useState([
@@ -60,6 +70,55 @@ function WorkNote(args) {
     { field: "onBed", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "etc", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
+
+  const onInputChange = (field, value) => {
+    setSearchCriteria((prevCriteria) => ({
+      ...prevCriteria,
+      [field]: value,
+    }));
+  };
+  
+
+  const fetchStudentData = async (criteria) => {
+    try {
+      const { iGrade, iClass, iNumber, iName } = criteria;
+      if(user) {
+        const response = await axios.get(`http://localhost:8000/studentsTable/getStudentInfoBySearch`, {
+          params: {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            sGrade:  iGrade,
+            sClass: iClass,
+            sNumber:  iNumber,
+            sName: iName
+          }
+        });
+
+        console.log(response)
+        // const data = await response.json();
+        return response.data.studentData;
+      }
+    } catch (error) {
+      console.error("학생 정보 조회 중 ERROR", error);
+      return [];
+    }
+  };
+  
+  const onSearchStudent = async (criteria) => {
+    try {
+      const studentData = await fetchStudentData(criteria);
+      console.log(studentData);
+  
+      // Check if studentData is an array before updating the grid
+      if (Array.isArray(studentData) && gridRef.current) {
+        gridRef.current.api.setRowData(studentData); // Update the grid
+      }
+  
+      setRowData(studentData); // Update the state
+    } catch (error) {
+      console.error("Error while searching for students", error);
+    }
+  };
 
 
   return (
@@ -207,6 +266,8 @@ function WorkNote(args) {
                           <Col md="4" className="p-0">
                             <Input
                               className="text-right"
+                              onChange={(e) => onInputChange("iGrade", e.target.value)}
+                              value={searchCriteria.iGrade}
                             />
                           </Col>
                         </Row>
@@ -220,6 +281,8 @@ function WorkNote(args) {
                             <Input
                               className="text-right"
                               style={{ width: '45px'}}
+                              onChange={(e) => onInputChange("iClass", e.target.value)}
+                              value={searchCriteria.iClass}
                             />
                           </Col>
                         </Row>
@@ -232,6 +295,8 @@ function WorkNote(args) {
                           <Col md="5" className="p-0" style={{ marginLeft: '-7px'}}>
                             <Input
                               className="text-right"
+                              onChange={(e) => onInputChange("iNumber", e.target.value)}
+                              value={searchCriteria.iNumber}
                             />
                           </Col>
                         </Row>
@@ -244,6 +309,8 @@ function WorkNote(args) {
                           <Col md="7" className="p-0" style={{ marginLeft: '-5px'}}>
                             <Input
                               className="text-right"
+                              onChange={(e) => onInputChange("iName", e.target.value)}
+                              value={searchCriteria.iName}
                             />
                           </Col>
                         </Row>
@@ -256,7 +323,7 @@ function WorkNote(args) {
                         <Button size="sm" style={{ height: '30px' }}><i className="nc-icon nc-refresh-69"/></Button>
                       </Col>
                       <Col md="6" style={{ marginTop: '-10px' }}>
-                        <Button size="sm" style={{ height: '30px' }}><i className="nc-icon nc-zoom-split"/></Button>
+                        <Button size="sm" style={{ height: '30px' }} onClick={() => onSearchStudent(searchCriteria)}><i className="nc-icon nc-zoom-split"/></Button>
                       </Col>
                     </Row>
                   </Col>
@@ -273,8 +340,9 @@ function WorkNote(args) {
                     <div className="ag-theme-alpine" style={{ height: '17.2vh' }}>
                       <AgGridReact
                         ref={gridRef}
-                        rowData={ntRowData} 
-                        columnDefs={ntColumnDefs} 
+                        // rowData={ntRowData} 
+                        columnDefs={ntColumnDefs}
+                        overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       />
                     </div>
                   </Col>
@@ -323,7 +391,8 @@ function WorkNote(args) {
                       <AgGridReact
                         ref={gridRef}
                         rowData={wnRowData} 
-                        columnDefs={wnColumnDefs} 
+                        columnDefs={wnColumnDefs}
+                        overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       />
                     </div>
                   </Col>
@@ -483,8 +552,9 @@ function WorkNote(args) {
             <div className="ag-theme-alpine" style={{ height: '50vh' }}>
               <AgGridReact
                 ref={gridRef}
-                rowData={rowData} 
-                columnDefs={columnDefs} 
+                // rowData={rowData} 
+                // columnDefs={columnDefs} 
+                overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
               />
             </div>
           </Collapse>

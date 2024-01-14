@@ -1,23 +1,42 @@
-import React, {useState, useEffect} from "react";
-import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col} from "reactstrap";
+import React, { useState, useEffect, useRef } from "react";
+import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
 import { read, utils } from "xlsx";
 import axios from "axios";
 import Notiflix from "notiflix";
+import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
+import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
+import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../assets/css/users.css';
 
 function User() {
   const { user, getUser } = useUser();                          // 사용자 정보
-  const [currentUser, setCurrentUser] = useState(null);         // ?
-  const [schoolGrade, setSchoolGrade] = useState("송촌중학교");    // 학년 정보
+  const [currentUser, setCurrentUser] = useState(null);         // 받아온 사용자 정보
+  const [schoolGrade, setSchoolGrade] = useState(null);         // 학년 정보
   const [selectedFile, setSelectedFile] = useState(null);       // 선택한 파일
+  const [gradeData, setGradeData] = useState(null);             // students Table에서 획득한 명렬표 데이터
+  const [modalData, setModalData] = useState();                 // 모달에 표시할 데이터를 관리할 상태
+  const [isModalOpen, setIsModalOpen] = useState(false);        // 명렬표 등록 상태에 따라 등록 또는 등록된 명렬표 데이터를 출력할 Modal Open 상태 값
   
+  const gridRef = useRef();
+
+  const [ntColumnDefs] = useState([
+    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
+  ]);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const userData = await getUser();
-
+       
         if(userData) {
           setCurrentUser(userData);
           setSchoolGrade(userData.schoolName);
@@ -33,16 +52,71 @@ function User() {
       setCurrentUser(user);
       setSchoolGrade(user.schoolName);
     }
-  }, [user, getUser]);
+  }, [user, getUser, gradeData]);
+
+  useEffect(() => {
+    if(currentUser) {
+      const fetchGradeData = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/studentsTable/getStudentInfo', {
+            params: {
+              userId: user.userId,
+              schoolCode: user.schoolCode
+            }
+          });
+
+          setGradeData(response.data.studentData);
+        } catch (error) {
+          console.log("명렬표 데이터 조회 중 ERROR", error);
+        }
+      };
+      fetchGradeData();
+    }
+  }, [currentUser, user]);
 
   // 소속학교 기준 명렬표 학년별 등록 확인 버튼 생성
   const generateNameTableButtons = () => {
-    if(schoolGrade.includes("초등학교")) {                                          // 소속학교가 '초등학교'일 경우 - 6
-      return Array.from({ length: 6 }, (_, index) => index + 1);
-    }else if(schoolGrade.includes("중학교") || schoolGrade.includes("고등학교")) {    // 소속학교가 '중학교' || '고등학교'일 경우 - 3
-      return Array.from({ length: 3 }, (_, index) => index + 1);
-    }else{
-      return Array.from({ length: 3 }, (_, index) => index + 1);
+    const buttonCount = schoolGrade && schoolGrade.includes("초등학교") ? 6 : 3;
+
+    return Array.from({ length: buttonCount }, (_, index) => {
+      const currentGrade = index + 1;                                                       // 학년 수
+      const hasDataForCurrentGrade = gradeData && gradeData.some((data) => Number(data.sGrade) === currentGrade); // students Table에서 학년 별 데이터 유무 조회 확인 (True/False)
+
+      return (
+        <Button
+          key={currentGrade}                                                                // key 값으로 Button에 해당하는 학년
+          className={hasDataForCurrentGrade ? "btn-secondary mr-1" : "btn-outline-default"} // margin 없으면 Button이 다 붙어서 View가 이상 -> mr-1 설정
+          onClick={onClickNameTable}                                                        // 학년별 Button Click Event
+        >
+          {currentGrade}                                                                    
+        </Button>
+      );
+    });
+  };
+
+  // 학년별 Button Click Event
+  const onClickNameTable = async (e) => {
+    e.preventDefault();                       // Click 시 기본 Event 방지
+    const targetGrade = e.target.innerText;   // 현재 선택한 학년
+
+    try {
+      const response = await axios.get('http://localhost:8000/studentsTable/getStudentInfoByGrade', {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          sGrade: targetGrade
+        }
+      });
+
+      const studentData = response.data.studentData;
+      if(studentData.length > 0) {
+        setModalData(studentData);
+        setIsModalOpen(true);
+      }else{
+        onBulkRegist();
+      }
+    } catch (error) {
+      console.log("학년별 명렬표 데이터 조회 중 ERROR", error);
     }
   };
   
@@ -146,8 +220,6 @@ function User() {
               sNumber: sNumber,                                                 // 번호
               sGender: sGender,                                                 // 성별
               sName: sName                                                      // 이름
-            }).then((response) => {
-              console.log(response.data);
             });
           }catch(error) {
             console.log("학생 정보 Server 전송 중 ERROR", error);
@@ -378,11 +450,7 @@ function User() {
                         <label>명렬표</label>
                         <div style={{ marginTop: -12}}>
                           <ButtonGroup className="" size="md">
-                            {generateNameTableButtons().map((buttonNumber) => (
-                              <Button key={buttonNumber} className="btn-outline-default">
-                                {buttonNumber}
-                              </Button>
-                            ))}
+                            {generateNameTableButtons()}
                           </ButtonGroup>
                         </div>
                       </FormGroup>
@@ -412,6 +480,21 @@ function User() {
                       </Button>
                     </div>
                   </Row>
+                  <Modal isOpen={isModalOpen} backdrop={true} toggle={toggleModal} centered={true} autoFocus={false}>
+                    <ModalHeader className="text-muted" toggle={toggleModal} closebutton="true">명렬표 등록 정보</ModalHeader>
+                    <ModalBody>
+                      <div className="ag-theme-alpine" style={{ height: '25vh' }}>
+                        <AgGridReact
+                          ref={gridRef}
+                          rowData={modalData} 
+                          columnDefs={ntColumnDefs} 
+                        />
+                      </div>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button color="secondary" onClick={toggleModal}>닫기</Button>
+                    </ModalFooter>
+                  </Modal>
                 </Form>
               </CardBody>
             </Card>
@@ -423,3 +506,7 @@ function User() {
 }
 
 export default User;
+
+/**
+ * 로그아웃 시 401 에러 안뜨도록 처리
+ */

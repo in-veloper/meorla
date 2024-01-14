@@ -12,6 +12,11 @@ const PORT = process.env.port || 8000;
 const { Cookies } = require('react-cookie');
 const cookies = new Cookies();
 
+app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+
 const setCookie = (name, value, options) => {
     const result = cookies.set(name, value, { ...options });
     return result;
@@ -31,11 +36,6 @@ const db = mysql.createPool({
     password: "yeeh01250412!@",
     database: "teaform_db"
 });
-
-app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 dotenv.config();
 
@@ -159,13 +159,12 @@ app.post("/user/login", async (req, res) => {
                         expires: new Date(Date.now() + 3600 * 1000)
                     });
 
-                    // res.json({ user, accessToken });
                     res.json({ user, accessToken });
                 } 
             } else {
-                res.status(404).json({ msg: "사용자 정보를 찾을 수 없음"});
-                // const user = "N";
-                // res.json({ user });
+                // res.status(404).json({ msg: "사용자 정보를 찾을 수 없음"});
+                const user = "N";
+                res.json({ user });
             }
         }
     })
@@ -221,6 +220,82 @@ app.post("/bookmark/getBookmark", async (req, res) => {
                 const bookmark = result[0];
                 res.json({ bookmark });
             }
+        }
+    });
+});
+
+app.get("/studentsTable/getStudentInfo", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT * FROM students WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("학생 정보 조회 중 ERROR", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        }else{
+            res.json({ studentData: result });
+        }
+    });
+});
+
+app.get("/studentsTable/getStudentInfoByGrade", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+    const sGrade = req.query.sGrade;
+
+    const sqlQuery = "SELECT * FROM students WHERE userId = ? AND schoolCode = ? AND sGrade = ?";
+    db.query(sqlQuery, [userId, schoolCode, sGrade], (err, result) => {
+        if(err) {
+            console.log("학생 정보 조회 중 ERROR", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        }else{
+            res.json({ studentData: result });
+        }
+    });
+});
+
+app.get("/studentsTable/getStudentInfoBySearch", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+    const sGrade = req.query.sGrade;
+    const sClass = req.query.sClass;
+    const sNumber = req.query.sNumber;
+    const sName = req.query.sName;
+    console.log(req.query)
+    // 초기 쿼리
+    let sqlQuery = "SELECT * FROM students WHERE userId = ? AND schoolCode = ?";
+    const queryParams = [userId, schoolCode];
+
+    // 동적으로 조건 추가
+    if (sGrade) {
+        sqlQuery += " AND sGrade = ?";
+        queryParams.push(sGrade);
+    }
+
+    if (sClass) {
+        sqlQuery += " AND sClass = ?";
+        queryParams.push(sClass);
+    }
+
+    if (sNumber) {
+        sqlQuery += " AND sNumber = ?";
+        queryParams.push(sNumber);
+    }
+
+    if (sName) {
+        // 이름 일부만 입력되었을 때를 위한 LIKE 구문 사용
+        sqlQuery += " AND sName LIKE ?";
+        queryParams.push(`%${sName}%`);
+    }
+
+    // 최종 쿼리 수행
+    db.query(sqlQuery, queryParams, (err, result) => {
+        if (err) {
+            console.log("학생 정보 조회 중 ERROR", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        } else {
+            res.json({ studentData: result });
         }
     });
 });
