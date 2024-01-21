@@ -207,6 +207,23 @@ app.post("/bookmark/insert", async (req, res) => {
     });
 });
 
+app.post("/bookmark/update", async (req, res) => {
+    const userId = req.body.userId;
+    const userEmail = req.body.userEmail;
+    const schoolCode = req.body.schoolCode;
+    const bookmarkArray = req.body.bookmarkArray;
+    const bookmarkArrayString = bookmarkArray.map(bookmark => `${bookmark.bookmarkName}::${bookmark.bookmarkAddress}`).join(',');
+
+    const sqlQuery = "UPDATE teaform_db.bookmark SET bookmark = ? WHERE userId = ? AND email = ? AND schoolCode = ?";
+    db.query(sqlQuery, [bookmarkArrayString, userId, userEmail, schoolCode], (err, result) => {
+        if(err) {
+            console.log("북마크 데이터 Update 중 ERROR" + err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.post("/bookmark/getBookmark", async (req, res) => {
     const userId = req.body.userId;
     const userEmail = req.body.userEmail;
@@ -296,6 +313,56 @@ app.get("/studentsTable/getStudentInfoBySearch", async (req, res) => {
             res.status(500).json({ error: "Internal Server Error" });
         } else {
             res.json({ studentData: result });
+        }
+    });
+});
+
+app.post("/symptom/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const symptomString = req.body.symptom;
+    console.log(symptomString)
+    const sqlQuery = "INSERT INTO teaform_db.symptom (userId, schoolCode, symptom) VALUES (?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, symptomString], (err, result) => {
+        if(err) {
+            console.log("증상 데이터 Insert 중 ERROR" + err);
+        }else{
+            console.log("증상 데이터 Insert 처리 완료");
+            console.log(result)
+            res.send('success');
+        }
+    });
+});
+
+// 증상 관련 DB Insert 및 개발 관련 작업무터 해야할듯
+app.post("/symptom/update", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const symptomString = req.body.symptom;
+
+    const sqlQuery = "UPDATE teaform_db.symptom  SET symptom = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [symptomString, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("증상 데이터 Insert 중 ERROR" + err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/symptom/getSymptom", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.symptom WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("기존 ID 및 학교명 검사 중 ERROR" + err);
+        }else{
+            if(result.length > 0) {
+                const symptom = result[0];
+                res.json({ symptom });
+            }
         }
     });
 });

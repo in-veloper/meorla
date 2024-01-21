@@ -1,15 +1,17 @@
-/* .btn-plus {
-    background-color: transparent;
-    color: #999;
+.work-status-buttons {
 }
 
-.btn-minus {
-    background-color: transparent;
-    color: #999;
-}
-
-.btn-allMinus {
-    background-color: transparent;
-    color: #999;
+.work-status-buttons button {
+    /* border-radius: 0px !important; */
+    border-color: #9A9A9A !important;
     font-weight: bold;
-} */
+    color: #9A9A9A;
+}
+
+.work-status-buttons button:hover {
+    background-color: gray !important;
+}
+
+.work-status-buttons .btn:focus {
+    background-color: gray !important;
+}

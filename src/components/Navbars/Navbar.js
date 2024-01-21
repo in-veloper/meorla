@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, InputGroup, InputGroupText, InputGroupAddon, Input, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form } from "reactstrap";
+import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, InputGroup, InputGroupText, InputGroupAddon, Input, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, ButtonGroup, Button, Form } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import Notiflix from "notiflix";
 import { useUser } from "contexts/UserContext";
@@ -260,7 +260,7 @@ function Header(props) {
           }));
 
           let response = null;              // response 데이터 담을 변수
-          if(displayedRowCount > 0) {       // 등록된 북마크가 있는 경우 - Update
+          if(displayedRowCount > 1) {       // 등록된 북마크가 있는 경우 - Update
             response = await axios.post('http://localhost:8000/bookmark/update', {
               userId: user.userId,
               userEmail: user.email,
@@ -342,7 +342,12 @@ function Header(props) {
           <span className="navbar-toggler-bar navbar-kebab" />
         </NavbarToggler>
         <Collapse isOpen={isOpen} navbar className="justify-content-end">
-          <form>
+          <ButtonGroup className="work-status-buttons mr-3" size="sm">
+            <Button className="btn-outline-default working-btn" style={{ borderRight: 'none'}}>근무</Button>
+            <Button className="btn-outline-default outOfOffice-btn" style={{ borderRight: 'none', borderLeftStyle: 'dotted' }}>부재</Button>
+            <Button className="btn-outline-default vacation-btn" style={{ borderLeftStyle: 'dotted' }}>휴가</Button>
+          </ButtonGroup>
+          {/* <form>
             <InputGroup className="no-border">
               <Input placeholder="Search..." />
               <InputGroupAddon addonType="append">
@@ -351,7 +356,7 @@ function Header(props) {
                 </InputGroupText>
               </InputGroupAddon>
             </InputGroup>
-          </form>
+          </form> */}
           <Nav navbar>
             <NavItem>
               <Link to="#pablo" className="nav-link btn-magnify">
@@ -374,9 +379,6 @@ function Header(props) {
               </DropdownToggle>
               <DropdownMenu className="text-muted" right>
                 {dropdownBookmarkItems}
-                {/* <DropdownItem tag="a">Action</DropdownItem>
-                <DropdownItem tag="a">Another Action</DropdownItem>
-                <DropdownItem tag="a">Something else here</DropdownItem> */}
                 <DropdownItem divider />
                 <DropdownItem onClick={handleBookmark}>북마크 설정</DropdownItem>
               </DropdownMenu>
@@ -431,12 +433,8 @@ function Header(props) {
                   rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
                   enterNavigatesVertically={true}
                   enterNavigatesVerticallyAfterEdit={true}
-                  // pinnedBottomRowData={pinnedBottomRowData}
-                  // onRowEditingStarted={onRowEditingStarted}
-                  // onRowEditingStopped={onRowEditingStopped}
                   onCellEditingStarted={onCellEditingStarted}
                   onCellEditingStopped={onCellEditingStopped}
-                  // onFirstDataRendered={onFirstDataRendered}
                   onRowDataUpdated={onRowDataUpdated}
                 />
               </div>
@@ -459,7 +457,7 @@ function Header(props) {
             <Button className="mr-1" color="secondary" onClick={saveBookmark}>저장</Button>
             <Button color="secondary" onClick={toggleModal}>취소</Button>
           </ModalFooter>
-        </Modal>
+       </Modal>
     </Navbar>
   );
 }
