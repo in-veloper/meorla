@@ -612,18 +612,29 @@ function WorkNote(args) {
                         <b className="action-title" style={{ marginRight: '-15px' }}>증상</b>
                         <BiMenu style={{ float: 'right', marginTop: '-8px' }} onClick={handleSymptom}/>
                       </CardHeader>
-                      <CardBody>
+                      <CardBody className="p-0">
                         <Input
-                          className="mb-2"
+                          className=""
                           placeholder="직접 입력"
+                          style={{ borderWidth: 2 }}
                         />
-                        <ListGroup className="" style={{ height: '116px', overflowY: 'auto' }}>
+                        <div className="ag-theme-alpine" style={{ height: '10.5vh' }}>
+                          <AgGridReact
+                            ref={symptomGridRef}
+                            rowData={symptomRowData} 
+                            columnDefs={symptomColumnDefs}
+                            headerHeight={0}
+                            suppressHorizontalScroll={true}
+                            overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                          />
+                        </div>
+                        {/* <ListGroup className="" style={{ height: '116px', width: '100%', overflowY: 'auto' }}>
                           {symptomRowData.map((item, index) => 
                             <ListGroupItem key={index} className="work-note-item">
                               {item.symptom}
                             </ListGroupItem>
                           )}
-                        </ListGroup>
+                        </ListGroup> */}
                       </CardBody>
                     </Card>
                   </Col>
@@ -637,7 +648,7 @@ function WorkNote(args) {
                         <Input
                           placeholder="직접 입력"
                         />
-                        <ListGroup className="pt-2" style={{ height: '116px', overflowY: 'auto' }}>
+                        <ListGroup className="pt-2 p-0" style={{ height: '116px', overflowY: 'auto' }}>
                           <ListGroupItem className="work-note-item">
                             투약사항1
                           </ListGroupItem>

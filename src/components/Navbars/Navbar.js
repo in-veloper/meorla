@@ -1,13 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, InputGroup, InputGroupText, InputGroupAddon, Input, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, ButtonGroup, Button, Form } from "reactstrap";
+import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, InputGroup, InputGroupText, InputGroupAddon, Input, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, ButtonGroup, Button, Form, Badge } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import Notiflix from "notiflix";
-import { useUser } from "contexts/UserContext";
+import { useUser } from "../../contexts/UserContext";
 import axios from "axios";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../../assets/css/navbar.css';
+import { useNavigate } from 'react-router-dom';
 
 import routes from "routes.js";
 
@@ -22,10 +23,19 @@ function Header(props) {
 
   const [bookmarkDropdownOpen, setBookmarkDropdownOpen] = React.useState(false);
   const [dropdownBookmarkItems, setDropdownBookmarkItems] = useState([]);
+  
+  const [userInfoDropdownOpen, setUserInfoDropdownOpen] = React.useState(false);
+  const [userName, setUserName] = React.useState("");
+
+  const [workStatusDropdownOpen, setWorkStatusDropdownOpen] = React.useState(false);
+  const [workStatus, setWorkStatus] = React.useState("근무");
+
   const gridRef = useRef();
   const [rowData, setRowData] = useState([{ bookmarkName: "", bookmarkAddress: "" }]);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+
+  const navigate = useNavigate();
 
   const [columnDefs] = useState([
     { field: "bookmarkName", headerName: "북마크명", flex: 1, cellStyle: { textAlign: "center" } },
@@ -53,6 +63,14 @@ function Header(props) {
   // 북마크 설정 - Toggle 
   const bookmarkDropdownToggle = (e) => {
     setBookmarkDropdownOpen(!bookmarkDropdownOpen);
+  };
+
+  const userInfoDropdownToggle = (e) => {
+    setUserInfoDropdownOpen(!userInfoDropdownOpen);
+  };
+
+  const workStatusDropdownToggle = (e) => {
+    setWorkStatusDropdownOpen(!workStatusDropdownOpen);
   };
 
   const toggleModal = () => setModal(!modal);
@@ -135,10 +153,18 @@ function Header(props) {
     fetchBookmarkData();
   }, [fetchBookmarkData]);
 
+  useEffect(() => {
+    if(user?.name) setUserName(user.name);
+  }, [user]);
+
   // 북마크 설정 클릭 시 Modal Open
   const handleBookmark = async () => {
     toggleModal();
   };
+
+  const handleWorkStatus = (e) => {
+    setWorkStatus(e.target.textContent);
+  }
 
   // 기본 컬럼 속성 정의 (공통 부분)
   const defaultColDef = {
@@ -342,23 +368,8 @@ function Header(props) {
           <span className="navbar-toggler-bar navbar-kebab" />
         </NavbarToggler>
         <Collapse isOpen={isOpen} navbar className="justify-content-end">
-          <ButtonGroup className="work-status-buttons mr-3" size="sm">
-            <Button className="btn-outline-default working-btn" style={{ borderRight: 'none'}}>근무</Button>
-            <Button className="btn-outline-default outOfOffice-btn" style={{ borderRight: 'none', borderLeftStyle: 'dotted' }}>부재</Button>
-            <Button className="btn-outline-default vacation-btn" style={{ borderLeftStyle: 'dotted' }}>휴가</Button>
-          </ButtonGroup>
-          {/* <form>
-            <InputGroup className="no-border">
-              <Input placeholder="Search..." />
-              <InputGroupAddon addonType="append">
-                <InputGroupText>
-                  <i className="nc-icon nc-zoom-split" />
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-          </form> */}
           <Nav navbar>
-            <NavItem>
+            <NavItem onClick={() => { navigate('/teaform/dashboard')}}>
               <Link to="#pablo" className="nav-link btn-magnify">
                 <i className="nc-icon nc-layout-11" />
                 <p>
@@ -366,6 +377,7 @@ function Header(props) {
                 </p>
               </Link>
             </NavItem>
+            
             <Dropdown
               nav
               isOpen={bookmarkDropdownOpen}
@@ -400,14 +412,48 @@ function Header(props) {
                 <DropdownItem tag="a">Something else here</DropdownItem>
               </DropdownMenu>
             </Dropdown>
-            <NavItem>
+            {/* <NavItem>
               <Link to="#pablo" className="nav-link btn-rotate">
                 <i className="nc-icon nc-settings-gear-65" />
                 <p>
                   <span className="d-lg-none d-md-block">Account</span>
                 </p>
               </Link>
-            </NavItem>
+            </NavItem> */}
+            <Dropdown
+              nav
+              isOpen={workStatusDropdownOpen}
+              toggle={(e) => workStatusDropdownToggle(e)}
+            >
+              <DropdownToggle caret nav>
+                <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>{workStatus}</Badge>
+              </DropdownToggle>
+              <DropdownMenu className="text-muted" right>
+                <DropdownItem id="working" onClick={handleWorkStatus}>근무</DropdownItem>
+                <DropdownItem id="outOfOffice" onClick={handleWorkStatus}>부재</DropdownItem>
+                <DropdownItem id="businessTrip" onClick={handleWorkStatus}>출장</DropdownItem>
+                <DropdownItem id="vacation" onClick={handleWorkStatus}>휴가</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+            <Dropdown
+              nav
+              isOpen={userInfoDropdownOpen}
+              toggle={(e) => userInfoDropdownToggle(e)}
+            >
+              <DropdownToggle caret nav>
+                {/* <i className="nc-icon nc-circle-10 text-muted" /> */}
+                <p>
+                  <span className="text-muted mr-1" style={{ fontWeight: 'bold' }}>{userName} 보건교사님</span>
+                </p>
+              </DropdownToggle>
+              <DropdownMenu right>
+                <DropdownItem tag="a">사용자 메뉴얼</DropdownItem>
+                <DropdownItem tag="a">사용자 정보</DropdownItem>
+                <DropdownItem tag="a">비밀번호 초기화</DropdownItem>
+                <DropdownItem tag="a">로그아웃</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+
           </Nav>
         </Collapse>
       </Container>

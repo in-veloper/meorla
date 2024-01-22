@@ -45,6 +45,13 @@ if(isUser) {                        // Login한 User가 보건교사인 경우
       layout: "/teaform",
     },
     {
+      path: "/manageMediFixt",
+      name: "약품 및 비품 관리",
+      icon: "nc-icon nc-box-2",
+      component: <MedicalInfo />,
+      layout: "/admin",
+    },
+    {
       path: "/healthCheck",
       name: "건강검진",
       icon: "nc-icon nc-ambulance",
