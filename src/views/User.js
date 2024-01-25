@@ -5,9 +5,9 @@ import ExcelJS from "exceljs";
 import { read, utils } from "xlsx";
 import axios from "axios";
 import Notiflix from "notiflix";
-import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
-import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
-import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import { AgGridReact } from 'ag-grid-react';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '../assets/css/users.css';
 
 function User() {
@@ -19,8 +19,9 @@ function User() {
   const [modalData, setModalData] = useState();                 // 모달에 표시할 데이터를 관리할 상태
   const [isModalOpen, setIsModalOpen] = useState(false);        // 명렬표 등록 상태에 따라 등록 또는 등록된 명렬표 데이터를 출력할 Modal Open 상태 값
   
-  const gridRef = useRef();
+  const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
 
+  // 등록한 명렬표 출력 Grid Column 정의
   const [ntColumnDefs] = useState([
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
@@ -28,6 +29,7 @@ function User() {
     { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
 
+  // 등록한 명렬표 중 학년 선택 시 명렬표 미리보기 Model Open Handle Event
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
@@ -35,58 +37,58 @@ function User() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await getUser();
+        const userData = await getUser();                     // 현재 접속 사용자 정보 획득
        
-        if(userData) {
-          setCurrentUser(userData);
-          setSchoolGrade(userData.schoolName);
+        if(userData) {                                        // 사용자 정보 존재할 경우
+          setCurrentUser(userData);                           // 전역 변수에 현재 사용자 정보 할당
+          setSchoolGrade(userData.schoolName);                // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
         }
       }catch(error) {
         console.error("User 정보 Fetching 중 ERROR", error);
       }
     }
 
-    if(!user) {
+    if(!user) {                                               // 사용자 정보 못 받았을 시 재조회 호출
       fetchData();
-    }else{
-      setCurrentUser(user);
-      setSchoolGrade(user.schoolName);
+    }else{                                                    // 사용자 정보 조회 되었을 경우 fetchData 내 Logic 재수행
+      setCurrentUser(user);                                   // 전역 변수에 현재 사용자 정보 할당
+      setSchoolGrade(user.schoolName);                        // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
     }
   }, [user, getUser, gradeData]);
 
   useEffect(() => {
-    if(currentUser) {
-      const fetchGradeData = async () => {
+    if(currentUser) {                                         // 현재 사용자 정보 존재할 경우
+      const fetchGradeData = async () => {                    // 명렬표 미리보기 표시 위한 학년별 등록 학생 정보 조회
         try {
           const response = await axios.get('http://localhost:8000/studentsTable/getStudentInfo', {
             params: {
-              userId: user.userId,
-              schoolCode: user.schoolCode
+              userId: user.userId,                            // 사용자 ID
+              schoolCode: user.schoolCode                     // 소속 학교 코드
             }
           });
 
-          setGradeData(response.data.studentData);
+          setGradeData(response.data.studentData);            // 조회 결과(학년별 등록 학생 정보) 전역변수에 할당
         } catch (error) {
           console.log("명렬표 데이터 조회 중 ERROR", error);
         }
       };
-      fetchGradeData();
+      fetchGradeData();                                       // 명렬표 미리보기 조회 Function 호출
     }
   }, [currentUser, user]);
 
-  // 소속학교 기준 명렬표 학년별 등록 확인 버튼 생성
+  // 소속학교 기준 명렬표 학년별 등록 및 확인 Button 생성
   const generateNameTableButtons = () => {
-    const buttonCount = schoolGrade && schoolGrade.includes("초등학교") ? 6 : 3;
+    const buttonCount = schoolGrade && schoolGrade.includes("초등학교") ? 6 : 3;                                   // 초등학교: 6, 중,고등학교: 3 으로 Button 수 정의
 
-    return Array.from({ length: buttonCount }, (_, index) => {
-      const currentGrade = index + 1;                                                       // 학년 수
+    return Array.from({ length: buttonCount }, (_, index) => {                                                    // 생성할 Button 수만큼 순회
+      const currentGrade = index + 1;                                                                             // 학년 수
       const hasDataForCurrentGrade = gradeData && gradeData.some((data) => Number(data.sGrade) === currentGrade); // students Table에서 학년 별 데이터 유무 조회 확인 (True/False)
 
       return (
         <Button
-          key={currentGrade}                                                                // key 값으로 Button에 해당하는 학년
-          className={hasDataForCurrentGrade ? "btn-secondary mr-1" : "btn-outline-default"} // margin 없으면 Button이 다 붙어서 View가 이상 -> mr-1 설정
-          onClick={onClickNameTable}                                                        // 학년별 Button Click Event
+          key={currentGrade}                                                                                      // key 값으로 Button에 해당하는 학년
+          className={hasDataForCurrentGrade ? "btn-secondary mr-1" : "btn-outline-default"}                       // margin 없으면 Button이 다 붙어서 View가 이상 -> mr-1 설정
+          onClick={onClickNameTable}                                                                              // 학년별 Button Click Event
         >
           {currentGrade}                                                                    
         </Button>
@@ -100,20 +102,21 @@ function User() {
     const targetGrade = e.target.innerText;   // 현재 선택한 학년
 
     try {
+      // 선택한 학년에 따른 등록한 학생 정보 조회
       const response = await axios.get('http://localhost:8000/studentsTable/getStudentInfoByGrade', {
         params: {
-          userId: user.userId,
-          schoolCode: user.schoolCode,
-          sGrade: targetGrade
+          userId: user.userId,                            // 사용자 ID
+          schoolCode: user.schoolCode,                    // 소속 학교 코드
+          sGrade: targetGrade                             // 선택한 학년
         }
       });
 
-      const studentData = response.data.studentData;
-      if(studentData.length > 0) {
-        setModalData(studentData);
-        setIsModalOpen(true);
+      const studentData = response.data.studentData;      // 조회 결과 학생 데이터
+      if(studentData.length > 0) {                        // 조회 결과 존재할 경우
+        setModalData(studentData);                        // 등록된 명렬표 미리보기 데이터에 할당
+        setIsModalOpen(true);                             // Modal Open
       }else{
-        onBulkRegist();
+        onBulkRegist();                                   // 등록된 학생 정보 없을 경우 등록 Function 호출
       }
     } catch (error) {
       console.log("학년별 명렬표 데이터 조회 중 ERROR", error);
@@ -125,7 +128,7 @@ function User() {
     const workbook = new ExcelJS.Workbook();                        // workbook 생성
     const worksheet = workbook.addWorksheet("Sheet1");              // worksheet 생성
 
-    const data = [["학년", "반", "번호", "성별", "이름"]];                // 위 worksheet에 입력할 데이터 (컬럼)
+    const data = [["학년", "반", "번호", "성별", "이름"]];            // 위 worksheet에 입력할 데이터 (컬럼)
 
     worksheet.addRows(data);                                        // 생성한 Row 추가
 
@@ -136,7 +139,7 @@ function User() {
         pattern: 'solid',
         fgColor: { argb: "C0C0C0"}
       };
-      cell.border = {
+      cell.border = {                                               // Cell Border 적용
         top: { style: "thin" },
         left: { style: "thin" },
         bottom: { style: "thin" },

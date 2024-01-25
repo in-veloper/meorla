@@ -321,20 +321,18 @@ app.post("/symptom/insert", async (req, res) => {
     const userId = req.body.userId;
     const schoolCode = req.body.schoolCode;
     const symptomString = req.body.symptom;
-    console.log(symptomString)
+
     const sqlQuery = "INSERT INTO teaform_db.symptom (userId, schoolCode, symptom) VALUES (?,?,?)";
     db.query(sqlQuery, [userId, schoolCode, symptomString], (err, result) => {
         if(err) {
             console.log("증상 데이터 Insert 중 ERROR" + err);
         }else{
             console.log("증상 데이터 Insert 처리 완료");
-            console.log(result)
             res.send('success');
         }
     });
 });
 
-// 증상 관련 DB Insert 및 개발 관련 작업무터 해야할듯
 app.post("/symptom/update", async (req, res) => {
     const userId = req.body.userId;
     const schoolCode = req.body.schoolCode;
@@ -362,6 +360,54 @@ app.post("/symptom/getSymptom", async (req, res) => {
             if(result.length > 0) {
                 const symptom = result[0];
                 res.json({ symptom });
+            }
+        }
+    });
+});
+
+app.post("/medication/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const medicationString = req.body.medication;
+
+    const sqlQuery = "INSERT INTO teaform_db.medication (userId, schoolCode, medication) VALUES (?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, medicationString], (err, result) => {
+        if(err) {
+            console.log("투약사항 데이터 Insert 중 ERROR" + err);
+        }else{
+            console.log("투약사항 데이터 Insert 처리 완료");
+            res.send('success');
+        }
+    });
+});
+
+app.post("/medication/update", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const medicationString = req.body.medication;
+
+    const sqlQuery = "UPDATE teaform_db.medication  SET medication = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [medicationString, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("투약사항 데이터 Insert 중 ERROR" + err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/medication/getMedication", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.medication WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("기존 ID 및 학교명 검사 중 ERROR" + err);
+        }else{
+            if(result.length > 0) {
+                const medication = result[0];
+                res.json({ medication });
             }
         }
     });

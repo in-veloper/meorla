@@ -10,6 +10,8 @@ import Community from "views/Community";
 import UserPage from "views/User.js";
 import QnaRequest from "views/QnaRequest";
 import Request from "views/Request";
+import Examination from "views/Examination";
+import ManageMediFixt from "views/ManageMediFixt";
 
 const isUser = true;                // 보건교사 / 일반교사 구분 Flag (Flag에 따라 메뉴 숨김)
 var routes = [];
@@ -46,16 +48,16 @@ if(isUser) {                        // Login한 User가 보건교사인 경우
     },
     {
       path: "/manageMediFixt",
-      name: "약품 및 비품 관리",
+      name: "약품 · 비품 관리",
       icon: "nc-icon nc-box-2",
-      component: <MedicalInfo />,
-      layout: "/admin",
+      component: <ManageMediFixt />,
+      layout: "/teaform",
     },
     {
       path: "/healthCheck",
       name: "건강검진",
       icon: "nc-icon nc-ambulance",
-      component: <Notifications />,
+      component: <Examination />,
       layout: "/teaform",
     },
     {

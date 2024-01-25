@@ -13,14 +13,15 @@ import '../assets/css/medicalInfo.css';
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function MedicalInfo() {
-  const [searchCategory, setSearchCategory] = useState("");
-  const [searchText, setSearchText] = useState("");
-  const [searchResult, setSearchResult] = useState([]);
-  const [modal, setModal] = useState(false);
-  const [selectedRowData, setSelectedRowData] = useState(null);
+  const [searchCategory, setSearchCategory] = useState("");         // 약품 정보 검색 시 선택 분류
+  const [searchText, setSearchText] = useState("");                 // 검색어 입력 값 할당 변수
+  const [searchResult, setSearchResult] = useState([]);             // 검색 결과 할당 변수
+  const [modal, setModal] = useState(false);                        // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
+  const [selectedRowData, setSelectedRowData] = useState(null);     // 선택한 Row Data 할당 변수 (상세화면 출력)
 
-  const gridRef = useRef();
+  const gridRef = useRef();                                         // 검색 결과 출력 Grid
 
+  // 약품 정보 Grid Column 정의
   const [columnDefs] = useState([
     {field: 'itemName', headerName: '제품명', flex: 2, tooltipValueGetter: (params) => params.value},
     {field: 'entpName', headerName: '업체명', flex: 1.5, tooltipValueGetter: (params) => params.value},
@@ -33,89 +34,97 @@ function MedicalInfo() {
     {field: 'depositMethodQesitm', headerName: '보관법', flex: 2, tooltipValueGetter: (params) => params.value}
   ]);
 
+  // 기본(공통) Column 정의
   const defaultColDef = {
     sortable: true,
     filter: true,
     resizable: true,
   };
 
+  // 검색 분류 선택 Event
   const handleSearchCategory = (e) => {
-    const selectedCategory = e.target.value;
-    setSearchCategory(selectedCategory);
+    const selectedCategory = e.target.value;  // 선택한 분류 값
+    setSearchCategory(selectedCategory);      // 전역 변수에 할당
   }
 
+  // 검색 Event
   const handleSearch = async (e) => {
     try {
+      // 약품 정보 API(e약은요) 호출
       const totalResponse = await axios.get(URL, {
         params: {
           serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-          pageNo: 1,
-          numOfRows: 1, 
-          entpName: searchCategory === 'mCompany' ? searchText : '',
-          itemName: searchCategory === 'mName' ? searchText : '',
-          itemSeq: searchCategory === 'mCode' ? searchText : '',
-          efcyQesitm: searchCategory === 'mEffect' ? searchText : '',
-          type: 'json'
+          pageNo: 1,                                                    // 페이지 수
+          numOfRows: 1,                                                 // Row 수
+          entpName: searchCategory === 'mCompany' ? searchText : '',    // 업체명
+          itemName: searchCategory === 'mName' ? searchText : '',       // 제품명
+          itemSeq: searchCategory === 'mCode' ? searchText : '',        // 품목코드
+          efcyQesitm: searchCategory === 'mEffect' ? searchText : '',   // 효능
+          type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
         }
       });
 
-      if (totalResponse.data.hasOwnProperty('body')) {
-        const totalCount = totalResponse.data.body.totalCount;
-        const totalPages = calculateTotalPages(totalCount);
-        const allResults = [];
+      if (totalResponse.data.hasOwnProperty('body')) {                  // 조회 결과 있을 경우(body가 존재할 경우)
+        const totalCount = totalResponse.data.body.totalCount;          // 검색 결과 총 수
+        const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
+        const allResults = [];                                          // 모든 결과 할당 변수
 
-        onBtShowLoading();
+        onBtShowLoading();                                              // 검색 처리 시 Loading 화면 출력
         
-        for(let page = 1; page <= totalPages; page++) {
+        for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
           const response = await axios.get(URL, {
             params: {
               serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-              pageNo: page,
-              numOfRows: 100,
-              entpName: searchCategory === 'mCompany' ? searchText : '',
-              itemName: searchCategory === 'mName' ? searchText : '',
-              itemSeq: searchCategory === 'mCode' ? searchText : '',
-              efcyQesitm: searchCategory === 'mEffect' ? searchText : '',
-              type: 'json'
+              pageNo: page,                                                 // 페이지 수
+              numOfRows: 100,                                               // Row 수
+              entpName: searchCategory === 'mCompany' ? searchText : '',    // 업체명
+              itemName: searchCategory === 'mName' ? searchText : '',       // 제품명
+              itemSeq: searchCategory === 'mCode' ? searchText : '',        // 품목코드
+              efcyQesitm: searchCategory === 'mEffect' ? searchText : '',   // 효능
+              type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
             }
           });
 
-          if(response.data.hasOwnProperty('body')) {
-            allResults.push(...response.data.body.items);
+          if(response.data.hasOwnProperty('body')) {                        // 조회 결과 있을 경우(body가 존재할 경우)
+            allResults.push(...response.data.body.items);                   // 조회 결과 할당
           }
         }
 
-        setSearchResult(allResults);
+        setSearchResult(allResults);                                        // 최종 조회 결과 Grid Row Data로 할당
       }
     } catch (error) {
       console.log("약품 정보 조회 중 ERROR", error);
     }
   }
 
+  // 검색어 입력 후 Enter 입력 시 검색 Event
   const handleKeyDown = (e) => {
-    if(e.key === 'Enter') {
-      handleSearch();
-    }
+    if(e.key === 'Enter') handleSearch(); // Key 입력이 Enter인 경우 검색 Event 호출
   }
 
-  const handleSearchText = (e) => {
-    e.preventDefault();
-    setSearchText(e.target.value);
+  // 검색어 입력 시 입력 값 전역 변수에 할당 
+  const handleSearchText = (e) => {   
+    e.preventDefault();             // 기본 Event 방지
+    setSearchText(e.target.value);  // 전역 변수에 검색어 입력 값 할당
   }
 
+  // 검색 결과 중 Row 선택 시 상세화면 Modal Open 상태 Handle Event
   const toggleModal = () => setModal(!modal);
 
+  // 검색 결과 중 Row Double Click 시 상세화면 출력 Event
   const handleRowDoubleClick = (params) => {
-    setSelectedRowData(params.data);
-    toggleModal();
+    setSelectedRowData(params.data);  // 전역 변수에 선택한 Row 값 할당
+    toggleModal();                    // 상세화면 Modal Open
   }
 
+  // 검색 결과 총 페이지 수 계산 Function
   const calculateTotalPages = (totalCount) => {
-    return Math.ceil(totalCount / 100); // 페이지당 보여질 개수 100 으로 Divide
+    return Math.ceil(totalCount / 100); // 페이지당 보여질 개수 100 Row로 Divide
   }
 
+  // 검색 처리 시 Loading 화면 출력 Event
   const onBtShowLoading = useCallback(() => {
-      gridRef.current.api.showLoadingOverlay();
+      gridRef.current.api.showLoadingOverlay(); // Overlay로 로딩 Animation 출력
   }, []);
 
   return (
@@ -140,7 +149,7 @@ function MedicalInfo() {
           <Input
             type="search"
             value={searchText}
-            placeholder="검색 키워들르 입력하세요"
+            placeholder="검색 키워드를 입력하세요"
             onKeyDown={handleKeyDown}
             autoFocus={true}
             style={{ width: '300px', height: '40px'}}
