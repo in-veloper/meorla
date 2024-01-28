@@ -71,7 +71,7 @@ function Examination() {
 
     const renderMenuItemChildren = (option, props, index) => {
         return (
-            <span>{option.name} [{option.category}] &nbsp;::&nbsp; {option.address}</span>
+            <span><b>{option.name}</b> [{option.category}] &nbsp;::&nbsp; {option.address}</span>
         );
     }
 

@@ -1,5 +1,3 @@
-/* 일반 교사가 진입하는 메뉴에서 학생이 침상 안정했는지 보건실 이용했는지 조회할 수 있도록 요청 */
-
 import React, {useState, useRef, useCallback, useEffect} from "react";
 import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, ListGroup, ListGroupItem, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
@@ -22,7 +20,9 @@ function WorkNote(args) {
   const [medicationRowData, setMedicationRowData] = useState([]);
   const [searchCriteria, setSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [modal, setModal] = useState(false);
+  // const [modal, setModal] = useState(false);
+  const [symptomModal, setSymptomModal] = useState(false);
+  const [medicationModal, setMedicationModal] = useState(false);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [modifiedData, setModifiedData] = useState([]);
@@ -32,21 +32,21 @@ function WorkNote(args) {
   const [searchMedicationText, setSearchMedicationText] = useState("");
   const [filteredMedication, setFilteredMedication] = useState(medicationRowData);
 
-  // 최초 Grid Render Event
-  const onGridReady = useCallback(() => {
-    // debugger
-  }, []);
-
-  const toggle = () => setIsOpen(!isOpen);
-
-  const toggleSymptomModal = () => setModal(!modal);
-  const toggleMedicationModal = () => setModal(!modal);
-
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
   const registeredAllGridRef = useRef();
   const symptomGridRef = useRef();
   const medicationGridRef = useRef();
+
+  // 최초 Grid Render Event
+  const onGridReady = useCallback((params) => {
+  }, []);
+
+  const toggle = () => setIsOpen(!isOpen);
+
+  const toggleSymptomModal = () => setSymptomModal(!symptomModal);
+  
+  const toggleMedicationModal = () => setMedicationModal(!medicationModal);
 
   const [searchStudentColumnDefs] = useState([
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
@@ -78,6 +78,14 @@ function WorkNote(args) {
     filter: true,
     editable: true
   };
+
+  const [symptomColumnDefs] = useState([
+    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "left" } }
+  ]);
+
+  const [medicationColumnDefs] = useState([
+    { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "left" } }
+  ]);
 
   // 추가할 행 생성
   const createNewSymptomRowData = () => {
@@ -148,15 +156,6 @@ function WorkNote(args) {
     
     if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'medication' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
   }, [isRemoved, isRegistered]);
-
-
-  const [symptomColumnDefs] = useState([
-    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "left" } }
-  ]);
-
-  const [medicationColumnDefs] = useState([
-    { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "left" } }
-  ]);
 
   const onInputChange = (field, value) => {
     setSearchCriteria((prevCriteria) => ({
@@ -427,7 +426,7 @@ function WorkNote(args) {
             return { symptom: item };
           });
 
-          setSymptomRowData(symptomArray);
+          setFilteredSymptom(symptomArray);
           setIsRegistered(true);
         }
       }
@@ -451,7 +450,7 @@ function WorkNote(args) {
             return { medication: item };
           });
 
-          setMedicationRowData(medicationArray);
+          setFilteredMedication(medicationArray);
           setIsRegistered(true);
         }
       }
@@ -473,17 +472,14 @@ function WorkNote(args) {
     setSearchSymptomText(text);                                                             // 입력한 문자 useState로 전역 변수에 할당
     
     const filteredData = symptomRowData.filter(symptom => symptom.symptom.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
-    symptomGridRef.current.api.setRowData(filteredData);                                    // Filtering된 값을 Grid의 Row Data로 할당
+    setFilteredSymptom(filteredData);
   };
 
   // 증상 Grid의 Row 선택 Event
   const handleSymptomRowSelect = (selectedRow) => {
-    if(selectedRow && selectedRow.length > 0) {         // Grid에서 선택한 Row가 있는 경우
-      const selectedSymptom = selectedRow[0].symptom;   // 선택한 증상 Text 값
-      setSearchSymptomText(selectedSymptom);            // input에 선택한 증상 값 할당하기 위해 전역변수에 값 할당
-
-      // 선택후 Row Selection이 해제 되지 않기 때문에 deselect 메서드 호출
-      if(symptomGridRef.current.api.getSelectedRows().length > 0) symptomGridRef.current.api.deselectAll();
+    if (selectedRow && selectedRow.length > 0 && searchSymptomText !== null) {
+      const selectedSymptom = selectedRow[0].symptom;
+      setSearchSymptomText(selectedSymptom);
     }
   };
 
@@ -492,7 +488,7 @@ function WorkNote(args) {
     setSearchMedicationText(text);                                                                      // 입력한 문자 useState로 전역 변수에 할당
     
     const filteredData = medicationRowData.filter(medication => medication.medication.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
-    medicationGridRef.current.api.setRowData(filteredData);                                             // Filtering된 값을 Grid의 Row Data로 할당
+    setFilteredMedication(filteredData);
   };
 
   // 증상 Grid의 Row 선택 Event
@@ -500,9 +496,6 @@ function WorkNote(args) {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
       const selectedMedication = selectedRow[0].medication;   // 선택한 투약사항 Text 값
       setSearchMedicationText(selectedMedication);            // input에 선택한 투약사항 값 할당하기 위해 전역변수에 값 할당
-
-      // 선택후 Row Selection이 해제 되지 않기 때문에 deselect 메서드 호출
-      if(medicationGridRef.current.api.getSelectedRows().length > 0) medicationGridRef.current.api.deselectAll();
     }
   };
 
@@ -812,7 +805,7 @@ function WorkNote(args) {
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={symptomGridRef}
-                            rowData={symptomRowData} 
+                            rowData={filteredSymptom} 
                             columnDefs={symptomColumnDefs}
                             headerHeight={0}
                             suppressHorizontalScroll={true}
@@ -840,7 +833,7 @@ function WorkNote(args) {
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={medicationGridRef}
-                            rowData={medicationRowData} 
+                            rowData={filteredMedication} 
                             columnDefs={medicationColumnDefs}
                             headerHeight={0}
                             suppressHorizontalScroll={true}
@@ -966,7 +959,7 @@ function WorkNote(args) {
         </Collapse>
       </div>
 
-      <Modal isOpen={modal} toggle={toggleSymptomModal} centered style={{ minWidth: '20%' }}>
+      <Modal isOpen={symptomModal} toggle={toggleSymptomModal} centered style={{ minWidth: '20%' }}>
           <ModalHeader toggle={toggleSymptomModal}><b className="text-muted">증상 설정</b></ModalHeader>
           <ModalBody className="pb-0">
             <Form onSubmit={saveSymptom}>
@@ -1014,7 +1007,7 @@ function WorkNote(args) {
           </ModalFooter>
        </Modal>
 
-       <Modal isOpen={modal} toggle={toggleMedicationModal} centered style={{ minWidth: '20%' }}>
+       <Modal isOpen={medicationModal} toggle={toggleMedicationModal} centered style={{ minWidth: '20%' }}>
           <ModalHeader toggle={toggleMedicationModal}><b className="text-muted">투약사항 설정</b></ModalHeader>
           <ModalBody className="pb-0">
             <Form onSubmit={saveMedication}>
@@ -1065,3 +1058,8 @@ function WorkNote(args) {
 }
 
 export default WorkNote;
+
+/**
+ * 증상, 투약사항 등은 모두 2개 이상 입력하는 가정
+ * 두개 이상 입력될 시 구분은 모두 (,) 쉼표로 구분되어야 함
+ */

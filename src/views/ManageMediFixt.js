@@ -1,20 +1,117 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Row, Col, Nav, NavItem, NavLink, Button, Input } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import { Typeahead } from 'react-bootstrap-typeahead';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
+import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import Notiflix from "notiflix";
+import axios from "axios";
+
+const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function ManageMediFixt() {
     const [selectedMenu, setSelectedMenu] = useState("medicine");
     const [isRemoved, setIsRemoved] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
+    const [dynamicOptions, setDynamicOptions] = useState([]);
+    const [medicineName, setMedicineName] = useState("");
+    const [medicineList, setMedicineList] = useState("");
 
     const medicineGridRef = useRef();
     const fixtureGridRef = useRef();
 
+    const typeaheadRef = useRef(null);
+
+    useEffect(() => {
+        if(medicineList.length > 0) {
+            try {
+                const searchOptions = medicineList.map((medicine) => ({
+                    name: medicine.itemName
+                }));
+
+                setDynamicOptions(searchOptions);
+            } catch(error) {
+                console.log("약품명 검색 중 ERROR", error);
+            }
+        }else{
+            setDynamicOptions([]);
+        }
+    }, [medicineList]);
+
+    const renderMenuItemChildren = (option, props, index) => {
+        return (
+            <span>{option.name}</span>
+        );
+    }
+
+    const CustomEditor = forwardRef(({ value, api }, ref) => {
+        const [selectedValue, setSelectedValue] = useState(value);
+        
+        useImperativeHandle(ref, () => ({
+            getValue: () => {
+                return selectedValue;
+            }
+        }));
+    
+
+        const handleMedicineSelect = (selected) => {
+            debugger
+            setSelectedValue(selected[0]);
+            api.stopEditing(); // 편집 모드 종료
+        };
+    
+        return (
+            <div>
+                <Typeahead
+                    ref={typeaheadRef}
+                    id="basic-typeahead-single"
+                    labelKey="name"
+                    onChange={handleMedicineSelect}
+                    onInputChange={(input) => { searchMedicine(input)}}
+                    options={dynamicOptions}
+                    placeholder="약품명을 입력하세요"
+                    emptyLabel="검색 결과가 없습니다."
+                    // selected={selectedValue ? [selectedValue] : []}
+                    style={{ height: '39px', borderWidth: 0 }}
+                    renderMenuItemChildren={renderMenuItemChildren}
+                />
+            </div>
+        );
+    });
+
+    const searchMedicine = async (input) => {
+        const searchKeyword = input.trim();
+        setMedicineName(searchKeyword);
+
+        if(searchKeyword) {
+            try {
+                const response = await axios.get(URL, {
+                    params: {
+                        serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
+                        pageNo: 1,
+                        numOfRows: 30,
+                        itemName: searchKeyword,
+                        type: 'json'
+                    }
+                });
+
+                if(response.data.body) {
+                    const items = response.data.body.items;
+                    if(items) setMedicineList(items);
+                }
+
+            } catch(error) {
+                console.log("약품 및 비품 관리 > 약품명 조회 중 ERROR", error);
+            }
+        }else{
+            setMedicineList([]);
+        }
+    }
+
     const [medicineRowData] = useState([
-        {medicineName: "약품", coporateName: "회사", unit: "단위", inventory: 0, extinct: 0, lastestPurchaseDate: "2024-01-23", lastestUpdateDate: "2024-01-23"}
+        // {medicineName: "약품", coporateName: "회사", unit: "단위", inventory: 0, extinct: 0, lastestPurchaseDate: "2024-01-23", lastestUpdateDate: "2024-01-23"}
     ]);
 
     const [fixtureRowData] = useState([
@@ -30,7 +127,7 @@ function ManageMediFixt() {
     };
 
     const [medicineColDef] = useState([
-        {field: "medicineName", headerName: "약품명", flex: 2, cellStyle: { textAlign: "center" }},
+        {field: "medicineName", headerName: "약품명", flex: 2, cellStyle: { textAlign: "center" }, cellEditor: CustomEditor },
         {field: "coporateName", headerName: "업체명", flex: 2, cellStyle: { textAlign: "center" }},
         {field: "unit", headerName: "단위", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "inventory", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
@@ -110,15 +207,8 @@ function ManageMediFixt() {
         if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'medicineName' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
     }, [isRemoved, isRegistered]);
 
-    // const onInputChange = (field, value) => {
-    //     setSearchCriteria((prevCriteria) => ({
-    //         ...prevCriteria,
-    //         [field]: value,
-    //     }));
-    // };
-    
     // Grid 행 삭제 Function
-    const removeRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const removeRow = () => {                                                     // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
         const api = medicineGridRef.current.api;                                  // api 획득
         const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
 
@@ -152,9 +242,27 @@ function ManageMediFixt() {
     };
 
     const onCellClicked = (params) => {
-        if(params.column.colId === "medicineName") {
-            console.log(params)
-        }
+        // if(params.column.colId === "medicineName") {
+        //     console.log(params)
+        //     return (
+        //         <div style={{ width: '100%' }}>
+        //             <Typeahead
+        //                 ref={typeaheadRef}
+        //                 id="basic-typeahead-single"
+        //                 labelKey="name"
+        //                 // onChange={handleHospitalSelect}
+        //                 // options={dynamicOptions}
+        //                 placeholder="병·의원명을 입력하세요"
+        //                 // onInputChange={(input) => {
+        //                 //     searchHospital(input);
+        //                 // }}
+        //                 emptyLabel="검색 결과가 없습니다."
+        //                 // renderMenuItemChildren={renderMenuItemChildren}
+        //                 style={{height: '38px'}}
+        //             />
+        //         </div>
+        //     )
+        // }
     }
 
     return (
@@ -170,6 +278,14 @@ function ManageMediFixt() {
                                 <NavLink id="fixture" onClick={moveManageMenu} active={selectedMenu === 'fixture'}>비품관리</NavLink>
                             </NavItem>
                         </Nav>
+                    </Col>
+                    
+                </Row>
+                <Row className="no-gutters">
+                    <Col md="7" className="pt-2">
+                        <Button size="sm" onClick={appendRow}>추가</Button>
+                        <Button className="ml-1" size="sm" onClick={removeRow}>삭제</Button>
+                        <Button className="ml-3" size="sm" onClick={allRemoveRow}>전체 삭제</Button>
                     </Col>
                     <Col md="5">
                         <Row className="justify-content-end align-items-center no-gutters">
@@ -199,11 +315,6 @@ function ManageMediFixt() {
                             <Button className="ml-2" style={{ height: '38px' }}>검색</Button>
                         </Row>
                     </Col>
-                </Row>
-                <Row className="no-gutters">
-                    <Button size="sm" onClick={appendRow}>추가</Button>
-                    <Button className="ml-1" size="sm" onClick={removeRow}>삭제</Button>
-                    <Button className="ml-3" size="sm" onClick={allRemoveRow}>전체 삭제</Button>
                 </Row>
                 <Row>
                     <Col md="12">
