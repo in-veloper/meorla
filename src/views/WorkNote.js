@@ -425,7 +425,8 @@ function WorkNote(args) {
           const symptomArray = symptomString.split('::').map(item => {
             return { symptom: item };
           });
-
+          
+          setSymptomRowData(symptomArray);
           setFilteredSymptom(symptomArray);
           setIsRegistered(true);
         }
@@ -450,6 +451,7 @@ function WorkNote(args) {
             return { medication: item };
           });
 
+          setMedicationRowData(medicationArray);
           setFilteredMedication(medicationArray);
           setIsRegistered(true);
         }
@@ -966,7 +968,7 @@ function WorkNote(args) {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact
                   ref={symptomGridRef}
-                  rowData={symptomRowData}
+                  rowData={filteredSymptom}
                   columnDefs={symptomColumnDefs}
                   stopEditingWhenCellsLoseFocus={true}
                   // singleClickEdit={true}
@@ -1014,7 +1016,7 @@ function WorkNote(args) {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact
                   ref={medicationGridRef}
-                  rowData={medicationRowData}
+                  rowData={filteredMedication}
                   columnDefs={medicationColumnDefs}
                   stopEditingWhenCellsLoseFocus={true}
                   paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정

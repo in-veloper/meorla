@@ -2,12 +2,12 @@
   - 분류 선택하지 않은 채로 조회 시 해당 키워드가 모든 카테고리에 포함된 경우 가정 -> 동작하도록 처리
 */
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem } from "reactstrap";
+import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg } from "reactstrap";
 import '../assets/css/medicalInfo.css';
 
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
@@ -46,6 +46,10 @@ function MedicalInfo() {
     const selectedCategory = e.target.value;  // 선택한 분류 값
     setSearchCategory(selectedCategory);      // 전역 변수에 할당
   }
+
+  useEffect(() => {
+    if(!searchCategory) setSearchCategory(document.getElementById('searchCategory').value);
+  }, [searchCategory]);
 
   // 검색 Event
   const handleSearch = async (e) => {
@@ -140,7 +144,6 @@ function MedicalInfo() {
             onChange={handleSearchCategory}
             value={searchCategory}
           >
-            <option value='none'>분류 선택</option>
             <option value='mName'>제품명</option>
             <option value='mCompany'>업체명</option>
             <option value='mEffect'>효능</option>
@@ -179,13 +182,13 @@ function MedicalInfo() {
           </Col>
         </Row>
 
-        <Modal isOpen={modal} toggle={toggleModal} centered style={{ minWidth: '35%' }}>
+        <Modal isOpen={modal} toggle={toggleModal} centered style={{ minWidth: '55%' }}>
           <ModalHeader toggle={toggleModal}><b className="text-muted">상세 정보</b></ModalHeader>
           <ModalBody>
             {selectedRowData && (
               <div>
                 <ListGroup className="text-muted">
-                  <ListGroupItem><span className="mr-1 row-detail-span">제품명</span> <div className="row-detail-div">{selectedRowData.itemName}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-1 row-detail-span" >제품명</span> <div className="row-detail-div">{selectedRowData.itemName}</div></ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">업체명</span> <div className="row-detail-div">{selectedRowData.entpName}</div></ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">품목코드</span> <div className="row-detail-div">{selectedRowData.itemSeq}</div></ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">효능</span> <div className="row-detail-div">{selectedRowData.efcyQesitm}</div></ListGroupItem>
@@ -194,6 +197,7 @@ function MedicalInfo() {
                   <ListGroupItem><span className="mr-1 row-detail-span">상호작용</span> <div className="row-detail-div">{selectedRowData.intrcQesitm}</div></ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">부작용</span> <div className="row-detail-div">{selectedRowData.seQesitm}</div></ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">보관법</span> <div className="row-detail-div">{selectedRowData.depositMethodQesitm}</div></ListGroupItem>
+                  <ListGroupItem><span className="mr-1 row-detail-span">이미지</span> <div className="row-detail-div"><CardImg src={selectedRowData.itemImage} style={{ width: '200px' }}/></div></ListGroupItem>
                 </ListGroup>
               </div>
             )}
@@ -208,3 +212,8 @@ function MedicalInfo() {
 }
   
 export default MedicalInfo;
+
+/**
+ * 약품 좋아요 기능 추가
+ * 그리드 외곽에 좋아요(즐겨찾기)한 좋아요한 약품들 리스트 볼 수 있도록 처리
+ */

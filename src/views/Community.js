@@ -34,6 +34,7 @@ function Community() {
     // 메뉴별 각각 다른 Grid Setting
     const moveCommunityMenu = (e) => {
         const targetMenuId = e.target.id;
+        setSelectedMenu(targetMenuId);
         
         if(targetMenuId === "question") {               // 선택한 메뉴 - 문의
             setRowData([
@@ -97,18 +98,18 @@ function Community() {
             <div className="content">
                 <Row className="align-items-center pb-2">
                     <Col md="7" className="align-items-left no-gutters">
-                        <Nav className="community-nav">
+                        <Nav className="community-nav" pills>
                             <NavItem>
-                                <NavLink id="question" onClick={moveCommunityMenu}>문의</NavLink>
+                                <NavLink id="question" onClick={moveCommunityMenu} active={selectedMenu === 'question'}>문의</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink id="resourceSharing" onClick={moveCommunityMenu}>자료공유</NavLink>
+                                <NavLink id="resourceSharing" onClick={moveCommunityMenu} active={selectedMenu === 'resourceSharing'}>자료공유</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink id="interact" onClick={moveCommunityMenu}>시도교류</NavLink>
+                                <NavLink id="interact" onClick={moveCommunityMenu} active={selectedMenu === 'interact'}>시도교류</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink id="bambooForest" onClick={moveCommunityMenu}>대나무숲</NavLink>
+                                <NavLink id="bambooForest" onClick={moveCommunityMenu} active={selectedMenu === 'bambooForest'}>대나무숲</NavLink>
                             </NavItem>
                         </Nav>
                     </Col>
@@ -152,8 +153,8 @@ function Community() {
                         </div>
                     </Col>
                 </Row>
-                <Row className="justify-content-end">
-                    <Button className="mr-3">글쓰기</Button>
+                <Row className="justify-content-end no-gutters">
+                    <Button>글쓰기</Button>
                 </Row>
             </div>
         </>
