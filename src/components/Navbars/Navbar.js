@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, InputGroup, InputGroupText, InputGroupAddon, Input, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, ButtonGroup, Button, Form, Badge } from "reactstrap";
+import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form, Badge } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import Notiflix from "notiflix";
 import { useUser } from "../../contexts/UserContext";
@@ -525,4 +525,10 @@ export default Header;
  *  const [bookmarkName, bookmarkAddress] = item.split('::');
  *  return { bookmarkName, bookmarkAddress };
  * });
+ */
+
+/**
+ * 수정 후 새로고침 할때 마다
+ * OST http://localhost:8000/bookmark/getBookmark net::ERR_CONNECTION_REFUSED
+ * 에러 발생
  */

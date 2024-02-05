@@ -16,12 +16,12 @@ function Dashboard(props) {
   const mainPanel = React.useRef();
   const location = useLocation();
   React.useEffect(() => {
-    if (navigator.platform.indexOf("Win") > -1) {
+    if (navigator.userAgent.indexOf("Win") > -1) {
       ps = new PerfectScrollbar(mainPanel.current);
       document.body.classList.toggle("perfect-scrollbar-on");
     }
     return function cleanup() {
-      if (navigator.platform.indexOf("Win") > -1) {
+      if (navigator.userAgent.indexOf("Win") > -1) {
         ps.destroy();
         document.body.classList.toggle("perfect-scrollbar-on");
       }

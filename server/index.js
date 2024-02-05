@@ -413,6 +413,40 @@ app.post("/medication/getMedication", async (req, res) => {
     });
 });
 
+app.post("/stockMedicine/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const medicineName = req.body.medicineName;
+    const coporateName = req.body.coporateName;
+    const unit = req.body.unit;
+    const stockAmount = req.body.stockAmount;
+    const extinctAmount = req.body.extinctAmount;
+    const latestPurchaseDate = req.body.latestPurchaseDate;
+
+    const sqlQuery = "INSERT INTO teaform_db.stockMedicine (userId, schoolCode, medicineName, coporateName, unit, stockAmount, extinctAmount, purchaseDate) VALUES (?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, medicineName, coporateName, unit, stockAmount, extinctAmount, latestPurchaseDate], (err, result) => {
+        if(err) {
+            console.log("약품 재고 Insert 중 ERROR" + err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/stockMedicine/getStockMedicine", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("약품 재고 조회 중 ERROR", err);
+        }else{
+            res.json({ stockMedicineData: result });
+        }
+    })
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

@@ -160,7 +160,7 @@ function WorkNote(args) {
   const onInputChange = (field, value) => {
     setSearchCriteria((prevCriteria) => ({
       ...prevCriteria,
-      [field]: value,
+      [field]: value
     }));
   };
   
@@ -425,7 +425,7 @@ function WorkNote(args) {
           const symptomArray = symptomString.split('::').map(item => {
             return { symptom: item };
           });
-          
+
           setSymptomRowData(symptomArray);
           setFilteredSymptom(symptomArray);
           setIsRegistered(true);

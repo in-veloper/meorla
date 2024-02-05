@@ -8,18 +8,21 @@ import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg } from "reactstrap";
+import { FaRegStar } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import '../assets/css/medicalInfo.css';
 
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function MedicalInfo() {
-  const [searchCategory, setSearchCategory] = useState("");         // 약품 정보 검색 시 선택 분류
-  const [searchText, setSearchText] = useState("");                 // 검색어 입력 값 할당 변수
-  const [searchResult, setSearchResult] = useState([]);             // 검색 결과 할당 변수
-  const [modal, setModal] = useState(false);                        // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
-  const [selectedRowData, setSelectedRowData] = useState(null);     // 선택한 Row Data 할당 변수 (상세화면 출력)
+  const [searchCategory, setSearchCategory] = useState("");             // 약품 정보 검색 시 선택 분류
+  const [searchText, setSearchText] = useState("");                     // 검색어 입력 값 할당 변수
+  const [searchResult, setSearchResult] = useState([]);                 // 검색 결과 할당 변수
+  const [modal, setModal] = useState(false);                            // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
+  const [selectedRowData, setSelectedRowData] = useState(null);         // 선택한 Row Data 할당 변수 (상세화면 출력)
+  const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
 
-  const gridRef = useRef();                                         // 검색 결과 출력 Grid
+  const gridRef = useRef();                                             // 검색 결과 출력 Grid
 
   // 약품 정보 Grid Column 정의
   const [columnDefs] = useState([
@@ -131,6 +134,11 @@ function MedicalInfo() {
       gridRef.current.api.showLoadingOverlay(); // Overlay로 로딩 Animation 출력
   }, []);
 
+  // 약품별 Bookmark 상태 Toggle Function
+  const handleBookmarkMedicine = () => {
+    setMedicineBookmarked((prev) => !prev);     // 이전 Bookmark 상태 획득 후 Toggle 값 반환
+  }
+
   return (
     <>
       <div className="content">
@@ -188,7 +196,16 @@ function MedicalInfo() {
             {selectedRowData && (
               <div>
                 <ListGroup className="text-muted">
-                  <ListGroupItem><span className="mr-1 row-detail-span" >제품명</span> <div className="row-detail-div">{selectedRowData.itemName}</div></ListGroupItem>
+                  <ListGroupItem>
+                    <span className="mr-1 row-detail-span" >제품명</span> 
+                    <div className="row-detail-div">{selectedRowData.itemName}
+                      {!medicineBookmarked ? (
+                        <FaRegStar className="ml-2" style={{ fontSize: 18, marginTop: -2 }} onClick={handleBookmarkMedicine}/>
+                      ) : (
+                        <FaStar className="ml-2" style={{ fontSize: 18, marginTop: -2 }} onClick={handleBookmarkMedicine}/>
+                      )}
+                    </div>
+                  </ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">업체명</span> <div className="row-detail-div">{selectedRowData.entpName}</div></ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">품목코드</span> <div className="row-detail-div">{selectedRowData.itemSeq}</div></ListGroupItem>
                   <ListGroupItem><span className="mr-1 row-detail-span">효능</span> <div className="row-detail-div">{selectedRowData.efcyQesitm}</div></ListGroupItem>

@@ -1,26 +1,27 @@
-import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
-import { Row, Col, Nav, NavItem, NavLink, Button, Input, Modal, ModalHeader, ModalBody, ModalFooter, Form } from "reactstrap";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Row, Col, Nav, NavItem, NavLink, Button, Input, Modal, ModalHeader, ModalBody, ModalFooter, Form, Label } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import Notiflix from "notiflix";
+import { useUser } from "../contexts/UserContext.js";
 import axios from "axios";
 import '../assets/css/managemedifixt.css';
+import { useMemo } from "react";
 
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function ManageMediFixt() {
+    const {user} = useUser();
     const [selectedMenu, setSelectedMenu] = useState("medicine");
-    const [isRemoved, setIsRemoved] = useState(false);
-    const [isRegistered, setIsRegistered] = useState(false);
-
     const [registMedicineModal, setRegistMedicineModal] = useState(false);
-    const [registMedicineRowData, setRegistMedicineRowData] = useState([]);
     const [searchCategory, setSearchCategory] = useState("");         // 약품 정보 검색 시 선택 분류
     const [searchText, setSearchText] = useState("");                 // 검색어 입력 값 할당 변수
     const [searchResult, setSearchResult] = useState([]);             // 검색 결과 할당 변수
+    const [selectedMedicine, setSelectedMedicine] = useState({ medicineName: "", coporateName: "" });
+    const [medicineFormData, setMedicineFormData] = useState({ unit: "", stockAmount: 0, extinctAmount: 0, lastestPurchaseDate: "" });
 
     const medicineGridRef = useRef();
     const fixtureGridRef = useRef();
@@ -31,31 +32,52 @@ function ManageMediFixt() {
     const onGridReady = useCallback((params) => {
     }, []);
 
-    const [medicineRowData] = useState([
-        // {medicineName: "약품", coporateName: "회사", unit: "단위", inventory: 0, extinct: 0, lastestPurchaseDate: "2024-01-23", lastestUpdateDate: "2024-01-23"}
-    ]);
+    const [medicineRowData, setMedicineRowData] = useState([]);
 
-    const [fixtureRowData] = useState([
+    const [fixtureRowData] = useState([]);
 
-    ]);
+
+    // 아래 에러나는거부터 처리
+
+    const purchaseDateFormatter = (params) => {
+        if (!params.value) return '';
+        
+        const purchaseDate = new Date(params.value);  
+        const month = purchaseDate.getMonth() + 1;
+        const day = purchaseDate.getDate();
+
+        return `${purchaseDate.getFullYear()}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
+    }
+
+    // 최근구매일, 최근수정일 Column Fomatter Function
+    const updateAtFormatter = (params) => {
+        if (!params.value) return '';
+        
+        const updateDate = new Date(params.value);  
+        const month = updateDate.getMonth() + 1;
+        const day = updateDate.getDate();
+
+        return `${updateDate.getFullYear()}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
+    }
 
     // 기본 컬럼 속성 정의 (공통 부분)
-    const defaultColDef = {
-        sortable: true,
-        resizable: true,
-        filter: true,
-        editable: true
-    };
+    const defaultColDef = useMemo(() => {
+        return {
+            sortable: true,
+            resizable: true,
+            filter: true,
+            editable: true
+        };
+    }, []) ;
 
     const [medicineColDef] = useState([
-        // {field: "medicineName", headerName: "약품명", flex: 2, cellStyle: { textAlign: "center" }, cellEditor: 'agSelectCellEditor',  cellEditorParams: cellEditorParams },
-        {field: "medicineName", headerName: "약품명", flex: 2, cellStyle: { textAlign: "center" }, editable: false},
-        {field: "coporateName", headerName: "업체명", flex: 2, cellStyle: { textAlign: "center" }},
+        {field: "medicineName", headerName: "약품명", flex: 2, cellStyle: { textAlign: "left" }},
+        {field: "coporateName", headerName: "업체명", flex: 2, cellStyle: { textAlign: "left" }},
         {field: "unit", headerName: "단위", flex: 1, cellStyle: { textAlign: "center" }},
-        {field: "inventory", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
-        {field: "extinct", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
-        {field: "lastestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }, cellEditor: 'agDateCellEditor'},
-        {field: "lastestUpdateDate", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" }, cellEditor: 'agDateCellEditor'}
+        {field: "stockAmount", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
+        {field: "extinctAmount", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
+        {field: "latestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: purchaseDateFormatter},
+        {field: "updateAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" },  valueFormatter: updateAtFormatter}
     ]);
 
     const [fixtureColDef] = useState([
@@ -64,14 +86,14 @@ function ManageMediFixt() {
         {field: "unit", headerName: "단위", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "inventory", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "extinct", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
-        {field: "lastestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }},
-        {field: "lastestUpdateDate", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" }}
+        {field: "latestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }},
+        {field: "updateAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" }}
     ]);
 
     const [registMedicineColDefs] = useState([
         { field: "itemName", headerName: "약품명", flex: 1, cellStyle: { textAlign: "left" }},
         { field: "entpName", headerName: "업체명", flex: 1, cellStyle: { textAlign: "left" }}
-      ]);
+    ]);
 
     const moveManageMenu = (e) => {
         const targetMenuId = e.target.id;
@@ -93,107 +115,123 @@ function ManageMediFixt() {
         return addItems.concat(defaultItems);
     }
 
-    // 추가할 행 생성
-    const createNewRowData = () => {
-        const newData = {
-            medicineName: "",
-            coporateName: "",
-            unit: "",
-            inventory: 0,
-            extinct: 0,
-            lastestPurchaseDate: "",
-            medicineNalastestUpdateDateme: "",
-            editable: true
-        }
-        return newData;
-    };
-
-    // Grid 행 추가 Function
-    const appendRow = useCallback(() => {
-        const api = medicineGridRef.current.api;                                  // api 획득
-        const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
-        const newItem = [createNewRowData()];                                     // 추가할 행 데이터 획득
-
-        api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
-        api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
-        setIsRemoved(false);                                                      // 삭제 상태 state - false 
-        setIsRegistered(false);                                                   // Modal Open isRegistered state - false
-    }, []);
-
-    // Row에 데이터 변경 시 Ag-Grid 내장 Event
-    const onRowDataUpdated = useCallback(() => {                                // 행이 추가되고 난 후 이벤트 (이 지점에서 추가된 행 확인 가능)
-        const api = medicineGridRef.current.api;                                  // Ag-Grid api 획득
-        const displayedRowCount = api.getDisplayedRowCount();                     // 현재 화면에 보여지는 행의 개수
-        const lastRowIndex = displayedRowCount - 1;                               // Edit 속성 부여 위한 마지막 행 Index
+    // // Row에 데이터 변경 시 Ag-Grid 내장 Event
+    // const onRowDataUpdated = useCallback(() => {                                    // 행이 추가되고 난 후 이벤트 (이 지점에서 추가된 행 확인 가능)
+    //     const api = medicineGridRef.current.api;                                    // Ag-Grid api 획득
+    //     const displayedRowCount = api.getDisplayedRowCount();                       // 현재 화면에 보여지는 행의 개수
+    //     const lastRowIndex = displayedRowCount - 1;                                 // Edit 속성 부여 위한 마지막 행 Index
         
-        if(isRemoved || isRegistered) {                                           // 항목 삭제 버튼 클릭 시 || 초기 bookmark 데이터 불러왔을 시
-            api.stopEditing(true);                                                  // Edit 모드 중지
-            return;                                                                 // return
-        }
+    //     if(isRemoved || isRegistered) {                                             // 항목 삭제 버튼 클릭 시 || 초기 bookmark 데이터 불러왔을 시
+    //         api.stopEditing(true);                                                  // Edit 모드 중지
+    //         return;                                                                 // return
+    //     }
         
-        if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'medicineName' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
-    }, [isRemoved, isRegistered]);
+    //     if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'medicineName' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
+    // }, [isRemoved, isRegistered]);
 
-    // Grid 행 삭제 Function
-    const removeRow = () => {                                                     // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
-        const api = medicineGridRef.current.api;                                  // api 획득
-        const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
+    const addMedicine = () => {
+        toggleRegistMedicineModal();
+        setSearchCategory('mName');
+    }
+
+    const onRowClicked = (params) => {
+        const selectedMedicineData = params.data;
+        setSelectedMedicine(selectedMedicineData);
+    }
+
+    const saveMedicine = async (event) => {
+        event.preventDefault();
         
-        if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
-            Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
-                position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
-            
-            return;
-        }
+        try {
+            const medicineName = document.getElementById('selectedMedicineInput').value;
+            const coporateName = document.getElementById('selectedCoporateInput').value;
+            const unit = document.getElementById('unit').value;
+            const stockAmount = document.getElementById('stockAmount').value;
+            const extinctAmount = document.getElementById('extinctAmount').value;
+            const latestPurchaseDate = document.getElementById('latestPurchaseDate').value;
 
-        api.applyTransaction({ remove: selectedRow });                            // 선택 행 삭제 
-        setIsRemoved(true);                                                       // 삭제 상태 state - true (삭제 시에는 Edit 모드 진입 안함)
-    };
+            Notiflix.Confirm.show(
+                '약품 등록',
+                '작성하신 약품 정보를 등록하시겠습니까?',
+                '예',
+                '아니요',
+                async () => {
+                    const response = await axios.post('http://localhost:8000/stockMedicine/insert', {
+                        userId: user.userId,
+                        schoolCode: user.schoolCode,
+                        medicineName: medicineName,
+                        coporateName: coporateName,
+                        unit: unit,
+                        stockAmount: stockAmount,
+                        extinctAmount: extinctAmount,
+                        latestPurchaseDate: latestPurchaseDate
+                    });
 
-    // Grid 행 전체 삭제 Function
-    const allRemoveRow = () => {
-        const api = medicineGridRef.current.api;
-        const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-        
-        if(displayedRowCount === 0) {                         // 현재 등록된 약품이 없을 경우
-            // 등록된 북마크 없음 Notify
-            Notiflix.Notify.warning('등록된 약품이 없습니다.', {
-                position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
+                    if(response.data === "success") {
+                        fetchStockMedicineData();
+                        // 등록한 약품 정보 불러오는 것부터 처리하면 됨
 
-            return;                                           // return
-        }else{                                                // 등록된 약품이 있을 경우
-            api.setRowData([]);                               // 약품 행 전체 삭제 (빈 배열 삽입으로 초기화)
-        }
-    };
 
-    const onCellClicked = (params) => {
-        if(params.column.colId === "medicineName") {
-            toggleRegistMedicineModal();
-            setSearchCategory('mName');
+
+
+
+
+                        Notiflix.Notify.info('약품 등록이 정상적으로 처리되었습니다.', {
+                            position: 'center-center', showOnlyTheLastOne: true, plainText: false
+                        });
+
+                        resetMedicineForm();
+                    }
+                },() => {
+                    return;
+                },{
+                    position: 'center-center', showOnlyTheLastOne: true, plainText: false
+                }
+            )
+        } catch (error) {
+            console.error('약품 관리 등록 중 ERROR', error);
         }
     }
 
-    const selectMedicine = () => {
-        const selectedRows = registMedicineGridRef.current.api.getSelectedRows();
-
-        if(selectedRows.length > 0) {
-            const selectedMedicine = selectedRows[0];
-            const medicineApi = medicineGridRef.current.api;
-            const existingRowNode = medicineApi.getRowNode(selectedMedicine.id);
-            
-            // 기존 등록된 약품인 경우
-            if(existingRowNode) {
-                existingRowNode.setData({
-                    ...existingRowNode.data,
-                    medicineName: selectedMedicine.itemName,
-                    coporateName: selectedMedicine.entpName
+    const fetchStockMedicineData = useCallback(async () => {
+        try {
+            if(user?.userId && user?.schoolCode) {
+                const response = await axios.post('http://localhost:8000/stockMedicine/getStockMedicine', {
+                    userId: user.userId,
+                    schoolCode: user.schoolCode
                 });
-            }
 
-            toggleRegistMedicineModal();
+                if(response.data) {
+                    const stockMedicineData = response.data.stockMedicineData;
+                    setMedicineRowData(stockMedicineData);
+                }
+            }
+        } catch (error) {
+            console.log("약품 재고 조회 중 ERROR", error);
         }
+    }, [user?.userId, user?.schoolCode]);
+    
+    useEffect(() => {
+        fetchStockMedicineData();
+    },[fetchStockMedicineData]);
+    
+    
+    const resetMedicineForm = () => {
+        setSearchText("");
+
+        registMedicineGridRef.current.api.setRowData([]);
+
+        setSelectedMedicine({
+            medicineName: "",
+            coporateName: ""
+        });
+
+        setMedicineFormData({
+            unit: "",
+            stockAmount: 0,
+            extinctAmount: 0,
+            lastestPurchaseDate: ""
+        });
     }
 
     // 검색 분류 선택 Event
@@ -283,9 +321,6 @@ function ManageMediFixt() {
                 </Row>
                 <Row className="no-gutters">
                     <Col md="7" className="pt-2">
-                        <Button size="sm" onClick={appendRow}>추가</Button>
-                        <Button className="ml-1" size="sm" onClick={removeRow}>삭제</Button>
-                        <Button className="ml-3" size="sm" onClick={allRemoveRow}>전체 삭제</Button>
                     </Col>
                     <Col md="5">
                         <Row className="justify-content-end align-items-center no-gutters">
@@ -321,16 +356,14 @@ function ManageMediFixt() {
                         <div className="ag-theme-alpine" style={{ height: '78vh' }}>
                             {selectedMenu === 'medicine' && (
                                 <AgGridReact
-                                    getRowId={(params, index) => index}
                                     ref={medicineGridRef}
                                     rowData={medicineRowData} 
                                     columnDefs={medicineColDef}
                                     defaultColDef={defaultColDef}
                                     onCellContextMenu={onCellContextMenu}
-                                    onCellClicked={onCellClicked}
                                     preventDefaultOnContextMenu={true}
                                     stopEditingWhenCellsLoseFocus={true}
-                                    onRowDataUpdated={onRowDataUpdated}
+                                    // onRowDataUpdated={onRowDataUpdated}
                                     overlayNoRowsTemplate={ '<span>등록된 약품이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
                                     overlayLoadingTemplate={
                                         '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
@@ -351,13 +384,13 @@ function ManageMediFixt() {
                     </Col>
                 </Row>
                 <Row className="justify-content-end no-gutters">
-                    <Button id="medicineInitButton" className="">초기화</Button>
-                    <Button id="medicineSaveButton" className="ml-1">저장</Button>
+                    <Button id="addMedicineButton" className="" onClick={addMedicine}>추가</Button>
+                    <Button id="removeMedicineButton" className="ml-1">삭제</Button>
                 </Row>
             </div>
 
             <Modal isOpen={registMedicineModal} toggle={toggleRegistMedicineModal} centered style={{ minWidth: '30%' }}>
-                <ModalHeader toggle={toggleRegistMedicineModal}><b className="text-muted">약품 입력</b></ModalHeader>
+                <ModalHeader toggle={toggleRegistMedicineModal}><b className="text-muted">약품 등록</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Row>
                         <Input
@@ -380,45 +413,120 @@ function ManageMediFixt() {
                             placeholder="검색 키워드를 입력하세요"
                             onKeyDown={handleKeyDown}
                             autoFocus={true}
-                            style={{ width: '60%', height: '40px'}}
+                            style={{ width: '59.5%', height: '40px'}}
                             onChange={handleSearchText}
                         />
                         <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
                     </Row>
-                    <br/>
                     <Row>
                         <Col md="12">
-                            <Form onSubmit={selectMedicine}>
-                                <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
-                                    <AgGridReact
-                                        ref={registMedicineGridRef}
-                                        rowData={searchResult}
-                                        columnDefs={registMedicineColDefs}
-                                        stopEditingWhenCellsLoseFocus={true}
-                                        // singleClickEdit={true}
-                                        paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
-                                        // defaultColDef={defaultColDef}
-                                        overlayNoRowsTemplate={ '<span>등록된 증상이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                                        overlayLoadingTemplate={
-                                            '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                                        }
-                                        // onGridReady={onGridReady}
-                                        rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
-                                        enterNavigatesVertically={true}
-                                        enterNavigatesVerticallyAfterEdit={true}
-                                        // onCellEditingStarted={onCellEditingStarted}
-                                        // onCellEditingStopped={onCellEditingStopped}
-                                        // onRowDataUpdated={onSymptomRowDataUpdated}
-                                        // onCellValueChanged={onCellValueChanged}
-                                    />
-                                </div>
-                            </Form>
+                            <div className="ag-theme-alpine" style={{ height: '17.5vh' }}>
+                                <AgGridReact
+                                    ref={registMedicineGridRef}
+                                    rowData={searchResult}
+                                    columnDefs={registMedicineColDefs}
+                                    stopEditingWhenCellsLoseFocus={true}
+                                    onRowClicked={onRowClicked}
+                                    paginationPageSize={4} // 페이지 크기를 원하는 값으로 설정
+                                    overlayNoRowsTemplate={ '<span>등록된 증상이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                    overlayLoadingTemplate={
+                                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                                    }
+                                    rowSelection={'single'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
+                                    enterNavigatesVertically={true}
+                                    enterNavigatesVerticallyAfterEdit={true}
+                                />
+                            </div>
                         </Col>
                     </Row>
+                    <Form onSubmit={saveMedicine} className="mt-2 mb-3" style={{ border: '1px dotted #babfc7', borderRadius: 4 }}>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">약품명</Label>
+                            </Col>
+                            <Col md="10" className="no-gutters">
+                                <Input
+                                    id="selectedMedicineInput" 
+                                    type="text" 
+                                    value={selectedMedicine.itemName || ""}
+                                    onChange={(e) => setSelectedMedicine({...selectedMedicine, itemName: e.target.value})}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">업체명</Label>
+                            </Col>
+                            <Col md="4" className="no-gutters">
+                                <Input
+                                    id="selectedCoporateInput"
+                                    type="text" 
+                                    value={selectedMedicine.entpName || ""}
+                                    onChange={(e) => setSelectedMedicine({...selectedMedicine, entpName: e.target.value})}
+                                />
+                            </Col>
+                            <Col md="3" className="text-center align-items-center">
+                                <Label className="text-muted">최근 구매일</Label>
+                            </Col>
+                            <Col md="3" className="no-gutters">
+                                <Input
+                                    id="latestPurchaseDate"
+                                    type="date" 
+                                    value={medicineFormData.lastestPurchaseDate || ""}
+                                    onChange={(e) => setMedicineFormData({...medicineFormData, lastestPurchaseDate: e.target.value})}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mb-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">단위</Label>
+                            </Col>
+                            <Col md="2" className="no-gutters">
+                                <Input 
+                                    id="unit" 
+                                    className="text-right" 
+                                    type="text"
+                                    value={medicineFormData.unit}
+                                    onChange={(e) => setMedicineFormData({ ...medicineFormData, unit: e.target.value })}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">재고량</Label>
+                            </Col>
+                            <Col md="2" className="no-gutters">
+                                <Input 
+                                    id="stockAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    value={medicineFormData.stockAmount}
+                                    onChange={(e) => setMedicineFormData({ ...medicineFormData, stockAmount: e.target.value })}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">소실량</Label>
+                            </Col>
+                            <Col md="2" className="no-gutters">
+                                <Input 
+                                    id="extinctAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    value={medicineFormData.extinctAmount}
+                                    onChange={(e) => setMedicineFormData({ ...medicineFormData, extinctAmount: e.target.value })}
+                                />
+                            </Col>
+                        </Row>
+                    </Form>
                 </ModalBody>
-                <ModalFooter>
-                    <Button className="mr-1" color="secondary" onClick={selectMedicine}>선택</Button>
-                    <Button color="secondary" onClick={toggleRegistMedicineModal}>취소</Button>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        <Col className="d-flex justify-content-left">
+                            <Button onClick={resetMedicineForm}>초기화</Button>
+                        </Col>
+                        <Col className="d-flex justify-content-end">
+                            <Button className="mr-1" color="secondary" onClick={saveMedicine}>저장</Button>
+                            <Button color="secondary" onClick={toggleRegistMedicineModal}>취소</Button>
+                        </Col>
+                    </Row>
                 </ModalFooter>
             </Modal>
         </>

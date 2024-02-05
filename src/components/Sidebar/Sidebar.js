@@ -17,14 +17,14 @@ function Sidebar(props) {
     return location.pathname.indexOf(routeName) > -1 ? "active" : "";
   };
   React.useEffect(() => {
-    if (navigator.userAgentData.platform.indexOf("Win") > -1) {
+    if (navigator.userAgent.indexOf("Win") > -1) {
       ps = new PerfectScrollbar(sidebar.current, {
         suppressScrollX: true,
         suppressScrollY: false,
       });
     }
     return function cleanup() {
-      if (navigator.userAgentData.platform.indexOf("Win") > -1) {
+      if (navigator.userAgent.indexOf("Win") > -1) {
         ps.destroy();
       }
     };
@@ -57,7 +57,7 @@ function Sidebar(props) {
           href="https://www.creative-tim.com"
           className="simple-text logo-normal text-muted"
         >
-          <b>TEA:FORM</b>
+          <b>MEDI:WORKS</b>
         </a>
       </div>
       <div className="sidebar-wrapper" ref={sidebar}>
