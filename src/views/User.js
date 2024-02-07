@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label } from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
 import { read, utils } from "xlsx";
+import emailjs from "emailjs-com";
 import axios from "axios";
 import Notiflix from "notiflix";
 import { AgGridReact } from 'ag-grid-react';
@@ -18,8 +19,14 @@ function User() {
   const [gradeData, setGradeData] = useState(null);             // students Table에서 획득한 명렬표 데이터
   const [modalData, setModalData] = useState();                 // 모달에 표시할 데이터를 관리할 상태
   const [isModalOpen, setIsModalOpen] = useState(false);        // 명렬표 등록 상태에 따라 등록 또는 등록된 명렬표 데이터를 출력할 Modal Open 상태 값
-  
+  const [commonPasswordSettingModal, setCommonPasswordSettingModal] = useState(false);
+  const [emailFormModal, setEmailFormModal] = useState(false);
+  const [selectedBackgroundImage, setSelectedBackgroundImage] = useState(null);
+  const [selectedProfileImage, setSelectedProfileImage] = useState(null);
+  const [emailContentValue, setEmailContentValue] = useState("");
+
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
+  const emailForm = useRef();
 
   // 등록한 명렬표 출력 Grid Column 정의
   const [ntColumnDefs] = useState([
@@ -33,6 +40,9 @@ function User() {
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
+
+  const toggleCommonPasswordSettingModal = () => setCommonPasswordSettingModal(!commonPasswordSettingModal); 
+  const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -234,6 +244,76 @@ function User() {
     }
   }
 
+  const handleCommonPasswordSettingModal = (e) => {
+    e.preventDefault();
+    toggleCommonPasswordSettingModal();
+  }
+
+  const saveCommonPassword = () => {
+    
+  }
+
+  const handleRegistBackgroundImage = (e) => {
+    Notiflix.Confirm.show('프로필 배경 이미지 등록', '선택하신 이미지를 프로필 배경 이미지로 등록하시겠습니까?', '예', '아니요', () => {
+      const file = e.target.files[0];
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setSelectedBackgroundImage(e.target.result);
+        };
+  
+        reader.readAsDataURL(file);
+      }
+    }, () => {
+      return;
+    },{
+      position: 'center-center', showOnlyTheLastOne: true, plainText: false
+    });
+  }
+
+  const handleRegistProfileIamge = (e) => {
+    Notiflix.Confirm.show('프로필 이미지 등록', '선택하신 이미지를 프로필 이미지로 등록하시겠습니까?', '예', '아니요', () => {
+      const file = e.target.files[0];
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setSelectedProfileImage(e.target.result);
+        };
+  
+        reader.readAsDataURL(file);
+      }
+    }, () => {
+      return;
+    },{
+      position: 'center-center', showOnlyTheLastOne: true, plainText: false
+    });
+  }
+
+  const handleEmailForm = (e) => {
+    e.preventDefault();
+    toggleEmailFormModal();
+  }
+
+  const sendEmailForm = (e) => {
+    e.preventDefault();
+
+    Notiflix.Confirm.show('관리자 문의 및 요청', '작성하신 메일을 전송하시겠습니까?', '예', '아니요', () => {
+      emailjs.sendForm('MEDIWORKS', 'MEDIWORKS_EMAIL_FORM', emailForm.current, 'QHBZ4RAaEvf0ER6vx')
+        .then(() => {
+          console.log("emailJS 사용 - 문의 메일 전송 성공");
+        }, (error) => {
+          console.log("emailJS 사용 문의메일 전송 중 ERROR", error);
+      });
+
+      toggleEmailFormModal();
+    }, () => {
+      return;
+    },{
+      position: 'center-center', showOnlyTheLastOne: true, plainText: false
+    });
+  };
+
+
   return (
     <>
       <div className="content">
@@ -241,18 +321,39 @@ function User() {
           <Col md="4">
             <Card className="card-user" style={{ height: '560px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
-                <img alt="..." src={require("assets/img/damir-bosnjak.jpg")} />
+                <input 
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={handleRegistBackgroundImage}
+                />
+                <img 
+                  alt="..." 
+                  src={selectedBackgroundImage ? selectedBackgroundImage : require("assets/img/damir-bosnjak.jpg")} 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.target.previousSibling.click();
+                  }}
+                  style={{ cursor: 'pointer' }}
+                />
               </div>
               <CardBody>
                 <div className="author">
-                  <a href="#pablo" onClick={(e) => e.preventDefault()}>
-                    <img
-                      alt="..."
-                      className="avatar border-gray"
-                      src={require("assets/img/mike.jpg")}
-                    />
-                    <h5 className="title">{currentUser ? currentUser.name : ''}</h5>
-                  </a>
+                  <input 
+                    type="file"
+                    style={{ display: 'none' }}
+                    onChange={handleRegistProfileIamge}
+                  />
+                  <img
+                    alt="..."
+                    className="avatar border-gray"
+                    src={selectedProfileImage ? selectedProfileImage : require("assets/img/non_profile.png")}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.target.previousSibling.click();
+                    }}
+                    style={{ cursor: 'pointer', border: 'none' }}
+                  />
+                  <h5 className="title">{currentUser ? currentUser.name : ''}</h5>
                   <p className="description">{currentUser ? currentUser.schoolName : ''}</p>
                 </div>
                 <p className="description text-center">
@@ -316,7 +417,7 @@ function User() {
                           outline
                           size="sm"
                         >
-                          <i className="fa fa-envelope" />
+                          <i className="fa fa-envelope" onClick={handleEmailForm} />
                         </Button>
                       </Col>
                     </Row>
@@ -481,6 +582,15 @@ function User() {
                       >
                         비밀번호 재설정
                       </Button>
+                      <Button
+                        className="ml-2"
+                        color="secondary"
+                        type="submit"
+                        onClick={handleCommonPasswordSettingModal}
+                      >
+                        공통 비밀번호 설정
+                      </Button>
+
                     </div>
                   </Row>
                   <Modal isOpen={isModalOpen} backdrop={true} toggle={toggleModal} centered={true} autoFocus={false}>
@@ -504,6 +614,97 @@ function User() {
           </Col>
         </Row>
       </div>
+
+      <Modal isOpen={commonPasswordSettingModal} toggle={toggleCommonPasswordSettingModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={toggleCommonPasswordSettingModal}><b className="text-muted">공통 비밀번호 설정</b></ModalHeader>
+          <ModalBody className="pb-0">
+            <Form className="mt-2 mb-3" onSubmit={saveCommonPassword}>
+              <Row className="no-gutters">
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">현재 공통 비밀번호</Label>
+                </Col>
+                <Col md="8">
+                  <Input 
+                    readOnly
+                    style={{ width: '90%' }}
+                  />
+                </Col>
+              </Row>
+              <Row className="mt-3 no-gutters">
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">변경 공통 비밀번호</Label>
+                </Col>
+                <Col md="8">
+                  <Input 
+                    style={{ width: '90%' }}
+                  />
+                </Col>
+              </Row>
+            </Form>
+          </ModalBody>
+          <ModalFooter>
+            <Button className="mr-1" color="secondary" onClick={saveCommonPassword}>저장</Button>
+            <Button color="secondary" onClick={toggleCommonPasswordSettingModal}>취소</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={emailFormModal} toggle={toggleEmailFormModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={toggleEmailFormModal}><b className="text-muted">관리자 문의 및 요청</b></ModalHeader>
+          <ModalBody className="pb-0">
+            <form ref={emailForm} className="mt-2 mb-3" onSubmit={sendEmailForm}>
+              <Row className="no-gutters">
+                <Input 
+                  name="email_subject"
+                  defaultValue={currentUser ? currentUser.name + "[" + currentUser.schoolName + "] :: 문의 및 요청" : ''}
+                  hidden
+                />
+                <Col md="3" className="text-center align-tiems-center">
+                  <Label className="text-muted">FROM</Label>
+                </Col>
+                <Col md="9">
+                  <Input 
+                    type="email"
+                    name="sender_email"
+                    defaultValue={currentUser ? currentUser.email : ''}
+                    style={{ width: '90%' }}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row className="mt-3 no-gutters">
+                <Col md="3" className="text-center align-tiems-center">
+                  <Label className="text-muted">TO</Label>
+                </Col>
+                <Col md="9">
+                  <Input 
+                    type="text"
+                    value="관리자"
+                    style={{ width: '90%' }}
+                    readOnly
+                  />
+                </Col>
+              </Row>
+              <Row className="mt-3 no-gutters">
+                <Col md="3" className="text-center align-tiems-center">
+                  <Label className="text-muted">내용</Label>
+                </Col>
+                <Col md="9">
+                  <Input 
+                    type="textarea"
+                    name="email_content"
+                    defaultValue={emailContentValue}
+                    onChange={(e) => setEmailContentValue(e.target.value)}
+                    style={{ width: '90%', minHeight: 150, maxHeight: 150, paddingLeft: 13, paddingRight: 13 }}
+                  />
+                </Col>
+              </Row>
+            </form>
+          </ModalBody>
+          <ModalFooter>
+            <Button className="mr-1" color="secondary" onClick={sendEmailForm}>보내기</Button>
+            <Button color="secondary" onClick={toggleEmailFormModal}>취소</Button>
+          </ModalFooter>
+       </Modal>
     </>
   );
 }

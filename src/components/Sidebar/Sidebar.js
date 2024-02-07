@@ -1,4 +1,5 @@
-import React, {useEffect} from "react";
+import React, {useState, useEffect} from "react";
+import { useParams } from "react-router-dom";
 import { NavLink, useLocation } from "react-router-dom";
 import { Nav } from "reactstrap";
 import PerfectScrollbar from "perfect-scrollbar";
@@ -9,10 +10,19 @@ import mainLogoBlack from "../../assets/img/main_header_logo_black.png";
 var ps;
 
 function Sidebar(props) {
+  const [schoolCodeByParams, setSchoolCodeByParams] = useState("");
+  const params = useParams();
   const { user, logout } = useUser();
   const location = useLocation();
   const sidebar = React.useRef();
   // verifies if routeName is the one active (in browser input)
+
+  useEffect(() => {
+    const schoolCode = params['*'].split('/')[1];
+    setSchoolCodeByParams(schoolCode);
+    sessionStorage.setItem("thirdPartyUserCode", schoolCode);
+  }, [params]);
+
   const activeRoute = (routeName) => {
     return location.pathname.indexOf(routeName) > -1 ? "active" : "";
   };
@@ -57,25 +67,43 @@ function Sidebar(props) {
           href="https://www.creative-tim.com"
           className="simple-text logo-normal text-muted"
         >
-          <b>MEDI:WORKS</b>
+          <b style={{ color: props.bgColor === 'black' ? '#FFFFFF' : '#66615B' }}>MEDI:WORKS</b>
         </a>
       </div>
       <div className="sidebar-wrapper" ref={sidebar}>
         <Nav>
           {props.routes.map((prop, key) => {
-            return (
-              <li
-                className={
-                  activeRoute(prop.path) + (prop.pro ? " active-pro" : "")
-                }
-                key={key}
-              >
-                <NavLink to={prop.layout + prop.path} className="nav-NavLink">
-                  <i className={prop.icon} />
-                  <p>{prop.name}</p>
-                </NavLink>
-              </li>
-            );
+            // 여기부터 하면 될듯 보건실 사용 요청 메뉴 제외부터???
+            if(!schoolCodeByParams && prop.path.split('/')[1] !== 'request') {
+              return (
+                <li
+                  className={
+                    activeRoute(prop.path) + (prop.pro ? " active-pro" : "")
+                  }
+                  key={key}
+                >
+                  <NavLink to={prop.layout + prop.path} className="nav-NavLink">
+                    <i className={prop.icon} />
+                    <p>{prop.name}</p>
+                  </NavLink>
+                </li>
+              );
+            }else if(prop.path.split('/')[1] === 'request') {
+              return (
+                <li
+                  className={
+                    activeRoute(prop.path) + (prop.pro ? " active-pro" : "")
+                  }
+                  key={key}
+                >
+                  <NavLink to={`/teaform/request/${schoolCodeByParams}`} className="nav-NavLink">
+                    <i className={prop.icon} />
+                    <p>{prop.name}</p>
+                  </NavLink>
+                </li>
+              )
+            }
+            return null;
           })}
           <li className="active-pro">
             <NavLink onClick={onLogout}>

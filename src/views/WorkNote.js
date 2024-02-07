@@ -7,10 +7,11 @@ import '../assets/css/worknote.css';
 import { GiBed } from "react-icons/gi";
 import { BiMenu } from "react-icons/bi";
 import { RiSearchLine } from "react-icons/ri";
-import { RiRefreshLine } from "react-icons/ri";
+import { IoMdRefresh } from "react-icons/io";
 import { useUser } from "contexts/UserContext";
 import Notiflix from "notiflix";
 import axios from "axios";
+import moment from "moment";
 
 function WorkNote(args) {
   const { user } = useUser();                              // 사용자 정보
@@ -26,6 +27,8 @@ function WorkNote(args) {
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [modifiedData, setModifiedData] = useState([]);
+  const [currentTimeValue, setCurrentTimeValue] = useState('');
+
 
   const [searchSymptomText, setSearchSymptomText] = useState("");
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
@@ -501,6 +504,11 @@ function WorkNote(args) {
     }
   };
 
+  const setCurrentTime = () => {
+    const currentTime = moment().format('HH:mm');
+    setCurrentTimeValue(currentTime);
+  }
+
   return (
     <>
       <div className="content">
@@ -703,7 +711,7 @@ function WorkNote(args) {
                   <Col md="2" style={{ marginLeft: '-25px' }}>
                     <Row>
                       <Col md="6" style={{ marginTop: '-10px', marginLeft: '-7px', marginRight: '7px' }}>
-                        <Button size="sm" style={{ height: '30px' }} onClick={onResetSearch}><RiRefreshLine style={{ fontSize: '15px'}} /></Button>
+                        <Button size="sm" style={{ height: '30px' }} onClick={onResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button>
                       </Col>
                       <Col md="6" style={{ marginTop: '-10px' }}>
                         <Button size="sm" style={{ height: '30px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
@@ -906,13 +914,17 @@ function WorkNote(args) {
                         <Row>
                           <h6><Badge color="secondary" className="ml-2 mt-1">시작시간</Badge></h6>
                           <Input
+                            id="onBedRestStartTime"
                             className="ml-3"
                             type="time"
                             style={{ width: '125px', height: '30px' }}
+                            onChange={(e) => setCurrentTimeValue(e.target.value)}
+                            value={currentTimeValue}
                           />
-                          <Button size="sm" className="ml-2 m-0" style={{ height: '30px' }}>현재시간</Button>
+                          <Button size="sm" className="ml-2 m-0" style={{ height: '30px' }} onClick={setCurrentTime}>현재시간</Button>
                           <h6><Badge color="secondary" className="ml-4 mt-1">종료시간</Badge></h6>
                           <Input
+                            id="onBedRestEndTime"
                             className="ml-3"
                             type="time"
                             style={{ width: '125px', height: '30px' }}

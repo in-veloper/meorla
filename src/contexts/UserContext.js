@@ -53,6 +53,7 @@ export const UserProvider = ({ children }) => {
     const login = async (userData, accessToken) => {
         try {
             sessionStorage.setItem("accessToken", accessToken);
+            sessionStorage.setItem("schoolCode", userData.schoolCode);
             setUser({
                 userId: userData.userId,
                 name: userData.name,
@@ -75,6 +76,7 @@ export const UserProvider = ({ children }) => {
             const response = await axios.post('http://localhost:8000/user/logout', {userId: userId});
             if(response.status === 200) {
                 sessionStorage.removeItem("accessToken");
+                sessionStorage.removeItem("schoolCode");
                 setUser(null);
                 navigate("/");
             }

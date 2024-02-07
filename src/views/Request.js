@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button } from "reactstrap";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
+import Neis from "@my-school.info/neis-api";
+import { BrowserView, MobileView, isBrowser, isMobile } from "react-device-detect";
 import { FaCheck } from "react-icons/fa";
 import "../assets/css/request.css";
-import Neis from "@my-school.info/neis-api";
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
@@ -34,6 +36,41 @@ function RequesterLogin({onLogin}) {
     const [schoolList, setSchoolList] = useState([]);           // 검색 결과 학교 리스트
     const [dynamicOptions, setDynamicOptions] = useState([]);   // 학교 검색 시 Typeahead options에 값 Setting 위함
     const [password, setPassword] = useState("");               // 입력한 Password
+    const [schoolCodeByParams, setSchoolCodeByParams] = useState("");
+    const [schoolInfoByParams, setSchoolInfoByParams] = useState(null);
+
+    const params = useParams();
+
+    useEffect(() => {
+        document.getElementsByClassName('fixed-plugin')[0].setAttribute('hidden', true);
+        document.getElementsByClassName('navbar-toggler')[0].setAttribute('hidden', true);
+        document.getElementsByClassName('navbar-toggler')[1].setAttribute('hidden', true);
+        document.getElementsByClassName('navbar-brand')[0].setAttribute('href', '#');
+    }, []);
+
+    useEffect(() => {
+        const schoolCode = params['*'].split('/')[1];
+        setSchoolCodeByParams(schoolCode);
+    }, [params]);
+
+    useEffect(() => {
+        if(schoolCodeByParams) {
+            searchSchoolCodeByParams(schoolCodeByParams);
+        }
+    }, [schoolCodeByParams]);
+
+    const searchSchoolCodeByParams = async (code) => {
+        try {
+            const response = await neis.getSchoolInfo({ SD_SCHUL_CODE: code }, { pIndex: 1, pSize: 1 });
+            if(response.length > 0)  {
+                setSchoolName(response[0].SCHUL_NM);
+                setSchoolInfoByParams(response[0]);
+            }
+        } catch (error) {
+            console.log("Parameter 유입 학교 코드로 학교명 검색중 ERROR", error);
+        }
+    }
+
 
     useEffect(() => {
         const storedLoginInfo = getLoginInfoFromSessionStorage();
@@ -95,66 +132,132 @@ function RequesterLogin({onLogin}) {
         }
     }
 
-
     return (
         <>
             <div className="content d-flex justify-content-center align-items-center">
-                <Card style={{ width: '35%', height: '32vh' }}>
-                    <CardBody className="mt-3">
-                        <Row className="mt-2 align-items-center">    
-                            <Col md="3" className="text-center">
-                                <Label>학교명</Label>
-                            </Col>
-                            <Col md="9">
-                                <div style={{ width: '93%'}}>
-                                    <Typeahead
-                                        id="basic-typeahead-single"
-                                        labelKey="name"
-                                        onChange={handleSchoolSelect}
-                                        options={dynamicOptions}
-                                        placeholder="소속학교"
-                                        onInputChange={(input) => {
-                                            searchSchool(input);
-                                        }}
-                                        emptyLabel="검색 결과가 없습니다."
-                                    />
-                                </div>
-                            </Col>
-                        </Row>
-                        <Row className="mt-3 align-items-center">
-                            <Col md="3" className="text-center">
-                                <Label>비밀번호</Label>
-                            </Col>
-                            <Col md="9">
-                                <Input type="password" placeholder="학교 공통 비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '93%' }}/>
-                            </Col>
-                        </Row>
-                        <Row className="p-3 ml-1 mr-1">
-                            <blockquote className="request-blockquote text-center" style={{ width: '100%' }}>
-                                <FaCheck className="mr-2" style={{ color: 'gray' }}/>학교 공통 비밀번호를 모르는 경우, 보건교사님께 문의하세요.                                 
-                            </blockquote>
-                        </Row>
-                    </CardBody>
-                    <CardFooter className="mb-3">
-                        <Row className="d-flex justify-content-center align-items-center">
-                            <Button className="mr-1" onClick={handleLogin}>로그인</Button>
-                            <Button className="ml-1">초기화</Button>
-                        </Row>
-                    </CardFooter>
-                </Card>
+                <BrowserView>
+                    <Card style={{ width: '35%', height: '32vh' }}>
+                        <CardBody className="mt-3">
+                            <Row className="mt-2 align-items-center">    
+                                <Col md="3" className="text-center">
+                                    <Label>학교명</Label>
+                                </Col>
+                                <Col md="9">
+                                    <div style={{ width: '93%'}}>
+                                        <Typeahead
+                                            id="basic-typeahead-single"
+                                            labelKey="name"
+                                            onChange={handleSchoolSelect}
+                                            options={dynamicOptions}
+                                            placeholder="소속학교"
+                                            onInputChange={(input) => {
+                                                searchSchool(input);
+                                            }}
+                                            selected={[{ name: schoolName }]}
+                                            emptyLabel="검색 결과가 없습니다."
+                                        />
+                                    </div>
+                                </Col>
+                            </Row>
+                            <Row className="mt-3 align-items-center">
+                                <Col md="3" className="text-center">
+                                    <Label>비밀번호</Label>
+                                </Col>
+                                <Col md="9">
+                                    <Input type="password" placeholder="학교 공통 비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '93%' }}/>
+                                </Col>
+                            </Row>
+                            <Row className="p-3 ml-1 mr-1">
+                                <blockquote className="request-blockquote text-center" style={{ width: '100%' }}>
+                                    <FaCheck className="mr-2" style={{ color: 'gray' }}/>학교 공통 비밀번호를 모르는 경우, 보건교사님께 문의하세요.                                 
+                                </blockquote>
+                            </Row>
+                        </CardBody>
+                        <CardFooter className="mb-3">
+                            <Row className="d-flex justify-content-center align-items-center">
+                                <Button className="mr-1" onClick={handleLogin}>로그인</Button>
+                                <Button className="ml-1">초기화</Button>
+                            </Row>
+                        </CardFooter>
+                    </Card>
+                </BrowserView>
+
+                <MobileView>
+                    <Card style={{ width: '100%', height: '40vh' }}>
+                        <CardBody className="mt-3">
+                            <Row className="mt-2 align-items-center">    
+                                <Col xs="3" className="text-center">
+                                    <Label>학교명</Label>
+                                </Col>
+                                <Col xs="9">
+                                    <div style={{ width: '93%' }}>
+                                        <Typeahead
+                                            id="basic-typeahead-single"
+                                            labelKey="name"
+                                            onChange={handleSchoolSelect}
+                                            options={dynamicOptions}
+                                            placeholder="소속학교"
+                                            onInputChange={(input) => {
+                                                searchSchool(input);
+                                            }}
+                                            selected={[{ name: schoolName }]}
+                                            emptyLabel="검색 결과가 없습니다."
+                                        />
+                                    </div>
+                                </Col>
+                            </Row>
+                            <Row className="mt-3 align-items-center">
+                                <Col xs="3" className="text-center">
+                                    <Label>비밀번호</Label>
+                                </Col>
+                                <Col xs="9">
+                                    <Input type="password" placeholder="학교 공통 비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '93%' }}/>
+                                </Col>
+                            </Row>
+                            <Row className="p-3 ml-1 mr-1">
+                                <blockquote className="request-blockquote text-center" style={{ width: '100%' }}>
+                                    <FaCheck className="mr-2" style={{ color: 'gray' }}/>학교 공통 비밀번호를 모르는 경우, 보건교사님께 문의하세요.                                 
+                                </blockquote>
+                            </Row>
+                        </CardBody>
+                        <CardFooter className="mb-3">
+                            <Row className="d-flex justify-content-center align-items-center">
+                                <Button className="mr-1" onClick={handleLogin}>로그인</Button>
+                                <Button className="ml-1">초기화</Button>
+                            </Row>
+                        </CardFooter>
+                    </Card>
+                </MobileView>
             </div>
         </>
     )
 }
 
 function Request({onLogOut}) {
+
     return(
         <>
             <div className="content">
-                <Row>
-                    <p>메인 화면 영역</p>
-                    <Button onClick={onLogOut}>로그아웃</Button>
-                </Row>
+                <BrowserView>
+                    <p>접속 기기 : PC</p>
+                    <Row>
+                        <p>PC View</p>
+                        <Button onClick={onLogOut}>로그아웃</Button>
+                    </Row>
+                </BrowserView>
+
+                <MobileView>
+                    <p>접속 기기 : Mobile</p>
+                    <Card style={{ width: '100%', height: '7vh' }}>
+
+                    </Card>
+                    <Card style={{ width: '100%', height: '93vh' }}>
+
+                    </Card>
+                    <Row className="justify-content-end no-gutters">
+                        <Button onClick={onLogOut}>로그아웃</Button>
+                    </Row>
+                </MobileView>
             </div>
         </>
     )
