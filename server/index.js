@@ -224,9 +224,9 @@ app.post("/bookmark/update", async (req, res) => {
     });
 });
 
-app.post("/bookmark/getBookmark", async (req, res) => {
-    const userId = req.body.userId;
-    const userEmail = req.body.userEmail;
+app.get("/bookmark/getBookmark", async (req, res) => {
+    const userId = req.query.userId;
+    const userEmail = req.query.userEmail;
 
     const sqlQuery = "SELECT * FROM teaform_db.bookmark WHERE userId = ? AND email = ?";
     db.query(sqlQuery, [userId, userEmail], (err, result) => {
@@ -236,7 +236,34 @@ app.post("/bookmark/getBookmark", async (req, res) => {
             if(result.length > 0) {
                 const bookmark = result[0];
                 res.json({ bookmark });
+            }else{
+                res.json(0);
             }
+        }
+    });
+});
+
+app.post("/studentsTable/insert", async (req, res) => {
+    const studentsArray = req.body.studentsArray;
+    const values = studentsArray.map(student => {
+        return [
+            student.userId,
+            student.schoolName,
+            student.schoolCode,
+            student.sGrade,
+            student.sClass,
+            student.sNumber,
+            student.sGender,
+            student.sName
+        ];
+    });
+
+    const sqlQuery = "INSERT INTO teaform_db.students (userId, schoolName, schoolCode, sGrade, sClass, sNumber, sGender, sName) VALUES ?";
+    db.query(sqlQuery, [values], (err, result) => {
+        if(err) {
+            console.log("명렬표 데이터 INSERT 중 ERROR" + err);
+        }else{
+            res.send('success');
         }
     });
 });
@@ -245,7 +272,7 @@ app.get("/studentsTable/getStudentInfo", async (req, res) => {
     const userId = req.query.userId;
     const schoolCode = req.query.schoolCode;
 
-    const sqlQuery = "SELECT * FROM students WHERE userId = ? AND schoolCode = ?";
+    const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("학생 정보 조회 중 ERROR", err);
@@ -261,7 +288,7 @@ app.get("/studentsTable/getStudentInfoByGrade", async (req, res) => {
     const schoolCode = req.query.schoolCode;
     const sGrade = req.query.sGrade;
 
-    const sqlQuery = "SELECT * FROM students WHERE userId = ? AND schoolCode = ? AND sGrade = ?";
+    const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND sGrade = ?";
     db.query(sqlQuery, [userId, schoolCode, sGrade], (err, result) => {
         if(err) {
             console.log("학생 정보 조회 중 ERROR", err);
@@ -281,7 +308,7 @@ app.get("/studentsTable/getStudentInfoBySearch", async (req, res) => {
     const sName = req.query.sName;
     console.log(req.query)
     // 초기 쿼리
-    let sqlQuery = "SELECT * FROM students WHERE userId = ? AND schoolCode = ?";
+    let sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
     const queryParams = [userId, schoolCode];
 
     // 동적으로 조건 추가
