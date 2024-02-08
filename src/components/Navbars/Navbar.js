@@ -13,29 +13,32 @@ import { useNavigate } from 'react-router-dom';
 import routes from "routes.js";
 
 function Header(props) {
+  const sidebarToggle = React.useRef();
+
   const {user} = useUser();
   const [isOpen, setIsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const [color, setColor] = React.useState("transparent");
-  const sidebarToggle = React.useRef();
-  const location = useLocation();
   const [modal, setModal] = useState(false);
-
+  
   const [bookmarkDropdownOpen, setBookmarkDropdownOpen] = React.useState(false);
   const [dropdownBookmarkItems, setDropdownBookmarkItems] = useState([]);
   
   const [userInfoDropdownOpen, setUserInfoDropdownOpen] = React.useState(false);
   const [userName, setUserName] = React.useState("");
-
+  
   const [workStatusDropdownOpen, setWorkStatusDropdownOpen] = React.useState(false);
   const [workStatus, setWorkStatus] = React.useState("근무");
-
-  const gridRef = useRef();
+  
   const [rowData, setRowData] = useState([{ bookmarkName: "", bookmarkAddress: "" }]);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
-
+  const [isEmptyBookmarkData, setIsEmptyBookmarkData] = useState(false);  
+  
+  const gridRef = useRef();
+  
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [columnDefs] = useState([
     { field: "bookmarkName", headerName: "북마크명", flex: 1, cellStyle: { textAlign: "center" } },
@@ -114,13 +117,17 @@ function Header(props) {
   }, [location]);
 
   // 북마크 데이터 획득 부분 Function 분리 (저장 후 Dropdown 적용할 경우 호출)
-  const fetchBookmarkData = useCallback(async () => {
+  const fetchBookmarkData = async () => {
     try {
       if(user?.userId && user?.email) {
-        const response = await axios.post('http://localhost:8000/bookmark/getBookmark', {
-          userId: user.userId,
-          userEmail: user.email
+        const response = await axios.get('http://localhost:8000/bookmark/getBookmark', {
+          params: {
+            userId: user.userId,
+            userEmail: user.email
+          }
         });
+        
+        if(response.data === 0) setIsEmptyBookmarkData(true);
 
         if (response.data) {
           const bookmarkString = response.data.bookmark.bookmark;
@@ -145,13 +152,12 @@ function Header(props) {
     } catch (error) {
       console.error('북마크 가져오기 중 ERROR', error);
     }
-  }, [user?.userId, user?.email]);
+  };
 
   //!! 옵셔널 체이닝 연산자가 무엇인지 알아보고 블로그에 정리하기
   useEffect(() => {
-    // 북마크 데이터를 불러오기
-    fetchBookmarkData();
-  }, [fetchBookmarkData]);
+    fetchBookmarkData();  // 북마크 데이터를 불러오기
+  }, []);
 
   useEffect(() => {
     if(user?.name) setUserName(user.name);
@@ -284,9 +290,9 @@ function Header(props) {
             bookmarkName: item.bookmarkName,
             bookmarkAddress: item.bookmarkAddress
           }));
-
+          
           let response = null;              // response 데이터 담을 변수
-          if(displayedRowCount > 1) {       // 등록된 북마크가 있는 경우 - Update
+          if(!isEmptyBookmarkData) {       // 등록된 북마크가 있는 경우 - Update
             response = await axios.post('http://localhost:8000/bookmark/update', {
               userId: user.userId,
               userEmail: user.email,
@@ -305,6 +311,7 @@ function Header(props) {
           }
 
           if(response.data === "success") {   // Api 호출 성공한 경우
+            toggleModal();
             fetchBookmarkData();              // Dropdown에도 공통 적용되기 위해 북마크 데이터 재조회
             // 북마크 정상 저장 Notify
             Notiflix.Notify.info('북마크 설정이 정상적으로 저장되었습니다.', {
