@@ -15,7 +15,6 @@ function User() {
   const { user, getUser } = useUser();                          // 사용자 정보
   const [currentUser, setCurrentUser] = useState(null);         // 받아온 사용자 정보
   const [schoolGrade, setSchoolGrade] = useState(null);         // 학년 정보
-  const [selectedFile, setSelectedFile] = useState(null);       // 선택한 파일
   const [gradeData, setGradeData] = useState(null);             // students Table에서 획득한 명렬표 데이터
   const [modalData, setModalData] = useState();                 // 모달에 표시할 데이터를 관리할 상태
   const [isModalOpen, setIsModalOpen] = useState(false);        // 명렬표 등록 상태에 따라 등록 또는 등록된 명렬표 데이터를 출력할 Modal Open 상태 값
@@ -24,6 +23,7 @@ function User() {
   const [selectedBackgroundImage, setSelectedBackgroundImage] = useState(null);
   const [selectedProfileImage, setSelectedProfileImage] = useState(null);
   const [emailContentValue, setEmailContentValue] = useState("");
+  const [isRegisteredStudentsTable, setIsRegisteredStudentsTable] = useState(false);
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -84,7 +84,7 @@ function User() {
       };
       fetchGradeData();                                       // 명렬표 미리보기 조회 Function 호출
     }
-  }, [currentUser, user]);
+  }, [currentUser, user, isRegisteredStudentsTable]);
 
   // 소속학교 기준 명렬표 학년별 등록 및 확인 Button 생성
   const generateNameTableButtons = () => {
@@ -174,9 +174,7 @@ function User() {
   // 명렬표 파일 Change Event ([필요] handleBulkRegist Function과 중복으로 존재할 필요 있는지 확인)
   const handleFileChange = (event) => {
     const file = event.target.files[0];   // 파일 획득
-    setSelectedFile(file);                // useState로 전역 사용
-    event.target.value = '';              // 파일 Input 초기화
-    handleBulkRegist();                   // 명렬표 등록 Event 호출
+    handleBulkRegist(file);                   // 명렬표 등록 Event 호출
   }
 
   // Default 파일 첨부 버튼 외 Custom 버튼으로 사용하기 위해 별도 태그 처리
@@ -189,7 +187,7 @@ function User() {
   }
 
   // 명렬표 일괄등록 버튼 Click Event
-  const handleBulkRegist = () => {
+  const handleBulkRegist = (selectedFile) => {
     if(selectedFile) {  // 업로드할 파일 존재할 경우
       Notiflix.Confirm.show('명렬표 일괄 등록', '선택하신 파일로 명렬표를 등록하시겠습니까?', '예', '아니요', () => {
         const reader = new FileReader();        // File Reader 객체 획득
@@ -214,6 +212,8 @@ function User() {
       const workSheet = workbook.Sheets[sheetName];                     // sheet명으로 필요 sheet 획득
       const sheetData = utils.sheet_to_json(workSheet, { header: 1 });  // sheet 내 데이터 획득 (header: 1 -> 첫쨰 줄을 header로 사용하겠다는 의미)
 
+      const studentsArray = [];
+
       for(let i = 1; i < sheetData.length; i++) {                       // 명렬표 데이터 획득 위해 순회
         const studentData = sheetData[i];                               // 명렬표 Sheet 데이터 획득
         const sGrade = studentData[0];                                  // 학년 획득
@@ -222,22 +222,26 @@ function User() {
         const sGender = studentData[3];                                 // 성별 획득
         const sName = studentData[4];                                   // 이름 획득
 
-        if(user) {                                                              // user 정보 Parameter로 전달 위해 user 정보 존재여부 확인
-          try {
-            await axios.post('http://localhost:8000/studentsTable/insert', {    // 명렬표 DB Insert API 호출
-              userId: user.userId,                                              // 사용자 ID
-              schoolName: user.schoolName,                                      // 사용자 재직 학교명
-              schoolCode: user.schoolCode,                                      // 사용자 재직 학교 코드
-              sGrade: sGrade,                                                   // 학년
-              sClass: sClass,                                                   // 반
-              sNumber: sNumber,                                                 // 번호
-              sGender: sGender,                                                 // 성별
-              sName: sName                                                      // 이름
-            });
-          }catch(error) {
-            console.log("학생 정보 Server 전송 중 ERROR", error);
-          }
-        }
+        studentsArray.push({
+          userId: user.userId,
+          schoolName: user.schoolName,
+          schoolCode: user.schoolCode,
+          sGrade,
+          sClass,
+          sNumber,
+          sGender,
+          sName
+        });
+      }
+
+      const response = await axios.post('http://localhost:8000/studentsTable/insert', { studentsArray });
+
+      if(response.data === "success") {
+        setIsRegisteredStudentsTable(true);
+
+        Notiflix.Notify.info('명렬표 정보가 정상적으로 저장되었습니다.', {
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        });
       }
     }catch(error) {
       console.log("Excel 파일 읽기 중 ERROR", error);
