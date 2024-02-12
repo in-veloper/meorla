@@ -117,7 +117,7 @@ function Header(props) {
   }, [location]);
 
   // 북마크 데이터 획득 부분 Function 분리 (저장 후 Dropdown 적용할 경우 호출)
-  const fetchBookmarkData = async () => {
+  const fetchBookmarkData = useCallback(async () => {
     try {
       if(user?.userId && user?.email) {
         const response = await axios.get('http://localhost:8000/bookmark/getBookmark', {
@@ -152,12 +152,12 @@ function Header(props) {
     } catch (error) {
       console.error('북마크 가져오기 중 ERROR', error);
     }
-  };
+  }, [user?.userId, user?.email]);
 
   //!! 옵셔널 체이닝 연산자가 무엇인지 알아보고 블로그에 정리하기
   useEffect(() => {
     fetchBookmarkData();  // 북마크 데이터를 불러오기
-  }, []);
+  }, [fetchBookmarkData]);
 
   useEffect(() => {
     if(user?.name) setUserName(user.name);
@@ -271,7 +271,7 @@ function Header(props) {
         async () => {                                                 // Confirm 창에서 '예' 선택한 경우
           event.preventDefault();                                     // 기본 Event 방지
           const api = gridRef.current.api;                            // Grid api 획득
-          const displayedRowCount = api.getDisplayedRowCount();       // 현재 Grid에 출련된 행 수
+          // const displayedRowCount = api.getDisplayedRowCount();       // 현재 Grid에 출련된 행 수
           const paramArray = [];                                      // Parameter 전송 위한 북마크 담을 배열
 
           api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회

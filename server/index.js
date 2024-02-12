@@ -11,6 +11,9 @@ const cookieParser = require('cookie-parser');
 const PORT = process.env.port || 8000;
 const { Cookies } = require('react-cookie');
 const cookies = new Cookies();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
@@ -473,6 +476,65 @@ app.post("/stockMedicine/getStockMedicine", async (req, res) => {
         }
     })
 });
+
+const storage = multer.diskStorage({
+    destination: function(req, file, callback) {
+        const uploadPath = req.body.uploadPath;
+        const dir = "./public/uploads/" + uploadPath;
+
+        if(!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+
+        return callback(null, dir);
+    },
+    filename: function(req, file, callback) {
+        callback(null, file.originalname)
+    }
+});
+
+const upload = multer({ storage: storage });
+
+app.post("/upload/image", upload.single('file'), (req, res) => {
+    res.json({
+        message: 'Image가 업로드 성공',
+        filename: req.file.filename
+    });
+});
+
+app.use(express.static(path.join(__dirname, '/public')));
+
+app.post("/upload/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const category = req.body.category;
+    const fileName = req.body.fileName;
+
+    const sqlQuery = "INSERT INTO teaform_db.uploadFile (userId, schoolCode, category, fileName) VALUES (?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, category, fileName], (err, result) => {
+        if(err) {
+            console.log("Upload File 정보 INSERT 중 ERROR", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        }else{
+            res.send('success');
+        }
+    })
+});
+
+app.get("/upload/getFileName", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_uploadFile WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("Upload File명 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    })
+});
+
 
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);

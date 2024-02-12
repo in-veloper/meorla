@@ -77,7 +77,7 @@ function ManageMediFixt() {
         {field: "stockAmount", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "extinctAmount", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "latestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: purchaseDateFormatter},
-        {field: "updateAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" },  valueFormatter: updateAtFormatter}
+        {field: "updatedAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" },  valueFormatter: updateAtFormatter}
     ]);
 
     const [fixtureColDef] = useState([

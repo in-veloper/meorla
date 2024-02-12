@@ -257,16 +257,41 @@ function User() {
     
   }
 
+
+  /**
+   * 파일을 불러와서 보여주기 위해서는 
+   * 1. 클라이언트단에서 폴더경로와 파일이름까지 합쳐서 서버에 호출해야함 
+   * (그러기 위해서는 파일이름 등은 DB에 저장해서 관리해야할 듯) - 예) http://localhost:8000/images/user123/profile.jpg
+   * 2. 이 후 app.use('/images', express.static(path.join(__dirname, 'public/uploads'))); 와 같이 서버단에 작성하면 
+   * /images 라는 엔드포인트로 접근할 경우 이미지 파일을 제공해 준다고 함
+   */
+
+
   const handleRegistBackgroundImage = (e) => {
     Notiflix.Confirm.show('프로필 배경 이미지 등록', '선택하신 이미지를 프로필 배경 이미지로 등록하시겠습니까?', '예', '아니요', () => {
       const file = e.target.files[0];
       if(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setSelectedBackgroundImage(e.target.result);
+        let formData = new FormData();
+        const config = {
+          headers: { "Content-type": "multipart/form-data" }
         };
+
+        formData.append("uploadPath", currentUser.userId + "/backgroundImage");
+        formData.append("file", file);
+
+        axios.post("http://localhost:8000/upload/image", formData, config).then((response) => {
+          if(response) {
+            
+          }else{
+
+          }
+        });
+        // const reader = new FileReader();
+        // reader.onload = (e) => {
+        //   setSelectedBackgroundImage(e.target.result);
+        // };
   
-        reader.readAsDataURL(file);
+        // reader.readAsDataURL(file);
       }
     }, () => {
       return;
@@ -279,12 +304,32 @@ function User() {
     Notiflix.Confirm.show('프로필 이미지 등록', '선택하신 이미지를 프로필 이미지로 등록하시겠습니까?', '예', '아니요', () => {
       const file = e.target.files[0];
       if(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setSelectedProfileImage(e.target.result);
+        let formData = new FormData();
+        const config = {
+          headers: { "Content-type": "multipart/form-data" }
         };
-  
-        reader.readAsDataURL(file);
+
+        formData.append("uploadPath", currentUser.userId + "/profileImage");
+        formData.append("file", file);
+
+        axios.post("http://localhost:8000/upload/image", formData, config).then((response) => {
+          if(response.status === 200) {
+            const fileName = response.data.filename;
+            const callbackResponse = axios.post("http://localhost:8000/upload/insert", {
+              userId: currentUser.userId,
+              schoolCode: currentUser.schoolCode,
+              category: "profile",
+              fileName: fileName
+            });
+
+            if(callbackResponse.data === "success") {
+              
+              // fetch('http://localhost:8000/upload/getImage/' + currentUser.userId + "/" + )
+            }
+          }else{
+
+          }
+        });
       }
     }, () => {
       return;
@@ -292,6 +337,47 @@ function User() {
       position: 'center-center', showOnlyTheLastOne: true, plainText: false
     });
   }
+
+  const fetchProfileImage = () => {
+    // setSelectedProfileImage("../public/uploads/admin/profileImage/profile_image.jpeg")
+    // if(user?.userId) {
+    //   axios.get(`http://localhost:8000/uploads/${user.userId}/profileImage/profile_image.jpeg`)
+    //   .then((response) => {
+
+    //     debugger
+    //     setSelectedProfileImage(response.data);
+    //   })
+
+    // }
+  }
+
+  useEffect(() => {
+    fetchProfileImage();
+  }, [])
+
+  // useState(() => {
+  //   fetchProfileImage();
+  // }, [user]);
+  // multer 이미지 획득하는 부분부터 처리하면 됨!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+  // useEffect(() => {
+  //   if(user?.userId && user?.schoolCode) {
+  //     const response = axios.get("http://localhost:8000/upload/getFileName", {
+  //       params: {
+  //         userId: user.userId,
+  //         schoolCode: user.schoolCode
+  //       }
+  //     });
+
+  //     if(response.data) {
+  //       console.log(response);
+  //       // fetch("http://localhost:8000/upload/getImage/" + currentUser.userId + "/" + )
+  
+  
+  //     }
+  //   }
+  // }, [user?.userId, user?.schoolCode]);
 
   const handleEmailForm = (e) => {
     e.preventDefault();
