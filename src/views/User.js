@@ -24,6 +24,8 @@ function User() {
   const [selectedProfileImage, setSelectedProfileImage] = useState(null);
   const [emailContentValue, setEmailContentValue] = useState("");
   const [isRegisteredStudentsTable, setIsRegisteredStudentsTable] = useState(false);
+  const [profileImageFileName, setProfileImageFileName] = useState("");
+  const [backgroundImageFileName, setBackgroundImageFileName] = useState("");
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -169,13 +171,13 @@ function User() {
     document.body.appendChild(link);                    // 위에서 생성한 link 추가
     link.click();                                       // link 강제 Click
     document.body.removeChild(link);                    // 필요없는 link 삭제 
-  }
+  };
   
   // 명렬표 파일 Change Event ([필요] handleBulkRegist Function과 중복으로 존재할 필요 있는지 확인)
   const handleFileChange = (event) => {
     const file = event.target.files[0];   // 파일 획득
     handleBulkRegist(file);                   // 명렬표 등록 Event 호출
-  }
+  };
 
   // Default 파일 첨부 버튼 외 Custom 버튼으로 사용하기 위해 별도 태그 처리
   const onBulkRegist = () => {
@@ -184,7 +186,7 @@ function User() {
     fileInput.accept = ".xlsx,.xls";                          // 첨부 가능 확장자 설정
     fileInput.addEventListener("change", handleFileChange);   // change Event 속성 설정
     fileInput.click();                                        // 파일 첨부 강제 Click
-  }
+  };
 
   // 명렬표 일괄등록 버튼 Click Event
   const handleBulkRegist = (selectedFile) => {
@@ -199,9 +201,9 @@ function User() {
         return;                                 // return
       },{
         position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      })
+      });
     }
-  }
+  };
 
   // 명렬표 파일 선택 시 Upload & DB Insert API 호출
   const handleExcelUpload = async (e) => {
@@ -246,26 +248,16 @@ function User() {
     }catch(error) {
       console.log("Excel 파일 읽기 중 ERROR", error);
     }
-  }
+  };
 
   const handleCommonPasswordSettingModal = (e) => {
     e.preventDefault();
     toggleCommonPasswordSettingModal();
-  }
+  };
 
   const saveCommonPassword = () => {
     
-  }
-
-
-  /**
-   * 파일을 불러와서 보여주기 위해서는 
-   * 1. 클라이언트단에서 폴더경로와 파일이름까지 합쳐서 서버에 호출해야함 
-   * (그러기 위해서는 파일이름 등은 DB에 저장해서 관리해야할 듯) - 예) http://localhost:8000/images/user123/profile.jpg
-   * 2. 이 후 app.use('/images', express.static(path.join(__dirname, 'public/uploads'))); 와 같이 서버단에 작성하면 
-   * /images 라는 엔드포인트로 접근할 경우 이미지 파일을 제공해 준다고 함
-   */
-
+  };
 
   const handleRegistBackgroundImage = (e) => {
     Notiflix.Confirm.show('프로필 배경 이미지 등록', '선택하신 이미지를 프로필 배경 이미지로 등록하시겠습니까?', '예', '아니요', () => {
@@ -280,25 +272,29 @@ function User() {
         formData.append("file", file);
 
         axios.post("http://localhost:8000/upload/image", formData, config).then((response) => {
-          if(response) {
-            
-          }else{
+          if(response.status === 200) {
+            const fileName = response.data.filename;
+            const callbackResponse = axios.post("http://localhost:8000/upload/insert", {
+              userId: currentUser.userId,
+              schoolCode: currentUser.schoolCode,
+              category: "background",
+              fileName: fileName
+            });
 
+            if(callbackResponse.data === "success") {
+              fetchBackgroundImage(fileName);
+            }
+          }else{
+            console.log("Background Image 등록 중 ERROR");
           }
         });
-        // const reader = new FileReader();
-        // reader.onload = (e) => {
-        //   setSelectedBackgroundImage(e.target.result);
-        // };
-  
-        // reader.readAsDataURL(file);
       }
     }, () => {
       return;
     },{
       position: 'center-center', showOnlyTheLastOne: true, plainText: false
     });
-  }
+  };
 
   const handleRegistProfileIamge = (e) => {
     Notiflix.Confirm.show('프로필 이미지 등록', '선택하신 이미지를 프로필 이미지로 등록하시겠습니까?', '예', '아니요', () => {
@@ -323,11 +319,10 @@ function User() {
             });
 
             if(callbackResponse.data === "success") {
-              
-              // fetch('http://localhost:8000/upload/getImage/' + currentUser.userId + "/" + )
+              fetchProfileImage(fileName);
             }
           }else{
-
+            console.log("Profile Image 등록 중 ERROR");
           }
         });
       }
@@ -336,53 +331,67 @@ function User() {
     },{
       position: 'center-center', showOnlyTheLastOne: true, plainText: false
     });
-  }
+  };
 
-  const fetchProfileImage = () => {
-    // setSelectedProfileImage("../public/uploads/admin/profileImage/profile_image.jpeg")
-    // if(user?.userId) {
-    //   axios.get(`http://localhost:8000/uploads/${user.userId}/profileImage/profile_image.jpeg`)
-    //   .then((response) => {
+  useEffect(() => {
+    if(currentUser) {
+      const fetchUploadFileData = async () => {
+        try {
+          const response = await axios.get("http://localhost:8000/upload/getFileName", {
+            params: {
+              userId: user.userId,
+              schoolCode: user.schoolCode
+            }
+          });
 
-    //     debugger
-    //     setSelectedProfileImage(response.data);
-    //   })
+          if(response.data.length > 0) {
+            for(let i = 0; i < response.data.length; i++) {
+              if(response.data[i].category === "profile") {
+                const profileFileName = response.data[i].fileName;
+                setProfileImageFileName(profileFileName);
+              }else if(response.data[i].category === "background") {
+                const backgroundFileName = response.data[i].fileName;
+                setBackgroundImageFileName(backgroundFileName);
+              }
+            }
+          }
 
-    // }
-  }
+        }catch (error) {
+          console.log("Upload File 조회 중 ERROR", error);
+        }
+      };
+
+      fetchUploadFileData();
+    }
+  }, [currentUser]);
+
+  const fetchProfileImage = (registeredProfileImageFileName) => {
+    if(registeredProfileImageFileName) setProfileImageFileName(registeredProfileImageFileName);
+    if(profileImageFileName && currentUser) {
+      setSelectedProfileImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/profileImage/' + profileImageFileName);
+    }else{
+      setSelectedProfileImage(null);
+    }
+  };
+
+  const fetchBackgroundImage = (registeredBackgroundImageFileName) => {
+    if(registeredBackgroundImageFileName) setBackgroundImageFileName(registeredBackgroundImageFileName);
+    if(backgroundImageFileName && currentUser) {
+      setSelectedBackgroundImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/backgroundImage/' + backgroundImageFileName);
+    }else{
+      setSelectedBackgroundImage(null);
+    }
+  };
 
   useEffect(() => {
     fetchProfileImage();
-  }, [])
-
-  // useState(() => {
-  //   fetchProfileImage();
-  // }, [user]);
-  // multer 이미지 획득하는 부분부터 처리하면 됨!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-  // useEffect(() => {
-  //   if(user?.userId && user?.schoolCode) {
-  //     const response = axios.get("http://localhost:8000/upload/getFileName", {
-  //       params: {
-  //         userId: user.userId,
-  //         schoolCode: user.schoolCode
-  //       }
-  //     });
-
-  //     if(response.data) {
-  //       console.log(response);
-  //       // fetch("http://localhost:8000/upload/getImage/" + currentUser.userId + "/" + )
-  
-  
-  //     }
-  //   }
-  // }, [user?.userId, user?.schoolCode]);
+    fetchBackgroundImage();
+  }, [profileImageFileName, backgroundImageFileName]);
 
   const handleEmailForm = (e) => {
     e.preventDefault();
     toggleEmailFormModal();
-  }
+  };
 
   const sendEmailForm = (e) => {
     e.preventDefault();
@@ -402,7 +411,6 @@ function User() {
       position: 'center-center', showOnlyTheLastOne: true, plainText: false
     });
   };
-
 
   return (
     <>

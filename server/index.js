@@ -522,10 +522,10 @@ app.post("/upload/insert", async (req, res) => {
 });
 
 app.get("/upload/getFileName", async (req, res) => {
-    const userId = req.body.userId;
-    const schoolCode = req.body.schoolCode;
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
 
-    const sqlQuery = "SELECT * FROM teaform_uploadFile WHERE userId = ? AND schoolCode = ?";
+    const sqlQuery = "SELECT * FROM teaform_db.uploadFile WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("Upload File명 조회 중 ERROR", err);
