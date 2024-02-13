@@ -25,7 +25,8 @@ export const UserProvider = ({ children }) => {
                     name: decoded.name,
                     email: decoded.email,
                     schoolName: decoded.schoolName,
-                    schoolCode: decoded.schoolCode
+                    schoolCode: decoded.schoolCode,
+                    commonPassword: decoded.commonPassword
                 };
     
                 setUser(userInfo);
@@ -59,7 +60,8 @@ export const UserProvider = ({ children }) => {
                 name: userData.name,
                 email: userData.email,
                 schoolName: userData.schoolName,
-                schoolCode: userData.schoolCode
+                schoolCode: userData.schoolCode,
+                commonPassword: userData.commonPassword
             });
         } catch (error) {
             if (error.response) {

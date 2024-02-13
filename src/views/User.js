@@ -26,6 +26,7 @@ function User() {
   const [isRegisteredStudentsTable, setIsRegisteredStudentsTable] = useState(false);
   const [profileImageFileName, setProfileImageFileName] = useState("");
   const [backgroundImageFileName, setBackgroundImageFileName] = useState("");
+  const [commonPassword, setCommonPassword] = useState("");
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -54,6 +55,7 @@ function User() {
         if(userData) {                                        // 사용자 정보 존재할 경우
           setCurrentUser(userData);                           // 전역 변수에 현재 사용자 정보 할당
           setSchoolGrade(userData.schoolName);                // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
+          setCommonPassword(userData.commonPassword);
         }
       }catch(error) {
         console.error("User 정보 Fetching 중 ERROR", error);
@@ -65,6 +67,7 @@ function User() {
     }else{                                                    // 사용자 정보 조회 되었을 경우 fetchData 내 Logic 재수행
       setCurrentUser(user);                                   // 전역 변수에 현재 사용자 정보 할당
       setSchoolGrade(user.schoolName);                        // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
+      setCommonPassword(user.commonPassword);
     }
   }, [user, getUser, gradeData]);
 
@@ -255,8 +258,34 @@ function User() {
     toggleCommonPasswordSettingModal();
   };
 
-  const saveCommonPassword = () => {
+  const saveCommonPassword = async (e) => {
+    e.preventDefault();
     
+    const updatedCommonPassword = document.getElementById('updatedCommonPassword').value;
+    if(updatedCommonPassword.length === 0) {
+      Notiflix.Notify.info('변경할 공통 비밀번호를 입력해 주세요', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '300px'
+      });
+    }else{
+      const response = await axios.post('http://localhost:8000/user/updateCommonPassword', {
+        userId: currentUser.userId,
+        schoolCode: currentUser.schoolCode,
+        updatedPassword: updatedCommonPassword
+      });
+      
+      if(response.data === "success") {
+        setCommonPassword(updatedCommonPassword);
+        Notiflix.Notify.success('공통 비밀번호가 변경되었습니다.', {
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '300px'
+        });
+
+        toggleCommonPasswordSettingModal();
+      }else{
+        Notiflix.Notify.failure('공통 비밀번호 변경에 실패하였습니다.<br/>관리자에게 문의해주세요.', {
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '300px'
+        });
+      }
+    }
   };
 
   const handleRegistBackgroundImage = (e) => {
@@ -431,7 +460,7 @@ function User() {
                     e.preventDefault();
                     e.target.previousSibling.click();
                   }}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', borderRadius: 5 }}
                 />
               </div>
               <CardBody>
@@ -688,7 +717,6 @@ function User() {
                       >
                         공통 비밀번호 설정
                       </Button>
-
                     </div>
                   </Row>
                   <Modal isOpen={isModalOpen} backdrop={true} toggle={toggleModal} centered={true} autoFocus={false}>
@@ -724,6 +752,7 @@ function User() {
                 <Col md="8">
                   <Input 
                     readOnly
+                    defaultValue={commonPassword ? commonPassword : ''}
                     style={{ width: '90%' }}
                   />
                 </Col>
@@ -733,7 +762,8 @@ function User() {
                   <Label className="text-muted">변경 공통 비밀번호</Label>
                 </Col>
                 <Col md="8">
-                  <Input 
+                  <Input
+                    id="updatedCommonPassword"
                     style={{ width: '90%' }}
                   />
                 </Col>

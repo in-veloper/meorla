@@ -112,7 +112,8 @@ function Login() {
                             email: email,
                             password: password,
                             confPassword: confPassword,
-                            schoolCode: schoolCode
+                            schoolCode: schoolCode,
+                            commonPassword: userId + "12!@"
                         });
                         
                         if(response.data === "success") {
