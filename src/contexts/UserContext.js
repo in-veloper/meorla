@@ -26,7 +26,8 @@ export const UserProvider = ({ children }) => {
                     email: decoded.email,
                     schoolName: decoded.schoolName,
                     schoolCode: decoded.schoolCode,
-                    commonPassword: decoded.commonPassword
+                    commonPassword: decoded.commonPassword,
+                    workStatus: decoded.workStatus
                 };
     
                 setUser(userInfo);
@@ -61,7 +62,8 @@ export const UserProvider = ({ children }) => {
                 email: userData.email,
                 schoolName: userData.schoolName,
                 schoolCode: userData.schoolCode,
-                commonPassword: userData.commonPassword
+                commonPassword: userData.commonPassword,
+                workStatus: userData.workStatus
             });
         } catch (error) {
             if (error.response) {

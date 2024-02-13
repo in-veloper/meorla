@@ -20,20 +20,17 @@ function Header(props) {
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const [color, setColor] = React.useState("transparent");
   const [modal, setModal] = useState(false);
-  
   const [bookmarkDropdownOpen, setBookmarkDropdownOpen] = React.useState(false);
   const [dropdownBookmarkItems, setDropdownBookmarkItems] = useState([]);
-  
   const [userInfoDropdownOpen, setUserInfoDropdownOpen] = React.useState(false);
   const [userName, setUserName] = React.useState("");
-  
   const [workStatusDropdownOpen, setWorkStatusDropdownOpen] = React.useState(false);
-  const [workStatus, setWorkStatus] = React.useState("근무");
-  
+  // const [workStatus, setWorkStatus] = React.useState("근무");
   const [rowData, setRowData] = useState([{ bookmarkName: "", bookmarkAddress: "" }]);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isEmptyBookmarkData, setIsEmptyBookmarkData] = useState(false);  
+  const [workStatus, setWorkStatus] = useState("");
   
   const gridRef = useRef();
   
@@ -47,7 +44,7 @@ function Header(props) {
 
   // 최초 Grid Render Event
   const onGridReady = useCallback(() => {
-    // debugger
+    
   }, []);
 
   const toggle = () => {
@@ -154,7 +151,6 @@ function Header(props) {
     }
   }, [user?.userId, user?.email]);
 
-  //!! 옵셔널 체이닝 연산자가 무엇인지 알아보고 블로그에 정리하기
   useEffect(() => {
     fetchBookmarkData();  // 북마크 데이터를 불러오기
   }, [fetchBookmarkData]);
@@ -168,9 +164,41 @@ function Header(props) {
     toggleModal();
   };
 
-  const handleWorkStatus = (e) => {
-    setWorkStatus(e.target.textContent);
-  }
+  const fetchWorkStatusData = useCallback(async () => {
+    if(user?.userId && user?.schoolCode) {
+      const response = await axios.get("http://localhost:8000/user/getWorkStatus", {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+      
+      if(response.data) {
+        const workStatus = response.data[0].workStatus;
+        setWorkStatus(workStatus);
+      }
+    }
+  });
+
+  useEffect(() => {
+    fetchWorkStatusData();
+  }, [fetchWorkStatusData]);
+
+  const handleWorkStatus = async (e) => {
+    const selectedWorkStatus = e.target.id;
+
+    if(user?.userId && user?.schoolCode) {
+      const response = await axios.post("http://localhost:8000/user/updateWorkStatus", {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        workStatus: selectedWorkStatus
+      });
+
+      if(response.data === 'success') {
+        fetchWorkStatusData();
+      }
+    }
+  };
 
   // 기본 컬럼 속성 정의 (공통 부분)
   const defaultColDef = {
@@ -433,7 +461,10 @@ function Header(props) {
               toggle={(e) => workStatusDropdownToggle(e)}
             >
               <DropdownToggle caret nav>
-                <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>{workStatus}</Badge>
+                {workStatus === 'working' && <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>근무</Badge>}
+                {workStatus === 'outOfOffice' && <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>부재</Badge>}
+                {workStatus === 'businessTrip' && <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>출장</Badge>}
+                {workStatus === 'vacation' && <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>휴가</Badge>}
               </DropdownToggle>
               <DropdownMenu className="text-muted" right>
                 <DropdownItem id="working" onClick={handleWorkStatus}>근무</DropdownItem>
