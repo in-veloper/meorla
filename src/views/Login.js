@@ -12,7 +12,6 @@ import { useUser } from "contexts/UserContext";
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
 function Login() {
-
     const { login } = useUser();
 
     // useNavigate를 사용하여 routing 사용하기 위한 함수 생성
@@ -31,6 +30,19 @@ function Login() {
     const [confirmUserId, setConfirmUserId] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
+    const clearRegisterInput = () => {
+        setSchoolName("");
+        setName("");
+        setUserId("");
+        setEmail("");
+        setPassword("");
+        setConfPassword("");
+    };
+
+    useEffect(() => {
+        clearRegisterInput();
+    }, []);
+
     useEffect(() => {
         if (schoolName) {
             try {
@@ -46,10 +58,10 @@ function Login() {
         }
     }, [schoolName, schoolList]);
 
-
     // 좌우 패널 전환 함수 (Sign In <-> Sign Up)
     const togglePanel = () => {
       setIsRightPanelActive(!isRightPanelActive);
+      clearRegisterInput();
     };
 
     // 계정 확인 후 로그인하는 함수 (계정 확인 및 Token 확인 로직 필요 -> 추가)
@@ -141,7 +153,6 @@ function Login() {
                 if (response.length > 20) {
                     setSchoolList([]);
                 } else {
-                    // const schoolList = response.map((school) => school.SCHUL_NM);
                     setSchoolList(response);
                 }
             } catch (error) {
@@ -166,7 +177,7 @@ function Login() {
             <Container id="container">
                 <Row>
                 <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
-                    <Form action="#">
+                    <Form action="registUser">
                         {/* <h5>회원가입</h5> */}
                         <div style={{ width: '100%'}}>
                             <Typeahead
