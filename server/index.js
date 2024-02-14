@@ -104,12 +104,13 @@ app.post("/user/insert", async (req, res) => {
     const password = req.body.password;
     const schoolCode = req.body.schoolCode;
     const refresh_token = req.body.refresh_token;
+    const commonPassword = req.body.commonPassword;
 
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
 
-    const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, refresh_token) VALUES (?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [schoolName, name, email, userId, hashPassword, schoolCode, refresh_token], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, refresh_token, commonPassword) VALUES (?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [schoolName, name, email, userId, hashPassword, schoolCode, refresh_token, commonPassword], (err, result) => {
         if(err) {
             console.log("회원가입 데이터 Insert 중 ERROR" + err);
         }else{
@@ -368,7 +369,7 @@ app.post("/symptom/update", async (req, res) => {
     const schoolCode = req.body.schoolCode;
     const symptomString = req.body.symptom;
 
-    const sqlQuery = "UPDATE teaform_db.symptom  SET symptom = ? WHERE userId = ? AND schoolCode = ?";
+    const sqlQuery = "UPDATE teaform_db.symptom SET symptom = ? WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [symptomString, userId, schoolCode], (err, result) => {
         if(err) {
             console.log("증상 데이터 Insert 중 ERROR" + err);
@@ -535,6 +536,49 @@ app.get("/upload/getFileName", async (req, res) => {
     })
 });
 
+app.post("/user/updateCommonPassword", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const updatedCommonPassword = req.body.updatedPassword;
+
+    const sqlQuery = "UPDATE teaform_db.users SET commonPassword = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [updatedCommonPassword, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("공통 비밀번호 Update 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
+app.get("/user/getWorkStatus", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode =  req.query.schoolCode;
+
+    const sqlQuery = "SELECT workStatus FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("근무상태 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    })
+});
+
+app.post("/user/updateWorkStatus", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const workStatus = req.body.workStatus;
+
+    const sqlQuery = "UPDATE teaform_db.users SET workStatus = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [workStatus, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("근무상태 Update 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
 
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
