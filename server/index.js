@@ -14,6 +14,7 @@ const cookies = new Cookies();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const e = require('express');
 
 app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
@@ -386,11 +387,107 @@ app.post("/symptom/getSymptom", async (req, res) => {
     const sqlQuery = "SELECT * FROM teaform_db.symptom WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
-            console.log("기존 ID 및 학교명 검사 중 ERROR" + err);
+            console.log("증상 데이터 조회 중 ERROR" + err);
         }else{
             if(result.length > 0) {
                 const symptom = result[0];
                 res.json({ symptom });
+            }
+        }
+    });
+});
+
+app.post("/actionMatter/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const actionMatterString = req.body.actionMatter;
+
+    const sqlQuery = "INSERT INTO teaform_db.actionMatter (userId, schoolCode, actionMatter) VALUES (?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, actionMatterString], (err, result) => {
+        if(err) {
+            console.log("조치사항 데이터 Insert 중 ERROR" + err);
+        }else{
+            console.log("조치사항 데이터 Insert 처리 완료");
+            res.send('success');
+        }
+    });
+});
+
+app.post("/actionMatter/update", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const actionMatterString = req.body.actionMatter;
+
+    const sqlQuery = "UPDATE teaform_db.actionMatter SET actionMatter = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [actionMatterString, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("조치사항 데이터 Insert 중 ERROR" + err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/actionMatter/getActionMatter", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.actionMatter WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("조치사항 데이터 조회 중 ERROR" + err);
+        }else{
+            if(result.length > 0) {
+                const actionMatter = result[0];
+                res.json({ actionMatter });
+            }
+        }
+    });
+});
+
+app.post("/treatmentMatter/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const treatmentMatterString = req.body.treatmentMatter;
+
+    const sqlQuery = "INSERT INTO teaform_db.treatmentMatter (userId, schoolCode, treatmentMatter) VALUES (?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, treatmentMatterString], (err, result) => {
+        if(err) {
+            console.log("처치사항 데이터 Insert 중 ERROR" + err);
+        }else{
+            console.log("처치사항 데이터 Insert 처리 완료");
+            res.send('success');
+        }
+    });
+});
+
+app.post("/treatmentMatter/update", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const treatmentMatterString = req.body.treatmentMatter;
+
+    const sqlQuery = "UPDATE teaform_db.treatmentMatter SET treatmentMatter = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [treatmentMatterString, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("처치사항 데이터 Insert 중 ERROR" + err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/treatmentMatter/getTreatmentMatter", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.treatmentMatter WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("처치사항 데이터 조회 중 ERROR" + err);
+        }else{
+            if(result.length > 0) {
+                const treatmentMatter = result[0];
+                res.json({ treatmentMatter });
             }
         }
     });
@@ -434,12 +531,9 @@ app.post("/medication/getMedication", async (req, res) => {
     const sqlQuery = "SELECT * FROM teaform_db.medication WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
-            console.log("기존 ID 및 학교명 검사 중 ERROR" + err);
+            console.log("약품 조회 중 ERROR" + err);
         }else{
-            if(result.length > 0) {
-                const medication = result[0];
-                res.json({ medication });
-            }
+            res.json(result);
         }
     });
 });
@@ -536,6 +630,20 @@ app.get("/upload/getFileName", async (req, res) => {
     })
 });
 
+app.get("/user/getCommonPassword", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT commonPassword FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("공통 비밀번호 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    })
+})
+
 app.post("/user/updateCommonPassword", async (req, res) => {
     const userId = req.body.userId;
     const schoolCode = req.body.schoolCode;
@@ -576,6 +684,20 @@ app.post("/user/updateWorkStatus", async (req, res) => {
             console.log("근무상태 Update 처리 중 ERROR", err);
         }else{
             res.send('success');
+        }
+    });
+});
+
+app.get("/workNote/getStockMedication", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT medicineName AS medication FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보건일지 > 재고 약품 조회 중 ERROR", err);
+        }else{
+            res.json(result);
         }
     });
 });

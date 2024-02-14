@@ -19,11 +19,15 @@ function WorkNote(args) {
   const [searchStudentRowData, setRowData] = useState([]); // 검색 결과를 저장할 state
   const [symptomRowData, setSymptomRowData] = useState([]);
   const [medicationRowData, setMedicationRowData] = useState([]);
+  const [actionMatterRowData, setActionMatterRowData] = useState([]);
+  const [treatmentMatterRowData, setTreatmentMatterRowData] = useState([]);
   const [searchCriteria, setSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
   const [selectedStudent, setSelectedStudent] = useState(null);
   // const [modal, setModal] = useState(false);
   const [symptomModal, setSymptomModal] = useState(false);
   const [medicationModal, setMedicationModal] = useState(false);
+  const [actionMatterModal, setActionMatterModal] = useState(false);
+  const [treatmentMatterModal, setTreatmentMatterModal] = useState(false);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [modifiedData, setModifiedData] = useState([]);
@@ -34,22 +38,28 @@ function WorkNote(args) {
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
   const [searchMedicationText, setSearchMedicationText] = useState("");
   const [filteredMedication, setFilteredMedication] = useState(medicationRowData);
+  const [searchActionMatterText, setSearchActionMatterText] = useState("");
+  const [filteredActionMatter, setFilteredActionMatter] = useState(actionMatterRowData);
+  const [searchTreatmentMatterText, setSearchTreatmentMatterText] = useState("");
+  const [filteredTreatmentMatter, setFilteredTreatmentMatter] = useState(treatmentMatterRowData);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
   const registeredAllGridRef = useRef();
   const symptomGridRef = useRef();
   const medicationGridRef = useRef();
+  const actionMatterGridRef = useRef();
+  const treatmentMatterGridRef = useRef();
 
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
   }, []);
 
   const toggle = () => setIsOpen(!isOpen);
-
   const toggleSymptomModal = () => setSymptomModal(!symptomModal);
-  
   const toggleMedicationModal = () => setMedicationModal(!medicationModal);
+  const toggleActionMatterModal = () => setActionMatterModal(!actionMatterModal);
+  const toggleTreatmentMatterModal = () => setTreatmentMatterModal(!treatmentMatterModal);
 
   const [searchStudentColumnDefs] = useState([
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
@@ -82,12 +92,26 @@ function WorkNote(args) {
     editable: true
   };
 
+  const notEditDefaultColDef = {
+    sortable: true,
+    resizable: true,
+    filter: true
+  }
+
   const [symptomColumnDefs] = useState([
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "left" } }
   ]);
 
   const [medicationColumnDefs] = useState([
     { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "left" } }
+  ]);
+
+  const [actionMatterColumnDefs] = useState([
+    { field: "actionMatter", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "left" } }
+  ]);
+
+  const [treatmentMatterColumnDefs] = useState([
+    { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "left" } }
   ]);
 
   // 추가할 행 생성
@@ -108,6 +132,23 @@ function WorkNote(args) {
     return newData;
   };
 
+  const createNewActionMatterRowData = () => {
+    const newData = {
+      actionMatter: "",
+      editable: true
+    }
+    return newData;
+  };
+
+  const createNewTreatmentMatterRowData = () => {
+    const newData = {
+      treatmentMatter: "",
+      editable: true
+    }
+    return newData;
+  };
+
+
   // Grid 행 추가 Function
   const appendSymptomRow = useCallback(() => {
     const api = symptomGridRef.current.api;                                          // api 획득
@@ -125,6 +166,30 @@ function WorkNote(args) {
     const api = medicationGridRef.current.api;                                          // api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
     const newItem = [createNewMedicationRowData()];                                     // 추가할 행 데이터 획득
+
+    api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
+    api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
+    setIsRemoved(false);                                                      // 삭제 상태 state - false 
+    setIsRegistered(false);                                                   // Modal Open isRegistered state - false
+  }, []);
+
+    // Grid 행 추가 Function
+  const appendActionMatterRow = useCallback(() => {
+    const api = actionMatterGridRef.current.api;                                          // api 획득
+    const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
+    const newItem = [createNewActionMatterRowData()];                                     // 추가할 행 데이터 획득
+
+    api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
+    api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
+    setIsRemoved(false);                                                      // 삭제 상태 state - false 
+    setIsRegistered(false);                                                   // Modal Open isRegistered state - false
+  }, []);
+  
+  // Grid 행 추가 Function
+  const appendTreatmentMatterRow = useCallback(() => {
+    const api = treatmentMatterGridRef.current.api;                                          // api 획득
+    const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
+    const newItem = [createNewTreatmentMatterRowData()];                                     // 추가할 행 데이터 획득
 
     api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
     api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
@@ -158,6 +223,32 @@ function WorkNote(args) {
     }
     
     if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'medication' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
+  }, [isRemoved, isRegistered]);
+
+  const onActionMatterRowDataUpdated = useCallback(() => {
+    const api = actionMatterGridRef.current.api;
+    const displayedRowCount = api.getDisplayedRowCount();
+    const lastRowIndex = displayedRowCount - 1;
+
+    if(isRemoved || isRegistered) {
+      api.stopEditing(true);
+      return;
+    }
+
+    if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'actionMatter' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
+  }, [isRemoved, isRegistered]);
+
+  const onTreatmentMatterRowDataUpdated = useCallback(() => {
+    const api = treatmentMatterGridRef.current.api;
+    const displayedRowCount = api.getDisplayedRowCount();
+    const lastRowIndex = displayedRowCount - 1;
+
+    if(isRemoved || isRegistered) {
+      api.stopEditing(true);
+      return;
+    }
+
+    if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'treatmentMatter' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
   }, [isRemoved, isRegistered]);
 
   const onInputChange = (field, value) => {
@@ -201,6 +292,40 @@ function WorkNote(args) {
     setIsRemoved(true);                                                       // 삭제 상태 state - true (삭제 시에는 Edit 모드 진입 안함)
   };
 
+  // Grid 행 삭제 Function
+  const removeActionMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = actionMatterGridRef.current.api;                                          // api 획득
+    const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
+
+    if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
+      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false
+      });
+      
+      return;
+    }
+
+    api.applyTransaction({ remove: selectedRow });                            // 선택 행 삭제 
+    setIsRemoved(true);                                                       // 삭제 상태 state - true (삭제 시에는 Edit 모드 진입 안함)
+  };
+
+  // Grid 행 삭제 Function
+  const removeTreatmentMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = treatmentMatterGridRef.current.api;                                          // api 획득
+    const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
+
+    if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
+      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false
+      });
+      
+      return;
+    }
+
+    api.applyTransaction({ remove: selectedRow });                            // 선택 행 삭제 
+    setIsRemoved(true);                                                       // 삭제 상태 state - true (삭제 시에는 Edit 모드 진입 안함)
+  };
+
   // Grid 행 전체 삭제 Function
   const allSymptomRemoveRow = () => {
     const api = symptomGridRef.current.api;
@@ -226,6 +351,40 @@ function WorkNote(args) {
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
       Notiflix.Notify.warning('등록된 투약사항이 없습니다.', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false
+      });
+
+      return;                                             // return
+    }else{                                                // 등록된 투약사항이 있을 경우
+      api.setRowData([]);                                 // 투약사항 행 전체 삭제 (빈 배열 삽입으로 초기화)
+    }
+  };
+
+  // Grid 행 전체 삭제 Function
+  const allActionMatterRemoveRow = () => {
+    const api = actionMatterGridRef.current.api;
+    const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
+    
+    if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
+      // 등록된 투약사항 없음 Notify
+      Notiflix.Notify.warning('등록된 조치사항이 없습니다.', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false
+      });
+
+      return;                                             // return
+    }else{                                                // 등록된 투약사항이 있을 경우
+      api.setRowData([]);                                 // 투약사항 행 전체 삭제 (빈 배열 삽입으로 초기화)
+    }
+  };
+
+  // Grid 행 전체 삭제 Function
+  const allTreatmentMatterRemoveRow = () => {
+    const api = treatmentMatterGridRef.current.api;
+    const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
+    
+    if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
+      // 등록된 투약사항 없음 Notify
+      Notiflix.Notify.warning('등록된 처치사항이 없습니다.', {
         position: 'center-center', showOnlyTheLastOne: true, plainText: false
       });
 
@@ -288,23 +447,33 @@ function WorkNote(args) {
 
   // Cell Edit 모드 진입 시 Event
   const onCellEditingStarted = (event) => {
-    // debugger
+    
   };
 
   // Cell Edit 모드 종료 시 Event
   const onCellEditingStopped = (event) => {
-    // debugger
+    
   };
 
   const handleSymptom = () => {
     toggleSymptomModal();
     fetchSymptomData();
-  }
+  };
 
   const handleMedication = () => {
     toggleMedicationModal();
-    fetchMedicationData();
-  }
+    fetchStockMedicineData();
+  };
+
+  const handleActionMatter = () => {
+    toggleActionMatterModal();
+    fetchActionMatterData();
+  };
+
+  const handleTreatmentMatter = () => {
+    toggleTreatmentMatterModal();
+    fetchTreatmentMatterData();
+  };
 
   const saveSymptom = async (event) => {
     try {
@@ -397,7 +566,7 @@ function WorkNote(args) {
           }
           
           if(response.data === "success") {   // Api 호출 성공한 경우
-            fetchMedicationData();              // Dropdown에도 공통 적용되기 위해 투약사항 데이터 재조회
+            fetchStockMedicineData();              // Dropdown에도 공통 적용되기 위해 투약사항 데이터 재조회
             // 투약사항 정상 저장 Notify
             Notiflix.Notify.info('투약사항 설정이 정상적으로 저장되었습니다.', {
               position: 'center-center', showOnlyTheLastOne: true, plainText: false
@@ -411,6 +580,114 @@ function WorkNote(args) {
       )
     } catch(error) {
       console.error('투약사항 저장 중 ERROR', error);
+    }
+  };
+
+  const saveActionMatter = async (event) => {
+    try {
+      Notiflix.Confirm.show(                                           // Confirm 창 Show
+        '조치사항 설정',                                                     // Confirm 창 Title
+        '작성하신 조치사항을 저장하시겠습니까?',                                   // Confirm 창 내용
+        '예',                                                          // Confirm 창 버튼
+        '아니요',                                                       // Confirm 창 버튼
+        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
+          event.preventDefault();                                     // 기본 Event 방지
+          const api = actionMatterGridRef.current.api;                      // Grid api 획득
+          let actionMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
+
+          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+            const actionMatter = rowNode.data.actionMatter;                     // 조치사항 획득
+
+            // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
+            if(actionMatter.length !== 0 && user) actionMatterString += actionMatter + "::";
+            
+          });
+          actionMatterString = actionMatterString.slice(0, -2);
+          
+          let response = null;                  // response 데이터 담을 변수
+          if(actionMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
+            response = await axios.post('http://localhost:8000/actionMatter/update', {
+              userId: user.userId,
+              schoolCode: user.schoolCode,
+              actionMatter: actionMatterString
+            });
+          }else{                            // 등록된 증상이 없는 경우 - Insert
+            response = await axios.post('http://localhost:8000/actionMatter/insert', {
+              userId: user.userId,
+              schoolCode: user.schoolCode,
+              actionMatter: actionMatterString
+            });
+          }
+          
+          if(response.data === "success") {   // Api 호출 성공한 경우
+            fetchActionMatterData();           
+            // 조치사항 정상 저장 Notify
+            Notiflix.Notify.info('조치사항 설정이 정상적으로 저장되었습니다.', {
+              position: 'center-center', showOnlyTheLastOne: true, plainText: false
+            });
+          }
+        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
+          return;                                                         // return
+        },{                                                               // Confirm 창 Option 설정
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        }
+      )
+    } catch(error) {
+      console.error('조치사항 저장 중 ERROR', error);
+    }
+  };
+
+  const saveTreatmentMatter = async (event) => {
+    try {
+      Notiflix.Confirm.show(                                           // Confirm 창 Show
+        '처치사항 설정',                                                     // Confirm 창 Title
+        '작성하신 처치사항을 저장하시겠습니까?',                                   // Confirm 창 내용
+        '예',                                                          // Confirm 창 버튼
+        '아니요',                                                       // Confirm 창 버튼
+        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
+          event.preventDefault();                                     // 기본 Event 방지
+          const api = treatmentMatterGridRef.current.api;                      // Grid api 획득
+          let treatmentMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
+
+          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+            const treatmentMatter = rowNode.data.treatmentMatter;                     // 조치사항 획득
+
+            // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
+            if(treatmentMatter.length !== 0 && user) treatmentMatterString += treatmentMatter + "::";
+            
+          });
+          treatmentMatterString = treatmentMatterString.slice(0, -2);
+          
+          let response = null;                  // response 데이터 담을 변수
+          if(treatmentMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
+            response = await axios.post('http://localhost:8000/treatmentMatter/update', {
+              userId: user.userId,
+              schoolCode: user.schoolCode,
+              treatmentMatter: treatmentMatterString
+            });
+          }else{                            // 등록된 증상이 없는 경우 - Insert
+            response = await axios.post('http://localhost:8000/treatmentMatter/insert', {
+              userId: user.userId,
+              schoolCode: user.schoolCode,
+              treatmentMatter: treatmentMatterString
+            });
+          }
+          
+          if(response.data === "success") {   // Api 호출 성공한 경우
+            fetchTreatmentMatterData();           
+            // 조치사항 정상 저장 Notify
+            Notiflix.Notify.info('처치사항 설정이 정상적으로 저장되었습니다.', {
+              position: 'center-center', showOnlyTheLastOne: true, plainText: false
+            });
+          }
+        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
+          return;                                                         // return
+        },{                                                               // Confirm 창 Option 설정
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        }
+      )
+    } catch(error) {
+      console.error('처치사항 저장 중 ERROR', error);
     }
   };
 
@@ -435,32 +712,59 @@ function WorkNote(args) {
         }
       }
     } catch (error) {
-      console.error('증상 가져오기 중 ERROR', error);
+      console.error('증상 조회 중 ERROR', error);
     }
   }, [user?.userId, user?.schoolCode]);
 
-  // 투약사항 데이터 획득 부분 Function 분리
-  const fetchMedicationData = useCallback(async() => {
+  useEffect(() => {
+    fetchSymptomData();
+  }, [fetchSymptomData]);
+
+  const fetchActionMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post('http://localhost:8000/medication/getMedication', {
+        const response = await axios.post('http://localhost:8000/actionMatter/getActionMatter', {
           userId: user.userId,
           schoolCode: user.schoolCode
         });
         
         if (response.data) {
-          const medicationString = response.data.medication.medication;
-          const medicationArray = medicationString.split('::').map(item => {
-            return { medication: item };
+          const actionMatterString = response.data.actionMatter.actionMatter;
+          const actionMatterArray = actionMatterString.split('::').map(item => {
+            return { actionMatter: item };
           });
 
-          setMedicationRowData(medicationArray);
-          setFilteredMedication(medicationArray);
+          setActionMatterRowData(actionMatterArray);
+          setFilteredActionMatter(actionMatterArray);
           setIsRegistered(true);
         }
       }
     } catch (error) {
-      console.error('증상 가져오기 중 ERROR', error);
+      console.error('조치사항 조회 중 ERROR', error);
+    }
+  }, [user?.userId, user?.schoolCode]);
+
+  const fetchTreatmentMatterData = useCallback(async() => {
+    try {
+      if(user?.userId && user?.schoolCode) {
+        const response = await axios.post('http://localhost:8000/treatmentMatter/getTreatmentMatter', {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        });
+        
+        if (response.data) {
+          const treatmentMatterString = response.data.treatmentMatter.treatmentMatter;
+          const treatmentMatterArray = treatmentMatterString.split('::').map(item => {
+            return { treatmentMatter: item };
+          });
+
+          setTreatmentMatterRowData(treatmentMatterArray);
+          setFilteredTreatmentMatter(treatmentMatterArray);
+          setIsRegistered(true);
+        }
+      }
+    } catch (error) {
+      console.error('처치사항 조회 중 ERROR', error);
     }
   }, [user?.userId, user?.schoolCode]);
 
@@ -469,8 +773,12 @@ function WorkNote(args) {
   }, [fetchSymptomData]);
 
   useEffect(() => {
-    fetchMedicationData();
-  }, [fetchMedicationData]);
+    fetchActionMatterData();
+  }, [fetchActionMatterData]);
+
+  useEffect(() => {
+    fetchTreatmentMatterData();
+  }, [fetchTreatmentMatterData]);
 
   // 증상 input 입력란에 Text 입력 시 처리 Event
   const handleSearchSymptom = (text) => {
@@ -504,10 +812,62 @@ function WorkNote(args) {
     }
   };
 
+  // 조치사항 input 입력란에 Text 입력 시 처리 Event
+  const handleSearchActionMatter = (text) => {
+    setSearchActionMatterText(text);                                                                      // 입력한 문자 useState로 전역 변수에 할당
+    
+    const filteredData = actionMatterRowData.filter(actionMatter => actionMatter.actionMatter.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
+    setFilteredActionMatter(filteredData);
+  };
+
+  // 조치사항 input 입력란에 Text 입력 시 처리 Event
+  const handleSearchTreatmentMatter = (text) => {
+    setSearchTreatmentMatterText(text);                                                                      // 입력한 문자 useState로 전역 변수에 할당
+    
+    const filteredData = treatmentMatterRowData.filter(treatmentMatter => treatmentMatter.treatmentMatter.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
+    setFilteredTreatmentMatter(filteredData);
+  };
+  
+  // 조치사항 Grid의 Row 선택 Event
+  const handleActionMatterRowSelect = (selectedRow) => {
+    if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
+      const selectedActionMatter = selectedRow[0].actionMatter;   // 선택한 조치사항 Text 값
+      setSearchActionMatterText(selectedActionMatter);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
+    }
+  };
+
+  // 조치사항 Grid의 Row 선택 Event
+  const handleTreatmentMatterRowSelect = (selectedRow) => {
+    if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
+      const selectedTreatmentMatter = selectedRow[0].treatmentMatter;   // 선택한 조치사항 Text 값
+      setSearchTreatmentMatterText(selectedTreatmentMatter);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
+    }
+  };
+
   const setCurrentTime = () => {
     const currentTime = moment().format('HH:mm');
     setCurrentTimeValue(currentTime);
-  }
+  };
+
+  const fetchStockMedicineData = useCallback(async () => {
+    if(user?.userId && user?.schoolCode) {
+      const response = await axios.get("http://localhost:8000/workNote/getStockMedication", {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        setMedicationRowData(response.data);
+        setFilteredMedication(response.data);
+      }
+    }
+  });
+
+  useEffect(() => {
+    fetchStockMedicineData();
+  }, [user]);
 
   return (
     <>
@@ -733,6 +1093,7 @@ function WorkNote(args) {
                         ref={searchStudentGridRef}
                         rowData={searchStudentRowData} 
                         columnDefs={searchStudentColumnDefs}
+                        defaultColDef={notEditDefaultColDef}
                         paginationPageSize={4}
                         overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
                         rowSelection="single"
@@ -753,7 +1114,7 @@ function WorkNote(args) {
                 </Row> */}
               </CardBody>
             </Card>
-            <Card style={{ height: '279px', overflowY: 'auto' }}>
+            <Card style={{ height: '264px', overflowY: 'auto' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>보건실 방문 요청 알람</b>
               </CardHeader>
@@ -792,6 +1153,7 @@ function WorkNote(args) {
                         ref={personalStudentGridRef}
                         rowData={personalStudentRowData} 
                         columnDefs={personalStudentColumnDefs}
+                        defaultColDef={notEditDefaultColDef}
                         overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       />
                     </div>
@@ -859,23 +1221,28 @@ function WorkNote(args) {
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <b className="action-title" style={{ marginRight: '-15px' }}>조치사항</b>
-                        <BiMenu style={{ float: 'right', marginTop: '-8px'}}/>
+                        <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
                       </CardHeader>
-                      <CardBody>
+                      <CardBody className="p-0">
                         <Input
+                          className=""
                           placeholder="직접 입력"
+                          style={{ borderWidth: 2 }}
+                          value={searchActionMatterText}
+                          onChange={(e) => handleSearchActionMatter(e.target.value)}
                         />
-                        <ListGroup className="pt-2" style={{ height: '116px', overflowY: 'auto' }}>
-                          <ListGroupItem className="work-note-item">
-                            조치사항1
-                          </ListGroupItem>
-                          <ListGroupItem className="work-note-item">
-                            조치사항2
-                          </ListGroupItem>
-                          <ListGroupItem className="work-note-item">
-                            조치사항3
-                          </ListGroupItem>
-                        </ListGroup>
+                        <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
+                          <AgGridReact
+                            ref={actionMatterGridRef}
+                            rowData={filteredActionMatter} 
+                            columnDefs={actionMatterColumnDefs}
+                            headerHeight={0}
+                            suppressHorizontalScroll={true}
+                            overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                            onSelectionChanged={(event) => handleActionMatterRowSelect(event.api.getSelectedRows())}
+                            rowSelection="single"
+                          />
+                        </div>
                       </CardBody>
                     </Card>
                   </Col>
@@ -885,23 +1252,28 @@ function WorkNote(args) {
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <b className="action-title" style={{ marginRight: '-15px' }}>처치사항</b>
-                        <BiMenu style={{ float: 'right', marginTop: '-8px' }}/>
+                        <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
                       </CardHeader>
-                      <CardBody>
+                      <CardBody className="p-0">
                         <Input
+                          className=""
                           placeholder="직접 입력"
+                          style={{ borderWidth: 2 }}
+                          value={searchTreatmentMatterText}
+                          onChange={(e) => handleSearchTreatmentMatter(e.target.value)}
                         />
-                        <ListGroup className="pt-2" style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                          <ListGroupItem className="work-note-item">
-                            처치사항1
-                          </ListGroupItem>
-                          <ListGroupItem className="work-note-item">
-                            처치사항2
-                          </ListGroupItem>
-                          <ListGroupItem className="work-note-item">
-                            처치사항3
-                          </ListGroupItem>
-                        </ListGroup>
+                        <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
+                          <AgGridReact
+                            ref={treatmentMatterGridRef}
+                            rowData={filteredTreatmentMatter} 
+                            columnDefs={treatmentMatterColumnDefs}
+                            headerHeight={0}
+                            suppressHorizontalScroll={true}
+                            overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                            onSelectionChanged={(event) => handleTreatmentMatterRowSelect(event.api.getSelectedRows())}
+                            rowSelection="single"
+                          />
+                        </div>
                       </CardBody>
                     </Card>
                   </Col>
@@ -910,24 +1282,24 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <b className="action-title">침상안정</b>
                       </CardHeader>
-                      <CardBody style={{ marginTop: '-5px'}}>
+                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px' }}>
                         <Row>
-                          <h6><Badge color="secondary" className="ml-2 mt-1">시작시간</Badge></h6>
+                          <h6><Badge color="secondary" className="ml-2 mt-1" style={{ height: '100%', fontSize: 13 }}>시작시간</Badge></h6>
                           <Input
                             id="onBedRestStartTime"
-                            className="ml-3"
+                            className="ml-2"
                             type="time"
-                            style={{ width: '125px', height: '30px' }}
+                            style={{ width: '130px', height: '30px' }}
                             onChange={(e) => setCurrentTimeValue(e.target.value)}
                             value={currentTimeValue}
                           />
-                          <Button size="sm" className="ml-2 m-0" style={{ height: '30px' }} onClick={setCurrentTime}>현재시간</Button>
-                          <h6><Badge color="secondary" className="ml-4 mt-1">종료시간</Badge></h6>
+                          <Button size="sm" className="ml-1 m-0" style={{ height: '30px' }} onClick={setCurrentTime}>현재시간</Button>
+                          <h6><Badge color="secondary" className="ml-2 mt-1" style={{ height: '100%', fontSize: 13 }}>종료시간</Badge></h6>
                           <Input
                             id="onBedRestEndTime"
-                            className="ml-3"
+                            className="ml-2"
                             type="time"
-                            style={{ width: '125px', height: '30px' }}
+                            style={{ width: '130px', height: '30px' }}
                           />
                         </Row>
                       </CardBody>
@@ -936,7 +1308,7 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <b className="action-title">비고</b>
                       </CardHeader>
-                      <CardBody style={{ marginTop: '-5px'}}>
+                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px'}}>
                         <Row className="d-flex justify-content-center">
                           <Input
                           style={{ width: '90%' }}
@@ -1065,6 +1437,98 @@ function WorkNote(args) {
           <ModalFooter>
             <Button className="mr-1" color="secondary" onClick={saveMedication}>저장</Button>
             <Button color="secondary" onClick={toggleMedicationModal}>취소</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={actionMatterModal} toggle={toggleActionMatterModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={toggleActionMatterModal}><b className="text-muted">조치사항 설정</b></ModalHeader>
+          <ModalBody className="pb-0">
+            <Form onSubmit={saveActionMatter}>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+                <AgGridReact
+                  ref={actionMatterGridRef}
+                  rowData={filteredActionMatter}
+                  columnDefs={actionMatterColumnDefs}
+                  stopEditingWhenCellsLoseFocus={true}
+                  // singleClickEdit={true}
+                  paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
+                  defaultColDef={defaultColDef}
+                  overlayNoRowsTemplate={ '<span>등록된 조치사항이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayLoadingTemplate={
+                    '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                  }
+                  onGridReady={onGridReady}
+                  rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
+                  enterNavigatesVertically={true}
+                  enterNavigatesVerticallyAfterEdit={true}
+                  onRowDataUpdated={onActionMatterRowDataUpdated}
+                  onCellValueChanged={onCellValueChanged}
+                />
+              </div>
+            </Form>
+            <Row>
+              <Col className="justify-content-left no-gutters">
+                <Button className="btn-plus" size="sm" onClick={appendActionMatterRow}>
+                  추가
+                </Button>
+                <Button className="btn-minus" size="sm" onClick={removeActionMatterRow}>
+                  삭제
+                </Button>
+              </Col>
+              <Col>
+                <Button className="btn-allMinus" size="sm" style={{float:'right'}} onClick={allActionMatterRemoveRow}>전체 삭제</Button>
+              </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter>
+            <Button className="mr-1" color="secondary" onClick={saveActionMatter}>저장</Button>
+            <Button color="secondary" onClick={toggleActionMatterModal}>취소</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={treatmentMatterModal} toggle={toggleTreatmentMatterModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={toggleTreatmentMatterModal}><b className="text-muted">처치사항 설정</b></ModalHeader>
+          <ModalBody className="pb-0">
+            <Form onSubmit={saveTreatmentMatter}>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+                <AgGridReact
+                  ref={treatmentMatterGridRef}
+                  rowData={filteredTreatmentMatter}
+                  columnDefs={treatmentMatterColumnDefs}
+                  stopEditingWhenCellsLoseFocus={true}
+                  // singleClickEdit={true}
+                  paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
+                  defaultColDef={defaultColDef}
+                  overlayNoRowsTemplate={ '<span>등록된 처치사항이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayLoadingTemplate={
+                    '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                  }
+                  onGridReady={onGridReady}
+                  rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
+                  enterNavigatesVertically={true}
+                  enterNavigatesVerticallyAfterEdit={true}
+                  onRowDataUpdated={onTreatmentMatterRowDataUpdated}
+                  onCellValueChanged={onCellValueChanged}
+                />
+              </div>
+            </Form>
+            <Row>
+              <Col className="justify-content-left no-gutters">
+                <Button className="btn-plus" size="sm" onClick={appendTreatmentMatterRow}>
+                  추가
+                </Button>
+                <Button className="btn-minus" size="sm" onClick={removeTreatmentMatterRow}>
+                  삭제
+                </Button>
+              </Col>
+              <Col>
+                <Button className="btn-allMinus" size="sm" style={{float:'right'}} onClick={allTreatmentMatterRemoveRow}>전체 삭제</Button>
+              </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter>
+            <Button className="mr-1" color="secondary" onClick={saveTreatmentMatter}>저장</Button>
+            <Button color="secondary" onClick={toggleTreatmentMatterModal}>취소</Button>
           </ModalFooter>
        </Modal>
     </>

@@ -182,7 +182,7 @@ function Header(props) {
 
   useEffect(() => {
     fetchWorkStatusData();
-  }, [fetchWorkStatusData]);
+  }, [user]);
 
   const handleWorkStatus = async (e) => {
     const selectedWorkStatus = e.target.id;

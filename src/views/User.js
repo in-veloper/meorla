@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label } from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
@@ -255,6 +255,7 @@ function User() {
 
   const handleCommonPasswordSettingModal = (e) => {
     e.preventDefault();
+    fetchCommonPasswordData();
     toggleCommonPasswordSettingModal();
   };
 
@@ -440,6 +441,22 @@ function User() {
       position: 'center-center', showOnlyTheLastOne: true, plainText: false
     });
   };
+
+  const fetchCommonPasswordData = useCallback(async () => {
+    if(user?.userId && user?.schoolCode) {
+      const response = await axios.get("http://localhost:8000/user/getCommonPassword", {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const commonPassword = response.data[0].commonPassword;
+        setCommonPassword(commonPassword);
+      }
+    }
+  });
 
   return (
     <>

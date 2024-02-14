@@ -11,6 +11,12 @@ function QnaRequest() {
     const [searchText, setSearchText] = useState("");
 
     const gridRef = useRef();
+    
+    const defaultColDef = {
+        sortable: true,
+        resizable: true,
+        filter: true
+    };
 
     // 검색 시 카테고리 선택 Event
     const handleSearchCategory = (e) => {
@@ -87,6 +93,7 @@ function QnaRequest() {
                                 ref={gridRef}
                                 rowData={rowData}
                                 columnDefs={columnDefs}
+                                defaultColDef={defaultColDef}
                             />
                         </div>
                     </Col>
