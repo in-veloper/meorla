@@ -26,7 +26,6 @@ function Login() {
     const [confPassword, setConfPassword] = useState("");       // 입력한 확인 Password
     const [schoolCode, setSchoolCode] = useState("");           // 입력한 학교명과 일치하는 학교 코드
     const [dynamicOptions, setDynamicOptions] = useState([]);   // 학교 검색 시 Typeahead options에 값 Setting 위함
-
     const [confirmUserId, setConfirmUserId] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -156,7 +155,9 @@ function Login() {
                     setSchoolList(response);
                 }
             } catch (error) {
-                console.log("회원가입 > 학교검색 중 ERROR", error);
+                if(error.message.split('-')[1].split(' ')[0] !== '200') {
+                    console.log("회원가입 > 학교검색 중 ERROR", error);
+                }
             }
         } else {
             setSchoolList([]);

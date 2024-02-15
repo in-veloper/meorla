@@ -1,5 +1,8 @@
 import React, {useState, useRef, useCallback, useEffect} from "react";
-import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, ListGroup, ListGroupItem, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form } from "reactstrap";
+import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form } from "reactstrap";
+// import tagify from "@yaireo/tagify";
+import Tags from "@yaireo/tagify/dist/react.tagify";
+import '@yaireo/tagify/dist/tagify.css';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
@@ -13,7 +16,81 @@ import Notiflix from "notiflix";
 import axios from "axios";
 import moment from "moment";
 
+const baseTagifySettings = {
+  blacklist: [],
+  maxTags: 6,
+  backspace: true,                  // true: 마지막 Tag 삭제, edit: 마지막 태그 Edit, false: 아무 동작 하지 않음
+  placeholder: "증상 입력",
+  editTags: 1,
+  dropdown: {
+    enabled: 0
+  },
+  callbacks: {}
+};
+
+function TagField({ label, name, initialValue = [], suggestions = [] }) {
+  const handleChange = e => {
+    // console.log(e.type, " ==> ", e.detail.tagify.value.map(item => item.value));
+  };
+
+  const settings = {
+    ...baseTagifySettings,
+    whitelist: suggestions,
+    callbacks: {
+      add: handleChange,
+      remove: handleChange,
+      blur: handleChange,
+      edit: handleChange,
+      invalid: handleChange,
+      click: handleChange,
+      focus: handleChange,
+      "edit:updated": handleChange,
+      "edit:start": handleChange
+    }
+  };
+
+  // console.log("InitialValue", initialValue);
+
+  return (
+    <div className="form-group" style={{ marginBottom: 0 }}>
+      {/* <label htmlFor={"field-" + name}>{label}</label> */}
+      <Tags settings={settings} initialValue={initialValue} />
+    </div>
+  );
+}
+
+
 function WorkNote(args) {
+
+  const suggestions = [
+    "apple",
+    "banana",
+    "cucumber",
+    "dewberries",
+    "elderberry",
+    "farkleberry",
+    "grapes",
+    "hackberry",
+    "imbe",
+    "jambolan",
+    "kiwi",
+    "lime",
+    "mango",
+    "nectarine",
+    "orange",
+    "papaya",
+    "quince",
+    "raspberries",
+    "strawberries",
+    "tangerine",
+    "ugni",
+    "voavanga",
+    "watermelon",
+    "xigua",
+    "yangmei",
+    "zucchini"
+  ];
+
   const { user } = useUser();                              // 사용자 정보
   const [isOpen, setIsOpen] = useState(false);
   const [searchStudentRowData, setRowData] = useState([]); // 검색 결과를 저장할 state
@@ -30,12 +107,13 @@ function WorkNote(args) {
   const [treatmentMatterModal, setTreatmentMatterModal] = useState(false);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
-  const [modifiedData, setModifiedData] = useState([]);
+  const [setModifiedData] = useState([]);
   const [currentTimeValue, setCurrentTimeValue] = useState('');
 
 
   const [searchSymptomText, setSearchSymptomText] = useState("");
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
+  const [tagifySymptomSuggestion, setTagifySymptomSuggestion] = useState([]);
   const [searchMedicationText, setSearchMedicationText] = useState("");
   const [filteredMedication, setFilteredMedication] = useState(medicationRowData);
   const [searchActionMatterText, setSearchActionMatterText] = useState("");
@@ -50,6 +128,8 @@ function WorkNote(args) {
   const medicationGridRef = useRef();
   const actionMatterGridRef = useRef();
   const treatmentMatterGridRef = useRef();
+
+  const symptomInputRef = useRef();
 
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
@@ -705,9 +785,15 @@ function WorkNote(args) {
           const symptomArray = symptomString.split('::').map(item => {
             return { symptom: item };
           });
-
+          
           setSymptomRowData(symptomArray);
           setFilteredSymptom(symptomArray);
+
+          const tagifySymptomArray = symptomString.split('::').map(item => {
+            return item;
+          });
+          
+          setTagifySymptomSuggestion(tagifySymptomArray);
           setIsRegistered(true);
         }
       }
@@ -863,11 +949,65 @@ function WorkNote(args) {
         setFilteredMedication(response.data);
       }
     }
-  });
+  }, [user?.userId, user?.schoolCode]);
 
   useEffect(() => {
     fetchStockMedicineData();
-  }, [user]);
+  }, [fetchStockMedicineData]);
+
+  // useEffect(() => {
+  //   const tagifyInstance = tagify(symptomInputRef.current, {
+  //     enforceWhitelist: true,
+  //     whitelist: [],
+  //     dropdown: {
+  //       enabled: 0,
+  //       maxItems: 5
+  //     },
+  //     callbacks: {
+  //       add: onTagAdded,
+  //       remove: onTagRemoved
+  //     }
+  //   });
+
+  //   return () => {
+  //     tagifyInstance.destroy();
+  //   };
+  // }, []);
+
+  // const onTagAdded = (e) => {
+  //   console.log("Tag Added", e.detail.data.value);
+  // };
+
+  // const onTagRemoved = (e) => {
+  //   console.log("Tag Removed", e.detail.data.value);
+  // }
+
+  const generateOnBedBox = () => {
+    if(user?.userId && user?.schoolCode) {
+      const bedCount = user.bedCount;
+
+      return Array.from({ length: bedCount }, (_, index) => {
+        const ind = index + 1;
+
+        return (
+          <Col lg="2" md="6" sm="6" key={ind}>
+            <Card className="card-stats">
+              <CardBody>
+                <Row>
+                  <Col md="4" xs="5">
+                    <GiBed className="bed-icons-not-use"/>
+                  </Col>
+                  <Col md="8" xs="7">
+                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                  </Col>
+                </Row>
+              </CardBody>
+            </Card>
+          </Col>
+        );
+      });
+    }
+  };
 
   return (
     <>
@@ -907,7 +1047,8 @@ function WorkNote(args) {
           </Table>
         </Row>
         <Row>
-          <Col lg="2" md="6" sm="6">
+          {generateOnBedBox()}
+          {/* <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
               <CardBody>
                 <Row>
@@ -994,7 +1135,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-          </Col>
+          </Col> */}
         </Row>
         <Row>
           <Col className="pr-2" md="4">
@@ -1167,13 +1308,17 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <Input
+                        {/* <div> */}
+                          <TagField name="symptom" initialValue={["foo", "brazil"]} suggestions={tagifySymptomSuggestion} />
+                        {/* </div> */}
+                        {/* <Input
+                          ref={symptomInputRef}
                           className=""
                           placeholder="직접 입력"
                           style={{ borderWidth: 2 }}
                           value={searchSymptomText}
                           onChange={(e) => handleSearchSymptom(e.target.value)}
-                        />
+                        /> */}
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={symptomGridRef}
@@ -1304,7 +1449,7 @@ function WorkNote(args) {
                         </Row>
                       </CardBody>
                     </Card>
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-10px' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-8px' }}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <b className="action-title">비고</b>
                       </CardHeader>

@@ -48,3 +48,22 @@
 .stats-table td {
     background-color: white;
 }
+
+.tagify {
+    display: flex !important;
+    height: min-content;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    /* --tag-max-width: unset !important; */
+}
+
+.tagify__input {
+    margin: 0;
+    line-height: 30px;
+    white-space: nowrap;
+}
+
+.tagify__tag {
+    font-size: 16px;
+    max-width: unset;
+}

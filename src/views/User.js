@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label } from "reactstrap";
-import { useUser } from "contexts/UserContext";
+import { useUser, setUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
 import { read, utils } from "xlsx";
 import emailjs from "emailjs-com";
@@ -12,7 +12,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '../assets/css/users.css';
 
 function User() {
-  const { user, getUser } = useUser();                          // 사용자 정보
+  const { user } = useUser();                                   // 사용자 정보
   const [currentUser, setCurrentUser] = useState(null);         // 받아온 사용자 정보
   const [schoolGrade, setSchoolGrade] = useState(null);         // 학년 정보
   const [gradeData, setGradeData] = useState(null);             // students Table에서 획득한 명렬표 데이터
@@ -27,6 +27,8 @@ function User() {
   const [profileImageFileName, setProfileImageFileName] = useState("");
   const [backgroundImageFileName, setBackgroundImageFileName] = useState("");
   const [commonPassword, setCommonPassword] = useState("");
+  const [bedCount, setBedCount] = useState(0);
+  const [isUserInfoUpdated, setIsUserInfoUpdated] = useState(false);
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -47,29 +49,22 @@ function User() {
   const toggleCommonPasswordSettingModal = () => setCommonPasswordSettingModal(!commonPasswordSettingModal); 
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userData = await getUser();                     // 현재 접속 사용자 정보 획득
-       
-        if(userData) {                                        // 사용자 정보 존재할 경우
-          setCurrentUser(userData);                           // 전역 변수에 현재 사용자 정보 할당
-          setSchoolGrade(userData.schoolName);                // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
-          setCommonPassword(userData.commonPassword);
-        }
-      }catch(error) {
-        console.error("User 정보 Fetching 중 ERROR", error);
+  const fetchUserData = useCallback(async () => {
+    try {
+      if(user?.userId && user?.schoolCode) {
+        setCurrentUser(user);                           // 전역 변수에 현재 사용자 정보 할당
+        setSchoolGrade(user.schoolName);                // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
+        setCommonPassword(user.commonPassword);
+        setBedCount(user.bedCount);
       }
+    } catch(error) {
+      console.log(error)
     }
+  }, [user?.userId, user?.schoolCode]);
 
-    if(!user) {                                               // 사용자 정보 못 받았을 시 재조회 호출
-      fetchData();
-    }else{                                                    // 사용자 정보 조회 되었을 경우 fetchData 내 Logic 재수행
-      setCurrentUser(user);                                   // 전역 변수에 현재 사용자 정보 할당
-      setSchoolGrade(user.schoolName);                        // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
-      setCommonPassword(user.commonPassword);
-    }
-  }, [user, getUser, gradeData]);
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   useEffect(() => {
     if(currentUser) {                                         // 현재 사용자 정보 존재할 경우
@@ -458,6 +453,43 @@ function User() {
     }
   });
 
+  const updateUserInfo = async (e) => {
+    e.preventDefault();
+    
+    const updateUserName = document.getElementById("userNameInfo").value;
+    const updateUserEmail = document.getElementById("userEmailInfo").value;
+    const updateBedCount = Number(document.getElementById("bedCountInfo").value);
+
+    Notiflix.Confirm.show('사용자 정보 수정', '입력하신 내용과 같이 사용자 정보를 수정하시겠습니까?', '예', '아니요', async () => {
+      if(user?.userId && user?.schoolCode) {
+        const response = await axios.post("http://localhost:8000/user/updateUserInfo", {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          userName: updateUserName,
+          userEmail: updateUserEmail,
+          bedCount: updateBedCount
+        });
+
+        if(response.data === "success") {
+          setCurrentUser(prevUserInfo => ({
+            ...prevUserInfo,
+            userName: updateUserName,
+            userEmail: updateUserEmail,
+            bedCount: updateBedCount
+          }));
+
+          Notiflix.Notify.info('사용자 정보가 정상적으로 수정되었습니다.', {
+            position: 'center-center', showOnlyTheLastOne: true, plainText: false
+          });
+        }
+      }
+    }, () => {
+      return;
+    }, {
+      position: 'center-center', showOnlyTheLastOne: true, plainText: false
+    });
+  };
+
   return (
     <>
       <div className="content">
@@ -584,7 +616,6 @@ function User() {
                         <Input
                           defaultValue={currentUser ? currentUser.schoolName : ''}
                           disabled
-                          // placeholder="Company"
                           type="text"
                         />
                       </FormGroup>
@@ -593,6 +624,7 @@ function User() {
                       <FormGroup>
                         <label>이름</label>
                         <Input
+                          id="userNameInfo"
                           defaultValue={currentUser ? currentUser.name : ''}
                           placeholder="Username"
                           type="text"
@@ -605,43 +637,10 @@ function User() {
                           Email
                         </label>
                         <Input 
+                          id="userEmailInfo"
                           defaultValue={currentUser ? currentUser.email : ''}
                           placeholder="Email" 
                           type="email" 
-                        />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col className="pr-1" md="6">
-                      <FormGroup>
-                        <label>가입된 서비스</label>
-                        <Input
-                          defaultValue="Standard"
-                          placeholder="Company"
-                          type="text"
-                        />
-                      </FormGroup>
-                    </Col>
-                    <Col className="pl-1" md="6">
-                      <FormGroup>
-                        <label>서비스 사용기간</label>
-                        <Input
-                          defaultValue="2023.11.17 ~ 2024.11.16"
-                          placeholder="Last Name"
-                          type="text"
-                        />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="12">
-                      <FormGroup>
-                        <label>Address</label>
-                        <Input
-                          defaultValue="Faker"
-                          placeholder="Home Address"
-                          type="text"
                         />
                       </FormGroup>
                     </Col>
@@ -684,6 +683,43 @@ function User() {
                   <Row>
                     <Col md="12">
                       <FormGroup>
+                        <label>Address</label>
+                        <Input
+                          defaultValue="Faker"
+                          placeholder="Home Address"
+                          type="text"
+                        />
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col className="pr-1" md="6">
+                      <FormGroup>
+                        <label>보건실 침상 수</label>
+                        <Input
+                          id="bedCountInfo"
+                          value={bedCount ? bedCount : 0}
+                          onChange={(e) => setBedCount(e.target.value)}
+                          type="number"
+                          min={0}
+                          max={20}
+                        />
+                      </FormGroup>
+                    </Col>
+                    <Col className="pl-1" md="6">
+                      <FormGroup>
+                        <label>서비스 사용기간</label>
+                        <Input
+                          defaultValue="2023.11.17 ~ 2024.11.16"
+                          placeholder="Last Name"
+                          type="text"
+                        />
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="12">
+                      <FormGroup>
                         <label>About Me</label>
                         <Input
                           type="textarea"
@@ -716,6 +752,7 @@ function User() {
                         className=""
                         color="secondary"
                         type="submit"
+                        onClick={updateUserInfo}
                       >
                         사용자 정보 수정
                       </Button>
@@ -858,4 +895,10 @@ export default User;
 
 /**
  * 로그아웃 시 401 에러 안뜨도록 처리
+ * 
+ * 프로필, 배경 이미지 클릭 시 모달 -> 이미지 등록할건지 제거할건지 선택 -> 제거 시 기존 이미지 DB에서 지우고 public 내 파일도 삭제 -> 추가 시 기존 로직 수행
+ * 
+ * 비밀번호 재설정 -> 비밀번호 재설정 모달 -> 비밀번호 변경할건지 초기화할건지 선택 -> 비밀번호 변경 시 변경 로직 수행 -> 초기화 시 공통 패턴 만들어 초기화 수행
+ * 
+ * 전학 학생 등 학생 추가 필요 시 학년별 명렬표 버튼 클릭 하면 추가 버튼 등 만들어주고 끝 번호로 학생 등록 로직 추가 
  */

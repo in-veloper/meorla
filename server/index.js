@@ -14,7 +14,6 @@ const cookies = new Cookies();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const e = require('express');
 
 app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
@@ -57,21 +56,29 @@ app.get("/token", async (req, res) => {
                     const user = results[0];
                     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
                         if(error) return res.sendStatus(403);
-                        const userId = user.userId;
-                        const name = user.name;
-                        const schoolName = user.schoolName;
-                        const schoolCode = user.schoolCode;
-                        const email = user.email;
-                        const accessToken = jwt.sign({ userId, name, email, schoolName, schoolCode }, process.env.ACCESS_TOKEN_SECRET, {
+
+                        const payload = {
+                            userId: user.userId,
+                            name: user.name,
+                            schoolName: user.schoolName,
+                            schoolCode: user.schoolCode,
+                            email: user.email,
+                            commonPassword: user.commonPassword,
+                            workStatus: user.workStatus,
+                            bedCount: user.bedCount
+                        };
+
+                        const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
                             expiresIn: '15s'
                         });
+                        
                         res.json({ accessToken });
                     });
                 }else{
                     return res.sendStatus(403);
                 }
             }
-        })
+        });
     }catch(error) {
         console.log("Refresh Token 로직 수행 중 ERROR" + error);
     }
@@ -158,7 +165,6 @@ app.post("/user/login", async (req, res) => {
                         }
                     });
                     setCookie('refreshToken', refreshToken, {
-                        // path: '/',
                         secure: true,
                         sameSite: 'none',
                         expires: new Date(Date.now() + 3600 * 1000)
@@ -167,7 +173,6 @@ app.post("/user/login", async (req, res) => {
                     res.json({ user, accessToken });
                 } 
             } else {
-                // res.status(404).json({ msg: "사용자 정보를 찾을 수 없음"});
                 const user = "N";
                 res.json({ user });
             }
@@ -184,14 +189,28 @@ app.post("/user/logout", (req, res) => {
             console.log("REFRESH TOKEN 업데이트 중 ERROR" + err);
             res.status(500).json({ error: "내부 Server ERROR" });
         }else{
-            // res.send('success');
             removeCookie('refreshToken');
             res.status(200).json({ msg: "로그아웃 - 쿠키 삭제 정상 처리 완료"});
         }
     });
-    // removeCookie('refreshToken');
-    // res.status(200).json({ msg: "로그아웃 - 쿠키 삭제 정상 처리 완료"});
-})
+});
+
+app.post("/user/updateUserInfo", (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const userName = req.body.userName;
+    const userEmail = req.body.userEmail;
+    const bedCount = req.body.bedCount;
+
+    const sqlQuery = "UPDATE teaform_db.users SET name = ?, email = ?, bedCount = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userName, userEmail, bedCount, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("사용자 정보 Update 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
 
 app.post("/bookmark/insert", async (req, res) => {
     const userId = req.body.userId;

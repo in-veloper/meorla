@@ -9,48 +9,50 @@ export const UserProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
-    const getUser = useCallback(async() => {
+    const getUser = useCallback(async () => {
         try {
             const accessToken = sessionStorage.getItem("accessToken");
-            if(accessToken) {
-                const response = await axios.get('http://localhost:8000/token', {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                });
-                const decoded = jwtDecode(response.data.accessToken);
-    
-                const userInfo = {
-                    userId: decoded.userId,
-                    name: decoded.name,
-                    email: decoded.email,
-                    schoolName: decoded.schoolName,
-                    schoolCode: decoded.schoolCode,
-                    commonPassword: decoded.commonPassword,
-                    workStatus: decoded.workStatus
-                };
-    
-                setUser(userInfo);
-                return userInfo;
-            }
-        }catch(error) {
-            if(error.response) {
-                sessionStorage.removeItem("accessToken");
-                if(error.response.status !== 200) {
-                    navigate("/");
+
+            if(!accessToken) return;
+            
+            const response = await axios.get('http://localhost:8000/token', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
                 }
-            }
+            });
+            const decoded = jwtDecode(response.data.accessToken);
+            
+            const userInfo = {
+                userId: decoded.userId,
+                name: decoded.name,
+                email: decoded.email,
+                schoolName: decoded.schoolName,
+                schoolCode: decoded.schoolCode,
+                commonPassword: decoded.commonPassword,
+                workStatus: decoded.workStatus,
+                bedCount: decoded.bedCount
+            };
+
+            setUser(userInfo);
+            return userInfo;
+        }catch(error) {
+            sessionStorage.removeItem("accessToken");
+            navigate("/");
+            console.error("사용자 정보 획득 중 ERROR", error);
         }
     }, [navigate]);
+
+    const updateUser = (newUserInfo) => {
+        setUser(newUserInfo);
+    }
         
     useEffect(() => {
         const fetchUser = async () => {
             await getUser();
-        }
-        if(!user) {
-            fetchUser();
-        }
-    }, [user, getUser]);
+        };
+
+        fetchUser();
+    }, [getUser]);
 
     const login = async (userData, accessToken) => {
         try {
@@ -63,26 +65,26 @@ export const UserProvider = ({ children }) => {
                 schoolName: userData.schoolName,
                 schoolCode: userData.schoolCode,
                 commonPassword: userData.commonPassword,
-                workStatus: userData.workStatus
+                workStatus: userData.workStatus,
+                bedCount: userData.bedCount
             });
         } catch (error) {
-            if (error.response) {
-                if (error.response.status !== 200) {
-                    navigate("/");
-                }
-                console.log("UserContext 로직 수행 중 ERROR", error);
-            }
+            console.error("로그인 처리 중 ERROR", error);
+            navigate("/");
         }
     };
 
     const logout = async(userId) => {
         try {
-            const response = await axios.post('http://localhost:8000/user/logout', {userId: userId});
-            if(response.status === 200) {
-                sessionStorage.removeItem("accessToken");
-                sessionStorage.removeItem("schoolCode");
-                setUser(null);
-                navigate("/");
+            const accessToken = sessionStorage.getItem("accessToken");
+            if(accessToken) {   // accessToken이 존재할 경우 로그아웃 수행
+                const response = await axios.post('http://localhost:8000/user/logout', {userId: userId});
+                if(response.status === 200) {
+                    sessionStorage.removeItem("accessToken");
+                    sessionStorage.removeItem("schoolCode");
+                    setUser(null);
+                    navigate("/");
+                }
             }
         }catch(error) {
             console.log("로그아웃 요청 중 ERROR", error);
@@ -90,7 +92,7 @@ export const UserProvider = ({ children }) => {
     };
 
     return (
-        <UserContext.Provider value = {{ user, login, logout, getUser }}>
+        <UserContext.Provider value = {{ user, login, logout, getUser, updateUser }}>
             {children}
         </UserContext.Provider>
     );

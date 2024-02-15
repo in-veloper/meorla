@@ -25,7 +25,6 @@ function Header(props) {
   const [userInfoDropdownOpen, setUserInfoDropdownOpen] = React.useState(false);
   const [userName, setUserName] = React.useState("");
   const [workStatusDropdownOpen, setWorkStatusDropdownOpen] = React.useState(false);
-  // const [workStatus, setWorkStatus] = React.useState("근무");
   const [rowData, setRowData] = useState([{ bookmarkName: "", bookmarkAddress: "" }]);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
