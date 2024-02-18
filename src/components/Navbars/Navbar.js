@@ -177,11 +177,11 @@ function Header(props) {
         setWorkStatus(workStatus);
       }
     }
-  });
+  }, [user]);
 
   useEffect(() => {
     fetchWorkStatusData();
-  }, [user]);
+  }, [fetchWorkStatusData]);
 
   const handleWorkStatus = async (e) => {
     const selectedWorkStatus = e.target.id;

@@ -11,6 +11,7 @@
     "@fullcalendar/timegrid": "^6.1.9",
     "@my-school.info/neis-api": "^1.0.0",
     "@toast-ui/react-grid": "^4.21.18",
+    "@yaireo/tagify": "^4.21.1",
     "ag-grid-community": "^30.2.1",
     "ag-grid-react": "^30.2.1",
     "axios": "^1.6.0",

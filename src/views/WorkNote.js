@@ -16,81 +16,7 @@ import Notiflix from "notiflix";
 import axios from "axios";
 import moment from "moment";
 
-const baseTagifySettings = {
-  blacklist: [],
-  maxTags: 6,
-  backspace: true,                  // true: 마지막 Tag 삭제, edit: 마지막 태그 Edit, false: 아무 동작 하지 않음
-  placeholder: "증상 입력",
-  editTags: 1,
-  dropdown: {
-    enabled: 0
-  },
-  callbacks: {}
-};
-
-function TagField({ label, name, initialValue = [], suggestions = [] }) {
-  const handleChange = e => {
-    // console.log(e.type, " ==> ", e.detail.tagify.value.map(item => item.value));
-  };
-
-  const settings = {
-    ...baseTagifySettings,
-    whitelist: suggestions,
-    callbacks: {
-      add: handleChange,
-      remove: handleChange,
-      blur: handleChange,
-      edit: handleChange,
-      invalid: handleChange,
-      click: handleChange,
-      focus: handleChange,
-      "edit:updated": handleChange,
-      "edit:start": handleChange
-    }
-  };
-
-  // console.log("InitialValue", initialValue);
-
-  return (
-    <div className="form-group" style={{ marginBottom: 0 }}>
-      {/* <label htmlFor={"field-" + name}>{label}</label> */}
-      <Tags settings={settings} initialValue={initialValue} />
-    </div>
-  );
-}
-
-
 function WorkNote(args) {
-
-  const suggestions = [
-    "apple",
-    "banana",
-    "cucumber",
-    "dewberries",
-    "elderberry",
-    "farkleberry",
-    "grapes",
-    "hackberry",
-    "imbe",
-    "jambolan",
-    "kiwi",
-    "lime",
-    "mango",
-    "nectarine",
-    "orange",
-    "papaya",
-    "quince",
-    "raspberries",
-    "strawberries",
-    "tangerine",
-    "ugni",
-    "voavanga",
-    "watermelon",
-    "xigua",
-    "yangmei",
-    "zucchini"
-  ];
-
   const { user } = useUser();                              // 사용자 정보
   const [isOpen, setIsOpen] = useState(false);
   const [searchStudentRowData, setRowData] = useState([]); // 검색 결과를 저장할 state
@@ -129,7 +55,72 @@ function WorkNote(args) {
   const actionMatterGridRef = useRef();
   const treatmentMatterGridRef = useRef();
 
-  const symptomInputRef = useRef();
+  const tagifyRef = useRef();
+
+
+  const baseTagifySettings = {
+    blacklist: [],
+    maxTags: 20,
+    backspace: true,                  // true: 마지막 Tag 삭제, edit: 마지막 태그 Edit, false: 아무 동작 하지 않음
+    placeholder: "증상 입력",
+    editTags: 1,
+    dropdown: {
+      enabled: 0,
+      maxItems: 100
+    },
+    callbacks: {}
+  };
+  
+  function TagField({ label, name, initialValue = [], suggestions = [], selectedRowValue }) {
+    const [whitelist, setWhitelist] = useState(suggestions);
+  
+    // useEffect(() => {
+    //   setWhitelist(suggestions);
+    // }, [suggestions]);
+    
+    const handleChange = (e) => {
+      const type = e.type;
+      let selectedRowValue = e.detail.tagify.value[0].value;
+  
+      if(type === "add" && selectedRowValue) {
+        tagifyRef.current.addTags(selectedRowValue);
+        symptomGridRef.current.api.deselectAll();
+      }else{
+        if(whitelist.length === 0) {
+          const newWhitelist = e.detail.tagify.value.map(item => item.value);
+          setWhitelist(newWhitelist);
+        }
+      }
+    };
+
+    useEffect(() => {
+      if(selectedRowValue) {
+        handleChange({ detail: { tagify: { value: [{ value: selectedRowValue }] } }, type: "add" })
+      }
+    }, [selectedRowValue])
+  
+    const settings = {
+      ...baseTagifySettings,
+      whitelist: whitelist,
+      callbacks: {
+        // add: handleChange,
+        remove: handleChange,
+        blur: handleChange,
+        edit: handleChange,
+        invalid: handleChange,
+        click: handleChange,
+        focus: handleChange,
+        "edit:updated": handleChange,
+        "edit:start": handleChange
+      }
+    };
+  
+    return (
+      <div className="form-group" style={{ marginBottom: 0 }}>
+        <Tags tagifyRef={tagifyRef} settings={settings} initialValue={initialValue} />
+      </div>
+    );
+  };
 
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
@@ -1309,7 +1300,7 @@ function WorkNote(args) {
                       </CardHeader>
                       <CardBody className="p-0">
                         {/* <div> */}
-                          <TagField name="symptom" initialValue={["foo", "brazil"]} suggestions={tagifySymptomSuggestion} />
+                          <TagField name="symptom" initialValue={[]} suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} />
                         {/* </div> */}
                         {/* <Input
                           ref={symptomInputRef}

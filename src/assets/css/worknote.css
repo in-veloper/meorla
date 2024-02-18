@@ -51,13 +51,13 @@
 
 .tagify {
     display: flex !important;
-    height: min-content;
-    flex-wrap: nowrap;
+    height: 75px;
     overflow-x: auto;
+    /* flex-wrap: nowrap; */
     /* --tag-max-width: unset !important; */
 }
 
-.tagify__input {
+/* .tagify__input {
     margin: 0;
     line-height: 30px;
     white-space: nowrap;
@@ -66,4 +66,4 @@
 .tagify__tag {
     font-size: 16px;
     max-width: unset;
-}
+} */
