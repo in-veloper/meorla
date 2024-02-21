@@ -1,9 +1,7 @@
 import React, {useState, useRef, useCallback, useEffect} from "react";
 import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form } from "reactstrap";
-// import tagify from "@yaireo/tagify";
-import Tags from "@yaireo/tagify/dist/react.tagify";
-import '@yaireo/tagify/dist/tagify.css';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
+import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../assets/css/worknote.css';
@@ -54,73 +52,6 @@ function WorkNote(args) {
   const medicationGridRef = useRef();
   const actionMatterGridRef = useRef();
   const treatmentMatterGridRef = useRef();
-
-  const tagifyRef = useRef();
-
-
-  const baseTagifySettings = {
-    blacklist: [],
-    maxTags: 20,
-    backspace: true,                  // true: 마지막 Tag 삭제, edit: 마지막 태그 Edit, false: 아무 동작 하지 않음
-    placeholder: "증상 입력",
-    editTags: 1,
-    dropdown: {
-      enabled: 0,
-      maxItems: 100
-    },
-    callbacks: {}
-  };
-  
-  function TagField({ label, name, initialValue = [], suggestions = [], selectedRowValue }) {
-    const [whitelist, setWhitelist] = useState(suggestions);
-  
-    // useEffect(() => {
-    //   setWhitelist(suggestions);
-    // }, [suggestions]);
-    
-    const handleChange = (e) => {
-      const type = e.type;
-      let selectedRowValue = e.detail.tagify.value[0].value;
-  
-      if(type === "add" && selectedRowValue) {
-        tagifyRef.current.addTags(selectedRowValue);
-        symptomGridRef.current.api.deselectAll();
-      }else{
-        if(whitelist.length === 0) {
-          const newWhitelist = e.detail.tagify.value.map(item => item.value);
-          setWhitelist(newWhitelist);
-        }
-      }
-    };
-
-    useEffect(() => {
-      if(selectedRowValue) {
-        handleChange({ detail: { tagify: { value: [{ value: selectedRowValue }] } }, type: "add" })
-      }
-    }, [selectedRowValue])
-  
-    const settings = {
-      ...baseTagifySettings,
-      whitelist: whitelist,
-      callbacks: {
-        // add: handleChange,
-        remove: handleChange,
-        blur: handleChange,
-        edit: handleChange,
-        invalid: handleChange,
-        click: handleChange,
-        focus: handleChange,
-        "edit:updated": handleChange,
-        "edit:start": handleChange
-      }
-    };
-  
-    return (
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <Tags tagifyRef={tagifyRef} settings={settings} initialValue={initialValue} />
-      </div>
-    );
-  };
 
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
@@ -867,10 +798,15 @@ function WorkNote(args) {
 
   // 증상 Grid의 Row 선택 Event
   const handleSymptomRowSelect = (selectedRow) => {
-    if (selectedRow && selectedRow.length > 0 && searchSymptomText !== null) {
+    debugger
+    // if (selectedRow && selectedRow.length > 0 && searchSymptomText !== null) {
+    if (selectedRow && selectedRow.length > 0) {
       const selectedSymptom = selectedRow[0].symptom;
       setSearchSymptomText(selectedSymptom);
     }
+    // else{
+    //   setSearchSymptomText(null);
+    // }
   };
 
   // 투약사항 input 입력란에 Text 입력 시 처리 Event
@@ -1299,17 +1235,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        {/* <div> */}
-                          <TagField name="symptom" initialValue={[]} suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} />
-                        {/* </div> */}
-                        {/* <Input
-                          ref={symptomInputRef}
-                          className=""
-                          placeholder="직접 입력"
-                          style={{ borderWidth: 2 }}
-                          value={searchSymptomText}
-                          onChange={(e) => handleSearchSymptom(e.target.value)}
-                        /> */}
+                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} symptomGridRef={symptomGridRef} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={symptomGridRef}

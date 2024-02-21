@@ -53,8 +53,8 @@
     display: flex !important;
     height: 75px;
     overflow-x: auto;
-    /* flex-wrap: nowrap; */
-    /* --tag-max-width: unset !important; */
+    border: 2px solid #DEE2E6;
+    padding: 3px;
 }
 
 /* .tagify__input {
