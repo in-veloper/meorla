@@ -24,7 +24,6 @@ function WorkNote(args) {
   const [treatmentMatterRowData, setTreatmentMatterRowData] = useState([]);
   const [searchCriteria, setSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
   const [selectedStudent, setSelectedStudent] = useState(null);
-  // const [modal, setModal] = useState(false);
   const [symptomModal, setSymptomModal] = useState(false);
   const [medicationModal, setMedicationModal] = useState(false);
   const [actionMatterModal, setActionMatterModal] = useState(false);
@@ -38,6 +37,9 @@ function WorkNote(args) {
   const [searchSymptomText, setSearchSymptomText] = useState("");
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
   const [tagifySymptomSuggestion, setTagifySymptomSuggestion] = useState([]);
+  const [tagifyMedicationSuggestion, setTagifyMedicationSuggestion] = useState([]);
+  const [tagifyActionMatterSuggestion, setTagifyActionMatterSuggestion] = useState([]);
+  const [tagifyTreatmentMatterSuggestion, setTagifyTreatmentMatterSuggestion] = useState([]);
   const [searchMedicationText, setSearchMedicationText] = useState("");
   const [filteredMedication, setFilteredMedication] = useState(medicationRowData);
   const [searchActionMatterText, setSearchActionMatterText] = useState("");
@@ -437,6 +439,10 @@ function WorkNote(args) {
     }
   };
 
+  const handleKeyDown = (e, criteria) => {
+    if(e.key === 'Enter') onSearchStudent(searchCriteria);
+  }
+
   const onGridSelectionChanged = (event) => {
     const selectedRow = event.api.getSelectedRows()[0];
     setSelectedStudent(selectedRow);
@@ -744,6 +750,12 @@ function WorkNote(args) {
 
           setActionMatterRowData(actionMatterArray);
           setFilteredActionMatter(actionMatterArray);
+
+          const tagifyActionMatterArray = actionMatterString.split('::').map(item => {
+            return item;
+          });
+
+          setTagifyActionMatterSuggestion(tagifyActionMatterArray);
           setIsRegistered(true);
         }
       }
@@ -768,6 +780,12 @@ function WorkNote(args) {
 
           setTreatmentMatterRowData(treatmentMatterArray);
           setFilteredTreatmentMatter(treatmentMatterArray);
+
+          const tagifyTreatmentArray = treatmentMatterString.split('::').map(item => {
+            return item;
+          });
+
+          setTagifyTreatmentMatterSuggestion(tagifyTreatmentArray);
           setIsRegistered(true);
         }
       }
@@ -788,33 +806,12 @@ function WorkNote(args) {
     fetchTreatmentMatterData();
   }, [fetchTreatmentMatterData]);
 
-  // 증상 input 입력란에 Text 입력 시 처리 Event
-  const handleSearchSymptom = (text) => {
-    setSearchSymptomText(text);                                                             // 입력한 문자 useState로 전역 변수에 할당
-    
-    const filteredData = symptomRowData.filter(symptom => symptom.symptom.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
-    setFilteredSymptom(filteredData);
-  };
-
   // 증상 Grid의 Row 선택 Event
   const handleSymptomRowSelect = (selectedRow) => {
-    debugger
-    // if (selectedRow && selectedRow.length > 0 && searchSymptomText !== null) {
     if (selectedRow && selectedRow.length > 0) {
       const selectedSymptom = selectedRow[0].symptom;
       setSearchSymptomText(selectedSymptom);
     }
-    // else{
-    //   setSearchSymptomText(null);
-    // }
-  };
-
-  // 투약사항 input 입력란에 Text 입력 시 처리 Event
-  const handleSearchMedication = (text) => {
-    setSearchMedicationText(text);                                                                      // 입력한 문자 useState로 전역 변수에 할당
-    
-    const filteredData = medicationRowData.filter(medication => medication.medication.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
-    setFilteredMedication(filteredData);
   };
 
   // 증상 Grid의 Row 선택 Event
@@ -874,6 +871,12 @@ function WorkNote(args) {
       if(response.data) {
         setMedicationRowData(response.data);
         setFilteredMedication(response.data);
+        
+        const tagifyMedicationArray = response.data.map(item => {
+          return item.medication;
+        });
+
+        setTagifyMedicationSuggestion(tagifyMedicationArray);
       }
     }
   }, [user?.userId, user?.schoolCode]);
@@ -881,33 +884,6 @@ function WorkNote(args) {
   useEffect(() => {
     fetchStockMedicineData();
   }, [fetchStockMedicineData]);
-
-  // useEffect(() => {
-  //   const tagifyInstance = tagify(symptomInputRef.current, {
-  //     enforceWhitelist: true,
-  //     whitelist: [],
-  //     dropdown: {
-  //       enabled: 0,
-  //       maxItems: 5
-  //     },
-  //     callbacks: {
-  //       add: onTagAdded,
-  //       remove: onTagRemoved
-  //     }
-  //   });
-
-  //   return () => {
-  //     tagifyInstance.destroy();
-  //   };
-  // }, []);
-
-  // const onTagAdded = (e) => {
-  //   console.log("Tag Added", e.detail.data.value);
-  // };
-
-  // const onTagRemoved = (e) => {
-  //   console.log("Tag Removed", e.detail.data.value);
-  // }
 
   const generateOnBedBox = () => {
     if(user?.userId && user?.schoolCode) {
@@ -1085,6 +1061,7 @@ function WorkNote(args) {
                               style={{ width: '40px' }}
                               onChange={(e) => onInputChange("iGrade", e.target.value)}
                               value={searchCriteria.iGrade}
+                              onKeyDown={(e) => handleKeyDown(e, "iGrade")}
                             />
                           </Col>
                         </Row>
@@ -1100,6 +1077,7 @@ function WorkNote(args) {
                               style={{ width: '40px' }}
                               onChange={(e) => onInputChange("iClass", e.target.value)}
                               value={searchCriteria.iClass}
+                              onKeyDown={(e) => handleKeyDown(e, "iClass")}
                             />
                           </Col>
                         </Row>
@@ -1115,6 +1093,7 @@ function WorkNote(args) {
                               style={{ width: '40px' }}
                               onChange={(e) => onInputChange("iNumber", e.target.value)}
                               value={searchCriteria.iNumber}
+                              onKeyDown={(e) => handleKeyDown(e, "iNumber")}
                             />
                           </Col>
                         </Row>
@@ -1130,6 +1109,7 @@ function WorkNote(args) {
                               style={{ width: '80px' }}
                               onChange={(e) => onInputChange("iName", e.target.value)}
                               value={searchCriteria.iName}
+                              onKeyDown={(e) => handleKeyDown(e, "iName")}
                             />
                           </Col>
                         </Row>
@@ -1258,12 +1238,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <Input
-                          placeholder="직접 입력"
-                          style={{ borderWidth: 2 }}
-                          value={searchMedicationText}
-                          onChange={(e) => handleSearchMedication(e.target.value)}
-                        />
+                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} symptomGridRef={medicationGridRef} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={medicationGridRef}
@@ -1286,13 +1261,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <Input
-                          className=""
-                          placeholder="직접 입력"
-                          style={{ borderWidth: 2 }}
-                          value={searchActionMatterText}
-                          onChange={(e) => handleSearchActionMatter(e.target.value)}
-                        />
+                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} symptomGridRef={actionMatterGridRef} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={actionMatterGridRef}
@@ -1317,13 +1286,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <Input
-                          className=""
-                          placeholder="직접 입력"
-                          style={{ borderWidth: 2 }}
-                          value={searchTreatmentMatterText}
-                          onChange={(e) => handleSearchTreatmentMatter(e.target.value)}
-                        />
+                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} symptomGridRef={treatmentMatterGridRef} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={treatmentMatterGridRef}
