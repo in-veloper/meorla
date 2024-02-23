@@ -67,7 +67,7 @@ function Sidebar(props) {
           href="https://www.creative-tim.com"
           className="simple-text logo-normal text-muted"
         >
-          <b style={{ color: props.bgColor === 'black' ? '#FFFFFF' : '#66615B' }}>MEDI:WORKS</b>
+          <b style={{ color: props.bgColor === 'black' ? '#FFFFFF' : '#66615B' }}>MEORLA</b>
         </a>
       </div>
       <div className="sidebar-wrapper" ref={sidebar}>

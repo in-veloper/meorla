@@ -9,6 +9,7 @@ import { GiBed } from "react-icons/gi";
 import { BiMenu } from "react-icons/bi";
 import { RiSearchLine } from "react-icons/ri";
 import { IoMdRefresh } from "react-icons/io";
+import { FaInfoCircle } from "react-icons/fa";
 import { useUser } from "contexts/UserContext";
 import Notiflix from "notiflix";
 import axios from "axios";
@@ -890,18 +891,18 @@ function WorkNote(args) {
       const bedCount = user.bedCount;
 
       return Array.from({ length: bedCount }, (_, index) => {
-        const ind = index + 1;
+        const i = index + 1;
 
         return (
-          <Col lg="2" md="6" sm="6" key={ind}>
-            <Card className="card-stats">
+          <Col className="" lg="2" md="6" sm="6" key={i}>
+            <Card className="bed-card-stats">
               <CardBody>
                 <Row>
                   <Col md="4" xs="5">
                     <GiBed className="bed-icons-not-use"/>
                   </Col>
-                  <Col md="8" xs="7">
-                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                  <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
+                    <p className="text-muted text-center pt-1" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
                   </Col>
                 </Row>
               </CardBody>
@@ -915,7 +916,7 @@ function WorkNote(args) {
   return (
     <>
       <div className="content">
-        <Row className="pl-3 pr-3">
+        <Row className="pl-3 pr-3" style={{ marginBottom: '-7px'}}>
           <Table bordered className="stats-table text-center text-muted">
             <thead>
               <tr>
@@ -949,7 +950,7 @@ function WorkNote(args) {
             </tbody>
           </Table>
         </Row>
-        <Row>
+        <Row style={{ marginBottom: '-7px' }}>
           {generateOnBedBox()}
           {/* <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
@@ -1046,7 +1047,7 @@ function WorkNote(args) {
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
-              <CardBody>
+              <CardBody className="pb-1">
                 <Row className="pr-0">
                   <Col md="10" className="ml-1" style={{ marginRight: '-15px'}}>
                     <Row>
@@ -1129,8 +1130,8 @@ function WorkNote(args) {
                 </Row>
                 <Row>
                   <Col md="12">
-                    <Alert className="text-center text-muted" style={{ backgroundColor: '#f8f8f8' }}>
-                      <i className="nc-icon nc-bulb-63" /> 일부 항목 입력으로도 조회 가능합니다
+                    <Alert className="text-center text-muted" style={{ backgroundColor: '#f8f8f8', borderRadius: 10 }}>
+                      <FaInfoCircle className="mr-1" style={{ marginTop: '-4px', fontSize: 17}}/> 일부 항목 입력으로도 조회 가능합니다
                     </Alert>
                   </Col>
                 </Row>
@@ -1154,15 +1155,18 @@ function WorkNote(args) {
                     </div>
                   </Col>
                 </Row>
-                {/* <Row className="pt-2">
-                  <Col md="12" className="d-flex justify-content-center"> */}
-                    {/* <Button className="mr-1">초기화</Button> */}
-                    {/* <Button onClick={onChoiceStudent}>선택</Button> */}
-                  {/* </Col>
-                </Row> */}
+                <Row className="pt-1">
+                  <Col md="6" className="">
+                    <Button>학생관리</Button>
+                  </Col>
+                  {/* <Col md="6" className="">
+                    <Button>초기화</Button>
+                    <Button>선택</Button>
+                  </Col> */}
+                </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '264px', overflowY: 'auto' }}>
+            <Card style={{ height: '287px', overflowY: 'auto' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>보건실 방문 요청 알람</b>
               </CardHeader>
@@ -1193,7 +1197,7 @@ function WorkNote(args) {
                   {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
                 </b>
               </CardHeader>
-              <CardBody>
+              <CardBody className="pt-2 pb-1">
                 <Row className="pt-1">
                   <Col md="12">
                     <div className="ag-theme-alpine" style={{ height: '13.9vh' }}>
@@ -1215,7 +1219,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} symptomGridRef={symptomGridRef} />
+                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={symptomGridRef}
@@ -1238,7 +1242,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} symptomGridRef={medicationGridRef} />
+                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={medicationGridRef}
@@ -1261,7 +1265,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} symptomGridRef={actionMatterGridRef} />
+                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={actionMatterGridRef}
@@ -1278,7 +1282,7 @@ function WorkNote(args) {
                     </Card>
                   </Col>
                 </Row>
-                <Row style={{ marginTop: '-13px' }}>
+                <Row style={{ marginTop: '-13px', marginBottom: '-15px' }}>
                   <Col md="6" className="pr-0">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
@@ -1286,7 +1290,7 @@ function WorkNote(args) {
                         <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} symptomGridRef={treatmentMatterGridRef} />
+                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={treatmentMatterGridRef}
@@ -1327,9 +1331,16 @@ function WorkNote(args) {
                             style={{ width: '130px', height: '30px' }}
                           />
                         </Row>
+                        <Row>
+                          <Col md="12" style={{ marginTop: 12 }}>
+                            <Alert className="d-flex justify-content-center align-items-center text-center text-muted mb-0" style={{ backgroundColor: '#f8f8f8', borderRadius: 10, height: 20 }}>
+                              <FaInfoCircle className="mr-2" style={{ marginTop: '-2px', fontSize: 17}}/> 종료시간은 선택 입력 사항입니다
+                            </Alert>
+                          </Col>
+                        </Row>
                       </CardBody>
                     </Card>
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-8px' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-7px' }}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <b className="action-title">비고</b>
                       </CardHeader>

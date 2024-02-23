@@ -2,14 +2,15 @@
     border-radius: 0.3em;
 }
 
-.card-stats {
-    height: 70px;
+.bed-card-stats {
+    height: 65px;
 }
 
 .bed-icons-not-use {
     font-size: 40px;
     color: grey;
     margin-left: 10px;
+    margin-top: -3px;
 }
 
 .bed-icons-use {
@@ -35,6 +36,11 @@
     font-size: 14px;
 }
 
+.stats-table tr > td,
+.stats-table th {
+    padding: 7px 7px !important;
+}
+
 .stats-table td,
 .stats-table th {
     border: 1px solid #DEE2E6 !important;
@@ -51,10 +57,10 @@
 
 .tagify {
     display: flex !important;
-    height: 75px;
+    height: 77px;
     overflow-x: auto;
     border: 2px solid #DEE2E6;
-    padding: 3px;
+    padding: 0px;
 }
 
 /* .tagify__input {
