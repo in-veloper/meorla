@@ -3,7 +3,7 @@
 }
 
 .bed-card-stats {
-    height: 65px;
+    height: 60px;
 }
 
 .bed-icons-not-use {
@@ -38,7 +38,7 @@
 
 .stats-table tr > td,
 .stats-table th {
-    padding: 7px 7px !important;
+    padding: 6px 6px !important;
 }
 
 .stats-table td,

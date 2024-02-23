@@ -916,7 +916,7 @@ function WorkNote(args) {
   return (
     <>
       <div className="content">
-        <Row className="pl-3 pr-3" style={{ marginBottom: '-7px'}}>
+        <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
           <Table bordered className="stats-table text-center text-muted">
             <thead>
               <tr>
@@ -950,7 +950,7 @@ function WorkNote(args) {
             </tbody>
           </Table>
         </Row>
-        <Row style={{ marginBottom: '-7px' }}>
+        <Row style={{ marginBottom: '-10px' }}>
           {generateOnBedBox()}
           {/* <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
