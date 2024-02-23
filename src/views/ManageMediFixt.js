@@ -317,11 +317,6 @@ function ManageMediFixt() {
                             </NavItem>
                         </Nav>
                     </Col>
-                    
-                </Row>
-                <Row className="no-gutters">
-                    <Col md="7" className="pt-2">
-                    </Col>
                     <Col md="5">
                         <Row className="justify-content-end align-items-center no-gutters">
                             <Input
