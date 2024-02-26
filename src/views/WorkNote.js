@@ -1,5 +1,5 @@
 import React, {useState, useRef, useCallback, useEffect} from "react";
-import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form } from "reactstrap";
+import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -823,22 +823,6 @@ function WorkNote(args) {
     }
   };
 
-  // 조치사항 input 입력란에 Text 입력 시 처리 Event
-  const handleSearchActionMatter = (text) => {
-    setSearchActionMatterText(text);                                                                      // 입력한 문자 useState로 전역 변수에 할당
-    
-    const filteredData = actionMatterRowData.filter(actionMatter => actionMatter.actionMatter.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
-    setFilteredActionMatter(filteredData);
-  };
-
-  // 조치사항 input 입력란에 Text 입력 시 처리 Event
-  const handleSearchTreatmentMatter = (text) => {
-    setSearchTreatmentMatterText(text);                                                                      // 입력한 문자 useState로 전역 변수에 할당
-    
-    const filteredData = treatmentMatterRowData.filter(treatmentMatter => treatmentMatter.treatmentMatter.includes(text));  // 입력한 문자를 포함하는 Grid의 Row를 Filtering
-    setFilteredTreatmentMatter(filteredData);
-  };
-  
   // 조치사항 Grid의 Row 선택 Event
   const handleActionMatterRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
@@ -913,6 +897,38 @@ function WorkNote(args) {
     }
   };
 
+  const notifyVisitRequest = () => {
+    
+    /**
+     * 방문 요청 내역이 없을 경우 출력 위해 미리 처리
+     */
+    // return(
+    //   <div className="d-flex justify-content-center align-items-center text-center" style={{ height: '100%'}}>
+    //     <span className="text-muted"><b>보건실 방문 요청 내역이 없습니다</b></span>
+    //   </div>
+    // )
+
+    return (
+      <div>
+        <UncontrolledAlert color="warning" fade={false}>
+          <span>
+            <b>알림 &nbsp; </b>
+            [13:20] 2학년 3반 정영인 방문 요청</span>
+        </UncontrolledAlert>
+        <UncontrolledAlert color="warning" fade={false}>
+          <span>
+            <b>알림 &nbsp; </b>
+            [15:33] 3학년 1반 김은지 방문 요청</span>
+        </UncontrolledAlert>
+        <UncontrolledAlert color="warning" fade={false}>
+          <span>
+            <b>알림 &nbsp; </b>
+            [11:10] 1학년 2반 홍길동 방문 요청</span>
+        </UncontrolledAlert>
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="content">
@@ -965,76 +981,6 @@ function WorkNote(args) {
                       <br/>
                       <span style={{ fontSize: '12px' }}>11:00 부터 사용</span>
                     </p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="2" md="6" sm="6">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <GiBed className="bed-icons-not-use"/>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="2" md="6" sm="6">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <GiBed className="bed-icons-not-use"/>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="2" md="6" sm="6">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <GiBed className="bed-icons-not-use"/>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="2" md="6" sm="6">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <GiBed className="bed-icons-not-use"/>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="2" md="6" sm="6">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <GiBed className="bed-icons-not-use"/>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <p className="text-muted text-center pt-2" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
                   </Col>
                 </Row>
               </CardBody>
@@ -1130,9 +1076,20 @@ function WorkNote(args) {
                 </Row>
                 <Row>
                   <Col md="12">
-                    <Alert className="text-center text-muted" style={{ backgroundColor: '#f8f8f8', borderRadius: 10 }}>
-                      <FaInfoCircle className="mr-1" style={{ marginTop: '-4px', fontSize: 17}}/> 일부 항목 입력으로도 조회 가능합니다
+                    <Alert className="d-flex justify-content-center align-items-center text-center text-muted mb-0" style={{ backgroundColor: '#f8f8f8', borderRadius: 10, height: 20 }}>
+                      <FaInfoCircle className="mr-1" style={{ marginTop: '-2px', fontSize: 17}}/> 일부 항목 입력으로도 조회 가능합니다
                     </Alert>
+                  </Col>
+                </Row>
+                <Row className="mt-2">
+                  <Col className="text-right pr-4" md="12">
+                    <CustomInput 
+                       type="switch"
+                       id="maskingName"
+                       label={<span style={{ fontSize: 13}}>이름 마스킹</span>}
+                      //  checked={isChecked}
+                      //  onChange={handleHidePrivacyInfo}
+                    />
                   </Col>
                 </Row>
                 <Row className="pt-1">
@@ -1166,26 +1123,28 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '287px', overflowY: 'auto' }}>
-              <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
-                <b>보건실 방문 요청 알람</b>
+            <Card style={{ height: '290px', overflowY: 'auto' }}>
+              <CardHeader className="text-muted" style={{ fontSize: '17px' }}>
+                <Row className="d-flex align-items-center">
+                  <Col className="text-left pl-4" md="3">
+                    <CustomInput 
+                       type="switch"
+                       id="hidePrivacyInfo"
+                       label={<span style={{ fontSize: 13}}>내용숨김</span>}
+                      //  checked={isChecked}
+                      //  onChange={handleHidePrivacyInfo}
+                    />
+                  </Col>
+                  <Col className="text-center" md="6">
+                    <b>보건실 방문 요청 알람</b>
+                  </Col>
+                  <Col className="text-right pr-4" md="3" style={{ marginTop: -3}}>
+                    <b style={{ fontSize: '13px', color: '#9A9A9A' }}>전체읽음</b>
+                  </Col>
+                </Row>
               </CardHeader>
               <CardBody>
-                <UncontrolledAlert color="warning" fade={false}>
-                  <span>
-                    <b>알림 &nbsp; </b>
-                    [13:20] 2학년 3반 정영인 방문 요청</span>
-                </UncontrolledAlert>
-                <UncontrolledAlert color="warning" fade={false}>
-                  <span>
-                    <b>알림 &nbsp; </b>
-                    [15:33] 3학년 1반 김은지 방문 요청</span>
-                </UncontrolledAlert>
-                <UncontrolledAlert color="warning" fade={false}>
-                  <span>
-                    <b>알림 &nbsp; </b>
-                    [11:10] 1학년 2반 홍길동 방문 요청</span>
-                </UncontrolledAlert>
+                {notifyVisitRequest()}
               </CardBody>
             </Card>
           </Col>
@@ -1215,8 +1174,15 @@ function WorkNote(args) {
                   <Col md="3" className="pt-3 pr-2">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title" style={{ marginRight: '-15px' }}>증상</b>
-                        <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
+                        <Row>
+                          <Col className="text-right" md="7">
+                            <b className="action-title" style={{ marginRight: '-9px' }}>증상</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                            <BiMenu style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
+                          </Col>
+                        </Row>
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" />
@@ -1238,8 +1204,15 @@ function WorkNote(args) {
                   <Col md="4" className="pt-3 pl-0 pr-2">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title" style={{ marginRight: '-15px' }}>투약사항</b>
-                        <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
+                        <Row>
+                          <Col className="text-right" md="7">
+                            <b className="action-title" style={{ marginRight: '-9px' }}>투약사항</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />                            
+                            <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
+                          </Col>
+                        </Row>
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" />
@@ -1261,8 +1234,15 @@ function WorkNote(args) {
                   <Col md="5" className="pt-3 pl-0">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title" style={{ marginRight: '-15px' }}>조치사항</b>
-                        <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
+                        <Row>
+                          <Col className="text-right" md="7">
+                            <b className="action-title" style={{ marginRight: '-3px' }}>조치사항</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />                            
+                            <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
+                          </Col>
+                        </Row>
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" />
@@ -1286,8 +1266,15 @@ function WorkNote(args) {
                   <Col md="6" className="pr-0">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title" style={{ marginRight: '-15px' }}>처치사항</b>
-                        <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
+                        <Row>
+                          <Col className="text-right" md="7">
+                            <b className="action-title" style={{ marginRight: 5}}>처치사항</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                            <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
+                          </Col>
+                        </Row>
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" />
@@ -1309,11 +1296,18 @@ function WorkNote(args) {
                   <Col md="6" className="pl-2">
                     <Card className="pb-0" style={{ border: '1px solid lightgrey' }}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title">침상안정</b>
-                      </CardHeader>
-                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px' }}>
                         <Row>
-                          <h6><Badge color="secondary" className="ml-2 mt-1" style={{ height: '100%', fontSize: 13 }}>시작시간</Badge></h6>
+                          <Col className="text-right" md="7">
+                            <b className="action-title" style={{ marginRight: 7}}>침상안정</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                          </Col>
+                        </Row>
+                      </CardHeader>
+                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-3px' }}>
+                        <Row>
+                          <h6><Badge color="secondary" className="ml-2" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>시작시간</Badge></h6>
                           <Input
                             id="onBedRestStartTime"
                             className="ml-2"
@@ -1323,7 +1317,7 @@ function WorkNote(args) {
                             value={currentTimeValue}
                           />
                           <Button size="sm" className="ml-1 m-0" style={{ height: '30px' }} onClick={setCurrentTime}>현재시간</Button>
-                          <h6><Badge color="secondary" className="ml-2 mt-1" style={{ height: '100%', fontSize: 13 }}>종료시간</Badge></h6>
+                          <h6><Badge color="secondary" className="ml-4" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>종료시간</Badge></h6>
                           <Input
                             id="onBedRestEndTime"
                             className="ml-2"
@@ -1340,9 +1334,16 @@ function WorkNote(args) {
                         </Row>
                       </CardBody>
                     </Card>
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-7px' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-11px' }}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <b className="action-title">비고</b>
+                        <Row>
+                          <Col className="text-right" md="7">
+                            <b className="action-title" style={{ marginRight: '16px' }}>비고</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                          </Col>
+                        </Row>
                       </CardHeader>
                       <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px'}}>
                         <Row className="d-flex justify-content-center">

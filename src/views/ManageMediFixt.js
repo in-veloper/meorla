@@ -29,8 +29,8 @@ function ManageMediFixt() {
 
     const toggleRegistMedicineModal = () => setRegistMedicineModal(!registMedicineModal);
 
-    const onGridReady = useCallback((params) => {
-    }, []);
+    // const onGridReady = useCallback((params) => {
+    // }, []);
 
     const [medicineRowData, setMedicineRowData] = useState([]);
 

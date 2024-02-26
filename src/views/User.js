@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import {Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label } from "reactstrap";
-import { useUser, setUser } from "contexts/UserContext";
+import { Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label } from "reactstrap";
+import { useUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
 import { read, utils } from "xlsx";
 import emailjs from "emailjs-com";
@@ -10,6 +10,8 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '../assets/css/users.css';
+import QRCode from "qrcode-generator";
+import { useReactToPrint } from "react-to-print";
 
 function User() {
   const { user } = useUser();                                   // 사용자 정보
@@ -28,7 +30,9 @@ function User() {
   const [backgroundImageFileName, setBackgroundImageFileName] = useState("");
   const [commonPassword, setCommonPassword] = useState("");
   const [bedCount, setBedCount] = useState(0);
-  const [isUserInfoUpdated, setIsUserInfoUpdated] = useState(false);
+  const [requestQRcodeModal, setRequestQRcodeModal] = useState(false);
+  const [QRCodeImage, setQRCodeImage] = useState('');
+  // const [isUserInfoUpdated, setIsUserInfoUpdated] = useState(false);
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -48,6 +52,10 @@ function User() {
 
   const toggleCommonPasswordSettingModal = () => setCommonPasswordSettingModal(!commonPasswordSettingModal); 
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
+  const toggleRequestQRcodeModal = () => {
+    setRequestQRcodeModal(!requestQRcodeModal);
+    if(!requestQRcodeModal) generateQRCode();
+  }
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -60,7 +68,7 @@ function User() {
     } catch(error) {
       console.log(error)
     }
-  }, [user?.userId, user?.schoolCode]);
+  }, [user]);
 
   useEffect(() => {
     fetchUserData();
@@ -82,6 +90,7 @@ function User() {
           console.log("명렬표 데이터 조회 중 ERROR", error);
         }
       };
+      
       fetchGradeData();                                       // 명렬표 미리보기 조회 Function 호출
     }
   }, [currentUser, user, isRegisteredStudentsTable]);
@@ -388,30 +397,32 @@ function User() {
 
       fetchUploadFileData();
     }
-  }, [currentUser]);
+  }, [user?.userId, user?.schoolCode, currentUser]);
 
-  const fetchProfileImage = (registeredProfileImageFileName) => {
+  const fetchProfileImage = useCallback(async (registeredProfileImageFileName) => {
     if(registeredProfileImageFileName) setProfileImageFileName(registeredProfileImageFileName);
     if(profileImageFileName && currentUser) {
-      setSelectedProfileImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/profileImage/' + profileImageFileName);
+      setSelectedProfileImage(`${process.env.PUBLIC_URL}/uploads/${currentUser.userId}/profileImage/${profileImageFileName}`);
+      // setSelectedProfileImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/profileImage/' + profileImageFileName);
     }else{
       setSelectedProfileImage(null);
     }
-  };
+  }, [profileImageFileName, currentUser]);
 
-  const fetchBackgroundImage = (registeredBackgroundImageFileName) => {
+  const fetchBackgroundImage = useCallback(async (registeredBackgroundImageFileName) => {
     if(registeredBackgroundImageFileName) setBackgroundImageFileName(registeredBackgroundImageFileName);
     if(backgroundImageFileName && currentUser) {
-      setSelectedBackgroundImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/backgroundImage/' + backgroundImageFileName);
+      setSelectedBackgroundImage(`${process.env.PUBLIC_URL}/uploads/${currentUser.userId}/backgroundImage/${backgroundImageFileName}`);
+      // setSelectedBackgroundImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/backgroundImage/' + backgroundImageFileName);
     }else{
       setSelectedBackgroundImage(null);
     }
-  };
+  }, [backgroundImageFileName, currentUser]);
 
   useEffect(() => {
     fetchProfileImage();
     fetchBackgroundImage();
-  }, [profileImageFileName, backgroundImageFileName]);
+  }, [fetchProfileImage, fetchBackgroundImage]);
 
   const handleEmailForm = (e) => {
     e.preventDefault();
@@ -451,7 +462,7 @@ function User() {
         setCommonPassword(commonPassword);
       }
     }
-  });
+  }, [user]);
 
   const updateUserInfo = async (e) => {
     e.preventDefault();
@@ -489,6 +500,31 @@ function User() {
       position: 'center-center', showOnlyTheLastOne: true, plainText: false
     });
   };
+
+  const generateQRCode = () => {
+    const url = 'http://www.naver.com';
+    const typeNumber = 10;
+    const errorCorrectionLevel = 'L';
+
+    const qr = QRCode(typeNumber, errorCorrectionLevel);
+    qr.addData(url);
+    qr.make();
+
+    const img = qr.createImgTag(2);
+    setQRCodeImage(img);
+  };
+
+  const printComponentRef = useRef();
+
+  const onPrintQRCode = (e) => {
+    e.preventDefault();
+    handlePrint();
+  };
+
+  const handlePrint = useReactToPrint({
+    content: () => printComponentRef.current,
+    documentTitle: '보건실 사용요청 QR코드'
+  });
 
   return (
     <>
@@ -693,7 +729,18 @@ function User() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col className="pr-1" md="6">
+                    <Col md="12">
+                      <FormGroup>
+                        <label>About Me</label>
+                        <Input
+                          type="textarea"
+                          defaultValue="Oh so, your weak rhyme You doubt I'll bother, reading into it"
+                        />
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col className="pr-1" md="3">
                       <FormGroup>
                         <label>보건실 침상 수</label>
                         <Input
@@ -706,32 +753,44 @@ function User() {
                         />
                       </FormGroup>
                     </Col>
-                    <Col className="pl-1" md="6">
+                    <Col className="d-flex justify-content-end" md="1">
                       <FormGroup>
-                        <label>서비스 사용기간</label>
-                        <Input
-                          defaultValue="2023.11.17 ~ 2024.11.16"
-                          placeholder="Last Name"
-                          type="text"
-                        />
+                        <label></label>
+                        <div style={{ marginTop: '10px' }}>
+                          <span style={{ borderLeft: '2px solid #DDDDDD', marginLeft: '20px', height: '30px', display: 'inline-flex', marginRight: '-20px' }}></span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col className="pl-5 d-flex justify-content-center" md="4">
+                      <FormGroup style={{ marginLeft: '15px' }}>
+                        <label>보건실 사용요청 공유</label>
+                        <div style={{ marginTop: '-12px' }}>
+                          <Button className="mr-2">URL</Button>
+                          <Button onClick={toggleRequestQRcodeModal}>QR코드</Button>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col className="d-flex justify-content-left" md="1">
+                      <FormGroup>
+                        <label></label>
+                        <div style={{ marginTop: '10px' }}>
+                          <span style={{ borderLeft: '2px solid #DDDDDD', height: '30px', display: 'inline-flex' }}></span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="3">
+                      <FormGroup style={{ marginLeft: '18px'}}>
+                        <label>알림톡 관리</label>
+                        <div style={{ marginTop: '-12px' }}>
+                          <Button>알림톡 설정</Button>
+                        </div>
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Row>
-                    <Col md="12">
+                  <Row className="align-items-center" style={{ marginTop: '-7px' }}>
+                    <Col md="4">
                       <FormGroup>
-                        <label>About Me</label>
-                        <Input
-                          type="textarea"
-                          defaultValue="Oh so, your weak rhyme You doubt I'll bother, reading into it"
-                        />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row className="align-items-center">
-                    <Col md="8">
-                      <FormGroup>
-                        <label>명렬표</label>
+                        <label>학생 명렬표</label>
                         <div style={{ marginTop: -12}}>
                           <ButtonGroup className="" size="md">
                             {generateNameTableButtons()}
@@ -739,14 +798,52 @@ function User() {
                         </div>
                       </FormGroup>
                     </Col>
-                    <Col md="4" className="">
+                    <Col md="3">
                       <Row className="justify-content-end no-gutters">
-                          <Button className="btn-round mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
-                          <Button className="btn-round" style={{ marginRight : '10px'}} onClick={onBulkRegist}>일괄등록</Button>
+                        <ButtonGroup>
+                          <Button className="mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button style={{ marginRight : '10px'}} onClick={onBulkRegist}>일괄등록</Button>
+                        </ButtonGroup>
+                      </Row>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <label>교직원 정보</label>
+                        <div style={{ marginTop: '-12px'}}>
+                        <span className="mr-3" style={{ borderLeft: '2px solid #DDDDDD', marginLeft: '-19px', height: '30px', display: 'inline-flex', marginBottom: '-13px' }}></span>
+                          <Button className="btn-outline-default"><b>교직원</b></Button>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="3">
+                      <Row className="justify-content-end no-gutters">
+                        <ButtonGroup>
+                          <Button className="mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button style={{ marginRight : '10px'}} onClick={onBulkRegist}>일괄등록</Button>
+                        </ButtonGroup>
                       </Row>
                     </Col>
                   </Row>
-                  <Row>
+                  
+                  <Modal isOpen={isModalOpen} backdrop={true} toggle={toggleModal} centered={true} autoFocus={false}>
+                    <ModalHeader className="text-muted" toggle={toggleModal} closebutton="true">명렬표 등록 정보</ModalHeader>
+                    <ModalBody>
+                      <div className="ag-theme-alpine" style={{ height: '25vh' }}>
+                        <AgGridReact
+                          ref={gridRef}
+                          rowData={modalData} 
+                          columnDefs={ntColumnDefs} 
+                        />
+                      </div>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button color="secondary" onClick={toggleModal}>닫기</Button>
+                    </ModalFooter>
+                  </Modal>
+                </Form>
+              </CardBody>
+              <CardFooter>
+                <Row>
                     <div className="update ml-auto mr-auto">
                       <Button
                         className=""
@@ -773,23 +870,7 @@ function User() {
                       </Button>
                     </div>
                   </Row>
-                  <Modal isOpen={isModalOpen} backdrop={true} toggle={toggleModal} centered={true} autoFocus={false}>
-                    <ModalHeader className="text-muted" toggle={toggleModal} closebutton="true">명렬표 등록 정보</ModalHeader>
-                    <ModalBody>
-                      <div className="ag-theme-alpine" style={{ height: '25vh' }}>
-                        <AgGridReact
-                          ref={gridRef}
-                          rowData={modalData} 
-                          columnDefs={ntColumnDefs} 
-                        />
-                      </div>
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button color="secondary" onClick={toggleModal}>닫기</Button>
-                    </ModalFooter>
-                  </Modal>
-                </Form>
-              </CardBody>
+              </CardFooter>
             </Card>
           </Col>
         </Row>
@@ -828,65 +909,84 @@ function User() {
             <Button className="mr-1" color="secondary" onClick={saveCommonPassword}>저장</Button>
             <Button color="secondary" onClick={toggleCommonPasswordSettingModal}>취소</Button>
           </ModalFooter>
-       </Modal>
+      </Modal>
 
-       <Modal isOpen={emailFormModal} toggle={toggleEmailFormModal} centered style={{ minWidth: '20%' }}>
-          <ModalHeader toggle={toggleEmailFormModal}><b className="text-muted">관리자 문의 및 요청</b></ModalHeader>
-          <ModalBody className="pb-0">
-            <form ref={emailForm} className="mt-2 mb-3" onSubmit={sendEmailForm}>
-              <Row className="no-gutters">
+      <Modal isOpen={emailFormModal} toggle={toggleEmailFormModal} centered style={{ minWidth: '20%' }}>
+        <ModalHeader toggle={toggleEmailFormModal}><b className="text-muted">관리자 문의 및 요청</b></ModalHeader>
+        <ModalBody className="pb-0">
+          <form ref={emailForm} className="mt-2 mb-3" onSubmit={sendEmailForm}>
+            <Row className="no-gutters">
+              <Input 
+                name="email_subject"
+                defaultValue={currentUser ? currentUser.name + "[" + currentUser.schoolName + "] :: 문의 및 요청" : ''}
+                hidden
+              />
+              <Col md="3" className="text-center align-tiems-center">
+                <Label className="text-muted">FROM</Label>
+              </Col>
+              <Col md="9">
                 <Input 
-                  name="email_subject"
-                  defaultValue={currentUser ? currentUser.name + "[" + currentUser.schoolName + "] :: 문의 및 요청" : ''}
-                  hidden
+                  type="email"
+                  name="sender_email"
+                  defaultValue={currentUser ? currentUser.email : ''}
+                  style={{ width: '90%' }}
+                  required
                 />
-                <Col md="3" className="text-center align-tiems-center">
-                  <Label className="text-muted">FROM</Label>
-                </Col>
-                <Col md="9">
-                  <Input 
-                    type="email"
-                    name="sender_email"
-                    defaultValue={currentUser ? currentUser.email : ''}
-                    style={{ width: '90%' }}
-                    required
-                  />
-                </Col>
-              </Row>
-              <Row className="mt-3 no-gutters">
-                <Col md="3" className="text-center align-tiems-center">
-                  <Label className="text-muted">TO</Label>
-                </Col>
-                <Col md="9">
-                  <Input 
-                    type="text"
-                    value="관리자"
-                    style={{ width: '90%' }}
-                    readOnly
-                  />
-                </Col>
-              </Row>
-              <Row className="mt-3 no-gutters">
-                <Col md="3" className="text-center align-tiems-center">
-                  <Label className="text-muted">내용</Label>
-                </Col>
-                <Col md="9">
-                  <Input 
-                    type="textarea"
-                    name="email_content"
-                    defaultValue={emailContentValue}
-                    onChange={(e) => setEmailContentValue(e.target.value)}
-                    style={{ width: '90%', minHeight: 150, maxHeight: 150, paddingLeft: 13, paddingRight: 13 }}
-                  />
-                </Col>
-              </Row>
-            </form>
-          </ModalBody>
-          <ModalFooter>
-            <Button className="mr-1" color="secondary" onClick={sendEmailForm}>보내기</Button>
-            <Button color="secondary" onClick={toggleEmailFormModal}>취소</Button>
-          </ModalFooter>
-       </Modal>
+              </Col>
+            </Row>
+            <Row className="mt-3 no-gutters">
+              <Col md="3" className="text-center align-tiems-center">
+                <Label className="text-muted">TO</Label>
+              </Col>
+              <Col md="9">
+                <Input 
+                  type="text"
+                  value="관리자"
+                  style={{ width: '90%' }}
+                  readOnly
+                />
+              </Col>
+            </Row>
+            <Row className="mt-3 no-gutters">
+              <Col md="3" className="text-center align-tiems-center">
+                <Label className="text-muted">내용</Label>
+              </Col>
+              <Col md="9">
+                <Input 
+                  type="textarea"
+                  name="email_content"
+                  defaultValue={emailContentValue}
+                  onChange={(e) => setEmailContentValue(e.target.value)}
+                  style={{ width: '90%', minHeight: 150, maxHeight: 150, paddingLeft: 13, paddingRight: 13 }}
+                />
+              </Col>
+            </Row>
+          </form>
+        </ModalBody>
+        <ModalFooter>
+          <Button className="mr-1" color="secondary" onClick={sendEmailForm}>보내기</Button>
+          <Button color="secondary" onClick={toggleEmailFormModal}>취소</Button>
+        </ModalFooter>
+      </Modal>
+
+      <Modal isOpen={requestQRcodeModal} toggle={toggleRequestQRcodeModal} centered style={{ maxWidth: '20%' }}>
+        <ModalHeader><b className="text-muted">보건실 사용요청 QR코드 공유</b></ModalHeader>
+        <ModalBody>
+          <Row className="d-flex justify-content-center align-items-center">
+            <div id="qrcode" ref={printComponentRef} dangerouslySetInnerHTML={{ __html: QRCodeImage }}></div>
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Row className="d-flex justify-content-between no-gutters w-100">
+            <Col md="auto">
+              <Button onClick={onPrintQRCode}>프린트</Button>
+            </Col>
+            <Col md="auto">
+              <Button color="secondary" onClick={toggleRequestQRcodeModal}>취소</Button>
+            </Col>
+          </Row>
+        </ModalFooter>
+      </Modal>
     </>
   );
 }

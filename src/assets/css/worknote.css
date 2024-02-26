@@ -63,6 +63,17 @@
     padding: 0px;
 }
 
+.alert.alert-warning {
+    padding-top: 7px;
+    padding-bottom: 7px;
+    margin-bottom: 7px;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #E5C1BD;
+    border-color: #E5C1BD;
+}
+
 /* .tagify__input {
     margin: 0;
     line-height: 30px;
