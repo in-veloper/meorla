@@ -38,6 +38,17 @@ label {
 
 .card-user .user-inner-button {
     background-color: transparent !important;
-    color: #66615b;
     border: 1px solid #DDDDDD;
+    color: #66615b;
 }
+
+.card-user .user-inner-button:hover,
+.card-user .user-inner-button:active,
+.card-user .user-inner-button:focus {
+    color: #66615b !important;
+    background-color: #E5C1BD !important;
+}
+
+/* .btn-secondary:not(:disabled):not(.disabled):active {
+    color: #66615b;
+} */
