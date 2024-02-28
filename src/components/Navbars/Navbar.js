@@ -15,7 +15,7 @@ import routes from "routes.js";
 function Header(props) {
   const sidebarToggle = React.useRef();
 
-  const {user} = useUser();
+  const { user, logout } = useUser();
   const [isOpen, setIsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const [color, setColor] = React.useState("transparent");
@@ -366,6 +366,11 @@ function Header(props) {
 
     window.open(address);                                                             // 해당 북마크 주소로 새창 Open
   }
+
+  const onLogout = () => {
+    const userId = user ? user.userId : null;
+    if(userId) logout(userId);
+  }
   
   return (
     <Navbar
@@ -487,7 +492,7 @@ function Header(props) {
                 <DropdownItem tag="a">사용자 메뉴얼</DropdownItem>
                 <DropdownItem tag="a">사용자 정보</DropdownItem>
                 <DropdownItem tag="a">비밀번호 초기화</DropdownItem>
-                <DropdownItem tag="a">로그아웃</DropdownItem>
+                <DropdownItem tag="a" onClick={onLogout}>로그아웃</DropdownItem>
               </DropdownMenu>
             </Dropdown>
 
