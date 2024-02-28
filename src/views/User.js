@@ -510,7 +510,7 @@ function User() {
     qr.addData(url);
     qr.make();
 
-    const img = qr.createImgTag(2);
+    const img = qr.createImgTag(3);
     setQRCodeImage(img);
   };
 
@@ -740,7 +740,7 @@ function User() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col className="pr-1" md="3">
+                    <Col className="" md="3">
                       <FormGroup>
                         <label>보건실 침상 수</label>
                         <Input
@@ -753,36 +753,20 @@ function User() {
                         />
                       </FormGroup>
                     </Col>
-                    <Col className="d-flex justify-content-end" md="1">
+                    <Col className="" md="6">
                       <FormGroup>
-                        <label></label>
-                        <div style={{ marginTop: '10px' }}>
-                          <span style={{ borderLeft: '2px solid #DDDDDD', marginLeft: '20px', height: '30px', display: 'inline-flex', marginRight: '-20px' }}></span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                    <Col className="pl-5 d-flex justify-content-center" md="4">
-                      <FormGroup style={{ marginLeft: '15px' }}>
                         <label>보건실 사용요청 공유</label>
                         <div style={{ marginTop: '-12px' }}>
-                          <Button className="mr-2">URL</Button>
-                          <Button onClick={toggleRequestQRcodeModal}>QR코드</Button>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                    <Col className="d-flex justify-content-left" md="1">
-                      <FormGroup>
-                        <label></label>
-                        <div style={{ marginTop: '10px' }}>
-                          <span style={{ borderLeft: '2px solid #DDDDDD', height: '30px', display: 'inline-flex' }}></span>
+                          <Button className="mr-2 user-inner-button" style={{ width: '48%' }}>URL</Button>
+                          <Button className="user-inner-button" onClick={toggleRequestQRcodeModal} style={{ width: '48%' }}>QR코드</Button>
                         </div>
                       </FormGroup>
                     </Col>
                     <Col md="3">
-                      <FormGroup style={{ marginLeft: '18px'}}>
+                      <FormGroup>
                         <label>알림톡 관리</label>
                         <div style={{ marginTop: '-12px' }}>
-                          <Button>알림톡 설정</Button>
+                          <Button className="user-inner-button w-100">알림톡 설정</Button>
                         </div>
                       </FormGroup>
                     </Col>
@@ -801,8 +785,8 @@ function User() {
                     <Col md="3">
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
-                          <Button className="mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
-                          <Button style={{ marginRight : '10px'}} onClick={onBulkRegist}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button className="user-inner-button" onClick={onBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
                         </ButtonGroup>
                       </Row>
                     </Col>
@@ -810,7 +794,7 @@ function User() {
                       <FormGroup>
                         <label>교직원 정보</label>
                         <div style={{ marginTop: '-12px'}}>
-                        <span className="mr-3" style={{ borderLeft: '2px solid #DDDDDD', marginLeft: '-19px', height: '30px', display: 'inline-flex', marginBottom: '-13px' }}></span>
+                        <span className=""></span>
                           <Button className="btn-outline-default"><b>교직원</b></Button>
                         </div>
                       </FormGroup>
@@ -818,8 +802,8 @@ function User() {
                     <Col md="3">
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
-                          <Button className="mr-1" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
-                          <Button style={{ marginRight : '10px'}} onClick={onBulkRegist}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button className="user-inner-button" onClick={onBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
                         </ButtonGroup>
                       </Row>
                     </Col>
@@ -969,21 +953,25 @@ function User() {
         </ModalFooter>
       </Modal>
 
-      <Modal isOpen={requestQRcodeModal} toggle={toggleRequestQRcodeModal} centered style={{ maxWidth: '20%' }}>
-        <ModalHeader><b className="text-muted">보건실 사용요청 QR코드 공유</b></ModalHeader>
+      <Modal isOpen={requestQRcodeModal} toggle={toggleRequestQRcodeModal} centered style={{ minWidth: '30%' }}>
+        <ModalHeader><b className="text-muted">보건실 사용요청 QR코드</b></ModalHeader>
         <ModalBody>
-          <Row className="d-flex justify-content-center align-items-center">
-            <div id="qrcode" ref={printComponentRef} dangerouslySetInnerHTML={{ __html: QRCodeImage }}></div>
-          </Row>
+          <div ref={printComponentRef}>
+            <Row className="d-flex justify-content-center qrcode-title">
+              <h3 className="text-muted">보건실 사용요청 접속 QR코드</h3>
+            </Row>
+            <Row className="d-flex justify-content-center align-items-center mt-2 qrcode-image">
+              <div id="qrcode" dangerouslySetInnerHTML={{ __html: QRCodeImage }}></div>
+            </Row>
+            <Row className="d-flex justify-content-center mt-5 qrcode-footer">
+              <p className="text-muted" style={{ fontSize: 15 }}>위 QR코드를 모바일로 인식 시 보건실 사용요청 페이지로 접속하실 수 있습니다</p>
+            </Row>
+          </div>
         </ModalBody>
         <ModalFooter>
-          <Row className="d-flex justify-content-between no-gutters w-100">
-            <Col md="auto">
-              <Button onClick={onPrintQRCode}>프린트</Button>
-            </Col>
-            <Col md="auto">
-              <Button color="secondary" onClick={toggleRequestQRcodeModal}>취소</Button>
-            </Col>
+          <Row className="d-flex justify-content-end no-gutters w-100">
+            <Button className="mr-2" onClick={onPrintQRCode}>프린트</Button>
+            <Button color="secondary" onClick={toggleRequestQRcodeModal}>취소</Button>
           </Row>
         </ModalFooter>
       </Modal>

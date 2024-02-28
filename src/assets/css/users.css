@@ -9,6 +9,35 @@ label {
     background-color: transparent;
 }
 
-/* .card-user .card-body button {
-    background-color: lightgrey;
-} */
+@media print {
+    body {
+        margin-top: 25%;
+    }
+    .qrcode-title {
+        margin-bottom: 20%;
+    }
+    .qrcode-title h3 {
+        font-size: 35px !important;
+        color: black !important;
+        font-weight: bold !important;
+    }
+    .qrcode-image {
+        margin-bottom: 20%;
+    }
+
+    .qrcode-image img {
+        width: 400px !important;
+        height: 400px !important;
+    }
+
+    .qrcode-footer p {
+        color: black !important;
+        font-size: 30px !important;
+    }
+}
+
+.card-user .user-inner-button {
+    background-color: transparent !important;
+    color: #66615b;
+    border: 1px solid #DDDDDD;
+}
