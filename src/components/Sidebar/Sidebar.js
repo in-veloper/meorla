@@ -96,7 +96,7 @@ function Sidebar(props) {
                   }
                   key={key}
                 >
-                  <NavLink to={`/teaform/request/${schoolCodeByParams}`} className="nav-NavLink">
+                  <NavLink to={`/meorla/request/${schoolCodeByParams}`} className="nav-NavLink">
                     <i className={prop.icon} />
                     <p>{prop.name}</p>
                   </NavLink>

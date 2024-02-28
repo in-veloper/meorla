@@ -16,8 +16,8 @@ root.render(
     <UserProvider>
       <Routes>
         <Route path="/" element={<Login/>} />
-        <Route path="/teaform/*" element={<AdminLayout />} />
-        <Route path="/dashboard" element={<Navigate to="/teaform/dashboard" replace />} />
+        <Route path="/meorla/*" element={<AdminLayout />} />
+        <Route path="/dashboard" element={<Navigate to="/meorla/dashboard" replace />} />
       </Routes>
     </UserProvider>
   </BrowserRouter>

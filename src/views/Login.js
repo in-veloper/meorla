@@ -80,7 +80,7 @@ function Login() {
                     alert("비밀번호가 일치하지 않습니다.");
                 }else{
                     login(userData, accessToken);
-                    navigate('/teaform/dashboard');
+                    navigate('/meorla/dashboard');
                 }
             }else{
                 alert("ID와 비밀번호를 입력해주세요."); // ID 또는 비밀번호를 입력하지 않은 경우

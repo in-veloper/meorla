@@ -403,7 +403,7 @@ function Header(props) {
         </NavbarToggler>
         <Collapse isOpen={isOpen} navbar className="justify-content-end">
           <Nav navbar>
-            <NavItem onClick={() => { navigate('/teaform/dashboard')}}>
+            <NavItem onClick={() => { navigate('/meorla/dashboard')}}>
               <Link to="#pablo" className="nav-link btn-magnify">
                 <i className="nc-icon nc-layout-11" />
                 <p>

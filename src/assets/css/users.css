@@ -47,6 +47,17 @@ label {
 .card-user .user-inner-button:focus {
     color: #66615b !important;
     background-color: #E5C1BD !important;
+    border: none !important;
+
+}
+
+.registered-name-table {
+    background-color: #E5C1BD;
+    color: #fff;
+}
+
+.name-table-default {
+    border-width: 1px !important;
 }
 
 /* .btn-secondary:not(:disabled):not(.disabled):active {

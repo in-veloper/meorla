@@ -11,6 +11,7 @@ import { RiSearchLine } from "react-icons/ri";
 import { IoMdRefresh } from "react-icons/io";
 import { FaInfoCircle } from "react-icons/fa";
 import { useUser } from "contexts/UserContext";
+import Masking from "components/Tools/Masking";
 import Notiflix from "notiflix";
 import axios from "axios";
 import moment from "moment";
@@ -18,7 +19,7 @@ import moment from "moment";
 function WorkNote(args) {
   const { user } = useUser();                              // 사용자 정보
   const [isOpen, setIsOpen] = useState(false);
-  const [searchStudentRowData, setRowData] = useState([]); // 검색 결과를 저장할 state
+  const [searchStudentRowData, setSearchStudentRowData] = useState([]); // 검색 결과를 저장할 state
   const [symptomRowData, setSymptomRowData] = useState([]);
   const [medicationRowData, setMedicationRowData] = useState([]);
   const [actionMatterRowData, setActionMatterRowData] = useState([]);
@@ -33,8 +34,6 @@ function WorkNote(args) {
   const [isRegistered, setIsRegistered] = useState(false);
   const [setModifiedData] = useState([]);
   const [currentTimeValue, setCurrentTimeValue] = useState('');
-
-
   const [searchSymptomText, setSearchSymptomText] = useState("");
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
   const [tagifySymptomSuggestion, setTagifySymptomSuggestion] = useState([]);
@@ -47,6 +46,8 @@ function WorkNote(args) {
   const [filteredActionMatter, setFilteredActionMatter] = useState(actionMatterRowData);
   const [searchTreatmentMatterText, setSearchTreatmentMatterText] = useState("");
   const [filteredTreatmentMatter, setFilteredTreatmentMatter] = useState(treatmentMatterRowData);
+  const [masked, setMasked] = useState(false);
+  const [alertHidden, setAlertHidden] = useState(false);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -427,6 +428,7 @@ function WorkNote(args) {
     const api = searchStudentGridRef.current.api;
     setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
     api.setRowData([]);
+    setSelectedStudent('');
   };
 
   const onSearchStudent = async (criteria) => {
@@ -434,7 +436,16 @@ function WorkNote(args) {
       const studentData = await fetchStudentData(criteria);
 
       if (Array.isArray(studentData) && searchStudentGridRef.current) searchStudentGridRef.current.api.setRowData(studentData); // Update the grid
-      setRowData(studentData); 
+      setSearchStudentRowData(studentData);
+
+      if(masked) {
+        const maskedStudentData = studentData.map(student => ({
+          ...student,
+          sName: Masking(student.sName)
+        }));
+
+        setSearchStudentRowData(maskedStudentData);
+      }
     } catch (error) {
       console.error("학생 조회 중 ERROR", error);
     }
@@ -929,6 +940,103 @@ function WorkNote(args) {
     );
   };
 
+  const fetchMaskedStatus = useCallback(async () => {
+    if(user) {
+      const response = await axios.get("http://localhost:8000/user/getMaskedStatus", {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const maskedStatus = Boolean(response.data[0].masked);
+        setMasked(maskedStatus);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchMaskedStatus();
+  }, [fetchMaskedStatus]);
+
+  const handleMasking = async (e) => {
+    if(user) {
+      Notiflix.Confirm.show(                                                                  // Confirm 창 Show
+        '학생 이름 마스킹 설정',                                                                   // Confirm 창 Title
+        masked ? '학생 이름 마스킹을 해제하도록 설정하시겠습니까?' : '학생 이름을 마스킹하도록 설정하시겠습니까?',   // Confirm 창 내용
+        '예',                                                                                 // Confirm 창 버튼
+        '아니요',                                                                              // Confirm 창 버튼
+        async () => {                                                                        // Confirm 창에서 '예' 선택한 경우
+          e.preventDefault();                                                                // 기본 Event 방지
+
+          const response = await axios.post("http://localhost:8000/user/updateMaskedStatus", {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            masked: !masked
+          });
+      
+          if(response.data === "success") {
+            setMasked(!masked);
+            onResetSearch();
+          }
+        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
+          return;                                                         // return
+        },{                                                               // Confirm 창 Option 설정
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        }
+      );
+    }
+  };
+
+  const fetchAlertHiddenStatus = useCallback(async () => {
+    if(user) {
+      const response = await axios.get("http://localhost:8000/user/getAlertHiddenStatus", {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const alertHiddenStatus = Boolean(response.data[0].alertHidden);
+        setAlertHidden(alertHiddenStatus);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchAlertHiddenStatus();
+  }, [fetchAlertHiddenStatus]);
+
+  const handleHideAlert = async (e) => {
+    if(user) {
+      Notiflix.Confirm.show(                                                                              // Confirm 창 Show
+        '방문요청 알람 내용 숨김 설정',                                                                          // Confirm 창 Title
+        alertHidden ? '방문요청 알람 내용 숨김을 해제하도록 설정하시겠습니까?' : '방문요청 알람 내용 숨김으로 설정하시겠습니까?',   // Confirm 창 내용
+        '예',                                                                                             // Confirm 창 버튼
+        '아니요',                                                                                          // Confirm 창 버튼
+        async () => {                                                                                    // Confirm 창에서 '예' 선택한 경우
+          e.preventDefault();                                                                            // 기본 Event 방지
+
+          const response = await axios.post("http://localhost:8000/user/updateAlertHiddenStatus", {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            alertHidden: !alertHidden
+          });
+      
+          if(response.data === "success") {
+            setAlertHidden(!alertHidden);
+          }
+        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
+          return;                                                         // return
+        },{                                                               // Confirm 창 Option 설정
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        }
+      );
+    }
+  };
+
   return (
     <>
       <div className="content">
@@ -1087,8 +1195,8 @@ function WorkNote(args) {
                        type="switch"
                        id="maskingName"
                        label={<span style={{ fontSize: 13}}>이름 마스킹</span>}
-                      //  checked={isChecked}
-                      //  onChange={handleHidePrivacyInfo}
+                       checked={masked}
+                       onChange={handleMasking}
                     />
                   </Col>
                 </Row>
@@ -1131,8 +1239,8 @@ function WorkNote(args) {
                        type="switch"
                        id="hidePrivacyInfo"
                        label={<span style={{ fontSize: 13}}>내용숨김</span>}
-                      //  checked={isChecked}
-                      //  onChange={handleHidePrivacyInfo}
+                       checked={alertHidden}
+                       onChange={handleHideAlert}
                     />
                   </Col>
                   <Col className="text-center" md="6">

@@ -106,7 +106,7 @@ function User() {
       return (
         <Button
           key={currentGrade}                                                                                      // key 값으로 Button에 해당하는 학년
-          className={hasDataForCurrentGrade ? "btn-secondary mr-1" : "btn-outline-default"}                       // margin 없으면 Button이 다 붙어서 View가 이상 -> mr-1 설정
+          className={hasDataForCurrentGrade ? "registered-name-table mr-1" : "btn-outline-default name-table-default"}                       // margin 없으면 Button이 다 붙어서 View가 이상 -> mr-1 설정
           onClick={onClickNameTable}                                                                              // 학년별 Button Click Event
         >
           {currentGrade}                                                                    
@@ -531,7 +531,7 @@ function User() {
       <div className="content">
         <Row>
           <Col md="4">
-            <Card className="card-user" style={{ height: '560px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
+            <Card className="card-user" style={{ height: '553px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <input 
                   type="file"
@@ -795,7 +795,7 @@ function User() {
                         <label>교직원 정보</label>
                         <div style={{ marginTop: '-12px'}}>
                         <span className=""></span>
-                          <Button className="btn-outline-default"><b>교직원</b></Button>
+                          <Button className="btn-outline-default name-table-default"><b>교직원</b></Button>
                         </div>
                       </FormGroup>
                     </Col>

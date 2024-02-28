@@ -212,6 +212,64 @@ app.post("/user/updateUserInfo", (req, res) => {
     });
 });
 
+app.get("/user/getMaskedStatus", (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT masked FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("학생 조회 이름 마스킹 여부 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.post("/user/updateMaskedStatus", (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const masked = req.body.masked;
+
+    const sqlQuery = "UPDATE teaform_db.users SET masked = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [masked, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("학생 조회 마스킹 여부 Update 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    })
+});
+
+app.get("/user/getAlertHiddenStatus", (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT alertHidden FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보건실 방문요청 알람 숨김 여부 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.post("/user/updateAlertHiddenStatus", (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const alertHidden = req.body.alertHidden;
+
+    const sqlQuery = "UPDATE teaform_db.users SET alertHidden = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [alertHidden, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보건실 방문요청 알람 숨김 여부 Update 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    })
+});
+
 app.post("/bookmark/insert", async (req, res) => {
     const userId = req.body.userId;
     const userEmail = req.body.userEmail;

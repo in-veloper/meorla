@@ -28,107 +28,113 @@ const GetRoutes = () => {
         name: "대시보드",
         icon: "nc-icon nc-layout-11",
         component: <Dashboard />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
         path: "/workNote",
         name: "보건일지",
         icon: "nc-icon nc-paper",
         component: <WorkNote />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
         path: "/workSchedule",
         name: "보건일정",
         icon: "nc-icon nc-calendar-60",
         component: <WorkSchedule />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
         path: "/medicineInfo",
         name: "약품정보",
         icon: "nc-icon nc-zoom-split",
         component: <MedicalInfo />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
         path: "/manageMediFixt",
         name: "약품 · 비품 관리",
         icon: "nc-icon nc-box-2",
         component: <ManageMediFixt />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
         path: "/healthCheck",
         name: "건강검진",
         icon: "nc-icon nc-ambulance",
         component: <Examination />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
         path: "/certificate",
         name: "증명서 발급",
         icon: "nc-icon nc-badge",
         component: <Notifications />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
         path: "/community",
         name: "커뮤니티",
         icon: "nc-icon nc-globe",
         component: <Community />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
       {
-        path: "/qnaRequest",
-        name: "문의 및 요청",
-        icon: "nc-icon nc-send",
-        component: <QnaRequest />,
-        layout: "/teaform",
-      },
-      {
-        path: "/notifications",
-        name: "알림",
-        icon: "nc-icon nc-bell-55",
+        path: "/statistics",
+        name: "통계",
+        icon: "nc-icon nc-chart-pie-36",
         component: <Notifications />,
-        layout: "/teaform",
+        layout: "/meorla",
+      },
+      // {
+      //   path: "/notifications",
+      //   name: "알림",
+      //   icon: "nc-icon nc-bell-55",
+      //   component: <Notifications />,
+      //   layout: "/meorla",
+      // },
+      {
+        path: "/survey",
+        name: "설문조사",
+        icon: "nc-icon nc-single-copy-04",
+        component: <Notifications />,
+        layout: "meorla",
       },
       {
         path: "/user-page",
         name: "사용자 정보",
         icon: "nc-icon nc-single-02",
         component: <UserPage />,
-        layout: "/teaform",
+        layout: "/meorla",
+      },
+      {
+        path: "/qnaRequest",
+        name: "문의 및 요청",
+        icon: "nc-icon nc-send",
+        component: <QnaRequest />,
+        layout: "/meorla",
       },
       {
         path: '/request/:thirdPartyUserCode',
         name: "보건실 사용 요청",
         icon: "nc-icon nc-tap-01",
         component: <Request />,
-        layout: "/teaform"
+        layout: "/meorla"
       },
       // {
       //   path: `/request/${thirdPartyUserCode}`,
       //   name: "보건실 사용 요청",
       //   icon: "nc-icon nc-tap-01",
       //   component: <Request />,
-      //   layout: "/teaform"
+      //   layout: "/meorla"
       // },
       {
         path: "/icons",
         name: "Icons",
         icon: "nc-icon nc-diamond",
         component: <Icons />,
-        layout: "/teaform",
+        layout: "/meorla",
       },
-      // {
-      //   pro: true,
-      //   path: "/upgrade",
-      //   name: "로그아웃",
-      //   icon: "nc-icon nc-button-power",
-      //   component: <UpgradeToPro />,
-      //   layout: "/teaform",
-      // },
     ];
   // }else{
     // routes = [
@@ -137,7 +143,7 @@ const GetRoutes = () => {
     //     name: "보건실 사용 요청",
     //     icon: "nc-icon nc-tap-01",
     //     component: <Request />,
-    //     layout: "/teaform"
+    //     layout: "/meorla"
     //   },
     // ]
   // }
@@ -151,7 +157,7 @@ const GetRoutes = () => {
   //       name: "보건실 사용 요청",
   //       icon: "nc-icon nc-tap-01",
   //       component: <Request />,
-  //       layout: "/teaform"
+  //       layout: "/meorla"
   //     },
   //   ];
 
