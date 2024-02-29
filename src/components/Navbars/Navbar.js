@@ -137,7 +137,7 @@ function Header(props) {
 
           // 북마크 데이터를 드랍다운 아이템으로 설정
           const items = bookmarkArray.map((item, index) => (
-            <DropdownItem key={index} tag="a" onClick={() => goToBookmarkPage(item.bookmarkAddress)}>
+            <DropdownItem key={index} tag="a" style={{}} onClick={() => goToBookmarkPage(item.bookmarkAddress)}>
               {item.bookmarkName}
             </DropdownItem>
           ));
@@ -424,9 +424,9 @@ function Header(props) {
             >
               <DropdownToggle caret nav>
                 <i className="nc-icon nc-bookmark-2" />
-                <p>
+                {/* <p>
                   <span className="d-lg-none d-md-block">Some Actions</span>
-                </p>
+                </p> */}
               </DropdownToggle>
               <DropdownMenu className="text-muted" right>
                 {dropdownBookmarkItems}
@@ -470,7 +470,7 @@ function Header(props) {
                 {workStatus === 'businessTrip' && <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>출장</Badge>}
                 {workStatus === 'vacation' && <Badge className="mr-1" style={{ backgroundColor: '#9A9A9A', fontSize: 14 }}>휴가</Badge>}
               </DropdownToggle>
-              <DropdownMenu className="text-muted" right>
+              <DropdownMenu className="text-muted work-status-dropdown-menu" right>
                 <DropdownItem id="working" onClick={handleWorkStatus}>근무</DropdownItem>
                 <DropdownItem id="outOfOffice" onClick={handleWorkStatus}>부재</DropdownItem>
                 <DropdownItem id="businessTrip" onClick={handleWorkStatus}>출장</DropdownItem>

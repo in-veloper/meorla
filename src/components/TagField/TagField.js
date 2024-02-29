@@ -68,6 +68,13 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category 
         }
     };
 
+    const clearTagsHandler = () => {
+        if(category === "symptomTagField") symptomTagifyRef.current.tagify.removeAllTags();
+        if(category === "medicationTagField") medicationTagifyRef.current.tagify.removeAllTags();
+        if(category === "actionMatterTagField") actionMatterTagifyRef.current.tagify.removeAllTags();
+        if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.tagify.removeAllTags();
+    }
+
     useEffect(() => {
         if(selectedRowValue) {
             handleChange({ detail: { tagify: { value: [{ value: selectedRowValue }] } }, type: "add" }, category)

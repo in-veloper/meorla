@@ -98,7 +98,7 @@ const GetRoutes = () => {
         name: "설문조사",
         icon: "nc-icon nc-single-copy-04",
         component: <Notifications />,
-        layout: "meorla",
+        layout: "/meorla",
       },
       {
         path: "/user-page",
