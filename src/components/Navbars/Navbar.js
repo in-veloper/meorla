@@ -137,7 +137,7 @@ function Header(props) {
 
           // 북마크 데이터를 드랍다운 아이템으로 설정
           const items = bookmarkArray.map((item, index) => (
-            <DropdownItem key={index} tag="a" style={{}} onClick={() => goToBookmarkPage(item.bookmarkAddress)}>
+            <DropdownItem key={index} tag="a" onClick={() => goToBookmarkPage(item.bookmarkAddress)}>
               {item.bookmarkName}
             </DropdownItem>
           ));

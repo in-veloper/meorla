@@ -48,6 +48,7 @@ function WorkNote(args) {
   const [filteredTreatmentMatter, setFilteredTreatmentMatter] = useState(treatmentMatterRowData);
   const [masked, setMasked] = useState(false);
   const [alertHidden, setAlertHidden] = useState(false);
+  const [clearTagField, setClearTagField] = useState("");
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -1037,6 +1038,14 @@ function WorkNote(args) {
     }
   };
 
+  const handleClearWorkNote = (e) => {
+    e.preventDefault();
+    const targetId = e.currentTarget.id;
+    if(targetId.includes('TagField')) {
+      setClearTagField(targetId);
+    }
+  }
+
   return (
     <>
       <div className="content">
@@ -1287,13 +1296,13 @@ function WorkNote(args) {
                             <b className="action-title" style={{ marginRight: '-9px' }}>증상</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                            <IoMdRefresh id="symptomTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote}/>
                             <BiMenu style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
                           </Col>
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" />
+                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" clearField={clearTagField} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={symptomGridRef}
@@ -1317,13 +1326,13 @@ function WorkNote(args) {
                             <b className="action-title" style={{ marginRight: '-9px' }}>투약사항</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />                            
+                            <IoMdRefresh id="medicationTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
                             <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
                           </Col>
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" />
+                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" clearField={clearTagField} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={medicationGridRef}
@@ -1347,13 +1356,13 @@ function WorkNote(args) {
                             <b className="action-title" style={{ marginRight: '-3px' }}>조치사항</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />                            
+                            <IoMdRefresh id="actionMatterTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
                             <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
                           </Col>
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" />
+                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" clearField={clearTagField} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={actionMatterGridRef}
@@ -1379,13 +1388,13 @@ function WorkNote(args) {
                             <b className="action-title" style={{ marginRight: 5}}>처치사항</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                            <IoMdRefresh id="treatmentMatterTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
                             <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
                           </Col>
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" />
+                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" clearField={clearTagField} />
                         <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
                           <AgGridReact
                             ref={treatmentMatterGridRef}
@@ -1409,7 +1418,7 @@ function WorkNote(args) {
                             <b className="action-title" style={{ marginRight: 7}}>침상안정</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                            <IoMdRefresh id="onBedRest" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
                           </Col>
                         </Row>
                       </CardHeader>
@@ -1449,7 +1458,7 @@ function WorkNote(args) {
                             <b className="action-title" style={{ marginRight: '16px' }}>비고</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh style={{ marginTop: '-8px', cursor: 'pointer' }} />
+                            <IoMdRefresh id="note" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
                           </Col>
                         </Row>
                       </CardHeader>

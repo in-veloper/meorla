@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Tags from "@yaireo/tagify/dist/react.tagify";
 import '@yaireo/tagify/dist/tagify.css';
 
-function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category }) {
+function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category, clearField }) {
     const [whitelist, setWhitelist] = useState(suggestions);
     const [gridRef, setGridRef] = useState(null);
     const symptomTagifyRef = useRef();
@@ -33,13 +33,6 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category 
             if(category === "actionMatterTagField") actionMatterTagifyRef.current.settings.whitelist = suggestions;
             if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.settings.whitelist = suggestions;
         }
-        // debugger
-        // if(category) {
-        //     if(category === "symptomTagField") symptomTagifyRef.current.settings.placeholder = "증상을 입력하세요";
-        //     if(category === "medicationTagField") medicationTagifyRef.current.settings.placeholder = "투약사항을 입력하세요";
-        //     if(category === "actionMatterTagField") actionMatterTagifyRef.current.settings.placeholder = "조치사항을 입력하세요";
-        //     if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.settings.placeholder = "처치사항을 입력하세요";
-        // }
     }, [suggestions, category]);
 
     useEffect(() => {
@@ -68,11 +61,19 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category 
         }
     };
 
+    useEffect(() => {
+        if(clearField) {
+            clearTagsHandler();
+        }
+    }, [clearField]);
+
     const clearTagsHandler = () => {
-        if(category === "symptomTagField") symptomTagifyRef.current.tagify.removeAllTags();
-        if(category === "medicationTagField") medicationTagifyRef.current.tagify.removeAllTags();
-        if(category === "actionMatterTagField") actionMatterTagifyRef.current.tagify.removeAllTags();
-        if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.tagify.removeAllTags();
+        if(clearField === category) {
+            if(clearField === "symptomTagField") symptomTagifyRef.current.removeAllTags();
+            if(clearField === "medicationTagField") medicationTagifyRef.current.removeAllTags();
+            if(clearField === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
+            if(clearField === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
+        }
     }
 
     useEffect(() => {

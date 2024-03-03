@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label } from "reactstrap";
+import { Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label, InputGroup, InputGroupText } from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
 import { read, utils } from "xlsx";
@@ -32,6 +32,7 @@ function User() {
   const [bedCount, setBedCount] = useState(0);
   const [requestQRcodeModal, setRequestQRcodeModal] = useState(false);
   const [QRCodeImage, setQRCodeImage] = useState('');
+  const [requestURLModal, setRequestURLModal] = useState(false);
   // const [isUserInfoUpdated, setIsUserInfoUpdated] = useState(false);
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
@@ -55,7 +56,8 @@ function User() {
   const toggleRequestQRcodeModal = () => {
     setRequestQRcodeModal(!requestQRcodeModal);
     if(!requestQRcodeModal) generateQRCode();
-  }
+  };
+  const toggleRequestURLModal = () => setRequestURLModal(!requestURLModal);
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -526,6 +528,14 @@ function User() {
     documentTitle: '보건실 사용요청 QR코드'
   });
 
+  const clipboardRequestURL = () => {
+    const URLText = document.getElementById("requestURL").value;
+    navigator.clipboard.writeText(URLText);
+    Notiflix.Notify.success('보건실 사용 요청 URL이 클립보드에 복사되었습니다.', {
+      position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '300px'
+    });
+  }
+
   return (
     <>
       <div className="content">
@@ -757,7 +767,7 @@ function User() {
                       <FormGroup>
                         <label>보건실 사용요청 공유</label>
                         <div style={{ marginTop: '-12px' }}>
-                          <Button className="mr-2 user-inner-button" style={{ width: '48%' }}>URL</Button>
+                          <Button className="mr-2 user-inner-button" style={{ width: '48%' }} onClick={toggleRequestURLModal}>URL</Button>
                           <Button className="user-inner-button" onClick={toggleRequestQRcodeModal} style={{ width: '48%' }}>QR코드</Button>
                         </div>
                       </FormGroup>
@@ -950,6 +960,28 @@ function User() {
         <ModalFooter>
           <Button className="mr-1" color="secondary" onClick={sendEmailForm}>보내기</Button>
           <Button color="secondary" onClick={toggleEmailFormModal}>취소</Button>
+        </ModalFooter>
+      </Modal>
+
+      <Modal isOpen={requestURLModal} toggle={toggleRequestURLModal} centered style={{ minWidth: '15%' }}>
+        <ModalHeader><b className="text-muted">보건실 사용요청 URL</b></ModalHeader>
+        <ModalBody>
+          <Row className="d-flex align-items-center justify-content-center no-gutters">
+            <InputGroup>
+              <Input
+                id="requestURL"
+                defaultValue="http://www.naver.com"
+              />
+              <InputGroupText onClick={clipboardRequestURL}>
+                클립보드 복사
+              </InputGroupText>
+            </InputGroup>
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Row className="d-flex justify-content-end no-gutters w-100">
+            <Button color="secondary" onClick={toggleRequestURLModal}>취소</Button>
+          </Row>
         </ModalFooter>
       </Modal>
 
