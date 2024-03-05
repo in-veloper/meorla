@@ -1044,7 +1044,70 @@ function WorkNote(args) {
     if(targetId.includes('TagField')) {
       setClearTagField(targetId);
     }
-  }
+  };
+
+  const saveWorkNote = async (e) => {
+    e.preventDefault();
+    
+    let symptomString = "";
+    let medicationString = "";
+    let actionMatterString = "";
+    let treatmentMatterString = "";
+    
+    const tagFields = document.getElementsByTagName('tags');
+    
+    const symptomTagValues = tagFields[0].getElementsByTagName('tag');
+    for(let i = 0; i < symptomTagValues.length; i++) {
+      symptomString += symptomTagValues[i].textContent + "::";
+    }
+    symptomString = symptomString.slice(0, -2);
+
+    const medicationTagValues = tagFields[1].getElementsByTagName('tag');
+    for(let i = 0; i < medicationTagValues.length; i++) {
+      medicationString += medicationTagValues[i].textContent + "::";
+    }
+    medicationString = medicationString.slice(0, -2);
+
+    const actionMatterTagValues = tagFields[2].getElementsByTagName('tag');
+    for(let i = 0; i < actionMatterTagValues.length; i++) {
+      actionMatterString += actionMatterTagValues[i].textContent + "::";
+    }
+    actionMatterString = actionMatterString.slice(0, -2);
+
+    const treatmentMatterTagValues = tagFields[3].getElementsByTagName('tag');
+    for(let i = 0; i < treatmentMatterTagValues.length; i++) {
+      treatmentMatterString += treatmentMatterTagValues[i].textContent + "::";
+    }
+    treatmentMatterString = treatmentMatterString.slice(0, -2);
+
+    const onBedRestStartTime = document.getElementById('onBedRestStartTime').value;
+    const onBedRestEndTime = document.getElementById('onBedRestEndTime').value;
+    const notes = document.getElementById('notes').value;
+
+    if(selectedStudent) {
+      const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        sGrade: selectedStudent.sGrade,
+        sClass: selectedStudent.sClass,
+        sNumber: selectedStudent.sNumber,
+        sGender: selectedStudent.sGender,
+        sName: selectedStudent.sName,
+        symptom: symptomString,
+        medication: medicationString,
+        actionMatter: actionMatterString,
+        treatmentMatter: treatmentMatterString,
+        onBedStartTime: onBedRestStartTime,
+        onBedEndTime: onBedRestEndTime,
+        note: notes
+      });
+
+      if(response.data === "success") {
+        debugger
+      }
+
+    }
+  };
 
   return (
     <>
@@ -1083,7 +1146,7 @@ function WorkNote(args) {
             </tbody>
           </Table>
         </Row>
-        <Row style={{ marginBottom: '-10px' }}>
+        <Row style={{ marginBottom: '-6px' }}>
           {generateOnBedBox()}
           {/* <Col lg="2" md="6" sm="6">
             <Card className="card-stats">
@@ -1194,7 +1257,7 @@ function WorkNote(args) {
                 <Row>
                   <Col md="12">
                     <Alert className="d-flex justify-content-center align-items-center text-center text-muted mb-0" style={{ backgroundColor: '#f8f8f8', borderRadius: 10, height: 20 }}>
-                      <FaInfoCircle className="mr-1" style={{ marginTop: '-2px', fontSize: 17}}/> 일부 항목 입력으로도 조회 가능합니다
+                      <FaInfoCircle className="mr-2" style={{ marginTop: '-2px', fontSize: 17}}/> 일부 항목 입력으로도 조회 가능합니다
                     </Alert>
                   </Col>
                 </Row>
@@ -1465,7 +1528,8 @@ function WorkNote(args) {
                       <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px'}}>
                         <Row className="d-flex justify-content-center">
                           <Input
-                          style={{ width: '90%' }}
+                            id="notes"
+                            style={{ width: '90%' }}
                           />
                         </Row>
                       </CardBody>
@@ -1477,7 +1541,7 @@ function WorkNote(args) {
                     <Button className="" onClick={toggle}>전체 보건일지</Button>
                   </Col>
                   <Col md="7" className="d-flex justify-content-left">
-                    <Button className="mr-1">등록</Button>
+                    <Button className="mr-1" onClick={saveWorkNote}>등록</Button>
                     <Button>초기화</Button>
                   </Col>
                 </Row>
@@ -1694,4 +1758,6 @@ export default WorkNote;
 /**
  * 증상, 투약사항 등은 모두 2개 이상 입력하는 가정
  * 두개 이상 입력될 시 구분은 모두 (,) 쉼표로 구분되어야 함
+ * 
+ * 각 입력 항목 초기화 버튼 클릭 시 동작되나 같은 항목을 초기화 하고 다시 선택 후 초기화 시 동작 하지 않는 현상 처리 필요
  */

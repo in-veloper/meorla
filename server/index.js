@@ -769,12 +769,43 @@ app.get("/workNote/getStockMedication", async (req, res) => {
     const userId = req.query.userId;
     const schoolCode = req.query.schoolCode;
 
-    const sqlQuery = "SELECT medicineName AS medication FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ?";
+    const sqlQuery = "SELECT * FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("보건일지 > 재고 약품 조회 중 ERROR", err);
         }else{
-            res.json(result);
+            const resultMedications = result.map(item => ({
+                medication: `${item.medicineName} ${item.registrationUnitAmount}${item.unit}`,
+                registrationUnitAmount: `${item.registrationUnitAmount}`
+            }));
+
+            res.json(resultMedications);
+        }
+    });
+});
+
+app.post("/workNote/saveWorkNote", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const sGrade = req.body.sGrade;
+    const sClass = req.body.sClass;
+    const sNumber = req.body.sNumber;
+    const sGender = req.body.sGender;
+    const sName = req.body.sName;
+    const symptom = req.body.symptom;
+    const medication = req.body.medication;
+    const actionMatter = req.body.actionMatter;
+    const treatmentMatter = req.body.treatmentMatter;
+    const onBedStartTime = req.body.onBedStartTime;
+    const onBedEndTime = req.body.onBedEndTime;
+    const note = req.body.note;
+
+    const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, note) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, note], (err, result) => {
+        if(err) {
+            console.log("보건일지 Insert 처리 중 ERROR", err);
+        }else{
+            res.send('success');
         }
     });
 });

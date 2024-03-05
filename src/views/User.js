@@ -541,7 +541,7 @@ function User() {
       <div className="content">
         <Row>
           <Col md="4">
-            <Card className="card-user" style={{ height: '555px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
+            <Card className="card-user" style={{ height: '552px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <input 
                   type="file"
@@ -1017,6 +1017,7 @@ export default User;
  * 로그아웃 시 401 에러 안뜨도록 처리
  * 
  * 프로필, 배경 이미지 클릭 시 모달 -> 이미지 등록할건지 제거할건지 선택 -> 제거 시 기존 이미지 DB에서 지우고 public 내 파일도 삭제 -> 추가 시 기존 로직 수행
+ * 프로필, 배경 이미지 저장 시 자동 새로고침 처리 필요
  * 
  * 비밀번호 재설정 -> 비밀번호 재설정 모달 -> 비밀번호 변경할건지 초기화할건지 선택 -> 비밀번호 변경 시 변경 로직 수행 -> 초기화 시 공통 패턴 만들어 초기화 수행
  * 

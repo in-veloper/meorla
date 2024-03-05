@@ -21,7 +21,7 @@ function ManageMediFixt() {
     const [searchText, setSearchText] = useState("");                 // 검색어 입력 값 할당 변수
     const [searchResult, setSearchResult] = useState([]);             // 검색 결과 할당 변수
     const [selectedMedicine, setSelectedMedicine] = useState({ medicineName: "", coporateName: "" });
-    const [medicineFormData, setMedicineFormData] = useState({ unit: "", stockAmount: 0, extinctAmount: 0, lastestPurchaseDate: "" });
+    const [medicineFormData, setMedicineFormData] = useState({ unit: "", stockAmount: 0, extinctAmount: 0, registrationUnitAmount: 0, lastestPurchaseDate: "" });
 
     const medicineGridRef = useRef();
     const fixtureGridRef = useRef();
@@ -76,6 +76,7 @@ function ManageMediFixt() {
         {field: "unit", headerName: "단위", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "stockAmount", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "extinctAmount", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
+        {field: "registrationUnitAmount", headerName: "등록단위", flex: 1, cellStyle: { textAlign: "center"}},
         {field: "latestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: purchaseDateFormatter},
         {field: "updatedAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" },  valueFormatter: updateAtFormatter}
     ]);
@@ -148,6 +149,7 @@ function ManageMediFixt() {
             const unit = document.getElementById('unit').value;
             const stockAmount = document.getElementById('stockAmount').value;
             const extinctAmount = document.getElementById('extinctAmount').value;
+            const registrationUnitAmount = document.getElementById('registrationUnitAmount').value;
             const latestPurchaseDate = document.getElementById('latestPurchaseDate').value;
 
             Notiflix.Confirm.show(
@@ -164,17 +166,12 @@ function ManageMediFixt() {
                         unit: unit,
                         stockAmount: stockAmount,
                         extinctAmount: extinctAmount,
+                        registrationUnitAmount: registrationUnitAmount,
                         latestPurchaseDate: latestPurchaseDate
                     });
 
                     if(response.data === "success") {
                         fetchStockMedicineData();
-                        // 등록한 약품 정보 불러오는 것부터 처리하면 됨
-
-
-
-
-
 
                         Notiflix.Notify.info('약품 등록이 정상적으로 처리되었습니다.', {
                             position: 'center-center', showOnlyTheLastOne: true, plainText: false
@@ -230,6 +227,7 @@ function ManageMediFixt() {
             unit: "",
             stockAmount: 0,
             extinctAmount: 0,
+            registrationUnitAmount: 0,
             lastestPurchaseDate: ""
         });
     }
@@ -472,11 +470,11 @@ function ManageMediFixt() {
                                 />
                             </Col>
                         </Row>
-                        <Row className="mt-3 mb-3 mr-3 no-gutters">
+                        <Row className="mt-3 mb-3 mr-3 d-flex align-items-center no-gutters">
                             <Col md="2" className="text-center align-items-center">
                                 <Label className="text-muted">단위</Label>
                             </Col>
-                            <Col md="2" className="no-gutters">
+                            <Col md="1" className="no-gutters">
                                 <Input 
                                     id="unit" 
                                     className="text-right" 
@@ -488,7 +486,7 @@ function ManageMediFixt() {
                             <Col md="2" className="text-center align-items-center">
                                 <Label className="text-muted">재고량</Label>
                             </Col>
-                            <Col md="2" className="no-gutters">
+                            <Col md="1" className="no-gutters">
                                 <Input 
                                     id="stockAmount" 
                                     className="text-right" 
@@ -500,13 +498,25 @@ function ManageMediFixt() {
                             <Col md="2" className="text-center align-items-center">
                                 <Label className="text-muted">소실량</Label>
                             </Col>
-                            <Col md="2" className="no-gutters">
+                            <Col md="1" className="no-gutters">
                                 <Input 
                                     id="extinctAmount" 
                                     className="text-right" 
                                     type="number" 
                                     value={medicineFormData.extinctAmount}
                                     onChange={(e) => setMedicineFormData({ ...medicineFormData, extinctAmount: e.target.value })}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">등록단위</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="registrationUnitAmount"
+                                    className="text-right"
+                                    type="number"
+                                    value={medicineFormData.registrationUnitAmount}
+                                    onChange={(e) => setMedicineFormData({ ...medicineFormData, registrationUnitAmount: e.target.value })}
                                 />
                             </Col>
                         </Row>
