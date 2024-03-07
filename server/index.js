@@ -810,6 +810,38 @@ app.post("/workNote/saveWorkNote", async (req, res) => {
     });
 });
 
+app.post("/workSchedule/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const eventCategory = req.body.eventCategory;
+    const eventTitle = req.body.eventTitle;
+    const eventStartDate = req.body.eventStartDate;
+    const eventEndDate = req.body.eventEndDate;
+
+    const sqlQuery = "INSERT INTO teaform_db.workSchedule (userId, schoolCode, eventCategory, eventTitle, eventStartDate, eventEndDate) VALUES (?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, eventCategory, eventTitle, eventStartDate, eventEndDate], (err, result) => {
+        if(err) {
+            console.log("보건일정 Insert 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get("/workSchedule/getWorkSchedule", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.workSchedule WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보건일정 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    })
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

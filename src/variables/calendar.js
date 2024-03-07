@@ -1,43 +1,119 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Button, Row, Col } from "reactstrap";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { useUser } from "contexts/UserContext";
+import Notiflix from "notiflix";
 import "../assets/css/mycalendar.css";
+import axios from "axios";
 
 const MyCalendar = () => {
-
+    const { user } = useUser();   
     const [showRegistScheduleModal, setRegistScheduleModal] = useState(false);
+    const [eventCategory, setEventCategory] = useState("보건행사");
     const [eventTitle, setEventTitle] = useState("");
-    const [eventStart, setEventStart] = useState("");
-    const [eventEnd, setEventEnd] = useState("");
+    const [eventStartDate, setEventStartDate] = useState("");
+    const [eventEndDate, setEventEndDate] = useState("");
+    const [isRegisteredEvent, setIsRegisteredEvent] = useState(false);
+    const [eventData, setEventData] = useState(null);
 
+    // 행사 등록 form modal handler
     const toggleModal = () => {
         setRegistScheduleModal(!showRegistScheduleModal);
     }
 
+    // 날짜 클릭 시 event
     const handleDateClick = (e) => {
         setRegistScheduleModal(true);
-        setEventStart(e.dateStr);
+        setEventStartDate(e.dateStr);
     };
 
-    const handleAddEvent = () => {
-        // const newEvent = {
-        //     title: eventTitle,
-        //     start: eventStart,
-        //     end: eventEnd
-        // };
-
+    // 행사 등록 form 초기화 function
+    const resetRegistEventForm = () => {
         setRegistScheduleModal(false);
         setEventTitle("");
-        setEventStart("");
-        setEventEnd("");
+        setEventStartDate("");
+        setEventEndDate("");
+    }
+
+    // 행사 등록 event
+    const handleAddEvent = async (e) => {
+        e.preventDefault();
+        Notiflix.Confirm.show(                                                                  // Confirm 창 Show
+        '보건일정 등록',                                                                   // Confirm 창 Title
+        '작성하신 일정을 등록하시겠습니까?',   // Confirm 창 내용
+        '예',                                                                                 // Confirm 창 버튼
+        '아니요',                                                                              // Confirm 창 버튼
+        async () => {                                                                        // Confirm 창에서 '예' 선택한 경우
+          e.preventDefault();                                                                // 기본 Event 방지
+
+          const response = await axios.post("http://localhost:8000/workSchedule/insert", {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            eventCategory: eventCategory,
+            eventTitle: eventTitle,
+            eventStartDate: eventStartDate,
+            eventEndDate: eventEndDate
+        });
+
+        if(response.data === 'success') {
+            Notiflix.Notify.info('보건일정이 정상적으로 등록되었습니다.', {
+                position: 'center-center', showOnlyTheLastOne: true, plainText: false
+            });
+            setIsRegisteredEvent(true);
+            resetRegistEventForm();
+        }
+        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
+          return;                                                         // return
+        },{                                                               // Confirm 창 Option 설정
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        }
+      );
+    };
+
+    // 등록된 행사일정 획득 function
+    const fetchEventData = useCallback(async () => {
+        if(user) {
+            const response = await axios.get("http://localhost:8000/workSchedule/getWorkSchedule", {
+                params: {
+                    userId: user.userId,
+                    schoolCode: user.schoolCode
+                }
+            });
+    
+            if(response.data) {
+                const resultData = response.data.map(item => {
+                    return ({
+                        title: "[" + item.eventCategory + "] " + item.eventTitle,
+                        start: item.eventStartDate,
+                        end: convertEndDate(item.eventEndDate)
+                    });
+                });
+                
+                setEventData(resultData);
+            }
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchEventData();
+    }, [fetchEventData, isRegisteredEvent]);
+
+    // 행사 종료일 그대로 출력 시 등록된 날짜보다 하루 차감되어 오표시 -> converting(+1일) 하여 정상 출력 처리 function
+    const convertEndDate = (endDate) => {
+        return new Date(new Date(endDate).getTime() + (24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+    };
+
+    const handleEventClick = (e) => {
+        debugger
     }
 
     return (
         <div className="mt-5">
             <FullCalendar
+                locale="kr"
                 // defaultView="dayGridMonth"
                 height={'70vh'} // calendar 영역 크기
                 initialView={'dayGridMonth'}
@@ -57,11 +133,13 @@ const MyCalendar = () => {
                 //     right: "next"
                 // }}
                 plugins={[ dayGridPlugin, timeGridPlugin, interactionPlugin ]}
-                events={[   // 임의 값 (calendar에 이벤트 설정할 때 아래와 같은 방식으로 세팅)
-                    { title: '이벤트 1', date: '2023-11-04' },
-                    { title: '이벤트 2', date: '2023-11-05' }
-                    // {title : '공부하기', start:'2023-02-13', end:'2023-02-14', color:'#b1aee5'} -> 이런 형식으로 넣을 수 있음
-                ]}
+                events={eventData}
+                eventClick={handleEventClick}
+                // events={[   // 임의 값 (calendar에 이벤트 설정할 때 아래와 같은 방식으로 세팅)
+                //     { title: '이벤트 1', date: '2023-11-04' },
+                //     { title: '이벤트 2', date: '2023-11-05' }
+                //     // {title : '공부하기', start:'2023-02-13', end:'2023-02-14', color:'#b1aee5'} -> 이런 형식으로 넣을 수 있음
+                // ]}
                 // editable="true" -> false로 설정시 draggable 동작 X
                 // eventBackgroundColor=""
                 // eventBorderColor=""
@@ -81,7 +159,28 @@ const MyCalendar = () => {
                 >
                     <ModalHeader className="text-muted" toggle={toggleModal} closebutton="true">보건일정 등록</ModalHeader>
                     <ModalBody>
-                        <FormGroup>
+                        <FormGroup className="mr-3" onSubmit={handleAddEvent}>
+                            <Row className="mb-3 align-items-center">
+                                <Col className="text-center" md="3">
+                                    <Label for="eventTitle">일정분류</Label>
+                                </Col>
+                                <Col md="9">
+                                    <Input
+                                        id="eventCategory"
+                                        name="eventCategory"
+                                        type="select"
+                                        value={eventCategory}
+                                        onChange={(e) => setEventCategory(e.target.value)}
+                                        autoFocus={true}
+                                    >
+                                        <option>보건행사</option>
+                                        <option>학교행사</option>
+                                        <option>교육/연수</option>
+                                        <option>세미나</option>
+                                        <option>회의</option>
+                                    </Input>
+                                </Col>
+                            </Row>
                             <Row className="mb-3 align-items-center">
                                 <Col className="text-center" md="3">
                                     <Label for="eventTitle">일정명</Label>
@@ -94,7 +193,6 @@ const MyCalendar = () => {
                                         placeholder="일정명"
                                         value={eventTitle}
                                         onChange={(e) => setEventTitle(e.target.value)}
-                                        autoFocus={true}
                                     />
                                 </Col>
                             </Row>
@@ -104,12 +202,12 @@ const MyCalendar = () => {
                                 </Col>
                                 <Col md="9">
                                     <Input
-                                        id="eventStart"
-                                        name="eventStart"
+                                        id="eventStartDate"
+                                        name="eventStartDate"
                                         type="date"
                                         placeholder="시작 날짜"
-                                        defaultValue={eventStart}
-                                        onChange={(e) => setEventStart(e.target.value)}
+                                        defaultValue={eventStartDate}
+                                        onChange={(e) => setEventStartDate(e.target.value)}
                                         // value={eventStart}
                                         // readOnly
                                     />
@@ -121,12 +219,12 @@ const MyCalendar = () => {
                                 </Col>
                                 <Col md="9">
                                     <Input
-                                        id="eventEnd"
-                                        name="eventEnd"
+                                        id="eventEndDate"
+                                        name="eventEndDate"
                                         type="date"
                                         placeholder="종료 날짜"
-                                        value={eventEnd}
-                                        onChange={(e) => setEventEnd(e.target.value)}
+                                        value={eventEndDate}
+                                        onChange={(e) => setEventEndDate(e.target.value)}
                                     />
                                 </Col>
                             </Row>
