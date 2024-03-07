@@ -12,16 +12,26 @@ import axios from "axios";
 const MyCalendar = () => {
     const { user } = useUser();   
     const [showRegistScheduleModal, setRegistScheduleModal] = useState(false);
+    const [showUpdateScheduleModal, setUpdateScheduleModal] = useState(false);
     const [eventCategory, setEventCategory] = useState("보건행사");
     const [eventTitle, setEventTitle] = useState("");
     const [eventStartDate, setEventStartDate] = useState("");
     const [eventEndDate, setEventEndDate] = useState("");
+    const [registeredEventCategory, setRegisteredEventCategory] = useState("");
+    const [registeredEventTitle, setRegisteredEventTitle] = useState("");
+    const [registeredEventStartDate, setRegisteredEventStartDate] = useState("");
+    const [registeredEvendEndDate, setRegisteredEventEndDate] = useState("");
     const [isRegisteredEvent, setIsRegisteredEvent] = useState(false);
+    const [originalEventData, setOriginalEventData] = useState(null);
     const [eventData, setEventData] = useState(null);
 
     // 행사 등록 form modal handler
-    const toggleModal = () => {
+    const toggleRegistModal = () => {
         setRegistScheduleModal(!showRegistScheduleModal);
+    };
+
+    const toggleUpdateModal = () => {
+        setUpdateScheduleModal(!showUpdateScheduleModal);
     }
 
     // 날짜 클릭 시 event
@@ -86,12 +96,13 @@ const MyCalendar = () => {
             if(response.data) {
                 const resultData = response.data.map(item => {
                     return ({
+                        id: item.id,
                         title: "[" + item.eventCategory + "] " + item.eventTitle,
                         start: item.eventStartDate,
                         end: convertEndDate(item.eventEndDate)
                     });
                 });
-                
+                setOriginalEventData(response.data);
                 setEventData(resultData);
             }
         }
@@ -107,8 +118,28 @@ const MyCalendar = () => {
     };
 
     const handleEventClick = (e) => {
-        debugger
-    }
+        setUpdateScheduleModal(true);
+        const eventId = e.event['id'];
+        let eventCategory = "";
+        let eventTitle = "";
+        let eventStartDate = "";
+        let eventEndDate = "";
+
+        if(originalEventData) {
+            originalEventData.map(item => {
+                if(item.id === parseInt(eventId)) {
+                    eventCategory = item.eventCategory;
+                    eventTitle = item.eventTitle;
+                    eventStartDate = item.eventStartDate;
+                    eventEndDate = item.eventEndDate;
+                }
+            });
+        }
+        setRegisteredEventCategory(eventCategory);
+        setRegisteredEventTitle(eventTitle);
+        setRegisteredEventStartDate(eventStartDate);
+        setRegisteredEventEndDate(eventEndDate);
+    };
 
     return (
         <div className="mt-5">
@@ -151,13 +182,13 @@ const MyCalendar = () => {
                 <Modal
                     isOpen={showRegistScheduleModal}
                     backdrop={true}
-                    toggle={toggleModal}
+                    toggle={toggleRegistModal}
                     centered={true}
                     autoFocus={false}   // Modal Tag에서 autoFocus를 false로 설정 -> Focus하고 싶은 Input Tag에서 autoFocus를 True로 설정해야 적용
                     // className=""
                     // keyboard={}
                 >
-                    <ModalHeader className="text-muted" toggle={toggleModal} closebutton="true">보건일정 등록</ModalHeader>
+                    <ModalHeader className="text-muted" toggle={toggleRegistModal} closebutton="true">보건일정 등록</ModalHeader>
                     <ModalBody>
                         <FormGroup className="mr-3" onSubmit={handleAddEvent}>
                             <Row className="mb-3 align-items-center">
@@ -232,9 +263,97 @@ const MyCalendar = () => {
                     </ModalBody>
                     <ModalFooter>
                         <Button className="mr-1" color="secondary" onClick={handleAddEvent}>이벤트 추가</Button>
-                        <Button color="secondary" onClick={toggleModal}>취소</Button>
+                        <Button color="secondary" onClick={toggleRegistModal}>취소</Button>
                         {/* <Button className="btn-neutral" onClick={handleAddEvent}>이벤트 추가</Button>
                         <Button className="btn-neutral" onClick={toggleModal}>취소</Button> */}
+                    </ModalFooter>
+                </Modal>
+            )}
+
+            {showUpdateScheduleModal && (
+                <Modal
+                    isOpen={showUpdateScheduleModal}
+                    backdrop={true}
+                    toggle={toggleUpdateModal}
+                    centered={true}
+                    autoFocus={false}   // Modal Tag에서 autoFocus를 false로 설정 -> Focus하고 싶은 Input Tag에서 autoFocus를 True로 설정해야 적용
+                    // className=""
+                    // keyboard={}
+                >
+                    <ModalHeader className="text-muted" toggle={toggleUpdateModal} closebutton="true">보건일정 수정</ModalHeader>
+                    <ModalBody>
+                        <FormGroup className="mr-3" onSubmit={handleAddEvent}>
+                            <Row className="mb-3 align-items-center">
+                                <Col className="text-center" md="3">
+                                    <Label for="eventTitle">일정분류</Label>
+                                </Col>
+                                <Col md="9">
+                                    <Input
+                                        id="eventCategory"
+                                        name="eventCategory"
+                                        type="select"
+                                        value={registeredEventCategory}
+                                        onChange={(e) => setRegisteredEventCategory(e.target.value)}
+                                        autoFocus={true}
+                                    >
+                                        <option>보건행사</option>
+                                        <option>학교행사</option>
+                                        <option>교육/연수</option>
+                                        <option>세미나</option>
+                                        <option>회의</option>
+                                    </Input>
+                                </Col>
+                            </Row>
+                            <Row className="mb-3 align-items-center">
+                                <Col className="text-center" md="3">
+                                    <Label for="eventTitle">일정명</Label>
+                                </Col>
+                                <Col md="9">
+                                    <Input
+                                        id="eventTitle"
+                                        name="eventTitle"
+                                        type="text"
+                                        placeholder="일정명"
+                                        value={registeredEventTitle}
+                                        onChange={(e) => setRegisteredEventTitle(e.target.value)}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row className="mb-3 align-items-center">
+                                <Col className="text-center" md="3">
+                                    <Label for="eventStart">시작날짜</Label>
+                                </Col>
+                                <Col md="9">
+                                    <Input
+                                        id="eventStartDate"
+                                        name="eventStartDate"
+                                        type="date"
+                                        placeholder="시작 날짜"
+                                        defaultValue={registeredEventStartDate}
+                                        onChange={(e) => setRegisteredEventStartDate(e.target.value)}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row className="align-items-center">
+                                <Col className="text-center" md="3">
+                                    <Label for="eventEnd">종료날짜</Label>
+                                </Col>
+                                <Col md="9">
+                                    <Input
+                                        id="eventEndDate"
+                                        name="eventEndDate"
+                                        type="date"
+                                        placeholder="종료 날짜"
+                                        value={registeredEvendEndDate}
+                                        onChange={(e) => setRegisteredEventEndDate(e.target.value)}
+                                    />
+                                </Col>
+                            </Row>
+                        </FormGroup>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button className="mr-1" color="secondary" onClick={handleAddEvent}>이벤트 수정</Button>
+                        <Button color="secondary" onClick={toggleUpdateModal}>취소</Button>
                     </ModalFooter>
                 </Modal>
             )}
