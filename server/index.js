@@ -842,6 +842,72 @@ app.get("/workSchedule/getWorkSchedule", async (req, res) => {
     })
 });
 
+app.post("/workSchedule/update", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const eventId = req.body.eventId;
+    const eventCategory = req.body.eventCategory;
+    const eventTitle = req.body.eventTitle;
+    const eventStartDate = req.body.eventStartDate;
+    const eventEndDate = req.body.eventEndDate;
+
+    const sqlQuery = "UPDATE teaform_db.workSchedule SET eventCategory = ?, eventTitle = ?, eventStartDate = ?, eventEndDate = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [eventCategory, eventTitle, eventStartDate, eventEndDate, userId, schoolCode, eventId], (err, result) => {
+        if(err) {
+            console.log("보건일정 Update 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get("/eventSetting/getCategory", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.eventSetting WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("행사분류 데이터 조회 중 ERROR", err);
+        }else{
+            if(result.length > 0) {
+                const eventSetting = result[0];
+                res.json({ eventSetting });
+            }
+        }
+    });
+});
+
+app.post("/eventSetting/insert", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const categoryString = req.body.category;
+
+    const sqlQuery = "INSERT INTO teaform_db.eventSetting (userId, schoolCode, eventCategory) VALUES (?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, categoryString], (err, result) => {
+        if(err) {
+            console.log("행사분류 데이터 Insert 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/eventSetting/update", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const categoryString = req.body.category;
+
+    const sqlQuery = "UPDATE teaform_db.eventSetting SET eventCategory = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [categoryString, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("행사분류 데이터 Update 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

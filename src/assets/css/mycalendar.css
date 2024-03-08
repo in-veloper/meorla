@@ -1,3 +1,8 @@
+.fc .fc-toolbar.fc-header-toolbar {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 /* calendar 배경 색상 */
 .fc-view-harness {
     background-color: white;
@@ -5,40 +10,16 @@
 
 /* 토요일 표시 색상 */
 .fc-day-sat a {
-    color: blue;
+    color: #0067A3;
 }
 
 /* 일요일 표시 색상 */
 .fc-day-sun a {
-    color: red;
+    color: #FF5A5A;
 }
 
 .fc-day-mon a, .fc-day-tue a, .fc-day-wed a, .fc-day-thu a, .fc-day-fri a {
-    color: #9A9A9A;
-}
-
-.fc-day-sat a {
-    color: blue;
-}
-
-.fc-day-sat a {
-    color: blue;
-}
-
-.fc-day-sat a {
-    color: blue;
-}
-
-.fc-day-sat a {
-    color: blue;
-}
-
-.fc-day-sat a {
-    color: blue;
-}
-
-.fc-day-sat a {
-    color: blue;
+    color: #6E6E6E;
 }
 
 video
