@@ -463,7 +463,7 @@ function WorkNote(args) {
 
   const onCellValueChanged = (event) => {
     const updatedRowData = event.api.getRowNode(event.rowIndex).data;
-    setModifiedData((prevData) => [...prevData, updatedRowData]);
+    // setModifiedData((prevData) => [...prevData, updatedRowData]);
   }
 
   // Cell Edit 모드 진입 시 Event
@@ -1046,9 +1046,9 @@ function WorkNote(args) {
     }
   };
 
-  const saveWorkNote = async (e) => {
+  const saveWorkNote = (e) => {
     e.preventDefault();
-    
+
     let symptomString = "";
     let medicationString = "";
     let actionMatterString = "";
@@ -1085,27 +1085,44 @@ function WorkNote(args) {
     const notes = document.getElementById('notes').value;
 
     if(selectedStudent) {
-      const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
-        userId: user.userId,
-        schoolCode: user.schoolCode,
-        sGrade: selectedStudent.sGrade,
-        sClass: selectedStudent.sClass,
-        sNumber: selectedStudent.sNumber,
-        sGender: selectedStudent.sGender,
-        sName: selectedStudent.sName,
-        symptom: symptomString,
-        medication: medicationString,
-        actionMatter: actionMatterString,
-        treatmentMatter: treatmentMatterString,
-        onBedStartTime: onBedRestStartTime,
-        onBedEndTime: onBedRestEndTime,
-        note: notes
+      Notiflix.Confirm.show(                                                                              // Confirm 창 Show
+        '보건일지 등록',                                                                          // Confirm 창 Title
+        '작성하신 보건일지를 등록하시겠습니까?',   // Confirm 창 내용
+        '예',                                                                                             // Confirm 창 버튼
+        '아니요',                                                                                          // Confirm 창 버튼
+        async () => {                                                                                    // Confirm 창에서 '예' 선택한 경우
+          const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            sGrade: selectedStudent.sGrade,
+            sClass: selectedStudent.sClass,
+            sNumber: selectedStudent.sNumber,
+            sGender: selectedStudent.sGender,
+            sName: selectedStudent.sName,
+            symptom: symptomString,
+            medication: medicationString,
+            actionMatter: actionMatterString,
+            treatmentMatter: treatmentMatterString,
+            onBedStartTime: onBedRestStartTime,
+            onBedEndTime: onBedRestEndTime,
+            note: notes
+          });
+
+          if(response.data === "success") {
+            Notiflix.Notify.info('보건일지가 정상적으로 등록되었습니다.', {
+              position: 'center-center', showOnlyTheLastOne: true, plainText: false
+            });
+          }
+        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
+          return;                                                         // return
+        },{                                                               // Confirm 창 Option 설정
+          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        }
+      );
+    }else{
+      Notiflix.Notify.warning('선택된 학생이 없습니다.', {
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false
       });
-
-      if(response.data === "success") {
-        debugger
-      }
-
     }
   };
 
