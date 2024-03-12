@@ -238,12 +238,14 @@ const MyCalendar = () => {
         if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
     };
 
-    const handleEventDrop = (e) => {
-
+    const handleEventDrop = (eventInfo) => {
+        const { newEvent, oldEvent } = eventInfo;
+        const oldEventDate = oldEvent.start;
+        const newEventDate = newEvent.start;
     };
 
     const handleEventResize = (e) => {
-
+        
     };
 
     return (
