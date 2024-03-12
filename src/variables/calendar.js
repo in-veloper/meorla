@@ -208,7 +208,9 @@ const MyCalendar = () => {
       );
     };
 
-    const showColorPicker = () => {
+    const showColorPicker = (e) => {
+        e.preventDefault();
+        if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
         setDisplayColorPicker(!displayColorPicker);
     };
 
@@ -224,6 +226,7 @@ const MyCalendar = () => {
 
     const showEmojiPicker = (e) => {
         e.preventDefault();
+        if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
         setDisplayEmojiPicker(!displayEmojiPicker);
     };
 
@@ -239,13 +242,19 @@ const MyCalendar = () => {
     };
 
     const handleEventDrop = (eventInfo) => {
-        const { newEvent, oldEvent } = eventInfo;
-        const oldEventDate = oldEvent.start;
-        const newEventDate = newEvent.start;
+        const { event, oldEvent } = eventInfo;
+        const oldEventStart = oldEvent.startStr;
+        const oldEventEnd = oldEvent.endStr;
+        const newEventStart = event.startStr;
+        const newEventEnd = event.endStr;
     };
 
-    const handleEventResize = (e) => {
-        
+    const handleEventResize = (eventInfo) => {
+        const { event, oldEvent } = eventInfo;
+        const oldEventStart = oldEvent.startStr;
+        const oldEventEnd = oldEvent.endStr;
+        const newEventStart = event.startStr;
+        const newEventEnd = event.endStr;
     };
 
     return (
@@ -399,7 +408,7 @@ const MyCalendar = () => {
                                         <Col className="text-center" md="3">
                                             <Label for="eventTitle">일정명</Label>
                                         </Col>
-                                        <Col md="8">
+                                        <Col md="7">
                                             <Input
                                                 id="eventTitle"
                                                 name="eventTitle"
@@ -408,6 +417,19 @@ const MyCalendar = () => {
                                                 value={registeredEventTitle}
                                                 onChange={(e) => setRegisteredEventTitle(e.target.value)}
                                             />
+                                        </Col>
+                                        <Col className="pl-1 mr-1 text-muted" md="1" style={{ marginLeft: '-10px' }}>
+                                            <MdOutlineEmojiEmotions style={{ fontSize: 25 }} onClick={showEmojiPicker}/>
+                                            {displayEmojiPicker ? 
+                                                <div style={{ position: 'absolute', zIndex: 999 }}>
+                                                    <EmojiPicker
+                                                        searchPlaceHolder="이모지 검색"
+                                                        width={300}
+                                                        height={400}
+                                                        onEmojiClick={onEmojiClick}
+                                                    />
+                                                </div> : null
+                                            }
                                         </Col>
                                         <Col className="p-0" md="1">
                                             <div style={{ backgroundColor: registeredEventColor, width: '25px', height: '25px', borderRadius: '10px', marginLeft: '-3px', cursor: 'pointer' }} onClick={showColorPicker}></div>
