@@ -827,7 +827,7 @@ app.post("/workSchedule/insert", async (req, res) => {
     const eventStartDate = req.body.eventStartDate;
     const eventEndDate = req.body.eventEndDate;
 
-    const sqlQuery = "INSERT INTO teaform_db.workSchedule (userId, schoolCode, eventCategory, eventTitle, eventStartDate, eventEndDate) VALUES (?,?,?,?,?,?)";
+    const sqlQuery = "INSERT INTO teaform_db.workSchedule (userId, schoolCode, eventTitle, eventColor, eventStartDate, eventEndDate) VALUES (?,?,?,?,?,?)";
     db.query(sqlQuery, [userId, schoolCode, eventTitle, eventColor, eventStartDate, eventEndDate], (err, result) => {
         if(err) {
             console.log("보건일정 Insert 처리 중 ERROR", err);

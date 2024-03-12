@@ -34,10 +34,15 @@ const MyCalendar = () => {
 
     // 행사 등록 form modal handler
     const toggleRegistModal = () => {
+        if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
+        if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
         setRegistScheduleModal(!showRegistScheduleModal);
+        resetRegistEventForm();
     };
 
     const toggleUpdateModal = () => {
+        if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
+        if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
         setUpdateScheduleModal(!showUpdateScheduleModal);
     };
 
@@ -66,6 +71,9 @@ const MyCalendar = () => {
     // 행사 등록 event
     const handleAddEvent = async (e) => {
         e.preventDefault();
+        if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
+        if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
+
         Notiflix.Confirm.show(                                                                  // Confirm 창 Show
         '보건일정 등록',                                                                   // Confirm 창 Title
         '작성하신 일정을 등록하시겠습니까?',   // Confirm 창 내용
@@ -113,7 +121,7 @@ const MyCalendar = () => {
                     return ({
                         id: item.id,
                         title: item.eventTitle,
-                        color: item.eventColor,
+                        color: item.eventColor ? item.eventColor : '#FF6900',
                         start: item.eventStartDate,
                         end: convertEndDate(item.eventEndDate)
                     });
@@ -136,6 +144,10 @@ const MyCalendar = () => {
 
     const handleEventClick = (e) => {
         setUpdateScheduleModal(true);
+        
+        if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
+        if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
+
         const eventId = e.event['id'];
         let eventTitle = "";
         let eventColor = "";
@@ -146,7 +158,7 @@ const MyCalendar = () => {
             originalEventData.forEach(item => {
                 if(item.id === parseInt(eventId)) {
                     eventTitle = item.eventTitle;
-                    eventColor = item.eventColor;
+                    eventColor = item.eventColor ? item.eventColor : '#FF6900';
                     eventStartDate = item.eventStartDate;
                     eventEndDate = item.eventEndDate;
                 }
@@ -221,6 +233,19 @@ const MyCalendar = () => {
         setEventTitle(emojiValue);
     };
 
+    const onFocusOutside = () => {
+        if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
+        if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
+    };
+
+    const handleEventDrop = (e) => {
+
+    };
+
+    const handleEventResize = (e) => {
+
+    };
+
     return (
         <>
             <div className="content">
@@ -248,7 +273,10 @@ const MyCalendar = () => {
                         plugins={[ dayGridPlugin, timeGridPlugin, interactionPlugin ]}
                         events={eventData}
                         eventClick={handleEventClick}
-                        editable="true"
+                        editable={true}
+                        eventResizableFromStart={true}
+                        eventDrop={handleEventDrop}
+                        eventResize={handleEventResize}
                         // events={[   // 임의 값 (calendar에 이벤트 설정할 때 아래와 같은 방식으로 세팅)
                         //     { title: '이벤트 1', date: '2023-11-04' },
                         //     { title: '이벤트 2', date: '2023-11-05' }
@@ -284,6 +312,7 @@ const MyCalendar = () => {
                                                 placeholder="일정명"
                                                 value={eventTitle}
                                                 onChange={(e) => setEventTitle(e.target.value)}
+                                                onFocus={onFocusOutside}
                                             />
                                         </Col>
                                         <Col className="pl-1 mr-1 text-muted" md="1" style={{ marginLeft: '-10px' }}>
@@ -324,6 +353,7 @@ const MyCalendar = () => {
                                                 placeholder="시작 날짜"
                                                 defaultValue={eventStartDate}
                                                 onChange={(e) => setEventStartDate(e.target.value)}
+                                                onFocus={onFocusOutside}
                                             />
                                         </Col>
                                     </Row>
@@ -339,6 +369,7 @@ const MyCalendar = () => {
                                                 placeholder="종료 날짜"
                                                 value={eventEndDate}
                                                 onChange={(e) => setEventEndDate(e.target.value)}
+                                                onFocus={onFocusOutside}
                                             />
                                         </Col>
                                     </Row>
