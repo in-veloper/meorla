@@ -870,6 +870,23 @@ app.post("/workSchedule/update", async (req, res) => {
     });
 });
 
+app.post("/workSchedule/reSchedule", async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const eventId = req.body.eventId;
+    const eventStartDate = req.body.eventStartDate;
+    const eventEndDate = req.body.eventEndDate;
+
+    const sqlQuery = "UPDATE teaform_db.workSchedule SET eventStartDate = ?, eventEndDate = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [eventStartDate, eventEndDate, userId, schoolCode, eventId], (err, result) => {
+        if(err) {
+            console.log("보건일정 리스케쥴링 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

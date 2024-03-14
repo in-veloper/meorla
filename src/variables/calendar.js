@@ -9,6 +9,8 @@ import { TwitterPicker } from "react-color";
 import EmojiPicker from "emoji-picker-react";
 import { MdOutlineEmojiEmotions } from "react-icons/md";
 import Notiflix from "notiflix";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import axios from "axios";
 import { useUser } from "contexts/UserContext";
 
@@ -74,36 +76,33 @@ const MyCalendar = () => {
         if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
         if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
 
-        Notiflix.Confirm.show(                                                                  // Confirm 창 Show
-        '보건일정 등록',                                                                   // Confirm 창 Title
-        '작성하신 일정을 등록하시겠습니까?',   // Confirm 창 내용
-        '예',                                                                                 // Confirm 창 버튼
-        '아니요',                                                                              // Confirm 창 버튼
-        async () => {                                                                        // Confirm 창에서 '예' 선택한 경우
-          e.preventDefault();                                                                // 기본 Event 방지
-
-          const response = await axios.post("http://localhost:8000/workSchedule/insert", {
-            userId: user.userId,
-            schoolCode: user.schoolCode,
-            eventTitle: eventTitle,
-            eventColor: selectedEventColor,
-            eventStartDate: eventStartDate,
-            eventEndDate: eventEndDate
-        });
-
-        if(response.data === 'success') {
-            Notiflix.Notify.info('보건일정이 정상적으로 등록되었습니다.', {
-                position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        const confirmTitle = "보건일정 등록";
+        const confirmMessage = "작성하신 일정을 등록하시겠습니까?";
+        const infoMessage = "보건일정이 정상적으로 등록되었습니다.";
+        
+        const yesCallback = async () => {
+            const response = await axios.post("http://localhost:8000/workSchedule/insert", {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                eventTitle: eventTitle,
+                eventColor: selectedEventColor,
+                eventStartDate: eventStartDate,
+                eventEndDate: eventEndDate
             });
-            setIsRegisteredEvent(true);
-            resetRegistEventForm();
-        }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
-        }
-      );
+
+            if(response.data === 'success') {
+                NotiflixInfo(infoMessage);
+
+                setIsRegisteredEvent(true);
+                resetRegistEventForm();
+            }
+        }; 
+
+        const noCallback = () => {
+            return;
+        };
+
+        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
     };
 
     // 등록된 행사일정 획득 function
@@ -181,29 +180,29 @@ const MyCalendar = () => {
         '예',                                                                                 // Confirm 창 버튼
         '아니요',                                                                              // Confirm 창 버튼
         async () => {                                                                        // Confirm 창에서 '예' 선택한 경우
-          e.preventDefault();                                                                // 기본 Event 방지
+            e.preventDefault();                                                                // 기본 Event 방지
 
-          const response = await axios.post("http://localhost:8000/workSchedule/update", {
-            userId: user.userId,
-            schoolCode: user.schoolCode,
-            eventId: registeredEventId,
-            eventTitle: registeredEventTitle,
-            eventColor: registeredEventColor,
-            eventStartDate: registeredEventStartDate,
-            eventEndDate: registeredEvendEndDate
-        });
-
-        if(response.data === 'success') {
-            Notiflix.Notify.info('보건일정이 정상적으로 수정되었습니다.', {
-                position: 'center-center', showOnlyTheLastOne: true, plainText: false
+            const response = await axios.post("http://localhost:8000/workSchedule/update", {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                eventId: registeredEventId,
+                eventTitle: registeredEventTitle,
+                eventColor: registeredEventColor,
+                eventStartDate: registeredEventStartDate,
+                eventEndDate: registeredEvendEndDate
             });
-            setIsUpdatedEvent(true);
-            resetUpdateEventForm();
-        }
+
+            if(response.data === 'success') {
+                Notiflix.Notify.info('보건일정이 정상적으로 수정되었습니다.', {
+                    position: 'center-center', showOnlyTheLastOne: true, plainText: false
+                });
+                setIsUpdatedEvent(true);
+                resetUpdateEventForm();
+            }
         },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
+            return;                                                         // return
         },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+            position: 'center-center', showOnlyTheLastOne: true, plainText: false
         }
       );
     };
@@ -247,6 +246,31 @@ const MyCalendar = () => {
         const oldEventEnd = oldEvent.endStr;
         const newEventStart = event.startStr;
         const newEventEnd = event.endStr;
+
+        const confirmTitle = "보건일정 수정";
+        const confirmMessage = "보건일정을 " + oldEventStart + " ~ " + oldEventEnd + "에서 " + newEventStart + " ~ " + newEventEnd + "으로 수정하시겠습니까?";
+        const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
+        
+        const yesCallback = async () => {
+            const response = await axios.post("http://localhost:8000/workSchedule/reSchedule", {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                eventId: oldEvent.id,
+                eventStartDate: newEventStart,
+                eventEndDate: newEventEnd
+            });
+
+            if(response.data === 'success') {
+                NotiflixInfo(infoMessage);
+            }
+        };
+
+        const noCallback = () => {
+            eventInfo.revert();
+            return;
+        };
+
+        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
     };
 
     const handleEventResize = (eventInfo) => {
