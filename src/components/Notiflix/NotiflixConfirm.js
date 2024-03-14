@@ -1,6 +1,6 @@
 import Notiflix from "notiflix";
 
-const NotiflixConfirm = (confirmTitle, confirmMessage, yesCallback, noCallback) => {
+const NotiflixConfirm = (confirmTitle, confirmMessage, yesCallback, noCallback, confirmWidth) => {
     return (
         Notiflix.Confirm.show(
             confirmTitle,
@@ -16,7 +16,7 @@ const NotiflixConfirm = (confirmTitle, confirmMessage, yesCallback, noCallback) 
                     noCallback();
                 }
             },{
-                position: 'center-center', showOnlyTheLastOne: true, plainText: false
+                position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: confirmWidth ? confirmWidth : '280px'
             }
         )
     );

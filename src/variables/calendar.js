@@ -246,9 +246,9 @@ const MyCalendar = () => {
         const oldEventEnd = oldEvent.endStr;
         const newEventStart = event.startStr;
         const newEventEnd = event.endStr;
-
+        
         const confirmTitle = "보건일정 수정";
-        const confirmMessage = "보건일정을 " + oldEventStart + " ~ " + oldEventEnd + "에서 " + newEventStart + " ~ " + newEventEnd + "으로 수정하시겠습니까?";
+        const confirmMessage = "보건일정을<br/>" + oldEventStart + " ~ " + subtractOneDayFromDate(oldEventEnd) + "에서 " + newEventStart + " ~ " + subtractOneDayFromDate(newEventEnd) + "<br/>으로 수정하시겠습니까?";
         const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
         
         const yesCallback = async () => {
@@ -257,7 +257,7 @@ const MyCalendar = () => {
                 schoolCode: user.schoolCode,
                 eventId: oldEvent.id,
                 eventStartDate: newEventStart,
-                eventEndDate: newEventEnd
+                eventEndDate: subtractOneDayFromDate(newEventEnd)
             });
 
             if(response.data === 'success') {
@@ -270,8 +270,14 @@ const MyCalendar = () => {
             return;
         };
 
-        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
+        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '450px');
     };
+
+    const subtractOneDayFromDate = (dateString) => {
+        const date = new Date(dateString);
+        date.setDate(date.getDate() - 1);
+        return date.toISOString().slice(0, 10);
+    }
 
     const handleEventResize = (eventInfo) => {
         const { event, oldEvent } = eventInfo;
@@ -279,6 +285,31 @@ const MyCalendar = () => {
         const oldEventEnd = oldEvent.endStr;
         const newEventStart = event.startStr;
         const newEventEnd = event.endStr;
+        
+        const confirmTitle = "보건일정 수정";
+        const confirmMessage = "보건일정을<br/>" + oldEventStart + " ~ " + subtractOneDayFromDate(oldEventEnd) + "에서 " + newEventStart + " ~ " + subtractOneDayFromDate(newEventEnd) + "<br/>으로 수정하시겠습니까?";
+        const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
+
+        const yesCallback = async () => {
+            const response = await axios.post("http://localhost:8000/workSchedule/reSchedule", {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                eventId: oldEvent.id,
+                eventStartDate: newEventStart,
+                eventEndDate: subtractOneDayFromDate(newEventEnd)
+            });
+
+            if(response.data === 'success') {
+                NotiflixInfo(infoMessage);
+            }
+        };
+
+        const noCallback = () => {
+            eventInfo.revert();
+            return;
+        };
+
+        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '450px');
     };
 
     return (
@@ -312,6 +343,7 @@ const MyCalendar = () => {
                         eventResizableFromStart={true}
                         eventDrop={handleEventDrop}
                         eventResize={handleEventResize}
+                        defaultAllDay={true}
                         // events={[   // 임의 값 (calendar에 이벤트 설정할 때 아래와 같은 방식으로 세팅)
                         //     { title: '이벤트 1', date: '2023-11-04' },
                         //     { title: '이벤트 2', date: '2023-11-05' }
@@ -557,3 +589,5 @@ export default MyCalendar;
     emoji-picker-react 적용
 
 */ 
+
+// 시작일자보다 종료일자가 앞서는 경우 예외 처리 필요
