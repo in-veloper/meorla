@@ -4,7 +4,6 @@ import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import '../assets/css/worknote.css';
 import { GiBed } from "react-icons/gi";
 import { BiMenu } from "react-icons/bi";
 import { RiSearchLine } from "react-icons/ri";
@@ -12,9 +11,13 @@ import { IoMdRefresh } from "react-icons/io";
 import { FaInfoCircle } from "react-icons/fa";
 import { useUser } from "contexts/UserContext";
 import Masking from "components/Tools/Masking";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
+import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import Notiflix from "notiflix";
 import axios from "axios";
 import moment from "moment";
+import '../assets/css/worknote.css';
 
 function WorkNote(args) {
   const { user } = useUser();                              // 사용자 정보
@@ -269,12 +272,10 @@ function WorkNote(args) {
   const removeSymptomRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = symptomGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
-
+    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
+    
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
-      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-      
+      NotiflixWarn(warnMessage);
       return;
     }
 
@@ -286,12 +287,10 @@ function WorkNote(args) {
   const removeMedicationRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = medicationGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
+    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
 
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
-      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-      
+      NotiflixWarn(warnMessage);
       return;
     }
 
@@ -303,12 +302,10 @@ function WorkNote(args) {
   const removeActionMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = actionMatterGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
+    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
 
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
-      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-      
+      NotiflixWarn(warnMessage);
       return;
     }
 
@@ -320,12 +317,10 @@ function WorkNote(args) {
   const removeTreatmentMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = treatmentMatterGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
-
+    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
+    
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
-      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-      
+      NotiflixWarn(warnMessage);      
       return;
     }
 
@@ -337,13 +332,11 @@ function WorkNote(args) {
   const allSymptomRemoveRow = () => {
     const api = symptomGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    
+    const warnMessage = "등록된 증상이 없습니다.";
+
     if(displayedRowCount === 0) {                         // 현재 등록된 증상이 없을 경우
       // 등록된 증상 없음 Notify
-      Notiflix.Notify.warning('등록된 증상이 없습니다.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-
+      NotiflixWarn(warnMessage);
       return;                                             // return
     }else{                                                // 등록된 증상이 있을 경우
       api.setRowData([]);                                 // 증상 행 전체 삭제 (빈 배열 삽입으로 초기화)
@@ -354,13 +347,11 @@ function WorkNote(args) {
   const allMedicationRemoveRow = () => {
     const api = medicationGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    
+    const warnMessage = "등록된 투약사항이 없습니다.";
+
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
-      Notiflix.Notify.warning('등록된 투약사항이 없습니다.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-
+      NotiflixWarn(warnMessage);
       return;                                             // return
     }else{                                                // 등록된 투약사항이 있을 경우
       api.setRowData([]);                                 // 투약사항 행 전체 삭제 (빈 배열 삽입으로 초기화)
@@ -371,13 +362,11 @@ function WorkNote(args) {
   const allActionMatterRemoveRow = () => {
     const api = actionMatterGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    
+    const warnMessage = "등록된 조치사항이 없습니다.";
+
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
-      Notiflix.Notify.warning('등록된 조치사항이 없습니다.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-
+      NotiflixWarn(warnMessage);
       return;                                             // return
     }else{                                                // 등록된 투약사항이 있을 경우
       api.setRowData([]);                                 // 투약사항 행 전체 삭제 (빈 배열 삽입으로 초기화)
@@ -388,13 +377,11 @@ function WorkNote(args) {
   const allTreatmentMatterRemoveRow = () => {
     const api = treatmentMatterGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    
+    const warnMessage = "등록된 처치사항이 없습니다.";
+
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
-      Notiflix.Notify.warning('등록된 처치사항이 없습니다.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-
+      NotiflixWarn(warnMessage);
       return;                                             // return
     }else{                                                // 등록된 투약사항이 있을 경우
       api.setRowData([]);                                 // 투약사항 행 전체 삭제 (빈 배열 삽입으로 초기화)
@@ -496,220 +483,200 @@ function WorkNote(args) {
     fetchTreatmentMatterData();
   };
 
-  const saveSymptom = async (event) => {
-    try {
-      Notiflix.Confirm.show(                                           // Confirm 창 Show
-        '증상 설정',                                                     // Confirm 창 Title
-        '작성하신 증상를 저장하시겠습니까?',                                   // Confirm 창 내용
-        '예',                                                          // Confirm 창 버튼
-        '아니요',                                                       // Confirm 창 버튼
-        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
-          event.preventDefault();                                     // 기본 Event 방지
-          const api = symptomGridRef.current.api;                      // Grid api 획득
-          let symptomString = "";                                      // Parameter 전송 위한 증상 담을 배열
+  const saveSymptom = async (e) => {
+    e.preventDefault();
 
-          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
-            const symptom = rowNode.data.symptom;                     // 증상 획득
+    const confirmTitle = "증상 설정";
+    const confirmMessage = "작성하신 증상을 저장하시겠습니까?";
+    const infoMessage = "증상 설정이 정상적으로 저장되었습니다.";
 
-            // 증상 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 증상 데이터 생성
-            if(symptom.length !== 0 && user) symptomString += symptom + "::";
-            
-          });
-          symptomString = symptomString.slice(0, -2);
-          
-          let response = null;                  // response 데이터 담을 변수
-          if(symptomRowData.length > 0) {       // 등록된 증상이 있는 경우 - Update
-            response = await axios.post('http://localhost:8000/symptom/update', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              symptom: symptomString
-            });
-          }else{                            // 등록된 증상이 없는 경우 - Insert
-            response = await axios.post('http://localhost:8000/symptom/insert', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              symptom: symptomString
-            });
-          }
-          
-          if(response.data === "success") {   // Api 호출 성공한 경우
-            fetchSymptomData();              // Dropdown에도 공통 적용되기 위해 북마크 데이터 재조회
-            // 증상 정상 저장 Notify
-            Notiflix.Notify.info('증상 설정이 정상적으로 저장되었습니다.', {
-              position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
-        }
-      )
-    } catch(error) {
-      console.error('증상 저장 중 ERROR', error);
-    }
+    const yesCallback = async () => {
+      const api = symptomGridRef.current.api;                      // Grid api 획득
+      let symptomString = "";                                      // Parameter 전송 위한 증상 담을 배열
+
+      api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+        const symptom = rowNode.data.symptom;                     // 증상 획득
+
+        // 증상 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 증상 데이터 생성
+        if(symptom.length !== 0 && user) symptomString += symptom + "::";
+        
+      });
+      symptomString = symptomString.slice(0, -2);
+      
+      let response = null;                  // response 데이터 담을 변수
+      if(symptomRowData.length > 0) {       // 등록된 증상이 있는 경우 - Update
+        response = await axios.post('http://localhost:8000/symptom/update', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          symptom: symptomString
+        });
+      }else{                            // 등록된 증상이 없는 경우 - Insert
+        response = await axios.post('http://localhost:8000/symptom/insert', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          symptom: symptomString
+        });
+      }
+      
+      if(response.data === "success") {   // Api 호출 성공한 경우
+        fetchSymptomData();              // Dropdown에도 공통 적용되기 위해 북마크 데이터 재조회
+        // 증상 정상 저장 Notify
+        NotiflixInfo(infoMessage);
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
   };
 
-  const saveMedication = async (event) => {
-    try {
-      Notiflix.Confirm.show(                                           // Confirm 창 Show
-        '투약사항 설정',                                                  // Confirm 창 Title
-        '작성하신 투약사항를 저장하시겠습니까?',                                // Confirm 창 내용
-        '예',                                                          // Confirm 창 버튼
-        '아니요',                                                       // Confirm 창 버튼
-        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
-          event.preventDefault();                                     // 기본 Event 방지
-          const api = medicationGridRef.current.api;                  // Grid api 획득
-          let medicationString = "";                                  // Parameter 전송 위한 투약사항 담을 배열
+  const saveMedication = async (e) => {
+    e.preventDefault();
 
-          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
-            const medication = rowNode.data.medication;               // 투약사항 획득
+    const confirmTitle = "투약사항 설정";
+    const confirmMessage = "작성하신 투약사항를 저장하시겠습니까?";
+    const infoMessage = "투약사항 설정이 정상적으로 저장되었습니다.";
 
-            // 투약사항 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 투약사항 데이터 생성
-            if(medication.length !== 0 && user) medicationString += medication + "::";
-            
-          });
-          medicationString = medicationString.slice(0, -2);
-          
-          let response = null;                     // response 데이터 담을 변수
-          if(medicationRowData.length > 0) {       // 등록된 투약사항이 있는 경우 - Update
-            response = await axios.post('http://localhost:8000/medication/update', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              medication: medicationString
-            });
-          }else{                                    // 등록된 투약사항이 없는 경우 - Insert
-            response = await axios.post('http://localhost:8000/medication/insert', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              medication: medicationString
-            });
-          }
-          
-          if(response.data === "success") {   // Api 호출 성공한 경우
-            fetchStockMedicineData();              // Dropdown에도 공통 적용되기 위해 투약사항 데이터 재조회
-            // 투약사항 정상 저장 Notify
-            Notiflix.Notify.info('투약사항 설정이 정상적으로 저장되었습니다.', {
-              position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
-        }
-      )
-    } catch(error) {
-      console.error('투약사항 저장 중 ERROR', error);
-    }
+    const yesCallback = async () => {
+      const api = medicationGridRef.current.api;                  // Grid api 획득
+      let medicationString = "";                                  // Parameter 전송 위한 투약사항 담을 배열
+
+      api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+        const medication = rowNode.data.medication;               // 투약사항 획득
+
+        // 투약사항 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 투약사항 데이터 생성
+        if(medication.length !== 0 && user) medicationString += medication + "::";
+        
+      });
+      medicationString = medicationString.slice(0, -2);
+      
+      let response = null;                     // response 데이터 담을 변수
+      if(medicationRowData.length > 0) {       // 등록된 투약사항이 있는 경우 - Update
+        response = await axios.post('http://localhost:8000/medication/update', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          medication: medicationString
+        });
+      }else{                                    // 등록된 투약사항이 없는 경우 - Insert
+        response = await axios.post('http://localhost:8000/medication/insert', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          medication: medicationString
+        });
+      }
+      
+      if(response.data === "success") {   // Api 호출 성공한 경우
+        fetchStockMedicineData();              // Dropdown에도 공통 적용되기 위해 투약사항 데이터 재조회
+        // 투약사항 정상 저장 Notify
+        NotiflixInfo(infoMessage);
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
   };
 
-  const saveActionMatter = async (event) => {
-    try {
-      Notiflix.Confirm.show(                                           // Confirm 창 Show
-        '조치사항 설정',                                                     // Confirm 창 Title
-        '작성하신 조치사항을 저장하시겠습니까?',                                   // Confirm 창 내용
-        '예',                                                          // Confirm 창 버튼
-        '아니요',                                                       // Confirm 창 버튼
-        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
-          event.preventDefault();                                     // 기본 Event 방지
-          const api = actionMatterGridRef.current.api;                      // Grid api 획득
-          let actionMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
+  const saveActionMatter = async (e) => {
+    e.preventDefault();
 
-          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
-            const actionMatter = rowNode.data.actionMatter;                     // 조치사항 획득
+    const confirmTitle = "조치사항 설정";
+    const confirmMessage = "작성하신 조치사항을 저장하시겠습니까?";
+    const infoMessage = "조치사항 설정이 정상적으로 저장되었습니다.";
 
-            // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
-            if(actionMatter.length !== 0 && user) actionMatterString += actionMatter + "::";
-            
-          });
-          actionMatterString = actionMatterString.slice(0, -2);
-          
-          let response = null;                  // response 데이터 담을 변수
-          if(actionMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
-            response = await axios.post('http://localhost:8000/actionMatter/update', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              actionMatter: actionMatterString
-            });
-          }else{                            // 등록된 증상이 없는 경우 - Insert
-            response = await axios.post('http://localhost:8000/actionMatter/insert', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              actionMatter: actionMatterString
-            });
-          }
-          
-          if(response.data === "success") {   // Api 호출 성공한 경우
-            fetchActionMatterData();           
-            // 조치사항 정상 저장 Notify
-            Notiflix.Notify.info('조치사항 설정이 정상적으로 저장되었습니다.', {
-              position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
-        }
-      )
-    } catch(error) {
-      console.error('조치사항 저장 중 ERROR', error);
-    }
+    const yesCallback = async () => {
+      const api = actionMatterGridRef.current.api;                      // Grid api 획득
+      let actionMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
+
+      api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+        const actionMatter = rowNode.data.actionMatter;                     // 조치사항 획득
+
+        // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
+        if(actionMatter.length !== 0 && user) actionMatterString += actionMatter + "::";
+        
+      });
+      actionMatterString = actionMatterString.slice(0, -2);
+      
+      let response = null;                  // response 데이터 담을 변수
+      if(actionMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
+        response = await axios.post('http://localhost:8000/actionMatter/update', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          actionMatter: actionMatterString
+        });
+      }else{                            // 등록된 증상이 없는 경우 - Insert
+        response = await axios.post('http://localhost:8000/actionMatter/insert', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          actionMatter: actionMatterString
+        });
+      }
+      
+      if(response.data === "success") {   // Api 호출 성공한 경우
+        fetchActionMatterData();           
+        // 조치사항 정상 저장 Notify
+        NotiflixInfo(infoMessage);
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
   };
 
-  const saveTreatmentMatter = async (event) => {
-    try {
-      Notiflix.Confirm.show(                                           // Confirm 창 Show
-        '처치사항 설정',                                                     // Confirm 창 Title
-        '작성하신 처치사항을 저장하시겠습니까?',                                   // Confirm 창 내용
-        '예',                                                          // Confirm 창 버튼
-        '아니요',                                                       // Confirm 창 버튼
-        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
-          event.preventDefault();                                     // 기본 Event 방지
-          const api = treatmentMatterGridRef.current.api;                      // Grid api 획득
-          let treatmentMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
+  const saveTreatmentMatter = async (e) => {
+    e.preventDefault();
 
-          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
-            const treatmentMatter = rowNode.data.treatmentMatter;                     // 조치사항 획득
+    const confirmTitle = "처치사항 설정";
+    const confirmMessage = "작성하신 처치사항을 저장하시겠습니까?";
+    const infoMessage = "처치사항 설정이 정상적으로 저장되었습니다.";
 
-            // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
-            if(treatmentMatter.length !== 0 && user) treatmentMatterString += treatmentMatter + "::";
-            
-          });
-          treatmentMatterString = treatmentMatterString.slice(0, -2);
-          
-          let response = null;                  // response 데이터 담을 변수
-          if(treatmentMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
-            response = await axios.post('http://localhost:8000/treatmentMatter/update', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              treatmentMatter: treatmentMatterString
-            });
-          }else{                            // 등록된 증상이 없는 경우 - Insert
-            response = await axios.post('http://localhost:8000/treatmentMatter/insert', {
-              userId: user.userId,
-              schoolCode: user.schoolCode,
-              treatmentMatter: treatmentMatterString
-            });
-          }
-          
-          if(response.data === "success") {   // Api 호출 성공한 경우
-            fetchTreatmentMatterData();           
-            // 조치사항 정상 저장 Notify
-            Notiflix.Notify.info('처치사항 설정이 정상적으로 저장되었습니다.', {
-              position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
-        }
-      )
-    } catch(error) {
-      console.error('처치사항 저장 중 ERROR', error);
-    }
+    const yesCallback = async () => {
+      const api = treatmentMatterGridRef.current.api;                      // Grid api 획득
+      let treatmentMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
+
+      api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+        const treatmentMatter = rowNode.data.treatmentMatter;                     // 조치사항 획득
+
+        // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
+        if(treatmentMatter.length !== 0 && user) treatmentMatterString += treatmentMatter + "::";
+        
+      });
+      treatmentMatterString = treatmentMatterString.slice(0, -2);
+      
+      let response = null;                  // response 데이터 담을 변수
+      if(treatmentMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
+        response = await axios.post('http://localhost:8000/treatmentMatter/update', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          treatmentMatter: treatmentMatterString
+        });
+      }else{                            // 등록된 증상이 없는 경우 - Insert
+        response = await axios.post('http://localhost:8000/treatmentMatter/insert', {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          treatmentMatter: treatmentMatterString
+        });
+      }
+      
+      if(response.data === "success") {   // Api 호출 성공한 경우
+        fetchTreatmentMatterData();           
+        // 조치사항 정상 저장 Notify
+        NotiflixInfo(infoMessage);
+      }
+    };
+
+    const noCallback = () => {
+       return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
   };
 
   // 증상 데이터 획득 부분 Function 분리
@@ -962,32 +929,31 @@ function WorkNote(args) {
   }, [fetchMaskedStatus]);
 
   const handleMasking = async (e) => {
-    if(user) {
-      Notiflix.Confirm.show(                                                                  // Confirm 창 Show
-        '학생 이름 마스킹 설정',                                                                   // Confirm 창 Title
-        masked ? '학생 이름 마스킹을 해제하도록 설정하시겠습니까?' : '학생 이름을 마스킹하도록 설정하시겠습니까?',   // Confirm 창 내용
-        '예',                                                                                 // Confirm 창 버튼
-        '아니요',                                                                              // Confirm 창 버튼
-        async () => {                                                                        // Confirm 창에서 '예' 선택한 경우
-          e.preventDefault();                                                                // 기본 Event 방지
+    e.preventDefault();
 
-          const response = await axios.post("http://localhost:8000/user/updateMaskedStatus", {
-            userId: user.userId,
-            schoolCode: user.schoolCode,
-            masked: !masked
-          });
-      
-          if(response.data === "success") {
-            setMasked(!masked);
-            onResetSearch();
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+    const confirmTitle = "학생 이름 마스킹 설정";
+    const confirmMessage = masked ? "학생 이름 마스킹을 해제하도록 설정하시겠습니까?" : "학생 이름을 마스킹하도록 설정하시겠습니까?";
+
+    const yesCallback = async () => {
+      if(user) {
+        const response = await axios.post("http://localhost:8000/user/updateMaskedStatus", {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          masked: !masked
+        });
+    
+        if(response.data === "success") {
+          setMasked(!masked);
+          onResetSearch();
         }
-      );
-    }
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
   };
 
   const fetchAlertHiddenStatus = useCallback(async () => {
@@ -1011,31 +977,30 @@ function WorkNote(args) {
   }, [fetchAlertHiddenStatus]);
 
   const handleHideAlert = async (e) => {
-    if(user) {
-      Notiflix.Confirm.show(                                                                              // Confirm 창 Show
-        '방문요청 알람 내용 숨김 설정',                                                                          // Confirm 창 Title
-        alertHidden ? '방문요청 알람 내용 숨김을 해제하도록 설정하시겠습니까?' : '방문요청 알람 내용 숨김으로 설정하시겠습니까?',   // Confirm 창 내용
-        '예',                                                                                             // Confirm 창 버튼
-        '아니요',                                                                                          // Confirm 창 버튼
-        async () => {                                                                                    // Confirm 창에서 '예' 선택한 경우
-          e.preventDefault();                                                                            // 기본 Event 방지
+    e.preventDefault();
 
-          const response = await axios.post("http://localhost:8000/user/updateAlertHiddenStatus", {
-            userId: user.userId,
-            schoolCode: user.schoolCode,
-            alertHidden: !alertHidden
-          });
-      
-          if(response.data === "success") {
-            setAlertHidden(!alertHidden);
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+    const confirmTitle = "방문요청 알람 내용 숨김 설정";
+    const confirmMessage = alertHidden ? "방문요청 알람 내용 숨김을 해제하도록 설정하시겠습니까?" : "방문요청 알람 내용 숨김으로 설정하시겠습니까?";
+
+    const yesCallback = async () => {
+      if(user) {
+        const response = await axios.post("http://localhost:8000/user/updateAlertHiddenStatus", {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          alertHidden: !alertHidden
+        });
+    
+        if(response.data === "success") {
+          setAlertHidden(!alertHidden);
         }
-      );
-    }
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
   };
 
   const handleClearWorkNote = (e) => {
@@ -1085,44 +1050,41 @@ function WorkNote(args) {
     const notes = document.getElementById('notes').value;
 
     if(selectedStudent) {
-      Notiflix.Confirm.show(                                                                              // Confirm 창 Show
-        '보건일지 등록',                                                                          // Confirm 창 Title
-        '작성하신 보건일지를 등록하시겠습니까?',   // Confirm 창 내용
-        '예',                                                                                             // Confirm 창 버튼
-        '아니요',                                                                                          // Confirm 창 버튼
-        async () => {                                                                                    // Confirm 창에서 '예' 선택한 경우
-          const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
-            userId: user.userId,
-            schoolCode: user.schoolCode,
-            sGrade: selectedStudent.sGrade,
-            sClass: selectedStudent.sClass,
-            sNumber: selectedStudent.sNumber,
-            sGender: selectedStudent.sGender,
-            sName: selectedStudent.sName,
-            symptom: symptomString,
-            medication: medicationString,
-            actionMatter: actionMatterString,
-            treatmentMatter: treatmentMatterString,
-            onBedStartTime: onBedRestStartTime,
-            onBedEndTime: onBedRestEndTime,
-            note: notes
-          });
+      const confirmTitle = "보건일지 등록";
+      const confirmMessage = "작성하신 보건일지를 등록하시겠습니까?";
+      const infoMessage = "보건일지가 정상적으로 등록되었습니다.";
+      const warnMessage = "선택된 학생이 없습니다.";
 
-          if(response.data === "success") {
-            Notiflix.Notify.info('보건일지가 정상적으로 등록되었습니다.', {
-              position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+      const yesCallback = async () => {
+        const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          sGrade: selectedStudent.sGrade,
+          sClass: selectedStudent.sClass,
+          sNumber: selectedStudent.sNumber,
+          sGender: selectedStudent.sGender,
+          sName: selectedStudent.sName,
+          symptom: symptomString,
+          medication: medicationString,
+          actionMatter: actionMatterString,
+          treatmentMatter: treatmentMatterString,
+          onBedStartTime: onBedRestStartTime,
+          onBedEndTime: onBedRestEndTime,
+          note: notes
+        });
+
+        if(response.data === "success") {
+          NotiflixInfo(infoMessage);
         }
-      );
+      };
+
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
     }else{
-      Notiflix.Notify.warning('선택된 학생이 없습니다.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
+      NotiflixWarn(warnMessage);
     }
   };
 

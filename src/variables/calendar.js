@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Button, Row, Col, Form } from "reactstrap";
 import FullCalendar from "@fullcalendar/react";
-import "../assets/css/mycalendar.css";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { TwitterPicker } from "react-color";
 import EmojiPicker from "emoji-picker-react";
 import { MdOutlineEmojiEmotions } from "react-icons/md";
-import Notiflix from "notiflix";
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import axios from "axios";
 import { useUser } from "contexts/UserContext";
+import "../assets/css/mycalendar.css";
 
 const MyCalendar = () => {
-    const { user } = useUser();   
+    const { user } = useUser(); 
     const [showRegistScheduleModal, setRegistScheduleModal] = useState(false);
     const [showUpdateScheduleModal, setUpdateScheduleModal] = useState(false);
     const [eventTitle, setEventTitle] = useState("");
@@ -174,14 +173,11 @@ const MyCalendar = () => {
     const handleUpdateEvent = (e) => {
         e.preventDefault();
 
-        Notiflix.Confirm.show(                                                                  // Confirm 창 Show
-        '보건일정 수정',                                                                   // Confirm 창 Title
-        '작성하신 일정을 수정하시겠습니까?',   // Confirm 창 내용
-        '예',                                                                                 // Confirm 창 버튼
-        '아니요',                                                                              // Confirm 창 버튼
-        async () => {                                                                        // Confirm 창에서 '예' 선택한 경우
-            e.preventDefault();                                                                // 기본 Event 방지
+        const confirmTitle = "보건일정 수정";
+        const confirmMessage = "작성하신 보건일정으로 수정하시겠습니까?";
+        const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
 
+        const yesCallback = async () => {
             const response = await axios.post("http://localhost:8000/workSchedule/update", {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
@@ -193,18 +189,17 @@ const MyCalendar = () => {
             });
 
             if(response.data === 'success') {
-                Notiflix.Notify.info('보건일정이 정상적으로 수정되었습니다.', {
-                    position: 'center-center', showOnlyTheLastOne: true, plainText: false
-                });
+                NotiflixInfo(infoMessage);
                 setIsUpdatedEvent(true);
                 resetUpdateEventForm();
             }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-            return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-            position: 'center-center', showOnlyTheLastOne: true, plainText: false
-        }
-      );
+        };
+
+        const noCallback = () => {
+            return;
+        };
+
+        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
     };
 
     const showColorPicker = (e) => {
@@ -318,24 +313,23 @@ const MyCalendar = () => {
                 <div className="mt-5">
                     <FullCalendar
                         locale="kr"
-                        // defaultView="dayGridMonth"
                         height={'70vh'} // calendar 영역 크기
                         initialView={'dayGridMonth'}
                         headerToolbar={{
-                            // start: 'prevYear,prev,next,nextYear today',
                             start: 'prev,next today', 
                             center: 'title',
                             end: 'dayGridMonth,timeGridWeek,timeGridDay' 
                         }}
                         titleFormat={{
                             year: 'numeric',
-                            month: 'numeric'
+                            month: 'long'
                         }}
-                        // footerToolbar={{
-                        //     left: "prev",
-                        //     center: "",
-                        //     right: "next"
-                        // }}
+                        buttonText={{
+                            today: "오늘날짜",
+                            month: "월 단위",
+                            week: "주 단위",
+                            day: "일 단위"
+                        }}
                         plugins={[ dayGridPlugin, timeGridPlugin, interactionPlugin ]}
                         events={eventData}
                         eventClick={handleEventClick}
@@ -344,12 +338,6 @@ const MyCalendar = () => {
                         eventDrop={handleEventDrop}
                         eventResize={handleEventResize}
                         defaultAllDay={true}
-                        // events={[   // 임의 값 (calendar에 이벤트 설정할 때 아래와 같은 방식으로 세팅)
-                        //     { title: '이벤트 1', date: '2023-11-04' },
-                        //     { title: '이벤트 2', date: '2023-11-05' }
-                        //     // {title : '공부하기', start:'2023-02-13', end:'2023-02-14', color:'#b1aee5'} -> 이런 형식으로 넣을 수 있음
-                        // ]}
-                        // editable="true" -> false로 설정시 draggable 동작 X
                         // eventBackgroundColor=""
                         // eventBorderColor=""
                         // eventColor="black" -> 이벤트 등록되었을 때 표시되는 배경 색상
