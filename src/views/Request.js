@@ -8,6 +8,7 @@ import Neis from "@my-school.info/neis-api";
 import { BrowserView, MobileView, isBrowser, isMobile } from "react-device-detect";
 import { FaCheck } from "react-icons/fa";
 import "../assets/css/request.css";
+import axios from "axios";
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
@@ -46,7 +47,11 @@ function RequesterLogin({onLogin}) {
         document.getElementsByClassName('navbar-toggler')[0].setAttribute('hidden', true);
         document.getElementsByClassName('navbar-toggler')[1].setAttribute('hidden', true);
         document.getElementsByClassName('navbar-brand')[0].setAttribute('href', '#');
-    }, []);
+        document.getElementsByClassName('navbar-nav')[0].setAttribute('hidden', true);
+
+        const navbarBrand = document.querySelector('.navbar-brand');
+        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 사용 요청';
+    }, [isBrowser, isMobile]);
 
     useEffect(() => {
         const schoolCode = params['*'].split('/')[1];
@@ -69,7 +74,7 @@ function RequesterLogin({onLogin}) {
         } catch (error) {
             console.log("Parameter 유입 학교 코드로 학교명 검색중 ERROR", error);
         }
-    }
+    };
 
 
     useEffect(() => {
@@ -112,7 +117,7 @@ function RequesterLogin({onLogin}) {
         } else {
             setSchoolList([]);                                  // 입력한 검색어 존재하지 않을 경우 빈 배열로 초기화
         }
-    }
+    };
 
     // 검색 항목 중 학교 선택 Function
     const handleSchoolSelect = (selectedSchool) => {
@@ -121,22 +126,36 @@ function RequesterLogin({onLogin}) {
             setSchoolCode(schoolList[0].SD_SCHUL_CODE);
         }
         setSchoolList([]);
-    }
+    };
 
-    const handleLogin = () => {
-        if(password === "1234") {
+    const handleLogin = async () => {
+        const schoolCode = params.thirdPartyUserCode;
+        let commonPassword = "";
+
+        if(schoolName && schoolCode) {
+            const response = await axios.get('http://localhost:8000/request/getCommonPassword', {
+                params: {
+                    schoolCode: schoolCode,
+                    schoolName: schoolName
+                }
+            });
+
+            if(response.data) commonPassword = response.data[0].commonPassword;
+        }
+        
+        if(password === commonPassword) {
             onLogin(schoolName, password);
             saveLoginInfoToSessionStorage(schoolName, password);
         }else{
             alert("비밀번호가 일치하지 않습니다.");
         }
-    }
+    };
 
     return (
         <>
             <div className="content d-flex justify-content-center align-items-center">
                 <BrowserView>
-                    <Card style={{ width: '35%', height: '32vh' }}>
+                    <Card style={{ width: '100%', height: '43vh' }}>
                         <CardBody className="mt-3">
                             <Row className="mt-2 align-items-center">    
                                 <Col md="3" className="text-center">
@@ -234,7 +253,6 @@ function RequesterLogin({onLogin}) {
 }
 
 function Request({onLogOut}) {
-
     return(
         <>
             <div className="content">

@@ -887,6 +887,20 @@ app.post("/workSchedule/reSchedule", async (req, res) => {
     });
 });
 
+app.get('/request/getCommonPassword', async (req, res) => {
+    const schoolCode = req.query.schoolCode;
+    const schoolName = req.query.schoolName;
+
+    const sqlQuery = "SELECT commonPassword FROM teaform_db.users WHERE schoolCode = ? AND schoolName = ?";
+    db.query(sqlQuery, [schoolCode, schoolName], (err, result) => {
+        if(err) {
+            console.log("보건실 사용 요청 > 로그인 시 공통 비밀번호 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
