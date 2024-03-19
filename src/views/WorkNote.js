@@ -14,7 +14,6 @@ import Masking from "components/Tools/Masking";
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
-import Notiflix from "notiflix";
 import axios from "axios";
 import moment from "moment";
 import '../assets/css/worknote.css';
@@ -1049,12 +1048,12 @@ function WorkNote(args) {
     const onBedRestEndTime = document.getElementById('onBedRestEndTime').value;
     const notes = document.getElementById('notes').value;
 
-    if(selectedStudent) {
-      const confirmTitle = "보건일지 등록";
-      const confirmMessage = "작성하신 보건일지를 등록하시겠습니까?";
-      const infoMessage = "보건일지가 정상적으로 등록되었습니다.";
-      const warnMessage = "선택된 학생이 없습니다.";
+    const confirmTitle = "보건일지 등록";
+    const confirmMessage = "작성하신 보건일지를 등록하시겠습니까?";
+    const infoMessage = "보건일지가 정상적으로 등록되었습니다.";
+    const warnMessage = "선택된 학생이 없습니다.";
 
+    if(selectedStudent) {
       const yesCallback = async () => {
         const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
           userId: user.userId,
@@ -1253,8 +1252,9 @@ function WorkNote(args) {
                 </Row>
                 <Row className="pt-1">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '21.7vh' }}>
+                    <div className="ag-theme-alpine" style={{ height: '19.7vh' }}>
                       <AgGridReact
+                        rowHeight={30}
                         ref={searchStudentGridRef}
                         rowData={searchStudentRowData} 
                         columnDefs={searchStudentColumnDefs}
@@ -1272,17 +1272,17 @@ function WorkNote(args) {
                   </Col>
                 </Row>
                 <Row className="pt-1">
-                  <Col md="6" className="">
-                    <Button>학생관리</Button>
+                  <Col md="6">
+                    <Button size="sm">학생관리</Button>
                   </Col>
-                  {/* <Col md="6" className="">
-                    <Button>초기화</Button>
-                    <Button>선택</Button>
-                  </Col> */}
+                  <Col className="d-flex justify-content-end" md="6">
+                    <Button size="sm">보호학생관리</Button>
+                    <Button size="sm">응급학생관리</Button>
+                  </Col>
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '290px', overflowY: 'auto' }}>
+            <Card style={{ height: '250px', overflowY: 'auto' }}>
               <CardHeader className="text-muted" style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-items-center">
                   <Col className="text-left pl-4" md="3">
@@ -1295,7 +1295,7 @@ function WorkNote(args) {
                     />
                   </Col>
                   <Col className="text-center" md="6">
-                    <b>보건실 방문 요청 알람</b>
+                    <b>보건실 방문 요청 내역</b>
                   </Col>
                   <Col className="text-right pr-4" md="3" style={{ marginTop: -3}}>
                     <b style={{ fontSize: '13px', color: '#9A9A9A' }}>전체읽음</b>
@@ -1318,8 +1318,9 @@ function WorkNote(args) {
               <CardBody className="pt-2 pb-1">
                 <Row className="pt-1">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '13.9vh' }}>
+                    <div className="ag-theme-alpine" style={{ height: '13.8vh' }}>
                       <AgGridReact
+                        rowHeight={30}
                         ref={personalStudentGridRef}
                         rowData={personalStudentRowData} 
                         columnDefs={personalStudentColumnDefs}
@@ -1345,8 +1346,9 @@ function WorkNote(args) {
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" clearField={clearTagField} />
-                        <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
+                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
+                            rowHeight={30}
                             ref={symptomGridRef}
                             rowData={filteredSymptom} 
                             columnDefs={symptomColumnDefs}
@@ -1375,8 +1377,9 @@ function WorkNote(args) {
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" clearField={clearTagField} />
-                        <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
+                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
+                            rowHeight={30}
                             ref={medicationGridRef}
                             rowData={filteredMedication} 
                             columnDefs={medicationColumnDefs}
@@ -1405,8 +1408,9 @@ function WorkNote(args) {
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" clearField={clearTagField} />
-                        <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
+                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
+                            rowHeight={30}
                             ref={actionMatterGridRef}
                             rowData={filteredActionMatter} 
                             columnDefs={actionMatterColumnDefs}
@@ -1437,8 +1441,9 @@ function WorkNote(args) {
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" clearField={clearTagField} />
-                        <div className="ag-theme-alpine" style={{ height: '12.5vh' }}>
+                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
+                            rowHeight={30}
                             ref={treatmentMatterGridRef}
                             rowData={filteredTreatmentMatter} 
                             columnDefs={treatmentMatterColumnDefs}
@@ -1465,7 +1470,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="pt-3 pb-3" style={{ marginTop: '-3px' }}>
-                        <Row>
+                        <Row className="mt-1">
                           <h6><Badge color="secondary" className="ml-2" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>시작시간</Badge></h6>
                           <Input
                             id="onBedRestStartTime"
@@ -1484,16 +1489,16 @@ function WorkNote(args) {
                             style={{ width: '130px', height: '30px' }}
                           />
                         </Row>
-                        <Row>
+                        {/* <Row>
                           <Col md="12" style={{ marginTop: 12 }}>
                             <Alert className="d-flex justify-content-center align-items-center text-center text-muted mb-0" style={{ backgroundColor: '#f8f8f8', borderRadius: 10, height: 20 }}>
                               <FaInfoCircle className="mr-2" style={{ marginTop: '-2px', fontSize: 17}}/> 종료시간은 선택 입력 사항입니다
                             </Alert>
                           </Col>
-                        </Row>
+                        </Row> */}
                       </CardBody>
                     </Card>
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-11px' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-9px' }}>
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -1516,12 +1521,16 @@ function WorkNote(args) {
                   </Col>
                 </Row>
                 <Row className="d-flex justify-content-center">
-                  <Col md="5">
+                  <Col md="4">
                     <Button className="" onClick={toggle}>전체 보건일지</Button>
                   </Col>
-                  <Col md="7" className="d-flex justify-content-left">
+                  <Col md="4" className="d-flex justify-content-center">
                     <Button className="mr-1" onClick={saveWorkNote}>등록</Button>
                     <Button>초기화</Button>
+                  </Col>
+                  <Col className="d-flex justify-content-end" md="4">
+                    <Button className="">당뇨학생관리</Button>
+                    <Button className="">응급학생관리</Button>
                   </Col>
                 </Row>
               </CardBody>
@@ -1571,7 +1580,7 @@ function WorkNote(args) {
               </div>
             </Form>
             <Row>
-              <Col className="justify-content-left no-gutters">
+              <Col className="justify-content-start no-gutters">
                 <Button className="btn-plus" size="sm" onClick={appendSymptomRow}>
                   추가
                 </Button>
@@ -1618,7 +1627,7 @@ function WorkNote(args) {
               </div>
             </Form>
             <Row>
-              <Col className="justify-content-left no-gutters">
+              <Col className="justify-content-start no-gutters">
                 <Button className="btn-plus" size="sm" onClick={appendMedicationRow}>
                   추가
                 </Button>
@@ -1664,7 +1673,7 @@ function WorkNote(args) {
               </div>
             </Form>
             <Row>
-              <Col className="justify-content-left no-gutters">
+              <Col className="justify-content-start no-gutters">
                 <Button className="btn-plus" size="sm" onClick={appendActionMatterRow}>
                   추가
                 </Button>
@@ -1710,7 +1719,7 @@ function WorkNote(args) {
               </div>
             </Form>
             <Row>
-              <Col className="justify-content-left no-gutters">
+              <Col className="justify-content-start no-gutters">
                 <Button className="btn-plus" size="sm" onClick={appendTreatmentMatterRow}>
                   추가
                 </Button>

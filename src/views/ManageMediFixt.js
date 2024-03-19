@@ -524,7 +524,7 @@ function ManageMediFixt() {
                 </ModalBody>
                 <ModalFooter className="p-0">
                     <Row style={{ width: '100%'}}>
-                        <Col className="d-flex justify-content-left">
+                        <Col className="d-flex justify-content-start">
                             <Button onClick={resetMedicineForm}>초기화</Button>
                         </Col>
                         <Col className="d-flex justify-content-end">

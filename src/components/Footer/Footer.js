@@ -11,7 +11,7 @@ function Footer(props) {
             <ul>
               <li>
                 {/* <a href="https://www.creative-tim.com" target="_blank"> */}
-                  TEA : FORM
+                  MEORLA
                 {/* </a> */}
               </li>&nbsp;&nbsp;
               <li>

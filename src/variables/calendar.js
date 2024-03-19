@@ -280,7 +280,6 @@ const MyCalendar = () => {
         const oldEventEnd = oldEvent.endStr;
         const newEventStart = event.startStr;
         const newEventEnd = event.endStr;
-        
         const confirmTitle = "보건일정 수정";
         const confirmMessage = "보건일정을<br/>" + oldEventStart + " ~ " + subtractOneDayFromDate(oldEventEnd) + "에서 " + newEventStart + " ~ " + subtractOneDayFromDate(newEventEnd) + "<br/>으로 수정하시겠습니까?";
         const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
@@ -579,3 +578,5 @@ export default MyCalendar;
 */ 
 
 // 시작일자보다 종료일자가 앞서는 경우 예외 처리 필요
+
+// 이벤트 

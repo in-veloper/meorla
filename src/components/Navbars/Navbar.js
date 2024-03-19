@@ -528,7 +528,7 @@ function Header(props) {
               </div>
             </Form>
             <Row>
-              <Col className="justify-content-left no-gutters">
+              <Col className="justify-content-start no-gutters">
                 <Button className="btn-plus" size="sm" onClick={appendRow}>
                   추가
                 </Button>

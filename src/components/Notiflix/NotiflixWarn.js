@@ -1,7 +1,7 @@
 import Notiflix from "notiflix";
 
 const NotiflixWarn = (warnMessage) => {
-    Notiflix.Notify.warn(warnMessage, {
+    Notiflix.Notify.warning(warnMessage, {
         position: 'center-center', showOnlyTheLastOne: true, plainText: false
     });
 };
