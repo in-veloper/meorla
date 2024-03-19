@@ -144,7 +144,7 @@ function RequesterLogin({onLogin}) {
         }
         
         if(password === commonPassword) {
-            onLogin(schoolName, password);
+            onLogin(true);
             saveLoginInfoToSessionStorage(schoolName, password);
         }else{
             alert("비밀번호가 일치하지 않습니다.");
@@ -286,6 +286,7 @@ function Request({onLogOut}) {
 function ExternalView() {
     // const loginInfo = getLoginInfoFromSessionStorage();
     const [authenticated, setAuthenticated] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // 새로고침 시 로그인 상태 확인
@@ -293,10 +294,12 @@ function ExternalView() {
         if (storedAuthenticated === "true") {
           setAuthenticated(true);
         }
+
+        setLoading(false);
     }, []);
 
-    const authenticatedUser  = (schoolName, password) => {
-        if(password === "1234") {
+    const authenticatedUser  = (isAuthenticated) => {
+        if(isAuthenticated) {
             setAuthenticated(true);
             sessionStorage.setItem("authenticated", "true");  
         }else{
@@ -308,7 +311,9 @@ function ExternalView() {
         setAuthenticated(false);
         removeLoginInfoFromSessionStorage();
         sessionStorage.setItem("authenticated", "false");
-    }
+    };
+
+    if(loading) return null;
 
     return (
         <>
