@@ -20,7 +20,7 @@ import '../assets/css/worknote.css';
 
 function WorkNote(args) {
   const { user } = useUser();                              // 사용자 정보
-  const [isOpen, setIsOpen] = useState(false);
+  const [isEntireWorkNoteOpen, setIsEntireWorkNoteOpen] = useState(false);
   const [searchStudentRowData, setSearchStudentRowData] = useState([]); // 검색 결과를 저장할 state
   const [symptomRowData, setSymptomRowData] = useState([]);
   const [medicationRowData, setMedicationRowData] = useState([]);
@@ -35,7 +35,6 @@ function WorkNote(args) {
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [setModifiedData] = useState([]);
-  const [currentTimeValue, setCurrentTimeValue] = useState('');
   const [searchSymptomText, setSearchSymptomText] = useState("");
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
   const [tagifySymptomSuggestion, setTagifySymptomSuggestion] = useState([]);
@@ -50,7 +49,7 @@ function WorkNote(args) {
   const [filteredTreatmentMatter, setFilteredTreatmentMatter] = useState(treatmentMatterRowData);
   const [masked, setMasked] = useState(false);
   const [alertHidden, setAlertHidden] = useState(false);
-  const [clearTagField, setClearTagField] = useState("");
+  const [onBedRestStartTime, setOnBedRestStartTime] = useState("");
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -64,7 +63,6 @@ function WorkNote(args) {
   const onGridReady = useCallback((params) => {
   }, []);
 
-  const toggle = () => setIsOpen(!isOpen);
   const toggleSymptomModal = () => setSymptomModal(!symptomModal);
   const toggleMedicationModal = () => setMedicationModal(!medicationModal);
   const toggleActionMatterModal = () => setActionMatterModal(!actionMatterModal);
@@ -80,6 +78,18 @@ function WorkNote(args) {
   const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
 
   const [personalStudentColumnDefs] = useState([
+    { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "actionMatter", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "note", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
+  ]);
+
+  const [entireWorkNoteRowData, setEntireWorkNoteRowData] = useState([]);
+
+  const [entireWorkNoteColumnDefs] = useState([
     { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
@@ -412,6 +422,7 @@ function WorkNote(args) {
     setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
     api.setRowData([]);
     setSelectedStudent('');
+    setPersonalStudentRowData([]);
   };
 
   const onSearchStudent = async (criteria) => {
@@ -817,7 +828,8 @@ function WorkNote(args) {
 
   const setCurrentTime = () => {
     const currentTime = moment().format('HH:mm');
-    setCurrentTimeValue(currentTime);
+    // setCurrentTimeValue(currentTime);
+    setOnBedRestStartTime(currentTime);
   };
 
   const fetchStockMedicineData = useCallback(async () => {
@@ -1003,23 +1015,22 @@ function WorkNote(args) {
 
   const handleClearWorkNote = (e) => {
     e.preventDefault();
+    e.stopPropagation();
+
     const targetId = e.currentTarget.id;
     setPersonalStudentRowData([]);
-
+    
     if(targetId.includes('TagField')) {
       const param = {clearTargetField: targetId};
       setSearchSymptomText(param);
       setSearchMedicationText(param);
       setSearchActionMatterText(param);
       setSearchTreatmentMatterText(param);
-
-      // setClearTagField(targetId);
-    }else if(targetId === 'onBedRest') {
-      const onBedStartTime = document.getElementById('onBedRestStartTime');
+    }else if(targetId === "onBedRest") {
+      setOnBedRestStartTime("");
       const onBedEndTime = document.getElementById('onBedRestEndTime');
-      onBedStartTime.value = "";
       onBedEndTime.value = "";
-    }else if(targetId === 'note') {
+    }else if(targetId === "note") {
       const notes = document.getElementById('notes');
       notes.value = "";
     }
@@ -1030,13 +1041,12 @@ function WorkNote(args) {
     setSearchMedicationText({clearTargetField: "all"});
     setSearchActionMatterText({clearTargetField: "all"});
     setSearchTreatmentMatterText({clearTargetField: "all"});
-    // setClearTagField('all');
     setPersonalStudentRowData([]);
-    const onBedStartTime = document.getElementById('onBedRestStartTime');
+
+    setOnBedRestStartTime("");
     const onBedEndTime = document.getElementById('onBedRestEndTime');
-    const notes = document.getElementById('notes');
-    onBedStartTime.value = "";
     onBedEndTime.value = "";
+    const notes = document.getElementById('notes');
     notes.value = "";
   };
 
@@ -1134,6 +1144,7 @@ function WorkNote(args) {
       });
       
       if(response.data) {
+        debugger
         const resultData = response.data.map(item => ({
           ...item,
           createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
@@ -1141,7 +1152,7 @@ function WorkNote(args) {
           medication: item.medication.replace(/::/g, ', '),
           actionMatter: item.actionMatter.replace(/::/g, ', '),
           treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
-          onBedTime: item.onBedStartTime + " ~ " + item.onBedEndTime
+          onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
         }));
 
         setPersonalStudentRowData(resultData);
@@ -1152,6 +1163,33 @@ function WorkNote(args) {
   useEffect(() => {
     fetchSelectedStudentData();
   }, [fetchSelectedStudentData]);
+
+  const toggleEntireWorkNoteGrid = async () => {
+    if(user) {
+      const response = await axios.get('http://localhost:8000/workNote/getEntireWorkNote',{
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const resultData = response.data.map(item => ({
+          ...item,
+          createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+          symptom: item.symptom.replace(/::/g, ', '),
+          medication: item.medication.replace(/::/g, ', '),
+          actionMatter: item.actionMatter.replace(/::/g, ', '),
+          treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
+          onBedTime: item.onBedStartTime + " ~ " + item.onBedEndTime
+        }));
+
+        setEntireWorkNoteRowData(resultData);
+      }
+    }
+
+    setIsEntireWorkNoteOpen(!isEntireWorkNoteOpen);
+  };
 
   return (
     <>
@@ -1213,7 +1251,7 @@ function WorkNote(args) {
         </Row>
         <Row>
           <Col className="pr-2" md="4">
-            <Card style={{ minHeight: '420px'}}>
+            <Card style={{ minHeight: '420px', border: '1px solid lightgrey' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
@@ -1348,7 +1386,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '250px', overflowY: 'auto' }}>
+            <Card style={{ height: '252px', overflowY: 'auto', border: '1px solid lightgrey' }}>
               <CardHeader className="text-muted" style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-items-center">
                   <Col className="text-left pl-4" md="3">
@@ -1374,7 +1412,7 @@ function WorkNote(args) {
             </Card>
           </Col>
           <Col className="pl-2" md="8">
-            <Card>
+            <Card style={{ border: '1px solid lightgrey' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
                 <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>
@@ -1411,7 +1449,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" clearField={clearTagField} />
+                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField"/>
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -1442,7 +1480,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" clearField={clearTagField} />
+                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -1473,7 +1511,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" clearField={clearTagField} />
+                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -1506,7 +1544,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" clearField={clearTagField} />
+                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -1543,8 +1581,8 @@ function WorkNote(args) {
                             className="ml-2"
                             type="time"
                             style={{ width: '130px', height: '30px' }}
-                            onChange={(e) => setCurrentTimeValue(e.target.value)}
-                            value={currentTimeValue}
+                            onChange={(e) => setOnBedRestStartTime(e.target.value)}
+                            value={onBedRestStartTime}
                           />
                           <Button size="sm" className="ml-1 m-0" style={{ height: '30px' }} onClick={setCurrentTime}>현재시간</Button>
                           <h6><Badge color="secondary" className="ml-4" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>종료시간</Badge></h6>
@@ -1588,7 +1626,7 @@ function WorkNote(args) {
                 </Row>
                 <Row className="d-flex justify-content-center">
                   <Col md="4">
-                    <Button className="" onClick={toggle}>전체 보건일지</Button>
+                    <Button className="" onClick={toggleEntireWorkNoteGrid}>전체 보건일지</Button>
                   </Col>
                   <Col md="4" className="d-flex justify-content-center">
                     <Button className="mr-1" onClick={saveWorkNote}>등록</Button>
@@ -1603,12 +1641,12 @@ function WorkNote(args) {
         </Row>
         <Row>
         </Row>
-        <Collapse isOpen={isOpen} {...args}>
+        <Collapse isOpen={isEntireWorkNoteOpen} {...args}>
           <div className="ag-theme-alpine" style={{ height: '50vh' }}>
             <AgGridReact
               ref={registeredAllGridRef}
-              // rowData={rowData} 
-              // columnDefs={columnDefs} 
+              rowData={entireWorkNoteRowData}
+              columnDefs={entireWorkNoteColumnDefs} 
               overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
             />
           </div>

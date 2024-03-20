@@ -920,6 +920,21 @@ app.get('/workNote/getSelectedStudentData', async (req, res) => {
     });
 });
 
+// 추후 기간 등 조건 추가하여 조회 필요
+app.get('/workNote/getEntireWorkNote', async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("전체 등록된 보건일지 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

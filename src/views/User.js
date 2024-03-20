@@ -33,6 +33,7 @@ function User() {
   const [requestQRcodeModal, setRequestQRcodeModal] = useState(false);
   const [QRCodeImage, setQRCodeImage] = useState('');
   const [requestURLModal, setRequestURLModal] = useState(false);
+  const [requestURLValue, setRequestURLValue] = useState("");
   // const [isUserInfoUpdated, setIsUserInfoUpdated] = useState(false);
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
@@ -57,7 +58,11 @@ function User() {
     setRequestQRcodeModal(!requestQRcodeModal);
     if(!requestQRcodeModal) generateQRCode();
   };
-  const toggleRequestURLModal = () => setRequestURLModal(!requestURLModal);
+  const toggleRequestURLModal = () => {
+    setRequestURLModal(!requestURLModal);
+    const requestURL = "http://localhost:8000/request/" + user.schoolCode;
+    setRequestURLValue(requestURL);
+  };
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -504,7 +509,7 @@ function User() {
   };
 
   const generateQRCode = () => {
-    const url = 'http://www.naver.com';
+    const url = 'http://localhost:8000/request/' + user.schoolCode;
     const typeNumber = 10;
     const errorCorrectionLevel = 'L';
 
@@ -970,7 +975,8 @@ function User() {
             <InputGroup>
               <Input
                 id="requestURL"
-                defaultValue="http://www.naver.com"
+                defaultValue={requestURLValue}
+                onChange={(e) => setRequestURLValue(e.target.value)}
               />
               <InputGroupText onClick={clipboardRequestURL}>
                 클립보드 복사
@@ -1022,4 +1028,8 @@ export default User;
  * 비밀번호 재설정 -> 비밀번호 재설정 모달 -> 비밀번호 변경할건지 초기화할건지 선택 -> 비밀번호 변경 시 변경 로직 수행 -> 초기화 시 공통 패턴 만들어 초기화 수행
  * 
  * 전학 학생 등 학생 추가 필요 시 학년별 명렬표 버튼 클릭 하면 추가 버튼 등 만들어주고 끝 번호로 학생 등록 로직 추가 
+ * 
+ * 학년 올라간 후 명렬표 재 등록 시 기존 명렬표와 대조하여 매칭 시키는 기능 필요 - 학년이 올라가도 기존 정보 연동 필요 (명렬표 재등록 시 리셋되는 문제 해결)
+ * 
+ * 가입할 때 개인 ID로 가입하게 되면 다른 교사가 올 시 문제 발생 + 개인이 만들어놨던 ID로 사용해야하는 문제? - 학교코드로 ID를 통일시키는 방향 고려
  */

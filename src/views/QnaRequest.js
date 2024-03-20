@@ -88,7 +88,7 @@ function QnaRequest() {
                 </Row>
                 <Row>
                     <Col md="12">
-                        <div className="ag-theme-alpine" style={{ height: '75vh'}}>
+                        <div className="ag-theme-alpine" style={{ height: '69vh'}}>
                             <AgGridReact 
                                 ref={gridRef}
                                 rowData={rowData}

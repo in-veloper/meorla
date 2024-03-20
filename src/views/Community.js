@@ -150,7 +150,7 @@ function Community() {
                 </Row>
                 <Row>
                     <Col md="12">
-                        <div className="ag-theme-alpine" style={{ height: '78vh' }}>
+                        <div className="ag-theme-alpine" style={{ height: '72vh' }}>
                             <AgGridReact
                                 ref={gridRef}
                                 rowData={rowData} 

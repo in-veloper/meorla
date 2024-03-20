@@ -27,19 +27,20 @@ function Dashboard() {
   return (
     <>
       <div className="content">
-      <UncontrolledAlert color="info" fade={false}>
-        <span>
-          <b>알림 &nbsp; </b>
-          This is a regular notification made with
-          color="info"
-        </span>
-      </UncontrolledAlert>
-      <Row>
+        <UncontrolledAlert color="info" fade={false}>
+          <span>
+            <b>알림 &nbsp; </b>
+            This is a regular notification made with
+            color="info"
+          </span>
+        </UncontrolledAlert>
+        <Row>
           <Col md="12">
-            <CardTitle><b><h5>공지사항</h5></b></CardTitle>
+            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>공지사항</b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
+                  rowHeight={35}
                   ref={gridRef}
                   rowData={rowData}
                   columnDefs={columnDefs}
@@ -50,10 +51,11 @@ function Dashboard() {
         </Row>
         <Row>
           <Col md="6">
-          <CardTitle><b><h5>침상안정 신청내역</h5></b></CardTitle>
+          <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>침상안정 신청내역</b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
+                  rowHeight={35}
                   ref={gridRef}
                   rowData={rowData}
                   columnDefs={columnDefs}
@@ -62,10 +64,11 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md="6">
-            <CardTitle><b><h5>커뮤니티 알림</h5></b></CardTitle>
+            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>커뮤니티 알림</b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
+                  rowHeight={35}
                   ref={gridRef}
                   rowData={rowData}
                   columnDefs={columnDefs}
@@ -76,10 +79,11 @@ function Dashboard() {
         </Row>
         <Row>
           <Col md="12">
-            <CardTitle><b><h5>보건일정</h5></b></CardTitle>
+            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>보건일정</b></CardTitle>
             <Card>
-              <div className="ag-theme-alpine" style={{ height: '23vh' }}>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
+                  rowHeight={35}
                   ref={gridRef}
                   rowData={rowData}
                   columnDefs={columnDefs}
