@@ -51,7 +51,7 @@ function RequesterLogin({onLogin}) {
 
         const navbarBrand = document.querySelector('.navbar-brand');
         if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 사용 요청';
-    }, [isBrowser, isMobile]);
+    }, []);
 
     useEffect(() => {
         const schoolCode = params['*'].split('/')[1];

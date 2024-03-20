@@ -77,20 +77,16 @@ function WorkNote(args) {
     { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
 
-  const [personalStudentRowData] = useState([
-    { registDate: "2023-07-20", symptom: "감기", treatmentMatter: "", dosageMatter: "판콜 1정", actionMatter: "조퇴 권고", onBed: "" },
-    { registDate: "2023-05-20", symptom: "타박상", treatmentMatter: "연고 도포", dosageMatter: "파스", actionMatter: "", onBed: "" },
-    { registDate: "2023-07-20", symptom: "복통", treatmentMatter: "", dosageMatter: "베나치오 1병", actionMatter: "조퇴 권고", onBed: "15:00 - 16:00" }
-  ]);
+  const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
 
   const [personalStudentColumnDefs] = useState([
-    { field: "registDate", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "dosageMatter", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "actionMatter", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "onBed", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "etc", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
+    { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "note", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
 
   // 기본 컬럼 속성 정의 (공통 부분)
@@ -445,6 +441,8 @@ function WorkNote(args) {
   const onGridSelectionChanged = (event) => {
     const selectedRow = event.api.getSelectedRows()[0];
     setSelectedStudent(selectedRow);
+
+    fetchSelectedStudentData();
   }
 
   const onCellValueChanged = (event) => {
@@ -709,10 +707,6 @@ function WorkNote(args) {
     }
   }, [user?.userId, user?.schoolCode]);
 
-  useEffect(() => {
-    fetchSymptomData();
-  }, [fetchSymptomData]);
-
   const fetchActionMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
@@ -789,7 +783,8 @@ function WorkNote(args) {
   const handleSymptomRowSelect = (selectedRow) => {
     if (selectedRow && selectedRow.length > 0) {
       const selectedSymptom = selectedRow[0].symptom;
-      setSearchSymptomText(selectedSymptom);
+      const param = {type: "add", text: selectedSymptom, clearField: 'N'};
+      setSearchSymptomText(param);
     }
   };
 
@@ -797,7 +792,8 @@ function WorkNote(args) {
   const handleMedicationRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
       const selectedMedication = selectedRow[0].medication;   // 선택한 투약사항 Text 값
-      setSearchMedicationText(selectedMedication);            // input에 선택한 투약사항 값 할당하기 위해 전역변수에 값 할당
+      const param = {type: "add", text: selectedMedication, clearField: 'N'};
+      setSearchMedicationText(param);            // input에 선택한 투약사항 값 할당하기 위해 전역변수에 값 할당
     }
   };
 
@@ -805,7 +801,8 @@ function WorkNote(args) {
   const handleActionMatterRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
       const selectedActionMatter = selectedRow[0].actionMatter;   // 선택한 조치사항 Text 값
-      setSearchActionMatterText(selectedActionMatter);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
+      const param = {type: "add", text: selectedActionMatter, clearField: 'N'};
+      setSearchActionMatterText(param);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
     }
   };
 
@@ -813,7 +810,8 @@ function WorkNote(args) {
   const handleTreatmentMatterRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
       const selectedTreatmentMatter = selectedRow[0].treatmentMatter;   // 선택한 조치사항 Text 값
-      setSearchTreatmentMatterText(selectedTreatmentMatter);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
+      const param = {type: "add", text: selectedTreatmentMatter, clearField: 'N'};
+      setSearchTreatmentMatterText(param);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
     }
   };
 
@@ -944,6 +942,7 @@ function WorkNote(args) {
         if(response.data === "success") {
           setMasked(!masked);
           onResetSearch();
+          setPersonalStudentRowData([]);
         }
       }
     };
@@ -1005,9 +1004,40 @@ function WorkNote(args) {
   const handleClearWorkNote = (e) => {
     e.preventDefault();
     const targetId = e.currentTarget.id;
+    setPersonalStudentRowData([]);
+
     if(targetId.includes('TagField')) {
-      setClearTagField(targetId);
+      const param = {clearTargetField: targetId};
+      setSearchSymptomText(param);
+      setSearchMedicationText(param);
+      setSearchActionMatterText(param);
+      setSearchTreatmentMatterText(param);
+
+      // setClearTagField(targetId);
+    }else if(targetId === 'onBedRest') {
+      const onBedStartTime = document.getElementById('onBedRestStartTime');
+      const onBedEndTime = document.getElementById('onBedRestEndTime');
+      onBedStartTime.value = "";
+      onBedEndTime.value = "";
+    }else if(targetId === 'note') {
+      const notes = document.getElementById('notes');
+      notes.value = "";
     }
+  };
+
+  const handleClearAllWorkNote = () => {
+    setSearchSymptomText({clearTargetField: "all"});
+    setSearchMedicationText({clearTargetField: "all"});
+    setSearchActionMatterText({clearTargetField: "all"});
+    setSearchTreatmentMatterText({clearTargetField: "all"});
+    // setClearTagField('all');
+    setPersonalStudentRowData([]);
+    const onBedStartTime = document.getElementById('onBedRestStartTime');
+    const onBedEndTime = document.getElementById('onBedRestEndTime');
+    const notes = document.getElementById('notes');
+    onBedStartTime.value = "";
+    onBedEndTime.value = "";
+    notes.value = "";
   };
 
   const saveWorkNote = (e) => {
@@ -1074,6 +1104,8 @@ function WorkNote(args) {
 
         if(response.data === "success") {
           NotiflixInfo(infoMessage);
+          onResetSearch();
+          handleClearAllWorkNote();
         }
       };
 
@@ -1086,6 +1118,40 @@ function WorkNote(args) {
       NotiflixWarn(warnMessage);
     }
   };
+
+  const fetchSelectedStudentData = useCallback(async () => {
+    if(user && selectedStudent) {
+      const response = await axios.get("http://localhost:8000/workNote/getSelectedStudentData", {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          sGrade: selectedStudent.sGrade,
+          sClass: selectedStudent.sClass,
+          sNumber: selectedStudent.sNumber,
+          sGender: selectedStudent.sGender,
+          sName: selectedStudent.sName
+        }
+      });
+      
+      if(response.data) {
+        const resultData = response.data.map(item => ({
+          ...item,
+          createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+          symptom: item.symptom.replace(/::/g, ', '),
+          medication: item.medication.replace(/::/g, ', '),
+          actionMatter: item.actionMatter.replace(/::/g, ', '),
+          treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
+          onBedTime: item.onBedStartTime + " ~ " + item.onBedEndTime
+        }));
+
+        setPersonalStudentRowData(resultData);
+      }
+    }
+  }, [user, selectedStudent]);
+
+  useEffect(() => {
+    fetchSelectedStudentData();
+  }, [fetchSelectedStudentData]);
 
   return (
     <>
@@ -1526,11 +1592,9 @@ function WorkNote(args) {
                   </Col>
                   <Col md="4" className="d-flex justify-content-center">
                     <Button className="mr-1" onClick={saveWorkNote}>등록</Button>
-                    <Button>초기화</Button>
+                    <Button onClick={handleClearAllWorkNote}>초기화</Button>
                   </Col>
                   <Col className="d-flex justify-content-end" md="4">
-                    <Button className="">당뇨학생관리</Button>
-                    <Button className="">응급학생관리</Button>
                   </Col>
                 </Row>
               </CardBody>

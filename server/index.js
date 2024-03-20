@@ -901,6 +901,25 @@ app.get('/request/getCommonPassword', async (req, res) => {
     });
 });
 
+app.get('/workNote/getSelectedStudentData', async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+    const sGrade = req.query.sGrade;
+    const sClass = req.query.sClass;
+    const sNumber = req.query.sNumber;
+    const sGender = req.query.sGender;
+    const sName = req.query.sName;
+
+    const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+        if(err) {
+            console.log("보건일지 선택한 학생별 일지 등록 내역 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

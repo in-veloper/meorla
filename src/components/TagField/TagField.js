@@ -44,41 +44,59 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
     const handleChange = (e, category) => {
         const type = e.type;
         let selectedRowValue = e.detail.tagify.value[0].value;
-    
-        if(type === "add" && selectedRowValue) {
-            if(category === "symptomTagField") symptomTagifyRef.current.addTags(selectedRowValue);
-            if(category === "medicationTagField") medicationTagifyRef.current.addTags(selectedRowValue);
-            if(category === "actionMatterTagField") actionMatterTagifyRef.current.addTags(selectedRowValue);
-            if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.addTags(selectedRowValue);
+        // if(type === "add" && selectedRowValue) {
+        if(selectedRowValue.type === "add" && selectedRowValue.text) {
+            if(category === "symptomTagField") symptomTagifyRef.current.addTags(selectedRowValue.text);
+            if(category === "medicationTagField") medicationTagifyRef.current.addTags(selectedRowValue.text);
+            if(category === "actionMatterTagField") actionMatterTagifyRef.current.addTags(selectedRowValue.text);
+            if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.addTags(selectedRowValue.text);
 
+            // gridRef.current.api.deselectAll();
+            // gridRef.current.api.clearFocusedCell();
+        }
+        // else{
+        //     if(whitelist.length === 0) {
+        //         const newWhitelist = e.detail.tagify.value.map(item => item.value);
+        //         setWhitelist(newWhitelist);
+        //     }
+        // }
+
+        if(whitelist.length === 0) {
+            const newWhitelist = e.detail.tagify.value.map(item => item.value);
+            setWhitelist(newWhitelist);
+        }
+
+        if(gridRef.current) {
             gridRef.current.api.deselectAll();
             gridRef.current.api.clearFocusedCell();
+        }
+    };
+
+    useEffect(() => {
+        if(selectedRowValue) {
+            clearTagsHandler();
+        }
+    }, [selectedRowValue]);
+
+    const clearTagsHandler = () => {
+        if(selectedRowValue.clearTargetField === 'all') {
+            if(category === "symptomTagField") symptomTagifyRef.current.removeAllTags();
+            if(category === "medicationTagField") medicationTagifyRef.current.removeAllTags();
+            if(category === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
+            if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
         }else{
-            if(whitelist.length === 0) {
-                const newWhitelist = e.detail.tagify.value.map(item => item.value);
-                setWhitelist(newWhitelist);
+            if(selectedRowValue.clearTargetField === category) {
+                if(clearField === "symptomTagField") symptomTagifyRef.current.removeAllTags();
+                if(clearField === "medicationTagField") medicationTagifyRef.current.removeAllTags();
+                if(clearField === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
+                if(clearField === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
             }
         }
     };
 
     useEffect(() => {
-        if(clearField) {
-            clearTagsHandler();
-        }
-    }, [clearField]);
-
-    const clearTagsHandler = () => {
-        if(clearField === category) {
-            if(clearField === "symptomTagField") symptomTagifyRef.current.removeAllTags();
-            if(clearField === "medicationTagField") medicationTagifyRef.current.removeAllTags();
-            if(clearField === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
-            if(clearField === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
-        }
-    }
-
-    useEffect(() => {
-        if(selectedRowValue) {
-            handleChange({ detail: { tagify: { value: [{ value: selectedRowValue }] } }, type: "add" }, category)
+        if(selectedRowValue && selectedRowValue.clearField === "N") {
+            handleChange({ detail: { tagify: { value: [{ value: selectedRowValue }] } }, type: "add" }, category);
         }
     }, [selectedRowValue]);
 
