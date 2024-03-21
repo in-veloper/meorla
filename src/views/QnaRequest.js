@@ -46,7 +46,7 @@ function QnaRequest() {
 
     return (
         <>
-            <div className="content">
+            <div className="content" style={{ height: '84.8vh' }}>
                 <Row className="pb-2">
                     <Col>
                         <blockquote>

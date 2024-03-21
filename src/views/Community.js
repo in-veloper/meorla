@@ -101,7 +101,7 @@ function Community() {
 
     return (
         <>
-            <div className="content">
+            <div className="content" style={{ height: '84.8vh' }}>
                 <Row className="align-items-center pb-2">
                     <Col md="7" className="align-items-left no-gutters">
                         <Nav className="community-nav" pills>

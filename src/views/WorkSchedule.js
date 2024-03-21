@@ -5,7 +5,7 @@ import MyCalendar from "../variables/calendar";
 function WorkSchedule() {
   return (
     <>
-      <div className="content">
+      <div className="content" style={{ height: '84.8vh' }}>
         {/* <UncontrolledAlert color="info" fade={false}>
           <span>
             <b>알림 &nbsp; </b>

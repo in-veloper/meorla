@@ -543,7 +543,7 @@ function User() {
 
   return (
     <>
-      <div className="content">
+      <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Col md="4">
             <Card className="card-user" style={{ height: '552px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}

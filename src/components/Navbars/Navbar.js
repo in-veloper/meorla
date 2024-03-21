@@ -365,12 +365,12 @@ function Header(props) {
     }
 
     window.open(address);                                                             // 해당 북마크 주소로 새창 Open
-  }
+  };
 
   const onLogout = () => {
     const userId = user ? user.userId : null;
     if(userId) logout(userId);
-  }
+  };
   
   return (
     <Navbar
@@ -490,7 +490,7 @@ function Header(props) {
               </DropdownToggle>
               <DropdownMenu right>
                 <DropdownItem tag="a">사용자 메뉴얼</DropdownItem>
-                <DropdownItem tag="a">사용자 정보</DropdownItem>
+                <DropdownItem tag="a" onClick={() => navigate('/meorla/user-page')}>사용자 정보</DropdownItem>
                 <DropdownItem tag="a">비밀번호 초기화</DropdownItem>
                 <DropdownItem tag="a" onClick={onLogout}>로그아웃</DropdownItem>
               </DropdownMenu>

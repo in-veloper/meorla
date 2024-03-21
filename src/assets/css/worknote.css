@@ -3,20 +3,25 @@
 }
 
 .bed-card-stats {
-    height: 60px;
+    height: 75px;
+}
+
+.bed-card-stats p {
+    margin-top: 9px;
 }
 
 .bed-icons-not-use {
     font-size: 40px;
     color: grey;
     margin-left: 10px;
-    margin-top: -3px;
+    margin-top: 3px;
 }
 
 .bed-icons-use {
     font-size: 40px;
     color: lightblue;
     margin-left: 10px;
+    margin-top: 3px;
 }
 
 .work-note-item {
@@ -74,13 +79,20 @@
     border-color: #E5C1BD;
 }
 
-/* .tagify__input {
-    margin: 0;
-    line-height: 30px;
-    white-space: nowrap;
+.exit-use-bed {
+    position: absolute; /* 절대 위치로 설정 */
+    top: 38%; /* 카드의 중앙에 배치하기 위해 top을 50%로 설정 */
+    left: 50%; /* 카드의 중앙에 배치하기 위해 left를 50%로 설정 */
+    transform: translate(-50%, -50%); /* 카드의 중앙에 정확하게 배치하기 위해 이동 */
+    z-index: 999; /* 다른 요소 위에 표시하기 위해 z-index 값을 조절 */
+    /* background-color: #f1926e; */
 }
 
-.tagify__tag {
-    font-size: 16px;
-    max-width: unset;
-} */
+.card-blur:not(:last-child) {
+    filter: blur(2px);
+}
+
+.exit-use-bed:hover {
+    /* background-color: #f07446 !important; */
+}
+

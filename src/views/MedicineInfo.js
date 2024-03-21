@@ -141,7 +141,7 @@ function MedicalInfo() {
 
   return (
     <>
-      <div className="content">
+      <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Input
             className="ml-3 mr-2"
@@ -171,7 +171,7 @@ function MedicalInfo() {
         <br/>
         <Row>
          <Col md="12">
-            <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '79.3vh', maxHeight: '79.3vh' }}>
+            <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '77.9vh', maxHeight: '77.9vh' }}>
               <AgGridReact
                 ref={gridRef}
                 rowData={searchResult}

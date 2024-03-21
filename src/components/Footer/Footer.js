@@ -9,7 +9,7 @@ function Footer(props) {
         <Row>
           <nav className="footer-nav">
             <ul>
-              <li style={{ fontWeight: 'bold'}} >
+              <li className="text-muted" style={{ fontWeight: 'bold'}} >
                 {/* <a href="https://www.creative-tim.com" target="_blank"> */}
                   MEORLA
                 {/* </a> */}

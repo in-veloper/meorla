@@ -81,7 +81,7 @@ function Examination() {
 
     return(
         <>
-            <div className="content">
+            <div className="content" style={{ height: '84.8vh' }}>
                 <Card style={{ width: '100%', height: '7vh' }}>
                     <CardBody className="mt-1 d-flex align-items-center">
                         <Row className="align-items-center w-100">

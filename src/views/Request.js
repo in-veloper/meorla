@@ -32,6 +32,7 @@ const removeLoginInfoFromSessionStorage = () => {
 
 
 function RequesterLogin({onLogin}) {
+    console.log(isBrowser)
     const [schoolName, setSchoolName] = useState("");           // 입력한 학교명
     const [schoolCode, setSchoolCode] = useState("");           // 입력한 학교명과 일치하는 학교 코드
     const [schoolList, setSchoolList] = useState([]);           // 검색 결과 학교 리스트
@@ -151,11 +152,30 @@ function RequesterLogin({onLogin}) {
         }
     };
 
+    const [contentHeight, setContentHeight] = useState("auto");
+
+    useEffect(() => {
+        function handleResize() {
+            if(window.innerWidth <= 768) {
+                const height = window.innerHeight - 163;
+                setContentHeight(height);
+                
+                document.getElementsByClassName('footer')[0].style.paddingTop = 0;
+            }else{
+                setContentHeight("auto");
+            }
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
     return (
         <>
-            <div className="content d-flex justify-content-center align-items-center">
+            <div className="content d-flex justify-content-center align-items-center" style={{ height: isBrowser ? '83.3vh' : contentHeight }}>
                 <BrowserView>
-                    <Card style={{ width: '100%', height: '43vh' }}>
+                    <Card style={{ width: '100%', height: '33vh' }}>
                         <CardBody className="mt-3">
                             <Row className="mt-2 align-items-center">    
                                 <Col md="3" className="text-center">
@@ -253,9 +273,39 @@ function RequesterLogin({onLogin}) {
 }
 
 function Request({onLogOut}) {
+    useEffect(() => {
+        document.getElementsByClassName('fixed-plugin')[0].setAttribute('hidden', true);
+        document.getElementsByClassName('navbar-toggler')[0].setAttribute('hidden', true);
+        document.getElementsByClassName('navbar-toggler')[1].setAttribute('hidden', true);
+        document.getElementsByClassName('navbar-brand')[0].setAttribute('href', '#');
+        document.getElementsByClassName('navbar-nav')[0].setAttribute('hidden', true);
+
+        const navbarBrand = document.querySelector('.navbar-brand');
+        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 사용 요청';
+    }, []);
+
+    const [contentHeight, setContentHeight] = useState("auto");
+
+    useEffect(() => {
+        function handleResize() {
+            if(window.innerWidth <= 768) {
+                const height = window.innerHeight - 163;
+                setContentHeight(height);
+                
+                document.getElementsByClassName('footer')[0].style.paddingTop = 0;
+            }else{
+                setContentHeight("auto");
+            }
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
     return(
         <>
-            <div className="content">
+            <div className="content" style={{ height: isBrowser ? '83.4vh' : contentHeight }}>
                 <BrowserView>
                     <p>접속 기기 : PC</p>
                     <Row>
@@ -269,7 +319,7 @@ function Request({onLogOut}) {
                     <Card style={{ width: '100%', height: '7vh' }}>
 
                     </Card>
-                    <Card style={{ width: '100%', height: '93vh' }}>
+                    <Card style={{ width: '100%', height: '59.7vh' }}>
 
                     </Card>
                     <Row className="justify-content-end no-gutters">

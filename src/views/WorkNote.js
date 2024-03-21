@@ -862,27 +862,108 @@ function WorkNote(args) {
     if(user?.userId && user?.schoolCode) {
       const bedCount = user.bedCount;
 
-      return Array.from({ length: bedCount }, (_, index) => {
-        const i = index + 1;
+      if(entireWorkNoteRowData.length > 0) {
+        const currentDay = moment().format('YYYY-MM-DD');
+        const currentTime = moment().format('HH:mm');
+        let displayResultBox = [];
+        let remainingBox = [];
+        let displayOnBedStudentArray = [];
 
-        return (
-          <Col className="" lg="2" md="6" sm="6" key={i}>
-            <Card className="bed-card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <GiBed className="bed-icons-not-use"/>
-                  </Col>
-                  <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
-                    <p className="text-muted text-center pt-1" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-        );
-      });
+        entireWorkNoteRowData.map(item => {
+          const isSameDay = moment(currentDay, 'YYYY-MM-DD').isSame(moment(item.updatedAt, 'YYYY-MM-DD'));
+          const isBetweenTime = moment(currentTime, 'HH:mm').isBetween(moment(item.onBedStartTime, 'HH:mm'), moment(item.onBedEndTime, 'HH:mm'));
+
+          if(isSameDay && isBetweenTime) {
+            displayOnBedStudentArray.push(item);
+          }
+        });
+
+        if(displayOnBedStudentArray.length > 0) {
+          displayResultBox = displayOnBedStudentArray.map(item => (
+              <Col lg="2" md="6" sm="6" key={item.id}>
+                <Card className="card-stats" style={{ borderRadius: 15 }} onMouseOver={handleMouseOverOnBedCard} onMouseOut={handleMouseOutOnBedCard}>
+                  <CardBody>
+                    <Row>
+                      <Col md="4" xs="5">
+                        <GiBed className="bed-icons-use"/>
+                      </Col>
+                      <Col md="8" xs="7">
+                        <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >
+                          <span>{item.sName}</span>
+                          <br/>
+                          {!item.onBedEndTime ? 
+                              <span style={{ fontSize: '12px' }}>{item.onBedStartTime} 부터 사용</span>
+                            :
+                              <span style={{ fontSize: '12px' }}>{item.onBedStartTime} ~ {item.onBedEndTime}</span>
+                          }
+                        </p>
+                      </Col>
+                    </Row>
+                    <Button className="btn-round exit-use-bed" hidden>사용 종료</Button>
+                  </CardBody>
+                </Card>
+              </Col>
+          ));
+        }
+
+        if(displayOnBedStudentArray.length < bedCount) {
+          remainingBox = Array.from({ length: (bedCount - displayOnBedStudentArray.length) }, (_, index) => {
+            const i = index + 1;
+            return (
+              <Col className="" lg="2" md="6" sm="6" key={i}>
+                <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
+                  <CardBody>
+                    <Row>
+                      <Col md="4" xs="5">
+                        <GiBed className="bed-icons-not-use"/>
+                      </Col>
+                      <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
+                        <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                      </Col>
+                    </Row>
+                  </CardBody>
+                </Card>
+              </Col>
+            );
+          });
+        }
+
+        return [...displayResultBox, ...remainingBox];
+      }else{
+        return Array.from({ length: bedCount }, (_, index) => {
+          const i = index + 1;
+  
+          return (
+            <Col lg="2" md="6" sm="6" key={i}>
+              <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
+                <CardBody>
+                  <Row>
+                    <Col md="4" xs="5">
+                      <GiBed className="bed-icons-not-use"/>
+                    </Col>
+                    <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
+                      <p className="text-muted text-center pt-1" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                    </Col>
+                  </Row>
+                </CardBody>
+              </Card>
+            </Col>
+          );
+        });
+      }
     }
+  };
+
+  const handleMouseOverOnBedCard = (e) => {
+    e.currentTarget.childNodes[0].lastChild.hidden = false;
+    e.currentTarget.childNodes[0].childNodes[0].style.filter = 'blur(1.5px)';
+    e.currentTarget.childNodes[0].lastChild.classList.add('exit-use-bed');
+  };
+
+  const handleMouseOutOnBedCard = (e) => {
+    e.currentTarget.childNodes[0].lastChild.hidden = true;
+    e.currentTarget.childNodes[0].childNodes[0].style.filter = 'none';
+    e.currentTarget.childNodes[0].lastChild.classList.remove('exit-use-bed');
   };
 
   const notifyVisitRequest = () => {
@@ -1144,7 +1225,6 @@ function WorkNote(args) {
       });
       
       if(response.data) {
-        debugger
         const resultData = response.data.map(item => ({
           ...item,
           createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
@@ -1164,7 +1244,15 @@ function WorkNote(args) {
     fetchSelectedStudentData();
   }, [fetchSelectedStudentData]);
 
-  const toggleEntireWorkNoteGrid = async () => {
+  const toggleEntireWorkNoteGrid = () => {
+    fetchEntireWorkNoteGrid();
+    setIsEntireWorkNoteOpen(!isEntireWorkNoteOpen);
+
+    if(!isEntireWorkNoteOpen) document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh + 370px)';
+    else document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh - 163px)';
+  };
+
+  const fetchEntireWorkNoteGrid = useCallback(async () => {
     if(user) {
       const response = await axios.get('http://localhost:8000/workNote/getEntireWorkNote',{
         params: {
@@ -1181,19 +1269,21 @@ function WorkNote(args) {
           medication: item.medication.replace(/::/g, ', '),
           actionMatter: item.actionMatter.replace(/::/g, ', '),
           treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
-          onBedTime: item.onBedStartTime + " ~ " + item.onBedEndTime
+          onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
         }));
 
         setEntireWorkNoteRowData(resultData);
       }
     }
+  }, [user]);
 
-    setIsEntireWorkNoteOpen(!isEntireWorkNoteOpen);
-  };
+  useEffect(() => {
+    fetchEntireWorkNoteGrid();
+  }, [fetchEntireWorkNoteGrid]);
 
   return (
     <>
-      <div className="content">
+      <div className="content" style={{ height: '84.8vh' }}>
         <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
           <Table bordered className="stats-table text-center text-muted">
             <thead>
@@ -1230,24 +1320,6 @@ function WorkNote(args) {
         </Row>
         <Row style={{ marginBottom: '-6px' }}>
           {generateOnBedBox()}
-          {/* <Col lg="2" md="6" sm="6">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <GiBed className="bed-icons-use"/>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >
-                      <span>정영인</span>
-                      <br/>
-                      <span style={{ fontSize: '12px' }}>11:00 부터 사용</span>
-                    </p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col> */}
         </Row>
         <Row>
           <Col className="pr-2" md="4">
