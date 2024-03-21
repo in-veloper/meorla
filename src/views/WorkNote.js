@@ -859,21 +859,24 @@ function WorkNote(args) {
   }, [fetchStockMedicineData]);
 
   const generateOnBedBox = () => {
+
     if(user?.userId && user?.schoolCode) {
       const bedCount = user.bedCount;
 
       if(entireWorkNoteRowData.length > 0) {
-        const currentDay = moment().format('YYYY-MM-DD');
+        const currentDay = moment();
         const currentTime = moment().format('HH:mm');
         let displayResultBox = [];
         let remainingBox = [];
         let displayOnBedStudentArray = [];
-
+        // 등록 시에 바로 데이터 받아와서 표시 안됨
+        // blur 처리시 자연스럽게 blur되도록 하는 효과 표시 필요
         entireWorkNoteRowData.map(item => {
-          const isSameDay = moment(currentDay, 'YYYY-MM-DD').isSame(moment(item.updatedAt, 'YYYY-MM-DD'));
+          const isSameDay = currentDay.isSame(moment(item.updatedAt), 'day');
           const isBetweenTime = moment(currentTime, 'HH:mm').isBetween(moment(item.onBedStartTime, 'HH:mm'), moment(item.onBedEndTime, 'HH:mm'));
-
-          if(isSameDay && isBetweenTime) {
+          const isSameOrAfter = moment(currentTime, 'HH:mm').isSameOrAfter(moment(item.onBedStartTime, 'HH:mm'));
+          
+          if(isSameDay && (isBetweenTime || isSameOrAfter)) {
             displayOnBedStudentArray.push(item);
           }
         });
@@ -1286,6 +1289,18 @@ function WorkNote(args) {
   useEffect(() => {
     fetchEntireWorkNoteGrid();
   }, [fetchEntireWorkNoteGrid]);
+
+  const autoUpdateBedBox = () => {
+    const useBed = document.getElementsByClassName('bed-icons-use');
+    if(useBed.length > 0) {
+      debugger
+      // 여기서 등록된 침상안정 카드 중에 현재시간이 종료시간 이후인 경우 새로고침 처리 필요
+    }
+  };
+
+  setInterval(() => {
+    autoUpdateBedBox();
+  }, 1000);
 
   return (
     <>
