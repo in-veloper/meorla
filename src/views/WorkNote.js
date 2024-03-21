@@ -881,7 +881,7 @@ function WorkNote(args) {
         if(displayOnBedStudentArray.length > 0) {
           displayResultBox = displayOnBedStudentArray.map(item => (
               <Col lg="2" md="6" sm="6" key={item.id}>
-                <Card className="card-stats" style={{ borderRadius: 15 }} onMouseOver={handleMouseOverOnBedCard} onMouseOut={handleMouseOutOnBedCard}>
+                <Card className="card-stats" style={{ borderRadius: 15 }} targetitem={item} onMouseOver={handleMouseOverOnBedCard} onMouseOut={handleMouseOutOnBedCard}>
                   <CardBody>
                     <Row>
                       <Col md="4" xs="5">
@@ -899,7 +899,7 @@ function WorkNote(args) {
                         </p>
                       </Col>
                     </Row>
-                    <Button className="btn-round exit-use-bed" hidden>사용 종료</Button>
+                    <Button className="btn-round exit-use-bed" hidden onClick={(e) => handleExitOnBed(e, item)}>사용 종료</Button>
                   </CardBody>
                 </Card>
               </Col>
@@ -964,6 +964,12 @@ function WorkNote(args) {
     e.currentTarget.childNodes[0].lastChild.hidden = true;
     e.currentTarget.childNodes[0].childNodes[0].style.filter = 'none';
     e.currentTarget.childNodes[0].lastChild.classList.remove('exit-use-bed');
+  };
+
+  const handleExitOnBed = (e, item) => {
+    debugger
+    e.preventDefault();
+
   };
 
   const notifyVisitRequest = () => {
