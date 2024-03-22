@@ -935,6 +935,20 @@ app.get('/workNote/getEntireWorkNote', async (req, res) => {
     });
 });
 
+app.post('/workNote/updateOnBedEndTime', async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const rowId = req.body.rowId;
+    const targetStudentGrade = req.body.targetStudentGrade;
+    const targetStudentClass = req.body.targetStudentClass;
+    const targetStudentNumber = req.body.targetStudentNumber;
+    const targetStudentGender = req.body.targetStudentGender;
+    const targetStudentName = req.body.targetStudentName;
+
+    // 침상안정 종료시간 update 처리 필요
+    // const sqlQuery = "UPDATE teaform_db.workNote SET "
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

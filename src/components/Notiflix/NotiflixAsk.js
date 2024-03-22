@@ -1,22 +1,25 @@
 import Notiflix from "notiflix";
 
-const NotiflixAsk = (confirmTitle, confirmMessage, yesCallback, noCallback, confirmWidth) => {
+const NotiflixAsk = (askTitle, askMessage, promptMessage, yesText, noText, yesCallback, noCallback, askWidth) => {
+    const inputPromptValue = prompt(promptMessage);
+    // prompt에 입력한 값이 출력되지 않는 현상 처리 필요
     return (
         Notiflix.Confirm.ask(
-            confirmTitle,
-            confirmMessage,
-            '예',
-            '아니요',
+            askTitle,
+            askMessage,
+            promptMessage,
+            yesText,
+            noText,
             async () => {
                 if(typeof yesCallback === 'function') {
-                    await yesCallback();
+                    await yesCallback(inputPromptValue);
                 }
             },() => {
                 if(typeof noCallback === 'function') {
                     noCallback();
                 }
             },{
-                position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: confirmWidth ? confirmWidth : '280px'
+                position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: askWidth ? askWidth : '280px'
             }
         )
     );

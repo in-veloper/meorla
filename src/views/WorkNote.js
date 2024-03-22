@@ -14,6 +14,7 @@ import Masking from "components/Tools/Masking";
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
+import NotiflixAsk from "components/Notiflix/NotiflixAsk";
 import axios from "axios";
 import moment from "moment";
 import '../assets/css/worknote.css';
@@ -34,7 +35,7 @@ function WorkNote(args) {
   const [treatmentMatterModal, setTreatmentMatterModal] = useState(false);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
-  const [setModifiedData] = useState([]);
+  // const [setModifiedData] = useState([]);
   const [searchSymptomText, setSearchSymptomText] = useState("");
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
   const [tagifySymptomSuggestion, setTagifySymptomSuggestion] = useState([]);
@@ -50,6 +51,8 @@ function WorkNote(args) {
   const [masked, setMasked] = useState(false);
   const [alertHidden, setAlertHidden] = useState(false);
   const [onBedRestStartTime, setOnBedRestStartTime] = useState("");
+  const [bedBoxContent, setBedBoxContent] = useState(null);
+  const [displayedOnBedStudents, setDisplayedOnBedStudents] = useState(null);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -457,7 +460,7 @@ function WorkNote(args) {
   }
 
   const onCellValueChanged = (event) => {
-    const updatedRowData = event.api.getRowNode(event.rowIndex).data;
+    // const updatedRowData = event.api.getRowNode(event.rowIndex).data;
     // setModifiedData((prevData) => [...prevData, updatedRowData]);
   }
 
@@ -858,9 +861,9 @@ function WorkNote(args) {
     fetchStockMedicineData();
   }, [fetchStockMedicineData]);
 
-  const generateOnBedBox = () => {
+  const generateOnBedBox = useCallback(() => {
 
-    if(user?.userId && user?.schoolCode) {
+    if(user) {
       const bedCount = user.bedCount;
 
       if(entireWorkNoteRowData.length > 0) {
@@ -869,9 +872,9 @@ function WorkNote(args) {
         let displayResultBox = [];
         let remainingBox = [];
         let displayOnBedStudentArray = [];
-        // 등록 시에 바로 데이터 받아와서 표시 안됨
         // blur 처리시 자연스럽게 blur되도록 하는 효과 표시 필요
-        entireWorkNoteRowData.map(item => {
+        // 이미 침상안정 등록된 학생 또 추가하려 할때 추가된 학생 알림 처리
+        entireWorkNoteRowData.forEach(item => {
           const isSameDay = currentDay.isSame(moment(item.updatedAt), 'day');
           const isBetweenTime = moment(currentTime, 'HH:mm').isBetween(moment(item.onBedStartTime, 'HH:mm'), moment(item.onBedEndTime, 'HH:mm'));
           const isSameOrAfter = moment(currentTime, 'HH:mm').isSameOrAfter(moment(item.onBedStartTime, 'HH:mm'));
@@ -931,9 +934,10 @@ function WorkNote(args) {
           });
         }
 
-        return [...displayResultBox, ...remainingBox];
+        setDisplayedOnBedStudents(displayOnBedStudentArray);
+        setBedBoxContent([...displayResultBox, ...remainingBox]);
       }else{
-        return Array.from({ length: bedCount }, (_, index) => {
+        const defaultBedBox = Array.from({ length: bedCount }, (_, index) => {
           const i = index + 1;
   
           return (
@@ -953,9 +957,15 @@ function WorkNote(args) {
             </Col>
           );
         });
+
+        setBedBoxContent(defaultBedBox);
       }
     }
-  };
+  }, [user, entireWorkNoteRowData]);
+
+  useEffect(() => {
+    generateOnBedBox();
+  }, [generateOnBedBox]);
 
   const handleMouseOverOnBedCard = (e) => {
     e.currentTarget.childNodes[0].lastChild.hidden = false;
@@ -969,10 +979,41 @@ function WorkNote(args) {
     e.currentTarget.childNodes[0].lastChild.classList.remove('exit-use-bed');
   };
 
-  const handleExitOnBed = (e, item) => {
-    debugger
+  const handleExitOnBed = async (e, item) => {
     e.preventDefault();
 
+    const currentTime = moment().format('HH:mm');
+    const askTitle = "침상안정 종료";
+    const askMessage = item.sName + " 학생의 침상안정 종료 시간을 입력해주세요.<br/>기본적으로 현재 시간이 입력되어 있습니다.";
+    const promptMessage = currentTime;
+    const yesText = "침상안정 종료";
+    const noText = "취소";
+
+    const yesCallback = async (promptValue) => {
+      const response = await axios.post('http://localhost:8000/workNote/updateOnBedEndTime', {
+        onBedEndTime: promptValue,
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        rowId: item.id,
+        targetStudentGrade: item.sGrade,
+        targetStudentClass: item.sClass,
+        targetStudentNumber: item.sNumber,
+        targetStudentGender: item.sGender,
+        targetStudentName: item.sName
+      });
+
+      if(response.data === "success") {
+        debugger
+        const infoMessage = item.sName + "학생의 침상안정이 종료 처리 되었습니다."
+        NotiflixInfo(infoMessage);
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixAsk(askTitle, askMessage, promptMessage, yesText, noText, yesCallback, noCallback);
   };
 
   const notifyVisitRequest = () => {
@@ -1142,7 +1183,7 @@ function WorkNote(args) {
 
   const saveWorkNote = (e) => {
     e.preventDefault();
-
+    
     let symptomString = "";
     let medicationString = "";
     let actionMatterString = "";
@@ -1182,8 +1223,37 @@ function WorkNote(args) {
     const confirmMessage = "작성하신 보건일지를 등록하시겠습니까?";
     const infoMessage = "보건일지가 정상적으로 등록되었습니다.";
     const warnMessage = "선택된 학생이 없습니다.";
-
+    
     if(selectedStudent) {
+      const useBedCount = document.getElementsByClassName('bed-icons-use').length;
+      if((onBedRestStartTime || onBedRestEndTime) && (user.bedCount === useBedCount)) {
+        const warnMessage = "모든 침상이 사용중이므로 침상안정 등록을 할 수 없습니다.";
+        NotiflixWarn(warnMessage, '370px');
+        
+        setOnBedRestStartTime("");
+        const onBedEndTime = document.getElementById('onBedRestEndTime');
+        onBedEndTime.value = "";
+        
+        return;
+      }
+
+      if(onBedRestStartTime || onBedRestEndTime) {
+        const isDuplicatedOnBedStudent = displayedOnBedStudents.some(item =>
+          item.sGrade === selectedStudent.sGrade &&
+          item.sClass === selectedStudent.sClass &&
+          item.sNumber === selectedStudent.sNumber &&
+          item.sGender === selectedStudent.sGender &&
+          item.sName === selectedStudent.sName
+        );
+        
+        if(isDuplicatedOnBedStudent) {
+          const warnMessage = selectedStudent.sName + "학생은 이미 침상안정 중인 상태입니다.";
+          NotiflixWarn(warnMessage, '310px');
+
+          return;
+        }
+      }
+
       const yesCallback = async () => {
         const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
           userId: user.userId,
@@ -1206,6 +1276,7 @@ function WorkNote(args) {
           NotiflixInfo(infoMessage);
           onResetSearch();
           handleClearAllWorkNote();
+          fetchEntireWorkNoteGrid();
         }
       };
 
@@ -1293,7 +1364,7 @@ function WorkNote(args) {
   const autoUpdateBedBox = () => {
     const useBed = document.getElementsByClassName('bed-icons-use');
     if(useBed.length > 0) {
-      debugger
+      // debugger
       // 여기서 등록된 침상안정 카드 중에 현재시간이 종료시간 이후인 경우 새로고침 처리 필요
     }
   };
@@ -1340,7 +1411,8 @@ function WorkNote(args) {
           </Table>
         </Row>
         <Row style={{ marginBottom: '-6px' }}>
-          {generateOnBedBox()}
+          {/* {generateOnBedBox()} */}
+          {bedBoxContent}
         </Row>
         <Row>
           <Col className="pr-2" md="4">
