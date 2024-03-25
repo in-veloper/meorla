@@ -14,7 +14,7 @@ import Masking from "components/Tools/Masking";
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
-import NotiflixAsk from "components/Notiflix/NotiflixAsk";
+import NotiflixPrompt from "components/Notiflix/NotiflixPrompt";
 import axios from "axios";
 import moment from "moment";
 import '../assets/css/worknote.css';
@@ -861,6 +861,68 @@ function WorkNote(args) {
     fetchStockMedicineData();
   }, [fetchStockMedicineData]);
 
+  const fetchEntireWorkNoteGrid = useCallback(async () => {
+    if(user) {
+      const response = await axios.get('http://localhost:8000/workNote/getEntireWorkNote',{
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const resultData = response.data.map(item => ({
+          ...item,
+          createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+          symptom: item.symptom.replace(/::/g, ', '),
+          medication: item.medication.replace(/::/g, ', '),
+          actionMatter: item.actionMatter.replace(/::/g, ', '),
+          treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
+          onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
+        }));
+
+        setEntireWorkNoteRowData(resultData);
+      }
+    }
+  }, [user]);
+
+  const handleExitOnBed = useCallback(async (e, item) => {
+    e.preventDefault();
+
+    const currentTime = moment().format('HH:mm');
+    const askTitle = "침상안정 종료";
+    const askMessage = item.sName + " 학생의 침상안정 종료 시간을 입력해주세요.<br/>기본적으로 현재 시간이 입력되어 있습니다.";
+    const promptMessage = currentTime;
+    const yesText = "침상안정 종료";
+    const noText = "취소";
+
+    const yesCallback = async (promptValue) => {
+      const response = await axios.post('http://localhost:8000/workNote/updateOnBedEndTime', {
+        onBedEndTime: promptValue,
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        rowId: item.id,
+        targetStudentGrade: item.sGrade,
+        targetStudentClass: item.sClass,
+        targetStudentNumber: item.sNumber,
+        targetStudentGender: item.sGender,
+        targetStudentName: item.sName
+      });
+
+      if(response.data === "success") {
+        const infoMessage = item.sName + "학생의 침상안정이 종료 처리 되었습니다."
+        NotiflixInfo(infoMessage);
+        fetchEntireWorkNoteGrid();
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixPrompt(askTitle, askMessage, promptMessage, yesText, noText, yesCallback, noCallback, '350px');
+  }, [user, fetchEntireWorkNoteGrid]);
+
   const generateOnBedBox = useCallback(() => {
 
     if(user) {
@@ -872,14 +934,14 @@ function WorkNote(args) {
         let displayResultBox = [];
         let remainingBox = [];
         let displayOnBedStudentArray = [];
-        // blur 처리시 자연스럽게 blur되도록 하는 효과 표시 필요
-        // 이미 침상안정 등록된 학생 또 추가하려 할때 추가된 학생 알림 처리
+
         entireWorkNoteRowData.forEach(item => {
           const isSameDay = currentDay.isSame(moment(item.updatedAt), 'day');
           const isBetweenTime = moment(currentTime, 'HH:mm').isBetween(moment(item.onBedStartTime, 'HH:mm'), moment(item.onBedEndTime, 'HH:mm'));
           const isSameOrAfter = moment(currentTime, 'HH:mm').isSameOrAfter(moment(item.onBedStartTime, 'HH:mm'));
-          
-          if(isSameDay && (isBetweenTime || isSameOrAfter)) {
+          const isBefore = item.onBedEndTime ? moment(currentTime, 'HH:mm').isBefore(moment(item.onBedEndTime, 'HH:mm')) : true;
+
+          if(isSameDay && (isBetweenTime || isSameOrAfter) && isBefore) {
             displayOnBedStudentArray.push(item);
           }
         });
@@ -961,7 +1023,7 @@ function WorkNote(args) {
         setBedBoxContent(defaultBedBox);
       }
     }
-  }, [user, entireWorkNoteRowData]);
+  }, [user, entireWorkNoteRowData, handleExitOnBed]);
 
   useEffect(() => {
     generateOnBedBox();
@@ -977,43 +1039,6 @@ function WorkNote(args) {
     e.currentTarget.childNodes[0].lastChild.hidden = true;
     e.currentTarget.childNodes[0].childNodes[0].style.filter = 'none';
     e.currentTarget.childNodes[0].lastChild.classList.remove('exit-use-bed');
-  };
-
-  const handleExitOnBed = async (e, item) => {
-    e.preventDefault();
-
-    const currentTime = moment().format('HH:mm');
-    const askTitle = "침상안정 종료";
-    const askMessage = item.sName + " 학생의 침상안정 종료 시간을 입력해주세요.<br/>기본적으로 현재 시간이 입력되어 있습니다.";
-    const promptMessage = currentTime;
-    const yesText = "침상안정 종료";
-    const noText = "취소";
-
-    const yesCallback = async (promptValue) => {
-      const response = await axios.post('http://localhost:8000/workNote/updateOnBedEndTime', {
-        onBedEndTime: promptValue,
-        userId: user.userId,
-        schoolCode: user.schoolCode,
-        rowId: item.id,
-        targetStudentGrade: item.sGrade,
-        targetStudentClass: item.sClass,
-        targetStudentNumber: item.sNumber,
-        targetStudentGender: item.sGender,
-        targetStudentName: item.sName
-      });
-
-      if(response.data === "success") {
-        debugger
-        const infoMessage = item.sName + "학생의 침상안정이 종료 처리 되었습니다."
-        NotiflixInfo(infoMessage);
-      }
-    };
-
-    const noCallback = () => {
-      return;
-    };
-
-    NotiflixAsk(askTitle, askMessage, promptMessage, yesText, noText, yesCallback, noCallback);
   };
 
   const notifyVisitRequest = () => {
@@ -1332,44 +1357,61 @@ function WorkNote(args) {
     else document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh - 163px)';
   };
 
-  const fetchEntireWorkNoteGrid = useCallback(async () => {
-    if(user) {
-      const response = await axios.get('http://localhost:8000/workNote/getEntireWorkNote',{
-        params: {
-          userId: user.userId,
-          schoolCode: user.schoolCode
-        }
-      });
-
-      if(response.data) {
-        const resultData = response.data.map(item => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
-          symptom: item.symptom.replace(/::/g, ', '),
-          medication: item.medication.replace(/::/g, ', '),
-          actionMatter: item.actionMatter.replace(/::/g, ', '),
-          treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
-          onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
-        }));
-
-        setEntireWorkNoteRowData(resultData);
-      }
-    }
-  }, [user]);
+  
 
   useEffect(() => {
     fetchEntireWorkNoteGrid();
   }, [fetchEntireWorkNoteGrid]);
 
   const autoUpdateBedBox = () => {
-    const useBed = document.getElementsByClassName('bed-icons-use');
-    if(useBed.length > 0) {
-      // debugger
-      // 여기서 등록된 침상안정 카드 중에 현재시간이 종료시간 이후인 경우 새로고침 처리 필요
+    if(displayedOnBedStudents) {
+      const currentDay = moment();
+      const currentTime = moment().format('HH:mm');
+
+      const filteredData = displayedOnBedStudents.filter(item => {
+        const isSameDay = moment(item.updatedAt).isSame(currentDay, 'day');
+        const isBefore = moment(item.onBedEndTime, 'HH:mm').isBefore(moment(currentTime, 'HH:mm'));
+
+        return isSameDay && isBefore;
+      });
+
+      if(filteredData && filteredData.length > 0) {
+        fetchEntireWorkNoteGrid();
+        generateOnBedBox();
+
+        filteredData.forEach(item => { 
+          const targetStudentName = item.sName; 
+          const infoMessage = targetStudentName + " 학생의 침상안정이 종료되었습니다.";
+          const isAutoHide = false;
+          
+          NotiflixInfo(infoMessage, isAutoHide, '310px');
+        });
+      }
     }
   };
 
-  setInterval(() => {
+  function useInterval(callback, delay) {
+    const savedCallback = useRef(); // closure 역할을 하는 useRef -> render를 해도 초기화 되지 않음
+  
+    // callback가 변경될 때 useEffect가 감지하여 최신 상태를 저장
+    useEffect(() => {
+      savedCallback.current = callback; 
+    }, [callback]);
+  
+    // interval 및 clear setting
+    useEffect(() => {
+      function tick() {
+        savedCallback.current(); 
+      }
+      if (delay !== null) {
+        let id = setInterval(tick, delay);
+        return () => clearInterval(id); // 실행 즉시 clear -> 메모리 차지하지 않음
+      }
+    }, [delay]);
+  }
+
+  // Custom Interval 사용 -> 기존 interval 사용 시 안에서 갇혀버리는 closure 현상으로 message 반복 출력 현상 발생
+  useInterval(() => {
     autoUpdateBedBox();
   }, 1000);
 
@@ -2015,4 +2057,6 @@ export default WorkNote;
  * 두개 이상 입력될 시 구분은 모두 (,) 쉼표로 구분되어야 함
  * 
  * 각 입력 항목 초기화 버튼 클릭 시 동작되나 같은 항목을 초기화 하고 다시 선택 후 초기화 시 동작 하지 않는 현상 처리 필요
+ * 
+ * blur 처리시 자연스럽게 blur되도록 하는 효과 표시 필요
  */

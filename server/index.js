@@ -936,6 +936,7 @@ app.get('/workNote/getEntireWorkNote', async (req, res) => {
 });
 
 app.post('/workNote/updateOnBedEndTime', async (req, res) => {
+    const onBedEndTime = req.body.onBedEndTime;
     const userId = req.body.userId;
     const schoolCode = req.body.schoolCode;
     const rowId = req.body.rowId;
@@ -946,7 +947,14 @@ app.post('/workNote/updateOnBedEndTime', async (req, res) => {
     const targetStudentName = req.body.targetStudentName;
 
     // 침상안정 종료시간 update 처리 필요
-    // const sqlQuery = "UPDATE teaform_db.workNote SET "
+    const sqlQuery = "UPDATE teaform_db.workNote SET onBedEndTime = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [onBedEndTime, userId, schoolCode, rowId, targetStudentGrade, targetStudentClass, targetStudentNumber, targetStudentGender, targetStudentName], (err, result) => {
+        if(err) {
+            console.log("침상종료 시간 Update 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
 });
 
 app.listen(PORT, () => {

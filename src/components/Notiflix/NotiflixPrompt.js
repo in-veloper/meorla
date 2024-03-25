@@ -1,18 +1,18 @@
 import Notiflix from "notiflix";
 
-const NotiflixAsk = (askTitle, askMessage, promptMessage, yesText, noText, yesCallback, noCallback, askWidth) => {
-    const inputPromptValue = prompt(promptMessage);
+const NotiflixPrompt = (askTitle, askMessage, promptMessage, yesText, noText, yesCallback, noCallback, askWidth) => {
+    // const inputPromptValue = prompt(promptMessage);
     // prompt에 입력한 값이 출력되지 않는 현상 처리 필요
     return (
-        Notiflix.Confirm.ask(
+        Notiflix.Confirm.prompt(
             askTitle,
             askMessage,
             promptMessage,
             yesText,
             noText,
-            async () => {
+            async (promptValue) => {
                 if(typeof yesCallback === 'function') {
-                    await yesCallback(inputPromptValue);
+                    await yesCallback(promptValue);
                 }
             },() => {
                 if(typeof noCallback === 'function') {
@@ -25,4 +25,4 @@ const NotiflixAsk = (askTitle, askMessage, promptMessage, yesText, noText, yesCa
     );
 };
 
-export default NotiflixAsk;
+export default NotiflixPrompt;
