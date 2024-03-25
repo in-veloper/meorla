@@ -9,6 +9,15 @@ export const UserProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
+    // useEffect(() => {
+    //     const isLoggedIn = !!user;
+    //     const isRequestPath = window.location.pathname.startsWith('/meorla/request/');
+    //     debugger
+    //     if(!isLoggedIn && window.location.pathname !== '/' && !isRequestPath) {
+    //         navigate('/');
+    //     }
+    // }, [user, navigate]);
+    
     const getUser = useCallback(async () => {
         try {
             const accessToken = sessionStorage.getItem("accessToken");

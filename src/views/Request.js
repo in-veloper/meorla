@@ -7,6 +7,7 @@ import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import Neis from "@my-school.info/neis-api";
 import { BrowserView, MobileView, isBrowser, isMobile } from "react-device-detect";
 import { FaCheck } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import "../assets/css/request.css";
 import axios from "axios";
 
@@ -32,7 +33,7 @@ const removeLoginInfoFromSessionStorage = () => {
 
 
 function RequesterLogin({onLogin}) {
-    console.log(isBrowser)
+    const navigate = useNavigate();
     const [schoolName, setSchoolName] = useState("");           // 입력한 학교명
     const [schoolCode, setSchoolCode] = useState("");           // 입력한 학교명과 일치하는 학교 코드
     const [schoolList, setSchoolList] = useState([]);           // 검색 결과 학교 리스트
@@ -73,6 +74,8 @@ function RequesterLogin({onLogin}) {
                 setSchoolInfoByParams(response[0]);
             }
         } catch (error) {
+            // 로그인 페이지가 아니라 404 띄워줘야 할듯... (일치하는 학교명으로 조회할 수 없다는)
+            navigate('/');
             console.log("Parameter 유입 학교 코드로 학교명 검색중 ERROR", error);
         }
     };
