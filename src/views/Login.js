@@ -4,10 +4,14 @@ import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css'; 
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import { useNavigate } from 'react-router-dom';
-import '../assets/css/login.css';
-import Neis from "@my-school.info/neis-api";
-import axios from 'axios';
 import { useUser } from "contexts/UserContext";
+import axios from 'axios';
+import Neis from "@my-school.info/neis-api";
+import moment from 'moment';
+import * as asn1js from "asn1js";
+import { Certificate } from 'pkijs';
+import { FileUploader } from 'react-drag-drop-files';
+import '../assets/css/login.css';
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
@@ -171,7 +175,53 @@ function Login() {
             setSchoolCode(schoolList[0].SD_SCHUL_CODE);
         }
         setSchoolList([]);
-    }
+    };
+
+    const handleCertChange = (file) => {
+        // const file = event.target.files[0];
+        debugger
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const arrayBuffer = reader.result;
+
+            const asn1 = asn1js.fromBER(arrayBuffer);
+            const certificate = new Certificate({ schema: asn1.result });
+
+            // 발급기관 정보
+            const issuer = certificate.issuer.typesAndValues.map(typesAndValues => {
+                const type = typesAndValues.type;
+                const value = typesAndValues.value.valueBlock.value;
+                return { type, value };
+            });
+
+            // 인증서 정보
+            const subject = certificate.subject.typesAndValues.map(typesAndValues => {
+                const type = typesAndValues.type;
+                const value = typesAndValues.value.valueBlock.value;
+                return { type, value };
+            });
+
+            const belongOOC = subject[2].value;                            // 소속 교육청
+            const certificateName = subject[4].value.match(/[가-힣]+/g)[0];    // 이름 추출 시 '856이름012'와 같은 형식 -> 정규식 사용하여 이름만 추출
+
+            // 인증서 유효기간 정보
+            const notBefore = certificate.notBefore.value; // 유효기간 시작일
+            const notAfter = certificate.notAfter.value;   // 유효기간 만료일
+
+            const currentDate = moment();
+            const notBeforeDate = moment(notBefore, "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
+            const notAfterDate = moment(notAfter, "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
+
+            const isValid = currentDate.isBetween(notBeforeDate, notAfterDate);
+        };
+
+        reader.readAsArrayBuffer(file);
+    };
+
+    const handleFileDrop = (files) => {
+        debugger
+        handleCertChange(files[0]);
+    };
 
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
@@ -180,6 +230,13 @@ function Login() {
                 <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
                     <Form action="registUser">
                         {/* <h5>회원가입</h5> */}
+                        <FileUploader 
+                            types={["cer"]}
+                            name="file"
+                            label={"끌어놓거나 클릭하여 인증서 파일 업로드"}
+                            handleChange={handleCertChange}
+                            // onDrop={handleFileDrop}
+                        />
                         <div style={{ width: '100%'}}>
                             <Typeahead
                                 id="basic-typeahead-single"
@@ -206,6 +263,7 @@ function Login() {
                     <h1>로그인</h1>
                     <input type="email" placeholder="아이디" value={confirmUserId} onChange={(e) => setConfirmUserId(e.target.value)} />
                     <input type="password" placeholder="비밀번호" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                    {/* <input type='file' accept='.cer' onChange={handleCertChange} /> */}
                     <a href="/forgot-password">비밀번호를 잊으셨나요?</a>
                     <Button onClick={handleLogin}>로그인</Button>
                     </Form>
