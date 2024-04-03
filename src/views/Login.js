@@ -179,7 +179,6 @@ function Login() {
 
     const handleCertChange = (file) => {
         // const file = event.target.files[0];
-        debugger
         const reader = new FileReader();
         reader.onload = async () => {
             const arrayBuffer = reader.result;
@@ -213,6 +212,11 @@ function Login() {
             const notAfterDate = moment(notAfter, "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
 
             const isValid = currentDate.isBetween(notBeforeDate, notAfterDate);
+            
+            if(isValid) {
+                document.getElementsByClassName('sc-eqUAAy jWkLDY')[0].childNodes.forEach(item => {item.remove()});
+                document.getElementsByClassName('sc-eqUAAy jWkLDY')[0].textContent = "업로드 성공";
+            }
         };
 
         reader.readAsArrayBuffer(file);
