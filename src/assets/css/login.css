@@ -48,8 +48,8 @@ margin: 15px 0;
 
 .login_page button {
 border-radius: 20px;
-border: 1px solid #FF4B2B;
-background-color: #FF4B2B;
+border: 1px solid #FF968A;
+background-color: #FF968A;
 color: #FFFFFF;
 font-size: 12px;
 font-weight: bold;
@@ -68,7 +68,7 @@ outline: none;
 }
 
 .login_page button.ghost {
-background-color: transparent;
+background-color: #FF968A;
 border-color: #FFFFFF;
 }
 
@@ -98,9 +98,9 @@ border-radius: 10px;
     0 10px 10px rgba(0,0,0,0.22);
 position: relative;
 overflow: hidden;
-width: 1100px;
+width: 900px;
 max-width: 100%;
-min-height: 600px;
+min-height: 580px;
 }
 
 .login_page .form-container {
@@ -162,9 +162,9 @@ transform: translateX(-100%);
 }
 
 .overlay {
-background: #FF416C;
-background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
-background: linear-gradient(to right, #FF4B2B, #FF416C);
+background: #FCB9AA;
+background: -webkit-linear-gradient(to right, #FCB9AA, #FCB9AA);
+background: linear-gradient(to right, #FCB9AA, #FCB9AA);
 background-repeat: no-repeat;
 background-size: cover;
 background-position: 0 0;
@@ -297,4 +297,8 @@ display: none !important;
 
 .jWkLDY {
 display: unset !important;
+}
+
+.overlay p {
+  font-weight: bold;
 }

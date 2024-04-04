@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css'; 
@@ -11,6 +11,9 @@ import moment from 'moment';
 import * as asn1js from "asn1js";
 import { Certificate } from 'pkijs';
 import { FileUploader } from 'react-drag-drop-files';
+import { useDropzone } from 'react-dropzone';
+import NotiflixWarn from 'components/Notiflix/NotiflixWarn';
+import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
 import '../assets/css/login.css';
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
@@ -32,6 +35,7 @@ function Login() {
     const [dynamicOptions, setDynamicOptions] = useState([]);   // 학교 검색 시 Typeahead options에 값 Setting 위함
     const [confirmUserId, setConfirmUserId] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [fileMessage, setFileMessage] = useState(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일(.cer)을 업로드 해주세요</div>);
 
     const clearRegisterInput = () => {
         setSchoolName("");
@@ -79,15 +83,18 @@ function Login() {
                 const userData = response.data.user;
                 
                 if(accessToken === 'N') {
-                    alert("해당 ID로 가입된 내역이 없습니다.");
+                    const warnMessage = "해당 ID로 가입된 내역이 없습니다.";
+                    NotiflixWarn(warnMessage);
                 }else if(accessToken === "UPW") {
-                    alert("비밀번호가 일치하지 않습니다.");
+                    const warnMessage = "비밀번호가 일치하지 않습니다.";
+                    NotiflixWarn(warnMessage);
                 }else{
                     login(userData, accessToken);
                     navigate('/meorla/dashboard');
                 }
             }else{
-                alert("ID와 비밀번호를 입력해주세요."); // ID 또는 비밀번호를 입력하지 않은 경우
+                const warnMessage = "ID와 비밀번호를 입력해주세요";
+                NotiflixWarn(warnMessage);
             }
         } catch (error) {
             console.log("로그인 중 ERROR", error);
@@ -96,30 +103,47 @@ function Login() {
 
     // 회원가입 Form 전송
     const registUser = async () => {
-        if(password === confPassword) {
-            try {
-                const selectResponse = await axios.post('http://localhost:8000/user/getUser', {
-                    userId: userId,
-                    schoolName: schoolName
-                });
-                const userData = selectResponse.data.user;
-                
-                if(userData.schoolName === schoolName) {
-                    alert("이미 가입된 학교입니다. 학교당 하나의 계정만 가입 가능합니다.");
-                }else if(userData.userId === userId) {
-                    alert("이미 존재하는 ID입니다. 다른 ID로 가입해 주세요.");
+        let warnMessage = "";
+        let infoMessage = "";
+
+        // 인증서 관련 정보 넣어야함
+        // 학교명 임의로 입력해서 하도록 하지 못하게 막아야할듯 
+        // 가입된 학교 비교 시에 학교명으로 하면 안되고 학교 코드 등으로 해야할듯
+        try {
+            const selectResponse = await axios.post('http://localhost:8000/user/getUser', {
+                userId: userId,
+                schoolName: schoolName
+            });
+            const userData = selectResponse.data.user;
+
+            if(userData.schoolName === schoolName) {
+                warnMessage = "이미 가입된 학교입니다.<br/>학교당 하나의 계정만 가입 가능합니다.";
+                NotiflixWarn(warnMessage);
+            }else if(userData.userId === userId) {
+                warnMessage = "이미 존재하는 ID입니다.<br/>다른 ID로 가입해 주세요.";
+                NotiflixWarn(warnMessage);
+            }else{
+                // 입력할 곳에 Focus 처리 필요
+                if(schoolName.length === 0) {
+                    warnMessage = "학교명을 입력해 주세요";
+                    NotiflixWarn(warnMessage);
+                }else if(name.length === 0) {
+                    warnMessage = "이름을 입력해 주세요.";
+                    NotiflixWarn(warnMessage);
+                }else if(email.length === 0) {
+                    warnMessage = "Email을 입력해 주세요.";
+                    NotiflixWarn(warnMessage);
+                }else if(userId.length === 0) {
+                    warnMessage = "ID를 입력해 주세요";
+                    NotiflixWarn(warnMessage);
+                }else if(password.length === 0){
+                    warnMessage = "비밀번호를 입력해 주세요.";
+                    NotiflixWarn(warnMessage);
+                }else if(confPassword.length === 0){
+                    warnMessage = "비밀번호 확인을 입력해 주세요.";
+                    NotiflixWarn(warnMessage);
                 }else{
-                    if(schoolName.length === 0) {
-                        alert("학교명을 입력해 주세요.");
-                    }else if(email.length === 0) {
-                        alert("Email을 입력해 주세요.");
-                    }else if(name.length === 0) {
-                        alert("이름을 입력해 주세요.");
-                    }else if(userId.length === 0) {
-                        alert("ID를 입력해 주세요");
-                    }else if(password.length === 0){
-                        alert("Password를 입력해 주세요.");
-                    }else{
+                    if(password === confPassword) {
                         const response = await axios.post('http://localhost:8000/user/insert', {
                             schoolName: schoolName,
                             name: name,
@@ -132,16 +156,18 @@ function Login() {
                         });
                         
                         if(response.data === "success") {
-                            alert("가입이 정상적으로 처리되었습니다.");
+                            infoMessage = "가입이 정상적으로 처리되었습니다.";
+                            NotiflixInfo(infoMessage);
                         }
                         navigate("/");
+                    }else{
+                        warnMessage = "입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다.<br/>확인 후 다시 입력해 주시기 바랍니다.";
+                        NotiflixWarn(warnMessage, '380px');
                     }
                 }
-            } catch (error) {
-                console.log("회원가입 중 ERROR", error);
             }
-        }else{
-            alert("입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다. 확인 후 다시 입력해 주시기 바랍니다.");
+        } catch (error) {
+            console.log("회원가입 중 ERROR", error);
         }
     };
 
@@ -177,55 +203,74 @@ function Login() {
         setSchoolList([]);
     };
 
-    const handleCertChange = (file) => {
-        // const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const arrayBuffer = reader.result;
+    const onDrop = useCallback((acceptedFiles, fileRejections) => {
+        // 허용된 파일 처리
+        acceptedFiles.forEach((file) => {
+            if(!file.name.toLowerCase().endsWith('.cer')) {
+                const warnMessage = "인증서 파일(.cer)이 아닙니다<br/>.cer 확장자인 인증서 파일을 업로드 해주세요";
+                NotiflixWarn(warnMessage, '320px');
+                setFileMessage(
+                    <div className='text-muted'>
+                        인증서 파일(.cer)이 아닙니다
+                        <br/>
+                        .cer 확장자인 인증서 파일을 업로드해주세요
+                    </div>
+                );
+            }else{
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    const arrayBuffer = reader.result;
 
-            const asn1 = asn1js.fromBER(arrayBuffer);
-            const certificate = new Certificate({ schema: asn1.result });
+                    const asn1 = asn1js.fromBER(arrayBuffer);
+                    const certificate = new Certificate({ schema: asn1.result });
 
-            // 발급기관 정보
-            const issuer = certificate.issuer.typesAndValues.map(typesAndValues => {
-                const type = typesAndValues.type;
-                const value = typesAndValues.value.valueBlock.value;
-                return { type, value };
-            });
+                    // 발급기관 정보
+                    const issuer = certificate.issuer.typesAndValues.map(typesAndValues => {
+                        const type = typesAndValues.type;
+                        const value = typesAndValues.value.valueBlock.value;
+                        return { type, value };
+                    });
 
-            // 인증서 정보
-            const subject = certificate.subject.typesAndValues.map(typesAndValues => {
-                const type = typesAndValues.type;
-                const value = typesAndValues.value.valueBlock.value;
-                return { type, value };
-            });
+                    // 인증서 정보
+                    const subject = certificate.subject.typesAndValues.map(typesAndValues => {
+                        const type = typesAndValues.type;
+                        const value = typesAndValues.value.valueBlock.value;
+                        return { type, value };
+                    });
 
-            const belongOOC = subject[2].value;                            // 소속 교육청
-            const certificateName = subject[4].value.match(/[가-힣]+/g)[0];    // 이름 추출 시 '856이름012'와 같은 형식 -> 정규식 사용하여 이름만 추출
+                    const belongOOC = subject[2].value;                            // 소속 교육청
+                    const certificateName = subject[4].value.match(/[가-힣]+/g)[0];    // 이름 추출 시 '856이름012'와 같은 형식 -> 정규식 사용하여 이름만 추출
 
-            // 인증서 유효기간 정보
-            const notBefore = certificate.notBefore.value; // 유효기간 시작일
-            const notAfter = certificate.notAfter.value;   // 유효기간 만료일
+                    // 인증서 유효기간 정보
+                    const notBefore = certificate.notBefore.value; // 유효기간 시작일
+                    const notAfter = certificate.notAfter.value;   // 유효기간 만료일
 
-            const currentDate = moment();
-            const notBeforeDate = moment(notBefore, "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
-            const notAfterDate = moment(notAfter, "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
+                    const currentDate = moment();
+                    const notBeforeDate = moment(notBefore, "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
+                    const notAfterDate = moment(notAfter, "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
 
-            const isValid = currentDate.isBetween(notBeforeDate, notAfterDate);
-            
-            if(isValid) {
-                document.getElementsByClassName('sc-eqUAAy jWkLDY')[0].childNodes.forEach(item => {item.remove()});
-                document.getElementsByClassName('sc-eqUAAy jWkLDY')[0].textContent = "업로드 성공";
+                    const isValid = currentDate.isBetween(notBeforeDate, notAfterDate);
+                    
+                    if(isValid) {
+                        const infoMessage = "정상적으로 인증되었습니다.";
+                        NotiflixInfo(infoMessage, true, '250px');
+                        setFileMessage(<div className='text-muted'>{belongOOC} 소속 {certificateName} 보건교사님<br/>정상적으로 인증되었습니다</div>)
+                    }
+                };
+
+                reader.readAsArrayBuffer(file);
             }
-        };
+        });
+    }, []);
 
-        reader.readAsArrayBuffer(file);
-    };
+    const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        onFileDialogCancel: () => setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일(.cer)을 업로드 해주세요</div>) // 사용자가 파일 선택을 취소했을 때 초기 메시지로 재설정
+    });
 
-    const handleFileDrop = (files) => {
-        debugger
-        handleCertChange(files[0]);
-    };
+    const file = acceptedFiles.map(file => {
+        
+    });
 
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
@@ -234,13 +279,10 @@ function Login() {
                 <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
                     <Form action="registUser">
                         {/* <h5>회원가입</h5> */}
-                        <FileUploader 
-                            types={["cer"]}
-                            name="file"
-                            label={"끌어놓거나 클릭하여 인증서 파일 업로드"}
-                            handleChange={handleCertChange}
-                            // onDrop={handleFileDrop}
-                        />
+                        <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', border: '2px dashed grey', padding: '10px', marginBottom: '10px', textAlign: 'center' }}>
+                            <input {...getInputProps()}/>
+                            {fileMessage}
+                        </div>
                         <div style={{ width: '100%'}}>
                             <Typeahead
                                 id="basic-typeahead-single"
