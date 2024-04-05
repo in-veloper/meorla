@@ -6,6 +6,7 @@ import PerfectScrollbar from "perfect-scrollbar";
 import { useUser } from "contexts/UserContext";
 import mainLogoWhite from "../../assets/img/main_header_logo_white.png";
 import mainLogoBlack from "../../assets/img/main_header_logo_black.png";
+import { useNavigate } from 'react-router-dom';
 
 var ps;
 
@@ -15,6 +16,7 @@ function Sidebar(props) {
   const { user, logout } = useUser();
   const location = useLocation();
   const sidebar = React.useRef();
+  const navigate = useNavigate();
   // verifies if routeName is the one active (in browser input)
 
   useEffect(() => {
@@ -56,15 +58,17 @@ function Sidebar(props) {
     >
       <div className="logo">
         <a
-          href="https://www.creative-tim.com"
+          // href="https://www.creative-tim.com"
           className="simple-text logo-mini"
+          onClick={() => { navigate('/meorla/dashboard')}}
         >
           <div className="logo-img">
             <img src={props.bgColor === 'black' ? mainLogoBlack : mainLogoWhite} alt="react-logo" />
           </div>
         </a>
         <a
-          href="https://www.creative-tim.com"
+          // href="https://www.creative-tim.com"
+          onClick={() => { navigate('/meorla/dashboard')}}
           className="simple-text logo-normal text-muted"
         >
           <b style={{ color: props.bgColor === 'black' ? '#FFFFFF' : '#66615B' }}>MEORLA</b>

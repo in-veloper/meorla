@@ -399,7 +399,7 @@ function Header(props) {
               <span className="navbar-toggler-bar bar3" />
             </button>
           </div>
-          <NavbarBrand className="text-muted" href="/"><b>{getBrand()}</b></NavbarBrand>
+          <NavbarBrand className="text-muted"><b>{getBrand()}</b></NavbarBrand>
         </div>
         <NavbarToggler onClick={toggle}>
           <span className="navbar-toggler-bar navbar-kebab" />

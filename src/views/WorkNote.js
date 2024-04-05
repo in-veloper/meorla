@@ -53,6 +53,12 @@ function WorkNote(args) {
   const [onBedRestStartTime, setOnBedRestStartTime] = useState("");
   const [bedBoxContent, setBedBoxContent] = useState(null);
   const [displayedOnBedStudents, setDisplayedOnBedStudents] = useState(null);
+  const [temperatureValue, setTempuratureValue] = useState(0);
+  const [bloodPressureValue, setBloodPressureValue] = useState(0);
+  const [pulseValue, setpulseValue] = useState(0);
+  const [oxygenSaturationValue, setOxygenSaturationValue] = useState(0);
+  const [bloodSugarValue, setBloodSugarValue] = useState(0);
+  const [nonSelectedHighlight, setNonSelectedHighlight] = useState(false);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -85,7 +91,7 @@ function WorkNote(args) {
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "actionMatter", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "note", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
@@ -97,7 +103,7 @@ function WorkNote(args) {
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "actionMatter", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "note", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
@@ -125,7 +131,7 @@ function WorkNote(args) {
   ]);
 
   const [actionMatterColumnDefs] = useState([
-    { field: "actionMatter", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "left" } }
+    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 1, cellStyle: { textAlign: "left" } }
   ]);
 
   const [treatmentMatterColumnDefs] = useState([
@@ -370,7 +376,7 @@ function WorkNote(args) {
   const allActionMatterRemoveRow = () => {
     const api = actionMatterGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    const warnMessage = "등록된 조치사항이 없습니다.";
+    const warnMessage = "등록된 조치 및 교육사항이 없습니다.";
 
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
@@ -595,9 +601,9 @@ function WorkNote(args) {
   const saveActionMatter = async (e) => {
     e.preventDefault();
 
-    const confirmTitle = "조치사항 설정";
-    const confirmMessage = "작성하신 조치사항을 저장하시겠습니까?";
-    const infoMessage = "조치사항 설정이 정상적으로 저장되었습니다.";
+    const confirmTitle = "조치 및 교육사항 설정";
+    const confirmMessage = "작성하신 조치 및 교육사항을 저장하시겠습니까?";
+    const infoMessage = "조치 및 교육사항 설정이 정상적으로 저장되었습니다.";
 
     const yesCallback = async () => {
       const api = actionMatterGridRef.current.api;                      // Grid api 획득
@@ -747,7 +753,7 @@ function WorkNote(args) {
         }
       }
     } catch (error) {
-      console.error('조치사항 조회 중 ERROR', error);
+      console.error('조치 및 교육사항 조회 중 ERROR', error);
     }
   }, [user?.userId, user?.schoolCode]);
 
@@ -1119,7 +1125,7 @@ function WorkNote(args) {
       return;
     };
 
-    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
   };
 
   const fetchAlertHiddenStatus = useCallback(async () => {
@@ -1166,7 +1172,7 @@ function WorkNote(args) {
       return;
     };
 
-    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
   };
 
   const handleClearWorkNote = (e) => {
@@ -1186,9 +1192,12 @@ function WorkNote(args) {
       setOnBedRestStartTime("");
       const onBedEndTime = document.getElementById('onBedRestEndTime');
       onBedEndTime.value = "";
-    }else if(targetId === "note") {
-      const notes = document.getElementById('notes');
-      notes.value = "";
+    }else if(targetId === "vitalSign") {
+      setTempuratureValue(0);
+      setBloodPressureValue(0);
+      setpulseValue(0);
+      setOxygenSaturationValue(0);
+      setBloodSugarValue(0);
     }
   };
 
@@ -1202,8 +1211,12 @@ function WorkNote(args) {
     setOnBedRestStartTime("");
     const onBedEndTime = document.getElementById('onBedRestEndTime');
     onBedEndTime.value = "";
-    const notes = document.getElementById('notes');
-    notes.value = "";
+    
+    setTempuratureValue(0);
+    setBloodPressureValue(0);
+    setpulseValue(0);
+    setOxygenSaturationValue(0);
+    setBloodSugarValue(0);
   };
 
   const saveWorkNote = (e) => {
@@ -1242,7 +1255,8 @@ function WorkNote(args) {
 
     const onBedRestStartTime = document.getElementById('onBedRestStartTime').value;
     const onBedRestEndTime = document.getElementById('onBedRestEndTime').value;
-    const notes = document.getElementById('notes').value;
+    // const notes = document.getElementById('notes').value;
+    // 활력징후 처리 필요 (비고 제거)
 
     const confirmTitle = "보건일지 등록";
     const confirmMessage = "작성하신 보건일지를 등록하시겠습니까?";
@@ -1294,7 +1308,13 @@ function WorkNote(args) {
           treatmentMatter: treatmentMatterString,
           onBedStartTime: onBedRestStartTime,
           onBedEndTime: onBedRestEndTime,
-          note: notes
+          temperature: temperatureValue,
+          bloodPressure: bloodPressureValue,
+          pulse: pulseValue,
+          oxygenSaturation: oxygenSaturationValue,
+          bloodSugar: bloodSugarValue
+          // note: notes
+          // 활력징후 처리 필요 (비고 제거)
         });
 
         if(response.data === "success") {
@@ -1312,6 +1332,7 @@ function WorkNote(args) {
       NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
     }else{
       NotiflixWarn(warnMessage);
+      validateAndHighlight();
     }
   };
 
@@ -1356,8 +1377,6 @@ function WorkNote(args) {
     if(!isEntireWorkNoteOpen) document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh + 370px)';
     else document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh - 163px)';
   };
-
-  
 
   useEffect(() => {
     fetchEntireWorkNoteGrid();
@@ -1408,7 +1427,32 @@ function WorkNote(args) {
         return () => clearInterval(id); // 실행 즉시 clear -> 메모리 차지하지 않음
       }
     }, [delay]);
-  }
+  };
+
+  const handleVitalSignChange = (e) => {
+    const newValue = e.target.value;
+
+    if(!isNaN(newValue)) {
+      if(e.target.id === "temperature") setTempuratureValue(newValue);
+      else if(e.target.id === "bloodPressure") setBloodPressureValue(newValue);
+      else if(e.target.id === "pulse") setpulseValue(newValue);
+      else if(e.target.id === "oxygenSaturation") setOxygenSaturationValue(newValue);
+      else if(e.target.id === "bloodSugar") setBloodSugarValue(newValue);
+    }
+    
+    // if(e.target.id === "temperature") setTempuratureValue(newValue);
+    // else if(e.target.id === "bloodPressure") setBloodPressureValue(newValue);
+    // else if(e.target.id === "pulse") setpulseValue(newValue);
+    // else if(e.target.id === "oxygenSaturation") setOxygenSaturationValue(newValue);
+    // else if(e.target.id === "bloodSugar") setBloodSugarValue(newValue);
+  };
+
+  const validateAndHighlight = () => {
+    setNonSelectedHighlight(true);
+    setTimeout(() => {
+      setNonSelectedHighlight(false);
+    }, 2000);
+  };
 
   // Custom Interval 사용 -> 기존 interval 사용 시 안에서 갇혀버리는 closure 현상으로 message 반복 출력 현상 발생
   useInterval(() => {
@@ -1453,12 +1497,11 @@ function WorkNote(args) {
           </Table>
         </Row>
         <Row style={{ marginBottom: '-6px' }}>
-          {/* {generateOnBedBox()} */}
           {bedBoxContent}
         </Row>
         <Row>
           <Col className="pr-2" md="4">
-            <Card style={{ minHeight: '420px', border: '1px solid lightgrey' }}>
+            <Card style={{ minHeight: '420px', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
@@ -1583,12 +1626,13 @@ function WorkNote(args) {
                   </Col>
                 </Row>
                 <Row className="pt-1">
-                  <Col md="6">
+                  <Col md="4">
                     <Button size="sm">학생관리</Button>
                   </Col>
-                  <Col className="d-flex justify-content-end" md="6">
-                    <Button size="sm">보호학생관리</Button>
-                    <Button size="sm">응급학생관리</Button>
+                  <Col className="d-flex justify-content-end" md="8">
+                    <Button size="sm">당뇨질환학생관리</Button>
+                    <Button className="ml-1" size="sm">보호학생관리</Button>
+                    <Button className="ml-1" size="sm">응급학생관리</Button>
                   </Col>
                 </Row>
               </CardBody>
@@ -1709,7 +1753,7 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '-3px' }}>조치사항</b>
+                            <b className="action-title" style={{ marginRight: '-3px' }}>조치 및 교육사항</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="actionMatterTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
@@ -1773,7 +1817,90 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: 7}}>침상안정</b>
+                            <b className="action-title">활력징후</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh id="vitalSign" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
+                          </Col>
+                        </Row>
+                      </CardHeader>
+                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px'}}>
+                        <Row className="d-flex justify-content-center">
+                          <Col md="2">
+                            <Row className="align-items-center">
+                              <label>체온</label>
+                              <Input
+                                className="ml-2"
+                                id="temperature"
+                                type="number"
+                                max={45}
+                                min={30}
+                                onChange={handleVitalSignChange}
+                                value={temperatureValue}
+                                style={{ width: '45px' }}
+                              />
+                            </Row>
+                          </Col>
+                          <Col md="2" className="ml-1">
+                            <Row className="align-items-center">
+                              <label>혈압</label>
+                              <Input
+                                className="ml-2"
+                                id="bloodPressure"
+                                type="number"
+                                onChange={handleVitalSignChange}
+                                value={bloodPressureValue}
+                                style={{ width: '50px' }}
+                              />
+                            </Row>
+                          </Col>
+                          <Col md="2" className="ml-2">
+                            <Row className="align-items-center">
+                              <label>맥박</label>
+                              <Input
+                                className="ml-2"
+                                id="pulse"
+                                type="number"
+                                onChange={handleVitalSignChange}
+                                value={pulseValue}
+                                style={{ width: '45px' }}
+                              />
+                            </Row>
+                          </Col>
+                          <Col md="3" className="ml-1">
+                            <Row className="align-items-center">
+                              <label>산소포화도</label>
+                              <Input
+                                className="ml-2"
+                                id="oxygenSaturation"
+                                type="number"
+                                onChange={handleVitalSignChange}
+                                value={oxygenSaturationValue}
+                                style={{ width: '45px' }}
+                              />
+                            </Row>
+                          </Col>
+                          <Col md="2" className="ml-1">
+                            <Row className="align-items-center">
+                              <label>혈당</label>
+                              <Input
+                                className="ml-2"
+                                id="bloodSugar"
+                                type="number"
+                                onChange={handleVitalSignChange}
+                                value={bloodSugarValue}
+                                style={{ width: '45px' }}
+                              />
+                            </Row>
+                          </Col>
+                        </Row>
+                      </CardBody>
+                    </Card>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-9px' }}>
+                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <Row>
+                          <Col className="text-right" md="7">
+                            <b className="action-title">침상안정</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="onBedRest" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
@@ -1798,33 +1925,6 @@ function WorkNote(args) {
                             className="ml-2"
                             type="time"
                             style={{ width: '130px', height: '30px' }}
-                          />
-                        </Row>
-                        {/* <Row>
-                          <Col md="12" style={{ marginTop: 12 }}>
-                            <Alert className="d-flex justify-content-center align-items-center text-center text-muted mb-0" style={{ backgroundColor: '#f8f8f8', borderRadius: 10, height: 20 }}>
-                              <FaInfoCircle className="mr-2" style={{ marginTop: '-2px', fontSize: 17}}/> 종료시간은 선택 입력 사항입니다
-                            </Alert>
-                          </Col>
-                        </Row> */}
-                      </CardBody>
-                    </Card>
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-9px' }}>
-                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <Row>
-                          <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '16px' }}>비고</b>
-                          </Col>
-                          <Col className="text-right" md="5">
-                            <IoMdRefresh id="note" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
-                          </Col>
-                        </Row>
-                      </CardHeader>
-                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px'}}>
-                        <Row className="d-flex justify-content-center">
-                          <Input
-                            id="notes"
-                            style={{ width: '90%' }}
                           />
                         </Row>
                       </CardBody>
@@ -1956,7 +2056,7 @@ function WorkNote(args) {
        </Modal>
 
        <Modal isOpen={actionMatterModal} toggle={toggleActionMatterModal} centered style={{ minWidth: '20%' }}>
-          <ModalHeader toggle={toggleActionMatterModal}><b className="text-muted">조치사항 설정</b></ModalHeader>
+          <ModalHeader toggle={toggleActionMatterModal}><b className="text-muted">조치 및 교육사항 설정</b></ModalHeader>
           <ModalBody className="pb-0">
             <Form onSubmit={saveActionMatter}>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
@@ -1968,7 +2068,7 @@ function WorkNote(args) {
                   // singleClickEdit={true}
                   paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
                   defaultColDef={defaultColDef}
-                  overlayNoRowsTemplate={ '<span>등록된 조치사항이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayNoRowsTemplate={ '<span>등록된 조치 및 교육사항이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
                   overlayLoadingTemplate={
                     '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                   }

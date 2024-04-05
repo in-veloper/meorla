@@ -16,7 +16,7 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
         backspace: true,                  // true: 마지막 Tag 삭제, edit: 마지막 태그 Edit, false: 아무 동작 하지 않음
         placeholder: category === "symptomTagField" ? "증상을 입력하세요" : 
                      category === "medicationTagField" ? "투약사항을 입력하세요" :
-                     category === "actionMatterTagField" ? "조치사항을 입력하세요" :
+                     category === "actionMatterTagField" ? "조치 및 교육사항을 입력하세요" :
                      category === "treatmentMatterTagField" ? "처치사항을 입력하세요" : "",
         editTags: 1,
         dropdown: {

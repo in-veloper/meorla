@@ -12,6 +12,7 @@ import QnaRequest from "views/QnaRequest";
 import Request from "views/Request";
 import Examination from "views/Examination";
 import ManageMediFixt from "views/ManageMediFixt";
+import Statistics from "views/Statistics";
 
 
 const GetRoutes = () => {
@@ -83,7 +84,7 @@ const GetRoutes = () => {
         path: "/statistics",
         name: "통계",
         icon: "nc-icon nc-chart-pie-36",
-        component: <Notifications />,
+        component: <Statistics />,
         layout: "/meorla",
       },
       // {

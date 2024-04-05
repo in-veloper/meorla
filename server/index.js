@@ -807,10 +807,14 @@ app.post("/workNote/saveWorkNote", async (req, res) => {
     const treatmentMatter = req.body.treatmentMatter;
     const onBedStartTime = req.body.onBedStartTime;
     const onBedEndTime = req.body.onBedEndTime;
-    const note = req.body.note;
+    const temperature = req.body.temperature;
+    const bloodPressure = req.body.bloodPressure;
+    const pulse = req.body.pulse;
+    const oxygenSaturation = req.body.oxygenSaturation;
+    const bloodSugar = req.body.bloodSugar;
 
-    const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, note) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, note], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
         if(err) {
             console.log("보건일지 Insert 처리 중 ERROR", err);
         }else{

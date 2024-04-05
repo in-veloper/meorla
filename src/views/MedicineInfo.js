@@ -8,6 +8,7 @@ import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg } from "reactstrap";
+import { Block } from 'notiflix/build/notiflix-block-aio';
 import { FaRegStar } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import '../assets/css/medicalInfo.css';
@@ -21,7 +22,7 @@ function MedicalInfo() {
   const [modal, setModal] = useState(false);                            // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
   const [selectedRowData, setSelectedRowData] = useState(null);         // 선택한 Row Data 할당 변수 (상세화면 출력)
   const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
-
+  
   const gridRef = useRef();                                             // 검색 결과 출력 Grid
 
   // 약품 정보 Grid Column 정의
@@ -58,6 +59,8 @@ function MedicalInfo() {
   const handleSearch = async (e) => {
     try {
       // 약품 정보 API(e약은요) 호출
+      Block.dots('.ag-theme-alpine');
+
       const totalResponse = await axios.get(URL, {
         params: {
           serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
@@ -75,11 +78,10 @@ function MedicalInfo() {
         const totalCount = totalResponse.data.body.totalCount;          // 검색 결과 총 수
         const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
         const allResults = [];                                          // 모든 결과 할당 변수
+        const requests = [];
 
-        onBtShowLoading();                                              // 검색 처리 시 Loading 화면 출력
-        
         for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
-          const response = await axios.get(URL, {
+          requests.push(axios.get(URL, {
             params: {
               serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
               pageNo: page,                                                 // 페이지 수
@@ -90,16 +92,21 @@ function MedicalInfo() {
               efcyQesitm: searchCategory === 'mEffect' ? searchText : '',   // 효능
               type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
             }
-          });
-
-          if(response.data.hasOwnProperty('body')) {                        // 조회 결과 있을 경우(body가 존재할 경우)
-            allResults.push(...response.data.body.items);                   // 조회 결과 할당
-          }
+          }));
         }
 
+        const responses = await Promise.all(requests);
+        responses.forEach(response => {
+          if(response.data.hasOwnProperty('body')) {
+            allResults.push(...response.data.body.items);
+          }
+        });
+        
+        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
         setSearchResult(allResults);                                        // 최종 조회 결과 Grid Row Data로 할당
       }
     } catch (error) {
+      if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
       console.log("약품 정보 조회 중 ERROR", error);
     }
   }
@@ -129,10 +136,10 @@ function MedicalInfo() {
     return Math.ceil(totalCount / 100); // 페이지당 보여질 개수 100 Row로 Divide
   }
 
-  // 검색 처리 시 Loading 화면 출력 Event
-  const onBtShowLoading = useCallback(() => {
-      gridRef.current.api.showLoadingOverlay(); // Overlay로 로딩 Animation 출력
-  }, []);
+  // // 검색 처리 시 Loading 화면 출력 Event
+  // const onBtShowLoading = useCallback(() => {
+  //     gridRef.current.api.showLoadingOverlay(); // Overlay로 로딩 Animation 출력
+  // }, []);
 
   // 약품별 Bookmark 상태 Toggle Function
   const handleBookmarkMedicine = () => {
@@ -182,9 +189,9 @@ function MedicalInfo() {
                 paginationPageSize={28}                                         // 한 페이지에 표시하고 싶은 데이터 Row 수
                 enableBrowserTooltips="true"
                 onRowDoubleClicked={handleRowDoubleClick}
-                overlayLoadingTemplate={
-                  '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                }
+                // overlayLoadingTemplate={
+                //   '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                // }
               />
             </div>
           </Col>

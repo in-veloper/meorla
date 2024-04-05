@@ -14,6 +14,7 @@ import { FileUploader } from 'react-drag-drop-files';
 import { useDropzone } from 'react-dropzone';
 import NotiflixWarn from 'components/Notiflix/NotiflixWarn';
 import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
+import { Loading } from 'notiflix/build/notiflix-loading-aio';
 import '../assets/css/login.css';
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
@@ -74,7 +75,7 @@ function Login() {
     // 계정 확인 후 로그인하는 함수 (계정 확인 및 Token 확인 로직 필요 -> 추가)
     const handleLogin = async (e) => {
         e.preventDefault();
-
+        Loading.dots();
         try {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
@@ -90,6 +91,7 @@ function Login() {
                     NotiflixWarn(warnMessage);
                 }else{
                     login(userData, accessToken);
+                    Loading.remove(500);
                     navigate('/meorla/dashboard');
                 }
             }else{
@@ -98,6 +100,7 @@ function Login() {
             }
         } catch (error) {
             console.log("로그인 중 ERROR", error);
+            Loading.remove(500);
         }
     };
 
@@ -143,6 +146,7 @@ function Login() {
                     warnMessage = "비밀번호 확인을 입력해 주세요.";
                     NotiflixWarn(warnMessage);
                 }else{
+                    Loading.dots(1000);
                     if(password === confPassword) {
                         const response = await axios.post('http://localhost:8000/user/insert', {
                             schoolName: schoolName,
@@ -159,6 +163,8 @@ function Login() {
                             infoMessage = "가입이 정상적으로 처리되었습니다.";
                             NotiflixInfo(infoMessage);
                         }
+                        
+                        Loading.remove();
                         navigate("/");
                     }else{
                         warnMessage = "입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다.<br/>확인 후 다시 입력해 주시기 바랍니다.";
