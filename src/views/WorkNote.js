@@ -99,13 +99,16 @@ function WorkNote(args) {
   const [entireWorkNoteRowData, setEntireWorkNoteRowData] = useState([]);
 
   const [entireWorkNoteColumnDefs] = useState([
-    { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "note", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
+    { field: "treatmentMatter", headerName: "처치사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "medication", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
 
   // 기본 컬럼 속성 정의 (공통 부분)
