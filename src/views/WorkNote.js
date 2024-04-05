@@ -1439,12 +1439,6 @@ function WorkNote(args) {
       else if(e.target.id === "oxygenSaturation") setOxygenSaturationValue(newValue);
       else if(e.target.id === "bloodSugar") setBloodSugarValue(newValue);
     }
-    
-    // if(e.target.id === "temperature") setTempuratureValue(newValue);
-    // else if(e.target.id === "bloodPressure") setBloodPressureValue(newValue);
-    // else if(e.target.id === "pulse") setpulseValue(newValue);
-    // else if(e.target.id === "oxygenSaturation") setOxygenSaturationValue(newValue);
-    // else if(e.target.id === "bloodSugar") setBloodSugarValue(newValue);
   };
 
   const validateAndHighlight = () => {
@@ -1691,7 +1685,7 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '-9px' }}>증상</b>
+                            <b className="action-title" style={{ marginRight: '-5px' }}>증상</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="symptomTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote}/>
@@ -1753,7 +1747,7 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '-3px' }}>조치 및 교육사항</b>
+                            <b className="action-title" style={{ marginRight: '-17px' }}>조치 및 교육사항</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="actionMatterTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
