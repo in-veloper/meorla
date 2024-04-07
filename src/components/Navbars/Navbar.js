@@ -402,30 +402,41 @@ function Header(props) {
     window.open(address);                                                             // 해당 북마크 주소로 새창 Open
   };
 
-  const [pm10Grade1h, setPm10Grade1h] = useState(0);
-  const [pm25Grade1h, setPm25Grade1h] = useState(0);
-  const [pmInfo, setPmInfo] = useState([]);
   const [stationInfo, setStationInfo] = useState([]);
   const [targetSido, setTargetSido] = useState("");
-  // const [selectedStation, setSelectedStation] = useState("");
 
-  // const handleSelectStation = useCallback((e) => {
-  //   // if(pmInfo) {
-  //   //   debugger
-  //   // }
-  //   debugger
-  //   const selectedStation = e.target.text;
+  const [pmDataTime, setPmDataTime] = useState("");
+  const [pm10Value, setPm10Value] = useState(0);
+  const [pm25Value, setPm25Value] = useState(0);
 
-  // }, [targetSido])
-
-
-  const handleSelectStation = (e) => {
-    // if(pmInfo) {
-    //   debugger
-    // }
-    debugger
+  const handleSelectStation = async (e) => {
     const selectedStation = e.target.text;
 
+    if(selectedStation) {
+      try {
+        const url = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty";
+        const response = await axios.get(url, {
+          params: {
+            serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
+            returnType: 'json',
+            numOfRows: 1,
+            pageNo: 1,
+            stationName: selectedStation,
+            dataTerm: 'DAILY',
+            ver: '1.0'            
+          }
+        });
+
+        if(response.data.response) {
+          const responseData = response.data.response.body.items[0];
+          setPmDataTime(responseData.dataTime);
+          setPm10Value(responseData.pm10Value);
+          setPm25Value(responseData.pm25Value);
+        }
+      } catch (error) {
+        console.log("선택한 미세먼지 측정소 기준 조회 중 ERROR", error);
+      }
+    }
   }
 
   const fetchAirConditionData = useCallback(async () => {
@@ -442,18 +453,9 @@ function Header(props) {
             ver: '1.0'
           }
         });
-        debugger
+        
         if (response.data.response) {
           const responseData = response.data.response.body.items;
-          // console.log(responseData)
-          // const updatedPmInfo = responseData.map(item => ({
-          //   pm10: item.pm10Value,
-          //   pm25: item.pm25Value,
-          //   stationName: item.stationName
-          // }));
-    
-          // setPmInfo(updatedPmInfo);
-    
           const updatedStationInfo = responseData.map((item, index) => (
             <DropdownItem key={index} tag="a" onClick={handleSelectStation}>
               {item.stationName}
@@ -467,18 +469,6 @@ function Header(props) {
       }
     }
   }, [targetSido, stationInfo]);
-
-  
-  // // 미세먼지 연동부터 하면됨
-  // useEffect(() => {
-  //   if(selectedStation) {
-  //     debugger
-  //   }
-  //   const selectedPmInfo = pmInfo.find(item => item.stationName === selectedStation);
-  //   if(selectedPmInfo) {
-  //     debugger
-  //   }
-  // }, [selectedStation, pmInfo]);
 
   useEffect(() => {
     if(targetSido) fetchAirConditionData();
@@ -525,6 +515,7 @@ function Header(props) {
         </NavbarToggler>
         <Collapse isOpen={isOpen} navbar className="justify-content-end">
           <Nav navbar>
+            <span>{pmDataTime} PM10 : {pm10Value}, PM25 : {pm25Value}</span>
             <Dropdown
               nav
               isOpen={pmDropdownOpen}
