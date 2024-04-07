@@ -37,6 +37,7 @@ export const UserProvider = ({ children }) => {
                 email: decoded.email,
                 schoolName: decoded.schoolName,
                 schoolCode: decoded.schoolCode,
+                schoolAddress: decoded.schoolAddress,
                 commonPassword: decoded.commonPassword,
                 workStatus: decoded.workStatus,
                 bedCount: decoded.bedCount
@@ -73,6 +74,7 @@ export const UserProvider = ({ children }) => {
                 email: userData.email,
                 schoolName: userData.schoolName,
                 schoolCode: userData.schoolCode,
+                schoolAddress: userData.schoolAddress,
                 commonPassword: userData.commonPassword,
                 workStatus: userData.workStatus,
                 bedCount: userData.bedCount

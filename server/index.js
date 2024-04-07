@@ -62,6 +62,7 @@ app.get("/token", async (req, res) => {
                             name: user.name,
                             schoolName: user.schoolName,
                             schoolCode: user.schoolCode,
+                            schoolAddress: user.schoolAddress,
                             email: user.email,
                             commonPassword: user.commonPassword,
                             workStatus: user.workStatus,
@@ -102,7 +103,7 @@ app.post("/user/getUser", async (req, res) => {
             }
         }
     });
-})
+});
 
 app.post("/user/insert", async (req, res) => {
     const schoolName = req.body.schoolName;
@@ -111,14 +112,15 @@ app.post("/user/insert", async (req, res) => {
     const userId = req.body.userId;
     const password = req.body.password;
     const schoolCode = req.body.schoolCode;
+    const schoolAddress = req.body.schoolAddress;
     const refresh_token = req.body.refresh_token;
     const commonPassword = req.body.commonPassword;
 
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
 
-    const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, refresh_token, commonPassword) VALUES (?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [schoolName, name, email, userId, hashPassword, schoolCode, refresh_token, commonPassword], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, schoolAddress, refresh_token, commonPassword) VALUES (?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [schoolName, name, email, userId, hashPassword, schoolCode, schoolAddress, refresh_token, commonPassword], (err, result) => {
         if(err) {
             console.log("회원가입 데이터 Insert 중 ERROR" + err);
         }else{

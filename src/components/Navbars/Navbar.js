@@ -2,12 +2,13 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form, Badge } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
-import Notiflix from "notiflix";
-import { useUser } from "../../contexts/UserContext";
 import axios from "axios";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../../assets/css/navbar.css';
+import Notiflix from "notiflix";
+import { PiFaceMask } from "react-icons/pi";
+import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from 'react-router-dom';
 
 import routes from "routes.js";
@@ -21,6 +22,7 @@ function Header(props) {
   const [color, setColor] = React.useState("transparent");
   const [modal, setModal] = useState(false);
   const [bookmarkDropdownOpen, setBookmarkDropdownOpen] = React.useState(false);
+  const [pmDropdownOpen, setPmDropdownOpen] = React.useState(false);
   const [dropdownBookmarkItems, setDropdownBookmarkItems] = useState([]);
   const [userInfoDropdownOpen, setUserInfoDropdownOpen] = React.useState(false);
   const [userName, setUserName] = React.useState("");
@@ -57,6 +59,10 @@ function Header(props) {
 
   const dropdownToggle = (e) => {
     setDropdownOpen(!dropdownOpen);
+  };
+
+  const pmDropdownToggle = (e) => {
+    setPmDropdownOpen(!pmDropdownOpen);
   };
   
   // 북마크 설정 - Toggle 
@@ -198,6 +204,35 @@ function Header(props) {
       }
     }
   };
+
+  useEffect(() => {
+    const handleSchoolAddress = () => {
+      if(user) {
+        const schoolSido = user.schoolAddress.split(' ')[0];
+        let targetSido = "";
+        
+        if(schoolSido.includes("광역시")) targetSido = schoolSido.split("광역시")[0];
+        else if(schoolSido.includes("특별시")) targetSido = schoolSido.split("특별시")[0];
+        else if(schoolSido.includes("특별자치시")) targetSido = schoolSido.split("특별자치시")[0];
+        else if(schoolSido.includes("특별자치도")) targetSido = schoolSido.split("특별자치도")[0];
+        else if(schoolSido === "강원도") targetSido = "강원";
+        else if(schoolSido === "경기도") targetSido = "경기";
+        else if(schoolSido === "충청북도") targetSido = "충북";
+        else if(schoolSido === "충청남도") targetSido = "충남";
+        else if(schoolSido === "경상북도") targetSido = "경북";
+        else if(schoolSido === "경상남도") targetSido = "경남";
+        else if(schoolSido === "전라북도") targetSido = "전북";
+        else if(schoolSido === "전라남도") targetSido = "전남";
+  
+        setTargetSido(targetSido);
+      }
+    };
+    handleSchoolAddress();
+  }, [user])
+
+  // useEffect(() => {
+  //   handleSchoolAddress();
+  // }, [handleSchoolAddress]);
 
   // 기본 컬럼 속성 정의 (공통 부분)
   const defaultColDef = {
@@ -367,6 +402,88 @@ function Header(props) {
     window.open(address);                                                             // 해당 북마크 주소로 새창 Open
   };
 
+  const [pm10Grade1h, setPm10Grade1h] = useState(0);
+  const [pm25Grade1h, setPm25Grade1h] = useState(0);
+  const [pmInfo, setPmInfo] = useState([]);
+  const [stationInfo, setStationInfo] = useState([]);
+  const [targetSido, setTargetSido] = useState("");
+  // const [selectedStation, setSelectedStation] = useState("");
+
+  // const handleSelectStation = useCallback((e) => {
+  //   // if(pmInfo) {
+  //   //   debugger
+  //   // }
+  //   debugger
+  //   const selectedStation = e.target.text;
+
+  // }, [targetSido])
+
+
+  const handleSelectStation = (e) => {
+    // if(pmInfo) {
+    //   debugger
+    // }
+    debugger
+    const selectedStation = e.target.text;
+
+  }
+
+  const fetchAirConditionData = useCallback(async () => {
+    if(targetSido && stationInfo.length === 0) {
+      try {
+        const url = 'http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty';
+        const response = await axios.get(url, {
+          params: {
+            serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
+            returnType: 'json',
+            numOfRows: 100,
+            pageNo: 1,
+            sidoName: '대전',
+            ver: '1.0'
+          }
+        });
+        debugger
+        if (response.data.response) {
+          const responseData = response.data.response.body.items;
+          // console.log(responseData)
+          // const updatedPmInfo = responseData.map(item => ({
+          //   pm10: item.pm10Value,
+          //   pm25: item.pm25Value,
+          //   stationName: item.stationName
+          // }));
+    
+          // setPmInfo(updatedPmInfo);
+    
+          const updatedStationInfo = responseData.map((item, index) => (
+            <DropdownItem key={index} tag="a" onClick={handleSelectStation}>
+              {item.stationName}
+            </DropdownItem>
+          ));
+    
+          setStationInfo(updatedStationInfo);
+        }
+      } catch (error) {
+        console.log("미세먼지 정보 조회 중 ERROR", error);
+      }
+    }
+  }, [targetSido, stationInfo]);
+
+  
+  // // 미세먼지 연동부터 하면됨
+  // useEffect(() => {
+  //   if(selectedStation) {
+  //     debugger
+  //   }
+  //   const selectedPmInfo = pmInfo.find(item => item.stationName === selectedStation);
+  //   if(selectedPmInfo) {
+  //     debugger
+  //   }
+  // }, [selectedStation, pmInfo]);
+
+  useEffect(() => {
+    if(targetSido) fetchAirConditionData();
+  }, [targetSido, fetchAirConditionData]);
+
   const onLogout = () => {
     const userId = user ? user.userId : null;
     if(userId) logout(userId);
@@ -399,7 +516,7 @@ function Header(props) {
               <span className="navbar-toggler-bar bar3" />
             </button>
           </div>
-          <NavbarBrand className="text-muted"><b>{getBrand()}</b></NavbarBrand>
+          <NavbarBrand className="text-muted" href="/"><b>{getBrand()}</b></NavbarBrand>
         </div>
         <NavbarToggler onClick={toggle}>
           <span className="navbar-toggler-bar navbar-kebab" />
@@ -408,6 +525,21 @@ function Header(props) {
         </NavbarToggler>
         <Collapse isOpen={isOpen} navbar className="justify-content-end">
           <Nav navbar>
+            <Dropdown
+              nav
+              isOpen={pmDropdownOpen}
+              toggle={(e) => pmDropdownToggle(e)}
+              className="mr-2"
+            >
+              <DropdownToggle caret nav>
+                <PiFaceMask className="mb-1" style={{ fontSize: 24 }}/>
+              </DropdownToggle>
+              <DropdownMenu className="text-muted" right>
+                {stationInfo}
+                <DropdownItem divider />
+                <DropdownItem>측정소</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
             <NavItem onClick={() => { navigate('/meorla/dashboard')}}>
               <Link to="#pablo" className="nav-link btn-magnify">
                 <i className="nc-icon nc-layout-11" />
@@ -416,7 +548,6 @@ function Header(props) {
                 </p>
               </Link>
             </NavItem>
-            
             <Dropdown
               nav
               isOpen={bookmarkDropdownOpen}

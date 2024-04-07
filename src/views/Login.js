@@ -10,7 +10,6 @@ import Neis from "@my-school.info/neis-api";
 import moment from 'moment';
 import * as asn1js from "asn1js";
 import { Certificate } from 'pkijs';
-import { FileUploader } from 'react-drag-drop-files';
 import { useDropzone } from 'react-dropzone';
 import NotiflixWarn from 'components/Notiflix/NotiflixWarn';
 import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
@@ -33,6 +32,7 @@ function Login() {
     const [password, setPassword] = useState("");               // 입력한 Password
     const [confPassword, setConfPassword] = useState("");       // 입력한 확인 Password
     const [schoolCode, setSchoolCode] = useState("");           // 입력한 학교명과 일치하는 학교 코드
+    const [schoolAddress, setSchoolAddress] = useState("");
     const [dynamicOptions, setDynamicOptions] = useState([]);   // 학교 검색 시 Typeahead options에 값 Setting 위함
     const [confirmUserId, setConfirmUserId] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -156,6 +156,7 @@ function Login() {
                             password: password,
                             confPassword: confPassword,
                             schoolCode: schoolCode,
+                            schoolAddress: schoolAddress,
                             commonPassword: userId + "12!@"
                         });
                         
@@ -205,6 +206,7 @@ function Login() {
         if(schoolList.length > 0) {
             setSchoolName(schoolList[0].SCHUL_NM);
             setSchoolCode(schoolList[0].SD_SCHUL_CODE);
+            setSchoolAddress(schoolList[0].ORG_RDNMA);
         }
         setSchoolList([]);
     };
