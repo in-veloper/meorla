@@ -40,7 +40,9 @@ export const UserProvider = ({ children }) => {
                 schoolAddress: decoded.schoolAddress,
                 commonPassword: decoded.commonPassword,
                 workStatus: decoded.workStatus,
-                bedCount: decoded.bedCount
+                bedCount: decoded.bedCount,
+                pmStation: decoded.pmStation,
+                notifyPm: decoded.notifyPm
             };
 
             setUser(userInfo);
@@ -77,7 +79,9 @@ export const UserProvider = ({ children }) => {
                 schoolAddress: userData.schoolAddress,
                 commonPassword: userData.commonPassword,
                 workStatus: userData.workStatus,
-                bedCount: userData.bedCount
+                bedCount: userData.bedCount,
+                pmStation: userData.pmStation,
+                notifyPm: userData.notifyPm
             });
         } catch (error) {
             console.error("로그인 처리 중 ERROR", error);

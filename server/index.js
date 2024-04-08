@@ -66,7 +66,9 @@ app.get("/token", async (req, res) => {
                             email: user.email,
                             commonPassword: user.commonPassword,
                             workStatus: user.workStatus,
-                            bedCount: user.bedCount
+                            bedCount: user.bedCount,
+                            pmStation: user.pmStation,
+                            notifyPm: user.notifyPm
                         };
 
                         const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
@@ -270,6 +272,36 @@ app.post("/user/updateAlertHiddenStatus", (req, res) => {
             res.send('success');
         }
     })
+});
+
+app.post("/user/updatePmStation", (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const pmStation = req.body.pmStation;
+
+    const sqlQuery = "UPDATE teaform_db.users SET pmStation = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [pmStation, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("미세먼지 측정소 선택 값 Update 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/user/updateNotifyPmInfo", (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const notifyPm = req.body.notifyPm;
+
+    const sqlQuery = "UPDATE teaform_db.users SET notifyPm = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [notifyPm, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("미세먼지 알림 여부 Update 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
 });
 
 app.post("/bookmark/insert", async (req, res) => {

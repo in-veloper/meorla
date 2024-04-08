@@ -1,12 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form, Badge } from "reactstrap";
+import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form, Badge, Tooltip, CustomInput } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import axios from "axios";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import '../../assets/css/navbar.css';
-import Notiflix from "notiflix";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
+import NotiflixWarn from "components/Notiflix/NotiflixWarn";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import { PiFaceMask } from "react-icons/pi";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from 'react-router-dom';
@@ -32,7 +34,17 @@ function Header(props) {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isEmptyBookmarkData, setIsEmptyBookmarkData] = useState(false);  
   const [workStatus, setWorkStatus] = useState("");
-  
+  const [stationInfo, setStationInfo] = useState([]);
+  const [targetSido, setTargetSido] = useState("");
+  const [pmDataTime, setPmDataTime] = useState("");
+  const [pm10Value, setPm10Value] = useState(0);
+  const [pm25Value, setPm25Value] = useState(0);
+  const [pm10Text, setPm10Text] = useState(null);
+  const [pm25Text, setPm25Text] = useState(null);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [pmStationTooltipOpen, setPmStationTooltipOpen] = useState(false);
+  const [notifyPmChecked, setNotifyPmChecked] = useState(false);
+
   const gridRef = useRef();
   
   const navigate = useNavigate();
@@ -79,6 +91,9 @@ function Header(props) {
   };
 
   const toggleModal = () => setModal(!modal);
+
+  const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
+  const togglePmStationTooltip = () => setPmStationTooltipOpen(!pmStationTooltipOpen);
 
   const getBrand = () => {
     let brandName = "Default Brand";
@@ -284,10 +299,8 @@ function Header(props) {
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
 
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
-      Notiflix.Notify.warning('선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-      
+      const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
+      NotiflixWarn(warnMessage);
       return;
     }
 
@@ -302,10 +315,8 @@ function Header(props) {
     
     if(displayedRowCount === 0) {                         // 현재 등록된 북마크가 없을 경우
       // 등록된 북마크 없음 Notify
-      Notiflix.Notify.warning('등록된 북마크가 없습니다.', {
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
-      });
-
+      const warnMessage = "등록된 북마크가 없습니다.";
+      NotiflixWarn(warnMessage);
       return;                                             // return
     }else{                                                // 등록된 북마크가 있을 경우
       api.setRowData([]);                                 // 북마크 행 전체 삭제 (빈 배열 삽입으로 초기화)
@@ -325,67 +336,64 @@ function Header(props) {
   // Grid에서 변경된 내역만 잡을 수 있는지 보고 잡을 수 있으면 변경 안됐을 때는 저장 안되게 Alert
   const saveBookmark = async (event) => {
     try {
-      Notiflix.Confirm.show(                                          // Confirm 창 Show
-        '북마크 설정',                                                   // Confirm 창 Title
-        '작성하신 북마크를 저장하시겠습니까?',                                  // Confirm 창 내용
-        '예',                                                          // Confirm 창 버튼
-        '아니요',                                                       // Confirm 창 버튼
-        async () => {                                                 // Confirm 창에서 '예' 선택한 경우
-          event.preventDefault();                                     // 기본 Event 방지
-          const api = gridRef.current.api;                            // Grid api 획득
-          // const displayedRowCount = api.getDisplayedRowCount();       // 현재 Grid에 출련된 행 수
-          const paramArray = [];                                      // Parameter 전송 위한 북마크 담을 배열
+      const confirmTitle = "북마크 설정";
+      const confirmMessage = "작성하신 북마크를 저장하시겠습니까?";
+      const infoMessage = "북마크 설정이 정상적으로 저장되었습니다.";
 
-          api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
-            const bookmarkName = rowNode.data.bookmarkName;           // 북마크명 획득
-            const bookmarkAddress = rowNode.data.bookmarkAddress;     // 북마크 주소 획득
+      const yesCallback = async () => {
+        const api = gridRef.current.api;                            // Grid api 획득
+        // const displayedRowCount = api.getDisplayedRowCount();       // 현재 Grid에 출련된 행 수
+        const paramArray = [];                                      // Parameter 전송 위한 북마크 담을 배열
 
-            // 북마크 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 북마크 데이터 생성
-            if(bookmarkName.length !== 0 && bookmarkAddress.length !== 0 && user) {
-              const paramObject = {bookmarkName: bookmarkName, bookmarkAddress: bookmarkAddress};
-              paramArray.push(paramObject);
-            }
+        api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+          const bookmarkName = rowNode.data.bookmarkName;           // 북마크명 획득
+          const bookmarkAddress = rowNode.data.bookmarkAddress;     // 북마크 주소 획득
+
+          // 북마크 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 북마크 데이터 생성
+          if(bookmarkName.length !== 0 && bookmarkAddress.length !== 0 && user) {
+            const paramObject = {bookmarkName: bookmarkName, bookmarkAddress: bookmarkAddress};
+            paramArray.push(paramObject);
+          }
+        });
+
+        // Api 호출 시 Parameter로 전송할 수 있도록 Converting
+        const bookmarkArray = paramArray.map(item => ({
+          bookmarkName: item.bookmarkName,
+          bookmarkAddress: item.bookmarkAddress
+        }));
+        
+        let response = null;              // response 데이터 담을 변수
+        if(!isEmptyBookmarkData) {       // 등록된 북마크가 있는 경우 - Update
+          response = await axios.post('http://localhost:8000/bookmark/update', {
+            userId: user.userId,
+            userEmail: user.email,
+            schoolCode: user.schoolCode,
+            bookmarkArray: bookmarkArray
           });
-
-          // Api 호출 시 Parameter로 전송할 수 있도록 Converting
-          const bookmarkArray = paramArray.map(item => ({
-            bookmarkName: item.bookmarkName,
-            bookmarkAddress: item.bookmarkAddress
-          }));
-          
-          let response = null;              // response 데이터 담을 변수
-          if(!isEmptyBookmarkData) {       // 등록된 북마크가 있는 경우 - Update
-            response = await axios.post('http://localhost:8000/bookmark/update', {
-              userId: user.userId,
-              userEmail: user.email,
-              schoolCode: user.schoolCode,
-              bookmarkArray: bookmarkArray
-            });
-          }else{                            // 등록된 북마크가 없는 경우 - Insert
-            response = await axios.post('http://localhost:8000/bookmark/insert', {
-              userId: user.userId,
-              userEmail: user.email,
-              userName: user.name,
-              schoolName: user.schoolName,
-              schoolCode: user.schoolCode,
-              bookmarkArray: bookmarkArray
-            });
-          }
-
-          if(response.data === "success") {   // Api 호출 성공한 경우
-            toggleModal();
-            fetchBookmarkData();              // Dropdown에도 공통 적용되기 위해 북마크 데이터 재조회
-            // 북마크 정상 저장 Notify
-            Notiflix.Notify.info('북마크 설정이 정상적으로 저장되었습니다.', {
-              position: 'center-center', showOnlyTheLastOne: true, plainText: false
-            });
-          }
-        },() => {                                                         // Confirm 창에서 '아니요' 선택한 경우
-          return;                                                         // return
-        },{                                                               // Confirm 창 Option 설정
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        }else{                            // 등록된 북마크가 없는 경우 - Insert
+          response = await axios.post('http://localhost:8000/bookmark/insert', {
+            userId: user.userId,
+            userEmail: user.email,
+            userName: user.name,
+            schoolName: user.schoolName,
+            schoolCode: user.schoolCode,
+            bookmarkArray: bookmarkArray
+          });
         }
-      )
+
+        if(response.data === "success") {   // Api 호출 성공한 경우
+          toggleModal();
+          fetchBookmarkData();              // Dropdown에도 공통 적용되기 위해 북마크 데이터 재조회
+          // 북마크 정상 저장 Notify
+          NotiflixInfo(infoMessage);
+        }
+      };
+
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
     } catch(error) {
       console.error('북마크 저장 중 ERROR', error);
     }
@@ -402,17 +410,24 @@ function Header(props) {
     window.open(address);                                                             // 해당 북마크 주소로 새창 Open
   };
 
-  const [stationInfo, setStationInfo] = useState([]);
-  const [targetSido, setTargetSido] = useState("");
-
-  const [pmDataTime, setPmDataTime] = useState("");
-  const [pm10Value, setPm10Value] = useState(0);
-  const [pm25Value, setPm25Value] = useState(0);
-
   const handleSelectStation = async (e) => {
     const selectedStation = e.target.text;
 
-    if(selectedStation) {
+    if(user && selectedStation) {
+      const response = await axios.post('http://localhost:8000/user/updatePmStation', {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        pmStation: selectedStation
+      });
+
+      if(response.data === 'success') {
+        fetchPmStationInfo();
+      }
+    }
+  };
+
+  const fetchPmStationInfo = useCallback(async () => {
+    if(user && user.pmStation) {
       try {
         const url = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty";
         const response = await axios.get(url, {
@@ -421,7 +436,7 @@ function Header(props) {
             returnType: 'json',
             numOfRows: 1,
             pageNo: 1,
-            stationName: selectedStation,
+            stationName: user.pmStation,
             dataTerm: 'DAILY',
             ver: '1.0'            
           }
@@ -429,15 +444,24 @@ function Header(props) {
 
         if(response.data.response) {
           const responseData = response.data.response.body.items[0];
+          const pm10Text = classifyPmGrade("pm10", responseData.pm10Value);
+          const pm25Text = classifyPmGrade("pm25", responseData.pm25Value);
+          
           setPmDataTime(responseData.dataTime);
           setPm10Value(responseData.pm10Value);
           setPm25Value(responseData.pm25Value);
+          setPm10Text(pm10Text);
+          setPm25Text(pm25Text);
         }
       } catch (error) {
         console.log("선택한 미세먼지 측정소 기준 조회 중 ERROR", error);
       }
     }
-  }
+  }, [user]);
+
+  useEffect(() => {
+    fetchPmStationInfo();
+  }, [fetchPmStationInfo]);
 
   const fetchAirConditionData = useCallback(async () => {
     if(targetSido && stationInfo.length === 0) {
@@ -469,6 +493,50 @@ function Header(props) {
       }
     }
   }, [targetSido, stationInfo]);
+
+  const classifyPmGrade = (pmCategory, pmValue) => {
+    let returnGrade = "";
+    if(pmCategory === "pm10") {
+      if(pmValue >= 0 && pmValue <= 30) returnGrade = <Badge color="primary">좋음</Badge>;
+      else if(pmValue >= 31 && pmValue <= 80) returnGrade = <Badge color="success">보통</Badge>;
+      else if(pmValue >= 81 && pmValue <= 150) returnGrade = <Badge color="warning">나쁨</Badge>;
+      else if(pmValue >= 151) returnGrade = <Badge color="danger">매우나쁨</Badge>;
+    }else if(pmCategory === "pm25") {
+      if(pmValue >= 0 && pmValue <= 15) returnGrade = <Badge color="primary">좋음</Badge>;
+      else if(pmValue >= 16 && pmValue <= 35) returnGrade = <Badge color="success">보통</Badge>;
+      else if(pmValue >= 36 && pmValue <= 75) returnGrade = <Badge color="warning">나쁨</Badge>;
+      else if(pmValue >= 76) returnGrade = <Badge color="danger">매우나쁨</Badge>;
+    }
+
+    return returnGrade;
+  };
+
+  const handleNotifyPmInfo = async (e) => {
+    e.preventDefault();
+    
+    const confirmTitle = "미세먼지 자동 알림 설정";
+    const confirmMessage = (user ? user.notifyPm : false) ? "미세먼지 자동 알림을 해제하시겠습니까?" : "미세먼지 자동 알림으로 설정하시겠습니까?";
+
+    const yesCallback = async () => {
+      if(user) {
+        const response = await axios.post("http://localhost:8000/user/updateNotifyPmInfo", {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          notifyPm: !notifyPmChecked
+        });
+
+        if(response.data === "success") {
+          setNotifyPmChecked(!notifyPmChecked);
+        }
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
+  };
 
   useEffect(() => {
     if(targetSido) fetchAirConditionData();
@@ -515,7 +583,24 @@ function Header(props) {
         </NavbarToggler>
         <Collapse isOpen={isOpen} navbar className="justify-content-end">
           <Nav navbar>
-            <span>{pmDataTime} PM10 : {pm10Value}, PM25 : {pm25Value}</span>
+            <div className="pmInfo text-center" id="pmInfo">
+                <span>미세먼지&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{pm10Text}</span><br/> 
+                <span>초미세먼지&nbsp;&nbsp;{pm25Text}</span>
+              <Tooltip
+                placement="bottom"
+                isOpen={tooltipOpen}
+                autohide={true}
+                target="pmInfo"
+                toggle={toggleTooltip}
+              >
+                <div className="text-left">
+                  <b>미세먼지</b> : {pm10Value} ㎍/㎥ &nbsp; {pm10Text}<br/>
+                  <b>초미세먼지</b> : {pm25Value} ㎍/㎥ &nbsp; {pm25Text}<br/>
+                  <b>측정일시</b> : {pmDataTime}
+                  <b>측정소</b> : {user ? user.pmStation : ""}
+                </div>
+              </Tooltip>
+            </div>
             <Dropdown
               nav
               isOpen={pmDropdownOpen}
@@ -523,12 +608,54 @@ function Header(props) {
               className="mr-2"
             >
               <DropdownToggle caret nav>
-                <PiFaceMask className="mb-1" style={{ fontSize: 24 }}/>
+                <PiFaceMask className="mb-1 text-muted" style={{ fontSize: 24 }}/>
               </DropdownToggle>
               <DropdownMenu className="text-muted" right>
-                {stationInfo}
+                <div className="scrollable-dropdown-items">
+                  {stationInfo}
+                </div>
                 <DropdownItem divider />
-                <DropdownItem>측정소</DropdownItem>
+                <DropdownItem>
+                  <Row>
+                    <Col md="6">
+                      측정소
+                    </Col>
+                    <Col md="6">
+                      {user && user.pmStation && user.pmStation.length > 7 ? (
+                        <span id="longPmStationText">
+                          <b>{`${user.pmStation.substring(0, 7)}...`}</b>
+                          <Tooltip
+                            placement="top"
+                            isOpen={pmStationTooltipOpen}
+                            autohide={true}
+                            target="longPmStationText"
+                            toggle={togglePmStationTooltip}
+                          >
+                            <b>{user ? user.pmStation : ""}</b>
+                          </Tooltip>
+                        </span>
+                      ) : (
+                        <b>{user ? user.pmStation : ""}</b>
+                      )}
+                    </Col>
+                  </Row>
+                </DropdownItem>
+                <DropdownItem divider />
+                <DropdownItem toggle={false}>
+                  <Row>
+                    <Col md="9">
+                      자동 알림
+                    </Col>
+                    <Col md="3">
+                      <CustomInput 
+                        type="switch"
+                        id="notifyPmInfo"
+                        checked={user? user.notifyPm : false}
+                        onChange={handleNotifyPmInfo}
+                      />
+                    </Col>
+                  </Row>
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
             <NavItem onClick={() => { navigate('/meorla/dashboard')}}>
