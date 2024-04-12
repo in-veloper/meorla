@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button } from "reactstrap";
+import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge } from "reactstrap";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
@@ -276,6 +276,11 @@ function RequesterLogin({onLogin}) {
 }
 
 function Request({onLogOut}) {
+    const [schoolCode, setSchoolCode] = useState("");
+    const [currentInfo, setCurrentInfo] = useState(null);
+
+    const params = useParams();
+    
     useEffect(() => {
         document.getElementsByClassName('fixed-plugin')[0].setAttribute('hidden', true);
         document.getElementsByClassName('navbar-toggler')[0].setAttribute('hidden', true);
@@ -285,6 +290,16 @@ function Request({onLogOut}) {
 
         const navbarBrand = document.querySelector('.navbar-brand');
         if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 사용 요청';
+
+        const logoutButton = document.createElement('button');
+        logoutButton.className = 'btn btn-secondary mobile-logout-btn';
+        logoutButton.textContent = "로그아웃";
+        logoutButton.onclick = onLogOut;
+        logoutButton.style.display = 'block';
+        
+        if(!document.getElementsByClassName('mobile-logout-btn')[0]) document.getElementsByClassName('container-fluid')[0].appendChild(logoutButton);
+
+        if(params) setSchoolCode(params.thirdPartyUserCode);
     }, []);
 
     const [contentHeight, setContentHeight] = useState("auto");
@@ -306,11 +321,39 @@ function Request({onLogOut}) {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    const fetchCurrentInfo = useCallback(async () => {
+        if(schoolCode) {
+            const response = await axios.get("http://localhost:8000/request/getCurrentInfo", {
+                params: {
+                    schoolCode: schoolCode
+                }
+            });
+
+            if(response.data) setCurrentInfo(response.data[0]);
+        }
+    }, [schoolCode]);
+
+    useEffect(() => {
+        fetchCurrentInfo();
+    }, [fetchCurrentInfo]);
+
+    const workStatusInfo = () => {
+        let convertedWorkStatus = "";
+        if(currentInfo) {
+            const workStatus = currentInfo.workStatus;
+            if(workStatus === "working") convertedWorkStatus = "근무";
+            else if(workStatus === "outOfOffice") convertedWorkStatus = "부재";
+            else if(workStatus === "businessTrip") convertedWorkStatus = "출장";
+            else if(workStatus === "vacation") convertedWorkStatus = "휴가";
+        }
+
+        return convertedWorkStatus;
+    };
+
     return(
         <>
             <div className="content" style={{ height: isBrowser ? '83.4vh' : contentHeight }}>
                 <BrowserView>
-                    <p>접속 기기 : PC</p>
                     <Row>
                         <p>PC View</p>
                         <Button onClick={onLogOut}>로그아웃</Button>
@@ -318,15 +361,16 @@ function Request({onLogOut}) {
                 </BrowserView>
 
                 <MobileView>
-                    <p>접속 기기 : Mobile</p>
                     <Card style={{ width: '100%', height: '7vh' }}>
-
+                        <Row className="d-flex align-items-center no-gutters">
+                            <span style={{ fontSize: 17 }}>상태 : </span> <Badge className="ml-2" style={{ fontSize: 17 }}>{workStatusInfo()}중</Badge>
+                        </Row>
                     </Card>
                     <Card style={{ width: '100%', height: '59.7vh' }}>
 
                     </Card>
                     <Row className="justify-content-end no-gutters">
-                        <Button onClick={onLogOut}>로그아웃</Button>
+                        {/* <Button onClick={onLogOut}>로그아웃</Button> */}
                     </Row>
                 </MobileView>
             </div>

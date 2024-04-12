@@ -995,6 +995,19 @@ app.post('/workNote/updateOnBedEndTime', async (req, res) => {
     });
 });
 
+app.get('/request/getCurrentInfo', async (req, res) => {
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT workStatus FROM teaform_db.users WHERE schoolCode = ?";
+    db.query(sqlQuery, [schoolCode], (err, result) => {
+        if(err) {
+            console.log("학교코드로 보건실 현황 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
