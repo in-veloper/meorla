@@ -8,6 +8,7 @@ import Neis from "@my-school.info/neis-api";
 import { BrowserView, MobileView, isBrowser, isMobile } from "react-device-detect";
 import { FaCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import moment from "moment";
 import "../assets/css/request.css";
 import axios from "axios";
 
@@ -278,6 +279,7 @@ function RequesterLogin({onLogin}) {
 function Request({onLogOut}) {
     const [schoolCode, setSchoolCode] = useState("");
     const [currentInfo, setCurrentInfo] = useState(null);
+    const [onBedRestInfo, setOnBedRestInfo] = useState(null);
 
     const params = useParams();
     
@@ -337,6 +339,24 @@ function Request({onLogOut}) {
         fetchCurrentInfo();
     }, [fetchCurrentInfo]);
 
+    const fetchOnBedRestInfo = useCallback(async () => {
+        const today = moment().format('YYYY-MM-DD');
+        if(schoolCode) {
+            const response = await axios.get("http://localhost:8000/request/getOnBedRestInfo", {
+                params: {
+                    schoolCode: schoolCode,
+                    today: today
+                }
+            });
+
+            if(response.data) setOnBedRestInfo(response.data);
+        }
+    }, [schoolCode]);
+
+    useEffect(() => {
+        fetchOnBedRestInfo();
+    }, [fetchOnBedRestInfo]);
+
     const workStatusInfo = () => {
         let convertedWorkStatus = "";
         if(currentInfo) {
@@ -350,6 +370,23 @@ function Request({onLogOut}) {
         return convertedWorkStatus;
     };
 
+    const generateBedBox = () => {
+        if(onBedRestInfo && onBedRestInfo.length > 0) {
+            return onBedRestInfo.map(item => (
+                <div className="ml-1 mr-1">
+                    <Card className="p-2 text-muted text-center" style={{ border: '1px dashed lightgrey', fontSize: 11, backgroundColor: 'ivory' }}>
+                        <span className="flex-nowrap">{item.sGrade}학년 {item.sClass}반 {item.sNumber}번</span><span><b>{item.sName}</b></span>
+                        <span className="flex-nowrap">{item.onBedStartTime} ~ {item.onBedEndTime}</span>
+                    </Card>
+
+                </div>
+            ));
+        }else{
+            return null;
+        };
+         
+    };
+
     return(
         <>
             <div className="content" style={{ height: isBrowser ? '83.4vh' : contentHeight }}>
@@ -361,16 +398,18 @@ function Request({onLogOut}) {
                 </BrowserView>
 
                 <MobileView>
-                    <Card style={{ width: '100%', height: '7vh' }}>
-                        <Row className="d-flex align-items-center no-gutters">
-                            <span style={{ fontSize: 17 }}>상태 : </span> <Badge className="ml-2" style={{ fontSize: 17 }}>{workStatusInfo()}중</Badge>
+                    <Card style={{ width: '100%', height: '15vh' }}>
+                        <Row className="d-flex align-items-center no-gutters justify-content-center p-2">
+                            <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}중</Badge>
+                        </Row>
+                        <Row className="d-flex align-items-center no-gutters flex-nowrap p-1">
+                            {generateBedBox()}
                         </Row>
                     </Card>
                     <Card style={{ width: '100%', height: '59.7vh' }}>
 
                     </Card>
                     <Row className="justify-content-end no-gutters">
-                        {/* <Button onClick={onLogOut}>로그아웃</Button> */}
                     </Row>
                 </MobileView>
             </div>

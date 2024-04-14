@@ -9,6 +9,7 @@ import '../../assets/css/navbar.css';
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
+import { Block } from 'notiflix/build/notiflix-block-aio';
 import { PiFaceMask } from "react-icons/pi";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +45,7 @@ function Header(props) {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [pmStationTooltipOpen, setPmStationTooltipOpen] = useState(false);
   const [notifyPmChecked, setNotifyPmChecked] = useState(false);
+  const [selectedStation, setSelectedStation] = useState("");
 
   const gridRef = useRef();
   
@@ -421,12 +423,14 @@ function Header(props) {
       });
 
       if(response.data === 'success') {
-        fetchPmStationInfo();
+        setSelectedStation(selectedStation);
       }
     }
   };
 
-  const fetchPmStationInfo = useCallback(async () => {
+  const fetchAirConditionData = useCallback(async () => {
+    Block.dots('.scrollable-dropdown-items');
+
     if(user && user.pmStation) {
       try {
         const url = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty";
@@ -452,18 +456,22 @@ function Header(props) {
           setPm25Value(responseData.pm25Value);
           setPm10Text(pm10Text);
           setPm25Text(pm25Text);
+          setSelectedStation(user.pmStation);
+
+          if(document.querySelector('.notiflix-block')) Block.remove('.scrollable-dropdown-items');
         }
       } catch (error) {
         console.log("선택한 미세먼지 측정소 기준 조회 중 ERROR", error);
+        if(document.querySelector('.notiflix-block')) Block.remove('.scrollable-dropdown-items');
       }
     }
   }, [user]);
 
   useEffect(() => {
-    fetchPmStationInfo();
-  }, [fetchPmStationInfo]);
+    fetchAirConditionData();
+  }, [fetchAirConditionData]);
 
-  const fetchAirConditionData = useCallback(async () => {
+  const fetchPmStationInfo = useCallback(async () => {
     if(targetSido && stationInfo.length === 0) {
       try {
         const url = 'http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty';
@@ -473,7 +481,7 @@ function Header(props) {
             returnType: 'json',
             numOfRows: 100,
             pageNo: 1,
-            sidoName: '대전',
+            sidoName: targetSido,
             ver: '1.0'
           }
         });
@@ -511,11 +519,31 @@ function Header(props) {
     return returnGrade;
   };
 
+  const fetchNotifyPmStatus = useCallback(async () => {
+    if(user) {
+      const response = await axios.get("http://localhost:8000/user/getNotifyPmInfo", {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const notifyPmInfoStatus = Boolean(response.data[0].notifyPm);
+        setNotifyPmChecked(notifyPmInfoStatus);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchNotifyPmStatus();
+  }, [fetchNotifyPmStatus]);
+
   const handleNotifyPmInfo = async (e) => {
     e.preventDefault();
     
-    const confirmTitle = "미세먼지 자동 알림 설정";
-    const confirmMessage = (user ? user.notifyPm : false) ? "미세먼지 자동 알림을 해제하시겠습니까?" : "미세먼지 자동 알림으로 설정하시겠습니까?";
+    const confirmTitle = "미세먼지 경보 알림 설정";
+    const confirmMessage = (user ? user.notifyPm : false) ? "미세먼지 경보 알림을 해제하시겠습니까?" : "미세먼지 경보 알림으로 설정하시겠습니까?";
 
     const yesCallback = async () => {
       if(user) {
@@ -539,8 +567,93 @@ function Header(props) {
   };
 
   useEffect(() => {
-    if(targetSido) fetchAirConditionData();
-  }, [targetSido, fetchAirConditionData]);
+    if(targetSido) fetchPmStationInfo();
+  }, [targetSido, fetchPmStationInfo]);
+
+
+  const [pmAlarmData, setPmAlarmData] = useState([]);
+
+  const fetchPmAlarmData = useCallback(async () => {
+    try {
+      const currentDate = new Date();
+      const currentHour = currentDate.getHours();
+      const currentMinute = currentDate.getMinutes();
+      
+      if(currentHour >= 8 && currentHour < 16 && currentMinute >= 30) {
+        const currentYear = currentDate.getFullYear();
+        const url = 'http://apis.data.go.kr/B552584/UlfptcaAlarmInqireSvc/getUlfptcaAlarmInfo';
+        const response = await axios.get(url, {
+          params: {
+            serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
+            returnType: 'json',
+            numOfRows: 100,
+            pageNo: 1,
+            year: currentYear
+          }
+        });
+    
+        if(response.data.response) {
+          setPmAlarmData(response.data.response.body.items);
+          const toSendPmAlarm = extractToSendAlarm();
+          // 테스트 필요 (경보 || 주의보 발생 시에만 테스트할 수는 없음)
+
+
+
+        }
+      }
+    } catch (error) {
+      console.log("미세먼지 경보 정보 조회 중 ERROR", error);
+    }
+  }, []);
+
+  const extractToSendAlarm = () => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentDay = currentDate.getDate();
+    const currentHour = currentDate.getHours();
+    const currentMinute = currentDate.getMinutes();
+    
+    const pastAlarms = pmAlarmData.filter(alarm => {
+      const issueDateParts = alarm.issueDate.split('-');
+      const issueYear = parseInt(issueDateParts[0]);
+      const issueMonth = parseInt(issueDateParts[1]);
+      const issueDay = parseInt(issueDateParts[2]);
+      
+      // 현재 시간 이전에 발행된 알림 필터링
+      if (alarm.districtName !== targetSido) return false;
+      if (currentYear > issueYear) return true;
+      if (currentMonth > issueMonth) return true;
+      if (currentDay > issueDay) return true;
+      if (currentHour > parseInt(alarm.issueTime.slice(0, 2))) return true;
+      if (currentHour === parseInt(alarm.issueTime.slice(0, 2)) && 
+          currentMinute >= parseInt(alarm.issueTime.slice(3, 5))) return true;
+          
+      return false;
+    });
+    
+    return pastAlarms;
+  };
+
+  useEffect(() => {
+    fetchPmAlarmData();
+  }, [fetchPmAlarmData]);
+
+  useEffect(() => {
+    fetchPmAlarmData();
+    const intervalId = setInterval(fetchPmAlarmData, 60 * 60 * 1000); // 1시간 간격으로 호출
+    return () => {
+      clearInterval(intervalId);  // component가 unmount될 때 interval 해제
+    };
+  }, [fetchPmAlarmData]);
+
+  useEffect(() => {
+    fetchAirConditionData();
+    const intervalId = setInterval(fetchAirConditionData, 60 * 60 * 1000); // 1시간 간격으로 호출
+    return () => {
+      clearInterval(intervalId);  // component가 unmount될 때 interval 해제
+    };
+  }, [fetchAirConditionData]);
 
   const onLogout = () => {
     const userId = user ? user.userId : null;
@@ -583,7 +696,7 @@ function Header(props) {
         </NavbarToggler>
         <Collapse isOpen={isOpen} navbar className="justify-content-end">
           <Nav navbar>
-            <div className="pmInfo text-center" id="pmInfo">
+            <div className="pmInfo text-center text-muted" id="pmInfo">
                 <span>미세먼지&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{pm10Text}</span><br/> 
                 <span>초미세먼지&nbsp;&nbsp;{pm25Text}</span>
               <Tooltip
@@ -605,7 +718,7 @@ function Header(props) {
               nav
               isOpen={pmDropdownOpen}
               toggle={(e) => pmDropdownToggle(e)}
-              className="mr-2"
+              className="pmDropdown mr-2"
             >
               <DropdownToggle caret nav>
                 <PiFaceMask className="mb-1 text-muted" style={{ fontSize: 24 }}/>
@@ -621,9 +734,9 @@ function Header(props) {
                       측정소
                     </Col>
                     <Col md="6">
-                      {user && user.pmStation && user.pmStation.length > 7 ? (
+                      {selectedStation > 7 ? (
                         <span id="longPmStationText">
-                          <b>{`${user.pmStation.substring(0, 7)}...`}</b>
+                          <b>{`${selectedStation.substring(0, 7)}...`}</b>
                           <Tooltip
                             placement="top"
                             isOpen={pmStationTooltipOpen}
@@ -631,11 +744,11 @@ function Header(props) {
                             target="longPmStationText"
                             toggle={togglePmStationTooltip}
                           >
-                            <b>{user ? user.pmStation : ""}</b>
+                            <b>{selectedStation}</b>
                           </Tooltip>
                         </span>
                       ) : (
-                        <b>{user ? user.pmStation : ""}</b>
+                        <b>{selectedStation}</b>
                       )}
                     </Col>
                   </Row>
@@ -644,13 +757,13 @@ function Header(props) {
                 <DropdownItem toggle={false}>
                   <Row>
                     <Col md="9">
-                      자동 알림
+                      경보 알림
                     </Col>
                     <Col md="3">
                       <CustomInput 
                         type="switch"
                         id="notifyPmInfo"
-                        checked={user? user.notifyPm : false}
+                        checked={notifyPmChecked}
                         onChange={handleNotifyPmInfo}
                       />
                     </Col>

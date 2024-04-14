@@ -304,6 +304,20 @@ app.post("/user/updateNotifyPmInfo", (req, res) => {
     });
 });
 
+app.get("/user/getNotifyPmInfo", (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT notifyPm FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("미세먼지 알림 여부 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.post("/bookmark/insert", async (req, res) => {
     const userId = req.body.userId;
     const userEmail = req.body.userEmail;
@@ -1007,6 +1021,30 @@ app.get('/request/getCurrentInfo', async (req, res) => {
         }
     });
 });
+
+app.get('/request/getOnBedRestInfo', async (req, res) => {
+    const schoolCode = req.query.schoolCode;
+    const today = req.query.today;
+    const currentDateTime = new Date();
+    const currentTime = currentDateTime.getHours() + ":" + currentDateTime.getMinutes();
+
+    console.log(currentTime)
+    const sqlQuery = "SELECT sGrade, sClass, sNumber, sGender, sName, onBedStartTime, onBedEndTime FROM teaform_db.workNote " +
+                     "WHERE schoolCode = ? AND DATE(updatedAt) = ? " +
+                     "AND (" +
+                     "(onBedEndTime != '' AND TIME(onBedStartTime) <= TIME(?) AND TIME(onBedEndTime) > TIME(?)) " +
+                     "OR " +
+                     "(onBedEndTime = '' AND TIME(onBedStartTime) <= TIME(?))" +
+                     ")";
+
+    db.query(sqlQuery, [schoolCode, today, currentTime, currentTime, currentTime], (err, result) => {
+        if(err) {
+            console.log("보건실 요청 기능 내 침상정보 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    })
+})
 
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
