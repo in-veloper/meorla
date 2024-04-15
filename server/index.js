@@ -8,12 +8,34 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { urlencoded } = require('body-parser');
 const cookieParser = require('cookie-parser');
-const PORT = process.env.port || 8000;
+const PORT = process.env.PORT || 8000;
 const { Cookies } = require('react-cookie');
 const cookies = new Cookies();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
+const http = require('http');
+const socketIo = require('socket.io');
+
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*"
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log("소켓 연결 성공");
+
+    socket.on('disconnect', () => {
+        console.log("클라이언트가 소켓 연결을 해제했습니다.");
+    });
+
+    socket.on('error', (error) => {
+        console.error("소켓 오류:", error);
+    });
+});
 
 app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
@@ -436,7 +458,7 @@ app.get("/studentsTable/getStudentInfoBySearch", async (req, res) => {
     const sClass = req.query.sClass;
     const sNumber = req.query.sNumber;
     const sName = req.query.sName;
-    console.log(req.query)
+    
     // 초기 쿼리
     let sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
     const queryParams = [userId, schoolCode];
@@ -1028,7 +1050,6 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
     const currentDateTime = new Date();
     const currentTime = currentDateTime.getHours() + ":" + currentDateTime.getMinutes();
 
-    console.log(currentTime)
     const sqlQuery = "SELECT sGrade, sClass, sNumber, sGender, sName, onBedStartTime, onBedEndTime FROM teaform_db.workNote " +
                      "WHERE schoolCode = ? AND DATE(updatedAt) = ? " +
                      "AND (" +
@@ -1044,8 +1065,18 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
             res.json(result);
         }
     })
-})
+});
 
-app.listen(PORT, () => {
+const handleNewWorkNote = (data) => {
+    io.emit('newWorkNote', data);
+};
+
+const selectBedRestInfoQuery = db.query("SELECT * FROM teaform_db.workNote");
+selectBedRestInfoQuery.on('result', (row) => {
+    console.log("여기 타긴 탐????", row)
+    handleNewWorkNote(row);
+});
+
+server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

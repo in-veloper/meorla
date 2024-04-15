@@ -12,6 +12,19 @@ import moment from "moment";
 import "../assets/css/request.css";
 import axios from "axios";
 
+import io from 'socket.io-client';
+
+const serverUrl = 'http://localhost:8000';
+const socket = io(serverUrl);
+
+// socket.on('connect', () => {
+//     console.log("Request 컴포넌트에서 소켓 연결 성공")
+// });
+
+// socket.on('newWorkNote', (data) => {
+//     console.log("새로운 보건일지 등록 내용 추가", data);
+// })
+
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
 // Local Storage에 로그인 정보 저장
@@ -304,6 +317,37 @@ function Request({onLogOut}) {
         if(params) setSchoolCode(params.thirdPartyUserCode);
     }, []);
 
+    useEffect(() => {
+        const handleNewWorkNote = (data) => {
+            debugger
+            console.log("새로운 보건일지 등록 내용 추가", data);
+            // 데이터를 적절한 상태에 업데이트하는 로직을 추가하세요.
+        };
+    
+        socket.on('connect', () => {
+            console.log("Request 컴포넌트에서 소켓 연결 성공");
+        });
+    
+        socket.on('newWorkNote', handleNewWorkNote);
+
+        socket.on('connect_error', (error) => {
+            console.error("소켓 연결 오류:", error);
+        });
+        
+        socket.on('connect_timeout', () => {
+            console.error("소켓 연결 시간 초과");
+        });
+        
+        socket.on('disconnect', (reason) => {
+            console.log("소켓 연결 해제:", reason);
+        });
+    
+        // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
+        return () => {
+            socket.off('newWorkNote', handleNewWorkNote);
+        };
+    }, []);
+
     const [contentHeight, setContentHeight] = useState("auto");
 
     useEffect(() => {
@@ -372,8 +416,8 @@ function Request({onLogOut}) {
 
     const generateBedBox = () => {
         if(onBedRestInfo && onBedRestInfo.length > 0) {
-            return onBedRestInfo.map(item => (
-                <div className="ml-1 mr-1">
+            return onBedRestInfo.map((item, index) => (
+                <div key={index} className="ml-1 mr-1">
                     <Card className="p-2 text-muted text-center" style={{ border: '1px dashed lightgrey', fontSize: 11, backgroundColor: 'ivory' }}>
                         <span className="flex-nowrap">{item.sGrade}학년 {item.sClass}반 {item.sNumber}번</span><span><b>{item.sName}</b></span>
                         <span className="flex-nowrap">{item.onBedStartTime} ~ {item.onBedEndTime}</span>

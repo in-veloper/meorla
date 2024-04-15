@@ -9,6 +9,16 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import AdminLayout from "layouts/Admin.js";
 import Login from "views/Login";
 
+import io from 'socket.io-client';
+
+const serverUrl = 'http://localhost:8000';
+
+const socket = io(serverUrl);
+
+socket.on('connect', () => {
+  // console.log("소켓 연결됨");
+})
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
