@@ -17,14 +17,6 @@ import io from 'socket.io-client';
 const serverUrl = 'http://localhost:8000';
 const socket = io(serverUrl);
 
-// socket.on('connect', () => {
-//     console.log("Request 컴포넌트에서 소켓 연결 성공")
-// });
-
-// socket.on('newWorkNote', (data) => {
-//     console.log("새로운 보건일지 등록 내용 추가", data);
-// })
-
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
 // Local Storage에 로그인 정보 저장
@@ -293,6 +285,8 @@ function Request({onLogOut}) {
     const [schoolCode, setSchoolCode] = useState("");
     const [currentInfo, setCurrentInfo] = useState(null);
     const [onBedRestInfo, setOnBedRestInfo] = useState(null);
+    const [renderBedRest, setRenderBedRest] = useState(false);
+    const [renderWorkStatus, setRenderWorkStatus] = useState(false);
 
     const params = useParams();
     
@@ -318,17 +312,18 @@ function Request({onLogOut}) {
     }, []);
 
     useEffect(() => {
-        const handleNewWorkNote = (data) => {
-            debugger
-            console.log("새로운 보건일지 등록 내용 추가", data);
-            // 데이터를 적절한 상태에 업데이트하는 로직을 추가하세요.
-        };
-    
         socket.on('connect', () => {
             console.log("Request 컴포넌트에서 소켓 연결 성공");
         });
     
-        socket.on('newWorkNote', handleNewWorkNote);
+        socket.on('broadcastBedStatus', (data) => {
+            console.log(data.message);
+            setRenderBedRest(true);
+        });
+
+        socket.on('broadcastWorkStatus', (data) => {
+            setRenderWorkStatus(true);
+        });
 
         socket.on('connect_error', (error) => {
             console.error("소켓 연결 오류:", error);
@@ -343,9 +338,9 @@ function Request({onLogOut}) {
         });
     
         // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
-        return () => {
-            socket.off('newWorkNote', handleNewWorkNote);
-        };
+        // return () => {
+        //     socket.off('newWorkNote', handleNewWorkNote);
+        // };
     }, []);
 
     const [contentHeight, setContentHeight] = useState("auto");
@@ -377,7 +372,8 @@ function Request({onLogOut}) {
 
             if(response.data) setCurrentInfo(response.data[0]);
         }
-    }, [schoolCode]);
+        if(renderWorkStatus) setRenderWorkStatus(false);
+    }, [schoolCode, renderWorkStatus]);
 
     useEffect(() => {
         fetchCurrentInfo();
@@ -395,7 +391,9 @@ function Request({onLogOut}) {
 
             if(response.data) setOnBedRestInfo(response.data);
         }
-    }, [schoolCode]);
+
+        if(renderBedRest) setRenderBedRest(false);
+    }, [schoolCode, renderBedRest]);
 
     useEffect(() => {
         fetchOnBedRestInfo();

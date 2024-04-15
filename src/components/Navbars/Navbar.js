@@ -13,6 +13,7 @@ import { Block } from 'notiflix/build/notiflix-block-aio';
 import { PiFaceMask } from "react-icons/pi";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from 'react-router-dom';
+import io from "socket.io-client";
 
 import routes from "routes.js";
 
@@ -48,6 +49,9 @@ function Header(props) {
   const [selectedStation, setSelectedStation] = useState("");
 
   const gridRef = useRef();
+
+  const serverUrl = 'http://localhost:8000';
+  const socket = io(serverUrl);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -218,6 +222,8 @@ function Header(props) {
 
       if(response.data === 'success') {
         fetchWorkStatusData();
+
+        socket.emit('sendWorkStatus', { message: "근무상태 변경" });
       }
     }
   };
@@ -246,10 +252,6 @@ function Header(props) {
     };
     handleSchoolAddress();
   }, [user])
-
-  // useEffect(() => {
-  //   handleSchoolAddress();
-  // }, [handleSchoolAddress]);
 
   // 기본 컬럼 속성 정의 (공통 부분)
   const defaultColDef = {

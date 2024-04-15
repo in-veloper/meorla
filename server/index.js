@@ -26,7 +26,15 @@ const io = socketIo(server, {
 });
 
 io.on('connection', (socket) => {
-    console.log("소켓 연결 성공");
+    console.log("Connection Socket Success");
+
+    socket.on('sendBedStatus', (data) => {
+        io.emit('broadcastBedStatus', { message: data.message });
+    });
+
+    socket.on('sendWorkStatus', (data) => {
+        io.emit('broadcastWorkStatus', { message: data.message });
+    });
 
     socket.on('disconnect', () => {
         console.log("클라이언트가 소켓 연결을 해제했습니다.");
@@ -1066,6 +1074,9 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
         }
     })
 });
+
+
+
 
 const handleNewWorkNote = (data) => {
     io.emit('newWorkNote', data);

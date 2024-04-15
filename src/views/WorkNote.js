@@ -17,6 +17,7 @@ import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixPrompt from "components/Notiflix/NotiflixPrompt";
 import axios from "axios";
 import moment from "moment";
+import io from "socket.io-client";
 import '../assets/css/worknote.css';
 
 function WorkNote(args) {
@@ -71,6 +72,10 @@ function WorkNote(args) {
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
   }, []);
+
+  const serverUrl = 'http://localhost:8000';
+  const socket = io(serverUrl);
+
 
   const toggleSymptomModal = () => setSymptomModal(!symptomModal);
   const toggleMedicationModal = () => setMedicationModal(!medicationModal);
@@ -922,6 +927,8 @@ function WorkNote(args) {
         const infoMessage = item.sName + "학생의 침상안정이 종료 처리 되었습니다."
         NotiflixInfo(infoMessage);
         fetchEntireWorkNoteGrid();
+
+        socket.emit('sendBedStatus', { message: "침상안정 종료" });
       }
     };
 
@@ -1325,6 +1332,8 @@ function WorkNote(args) {
           onResetSearch();
           handleClearAllWorkNote();
           fetchEntireWorkNoteGrid();
+
+          socket.emit('sendBedStatus', { message: "침상안정 등록"});
         }
       };
 
