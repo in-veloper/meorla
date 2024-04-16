@@ -1,22 +1,24 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge } from "reactstrap";
+import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge, CardHeader, Alert, CustomInput } from "reactstrap";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
-import Neis from "@my-school.info/neis-api";
-import { BrowserView, MobileView, isBrowser, isMobile } from "react-device-detect";
+import { BrowserView, MobileView, isBrowser } from "react-device-detect";
 import { FaCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import moment from "moment";
-import "../assets/css/request.css";
-import axios from "axios";
-
 import io from 'socket.io-client';
-
-const serverUrl = 'http://localhost:8000';
-const socket = io(serverUrl);
+import axios from "axios";
+import Neis from "@my-school.info/neis-api";
+import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
+import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
+import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import { IoMdRefresh } from "react-icons/io";
+import { FaInfoCircle } from "react-icons/fa";
+import { RiSearchLine } from "react-icons/ri";
+import "../assets/css/request.css";
 
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
@@ -289,6 +291,25 @@ function Request({onLogOut}) {
     const [onBedRestInfo, setOnBedRestInfo] = useState(null);
     const [renderBedRest, setRenderBedRest] = useState(false);
     const [renderWorkStatus, setRenderWorkStatus] = useState(false);
+    const [searchCriteria, setSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
+    const [searchStudentRowData, setSearchStudentRowData] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
+
+    const searchStudentGridRef = useRef();
+
+    const [searchStudentColumnDefs] = useState([
+        { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+        { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+        { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+        { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
+    ]);
+
+    const notEditDefaultColDef = {
+        sortable: true,
+        resizable: true,
+        filter: true
+    };
 
     const params = useParams();
     
@@ -314,6 +335,10 @@ function Request({onLogOut}) {
     }, []);
 
     useEffect(() => {
+
+        const serverUrl = 'http://localhost:8000';
+        const socket = io(serverUrl);
+
         const handleBroadcastBedStatus = (data) => {
             const bcMessage = data.message;
             const bcStatus = bcMessage.split('::')[0];
@@ -467,6 +492,99 @@ function Request({onLogOut}) {
          
     };
 
+    const onInputChange = (field, value) => {
+        setSearchCriteria((prevCriteria) => ({
+          ...prevCriteria,
+          [field]: value
+        }));
+    };
+
+    const onResetSearch = () => {
+        const api = searchStudentGridRef.current.api;
+        setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
+        api.setRowData([]);
+        setSelectedStudent('');
+        setPersonalStudentRowData([]);
+    };
+    
+    const onSearchStudent = async (criteria) => {
+        try {
+            const studentData = await fetchStudentData(criteria);
+
+            if (Array.isArray(studentData) && searchStudentGridRef.current) searchStudentGridRef.current.api.setRowData(studentData); // Update the grid
+            setSearchStudentRowData(studentData);
+        } catch (error) {
+            console.error("학생 조회 중 ERROR", error);
+        }
+    };
+    
+    const handleKeyDown = (e, criteria) => {
+        if(e.key === 'Enter') onSearchStudent(searchCriteria);
+    };
+
+    const fetchStudentData = async (criteria) => {
+        try {
+          const { iGrade, iClass, iNumber, iName } = criteria;
+          
+          if(schoolCode) {
+            const response = await axios.get(`http://localhost:8000/studentsTable/getStudentInfoBySearch`, {
+              params: {
+                schoolCode: schoolCode,
+                sGrade:  iGrade,
+                sClass: iClass,
+                sNumber:  iNumber,
+                sName: iName
+              }
+            });
+    
+            return response.data.studentData;
+          }
+        } catch (error) {
+          console.error("학생 정보 조회 중 ERROR", error);
+          return [];
+        }
+    };
+
+    const onGridSelectionChanged = (event) => {
+        const selectedRow = event.api.getSelectedRows()[0];
+        setSelectedStudent(selectedRow);
+    
+        fetchSelectedStudentData();
+    };
+
+    const fetchSelectedStudentData = useCallback(async () => {
+        if(schoolCode && selectedStudent) {
+          const response = await axios.get("http://localhost:8000/workNote/getSelectedStudentData", {
+            params: {
+              schoolCode: schoolCode,
+              sGrade: selectedStudent.sGrade,
+              sClass: selectedStudent.sClass,
+              sNumber: selectedStudent.sNumber,
+              sGender: selectedStudent.sGender,
+              sName: selectedStudent.sName
+            }
+          });
+          
+          if(response.data) {
+            const resultData = response.data.map(item => ({
+              ...item,
+              createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+              symptom: item.symptom.replace(/::/g, ', '),
+              medication: item.medication.replace(/::/g, ', '),
+              actionMatter: item.actionMatter.replace(/::/g, ', '),
+              treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
+              onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
+            }));
+    
+            setPersonalStudentRowData(resultData);
+          }
+        }
+    }, [schoolCode, selectedStudent]);
+    
+    useEffect(() => {
+    fetchSelectedStudentData();
+    }, [fetchSelectedStudentData]);
+
     return(
         <>
             <div className="content" style={{ height: isBrowser ? '83.4vh' : contentHeight }}>
@@ -487,7 +605,68 @@ function Request({onLogOut}) {
                         </Row>
                     </Card>
                     <Card style={{ width: '100%', height: '59.7vh' }}>
-
+                        <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
+                            <b>학생 조회</b>
+                        </CardHeader>
+                        <CardBody className="pb-1 pt-0">
+                            <Row className="d-flex align-items-center no-gutters">
+                                <label className="mr-1">학년</label>
+                                <Input
+                                    className="text-right mr-1"
+                                    style={{ width: '30px', height: '30px' }}
+                                    onChange={(e) => onInputChange("iGrade", e.target.value)}
+                                    value={searchCriteria.iGrade}
+                                    onKeyDown={(e) => handleKeyDown(e, "iGrade")}
+                                />
+                                <label className="mr-1">반</label>
+                                <Input
+                                    className="text-right mr-1"
+                                    style={{ width: '30px', height: '30px' }}
+                                    onChange={(e) => onInputChange("iClass", e.target.value)}
+                                    value={searchCriteria.iClass}
+                                    onKeyDown={(e) => handleKeyDown(e, "iClass")}
+                                />
+                                <label className="mr-1">번호</label>
+                                <Input
+                                    className="text-right mr-1"
+                                    style={{ width: '45px', height: '30px' }}
+                                    onChange={(e) => onInputChange("iNumber", e.target.value)}
+                                    value={searchCriteria.iNumber}
+                                    onKeyDown={(e) => handleKeyDown(e, "iNumber")}
+                                />
+                                <label className="mr-1">이름</label>
+                                <Input
+                                    className="text-right mr-1"
+                                    style={{ width: '65px', height: '30px' }}
+                                    onChange={(e) => onInputChange("iName", e.target.value)}
+                                    value={searchCriteria.iName}
+                                    onKeyDown={(e) => handleKeyDown(e, "iName")}
+                                />
+                                {/* <Button size="sm" style={{ height: '30px', paddingLeft: '10px', paddingRight: '10px' }} onClick={onResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button> */}
+                                <Button size="sm" style={{ height: '30px', paddingLeft: '10px', paddingRight: '10px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
+                            </Row>
+                            <Row className="pt-1">
+                                <Col md="12">
+                                    <div className="ag-theme-alpine" style={{ height: '19.7vh' }}>
+                                    <AgGridReact
+                                        rowHeight={30}
+                                        ref={searchStudentGridRef}
+                                        rowData={searchStudentRowData} 
+                                        columnDefs={searchStudentColumnDefs}
+                                        defaultColDef={notEditDefaultColDef}
+                                        paginationPageSize={4}
+                                        overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                        rowSelection="single"
+                                        onSelectionChanged={onGridSelectionChanged}
+                                        suppressCellFocus={true}
+                                        overlayLoadingTemplate={
+                                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                                        }
+                                    />
+                                    </div>
+                                </Col>
+                            </Row>
+                        </CardBody>
                     </Card>
                     <Row className="justify-content-end no-gutters">
                     </Row>

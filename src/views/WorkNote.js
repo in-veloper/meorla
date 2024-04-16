@@ -36,7 +36,6 @@ function WorkNote(args) {
   const [treatmentMatterModal, setTreatmentMatterModal] = useState(false);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
-  // const [setModifiedData] = useState([]);
   const [searchSymptomText, setSearchSymptomText] = useState("");
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
   const [tagifySymptomSuggestion, setTagifySymptomSuggestion] = useState([]);
@@ -72,10 +71,6 @@ function WorkNote(args) {
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
   }, []);
-
-  const serverUrl = 'http://localhost:8000';
-  const socket = io(serverUrl);
-
 
   const toggleSymptomModal = () => setSymptomModal(!symptomModal);
   const toggleMedicationModal = () => setMedicationModal(!medicationModal);
@@ -128,7 +123,7 @@ function WorkNote(args) {
     sortable: true,
     resizable: true,
     filter: true
-  }
+  };
 
   const [symptomColumnDefs] = useState([
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "left" } }
@@ -464,19 +459,19 @@ function WorkNote(args) {
 
   const handleKeyDown = (e, criteria) => {
     if(e.key === 'Enter') onSearchStudent(searchCriteria);
-  }
+  };
 
   const onGridSelectionChanged = (event) => {
     const selectedRow = event.api.getSelectedRows()[0];
     setSelectedStudent(selectedRow);
 
     fetchSelectedStudentData();
-  }
+  };
 
   const onCellValueChanged = (event) => {
     // const updatedRowData = event.api.getRowNode(event.rowIndex).data;
     // setModifiedData((prevData) => [...prevData, updatedRowData]);
-  }
+  };
 
   // Cell Edit 모드 진입 시 Event
   const onCellEditingStarted = (event) => {
@@ -903,6 +898,9 @@ function WorkNote(args) {
   const handleExitOnBed = useCallback(async (e, item) => {
     e.preventDefault();
 
+    const serverUrl = 'http://localhost:8000';
+    const socket = io(serverUrl);
+
     const currentTime = moment().format('HH:mm');
     const askTitle = "침상안정 종료";
     const askMessage = item.sName + " 학생의 침상안정 종료 시간을 입력해주세요.<br/>기본적으로 현재 시간이 입력되어 있습니다.";
@@ -1232,6 +1230,9 @@ function WorkNote(args) {
   const saveWorkNote = (e) => {
     e.preventDefault();
     
+    const serverUrl = 'http://localhost:8000';
+    const socket = io(serverUrl);
+
     let symptomString = "";
     let medicationString = "";
     let actionMatterString = "";

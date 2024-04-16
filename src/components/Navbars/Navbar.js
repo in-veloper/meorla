@@ -50,8 +50,6 @@ function Header(props) {
 
   const gridRef = useRef();
 
-  const serverUrl = 'http://localhost:8000';
-  const socket = io(serverUrl);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -211,6 +209,9 @@ function Header(props) {
   }, [fetchWorkStatusData]);
 
   const handleWorkStatus = async (e) => {
+    const serverUrl = 'http://localhost:8000';
+    const socket = io(serverUrl);
+    
     const selectedWorkStatus = e.target.id;
 
     if(user?.userId && user?.schoolCode) {

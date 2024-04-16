@@ -21,38 +21,7 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*"
-    }
-});
-
-const connectedSockets = new Set();
-
-io.on('connection', (socket) => {
-    // 이미 연결된 소켓이 아닌 경우에만 Event Listener를 등록
-    if(!connectedSockets.has(socket.id)) {
-        connectedSockets.add(socket.id);
-
-        console.log("Connection Socket Success");
-    
-        const handleSendBedStatus = (data) => {
-            io.emit('broadcastBedStatus', { message: data.message });
-        };
-    
-        const handleSendWorkStatus = (data) => {
-            io.emit('broadcastWorkStatus', { message: data.message });
-        };
-    
-        socket.on('sendBedStatus', handleSendBedStatus);
-        socket.on('sendWorkStatus', handleSendWorkStatus);
-    
-        socket.on('disconnect', () => {
-            console.log("클라이언트가 소켓 연결을 해제했습니다.");
-            connectedSockets.delete(socket.id);
-        });
-    
-        socket.on('error', (error) => {
-            console.error("소켓 오류:", error);
-        });
+        origin: "http://localhost:3000"
     }
 });
 
@@ -1088,4 +1057,35 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
 
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
+});
+
+const connectedSockets = new Set();
+
+io.on('connection', (socket) => {
+    // 이미 연결된 소켓이 아닌 경우에만 Event Listener를 등록
+    if(!connectedSockets.has(socket.id)) {
+        connectedSockets.add(socket.id);
+
+        console.log("Connection Socket Success");
+    
+        const handleSendBedStatus = (data) => {
+            io.emit('broadcastBedStatus', { message: data.message });
+        };
+    
+        const handleSendWorkStatus = (data) => {
+            io.emit('broadcastWorkStatus', { message: data.message });
+        };
+    
+        socket.on('sendBedStatus', handleSendBedStatus);
+        socket.on('sendWorkStatus', handleSendWorkStatus);
+    
+        socket.on('disconnect', () => {
+            console.log("클라이언트가 소켓 연결을 해제했습니다.");
+            connectedSockets.delete(socket.id);
+        });
+    
+        socket.on('error', (error) => {
+            console.error("소켓 오류:", error);
+        });
+    }
 });
