@@ -60,7 +60,7 @@ function RequesterLogin({onLogin}) {
         document.getElementsByClassName('navbar-nav')[0].setAttribute('hidden', true);
 
         const navbarBrand = document.querySelector('.navbar-brand');
-        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 사용 요청';
+        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 방문 요청';
     }, []);
 
     useEffect(() => {
@@ -300,7 +300,7 @@ function Request({onLogOut}) {
         document.getElementsByClassName('navbar-nav')[0].setAttribute('hidden', true);
 
         const navbarBrand = document.querySelector('.navbar-brand');
-        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 사용 요청';
+        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 방문 요청';
 
         const logoutButton = document.createElement('button');
         logoutButton.className = 'btn btn-secondary mobile-logout-btn';

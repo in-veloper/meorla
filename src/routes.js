@@ -117,7 +117,7 @@ const GetRoutes = () => {
       },
       {
         path: '/request/:thirdPartyUserCode',
-        name: "보건실 사용 요청",
+        name: "보건실 방문 요청",
         icon: "nc-icon nc-tap-01",
         component: <Request />,
         layout: "/meorla"
