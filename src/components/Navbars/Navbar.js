@@ -223,7 +223,7 @@ function Header(props) {
       if(response.data === 'success') {
         fetchWorkStatusData();
 
-        socket.emit('sendWorkStatus', { message: "근무상태 변경" });
+        socket.emit('sendWorkStatus', { message: selectedWorkStatus });
       }
     }
   };

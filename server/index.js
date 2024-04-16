@@ -25,24 +25,35 @@ const io = socketIo(server, {
     }
 });
 
+const connectedSockets = new Set();
+
 io.on('connection', (socket) => {
-    console.log("Connection Socket Success");
+    // 이미 연결된 소켓이 아닌 경우에만 Event Listener를 등록
+    if(!connectedSockets.has(socket.id)) {
+        connectedSockets.add(socket.id);
 
-    socket.on('sendBedStatus', (data) => {
-        io.emit('broadcastBedStatus', { message: data.message });
-    });
-
-    socket.on('sendWorkStatus', (data) => {
-        io.emit('broadcastWorkStatus', { message: data.message });
-    });
-
-    socket.on('disconnect', () => {
-        console.log("클라이언트가 소켓 연결을 해제했습니다.");
-    });
-
-    socket.on('error', (error) => {
-        console.error("소켓 오류:", error);
-    });
+        console.log("Connection Socket Success");
+    
+        const handleSendBedStatus = (data) => {
+            io.emit('broadcastBedStatus', { message: data.message });
+        };
+    
+        const handleSendWorkStatus = (data) => {
+            io.emit('broadcastWorkStatus', { message: data.message });
+        };
+    
+        socket.on('sendBedStatus', handleSendBedStatus);
+        socket.on('sendWorkStatus', handleSendWorkStatus);
+    
+        socket.on('disconnect', () => {
+            console.log("클라이언트가 소켓 연결을 해제했습니다.");
+            connectedSockets.delete(socket.id);
+        });
+    
+        socket.on('error', (error) => {
+            console.error("소켓 오류:", error);
+        });
+    }
 });
 
 app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
@@ -1073,19 +1084,6 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
             res.json(result);
         }
     })
-});
-
-
-
-
-const handleNewWorkNote = (data) => {
-    io.emit('newWorkNote', data);
-};
-
-const selectBedRestInfoQuery = db.query("SELECT * FROM teaform_db.workNote");
-selectBedRestInfoQuery.on('result', (row) => {
-    console.log("여기 타긴 탐????", row)
-    handleNewWorkNote(row);
 });
 
 server.listen(PORT, () => {

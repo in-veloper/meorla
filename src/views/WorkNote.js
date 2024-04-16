@@ -928,7 +928,7 @@ function WorkNote(args) {
         NotiflixInfo(infoMessage);
         fetchEntireWorkNoteGrid();
 
-        socket.emit('sendBedStatus', { message: "침상안정 종료" });
+        socket.emit('sendBedStatus', { message: "endBed::" + item.sGrade + "," + item.sClass + "," + item.sNumber + "," + item.sName });
       }
     };
 
@@ -1333,7 +1333,7 @@ function WorkNote(args) {
           handleClearAllWorkNote();
           fetchEntireWorkNoteGrid();
 
-          socket.emit('sendBedStatus', { message: "침상안정 등록"});
+          socket.emit('sendBedStatus', { message: "registBed::" + selectedStudent.sGrade + "," + selectedStudent.sClass + "," + selectedStudent.sNumber + "," + selectedStudent.sName });
         }
       };
 

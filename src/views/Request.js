@@ -8,6 +8,7 @@ import Neis from "@my-school.info/neis-api";
 import { BrowserView, MobileView, isBrowser, isMobile } from "react-device-detect";
 import { FaCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import moment from "moment";
 import "../assets/css/request.css";
 import axios from "axios";
@@ -38,6 +39,7 @@ const removeLoginInfoFromSessionStorage = () => {
 };
 
 
+// 보건교사가 가입되지 않은 학교일 경우 에러 -> 처리 필요
 function RequesterLogin({onLogin}) {
     const navigate = useNavigate();
     const [schoolName, setSchoolName] = useState("");           // 입력한 학교명
@@ -312,35 +314,69 @@ function Request({onLogOut}) {
     }, []);
 
     useEffect(() => {
-        socket.on('connect', () => {
-            console.log("Request 컴포넌트에서 소켓 연결 성공");
-        });
-    
-        socket.on('broadcastBedStatus', (data) => {
-            console.log(data.message);
+        const handleBroadcastBedStatus = (data) => {
+            const bcMessage = data.message;
+            const bcStatus = bcMessage.split('::')[0];
+            const studentInfo = bcMessage.split('::')[1];
+            const targetGrade = studentInfo.split(',')[0];
+            const targetClass = studentInfo.split(',')[1];
+            const targetNumber = studentInfo.split(',')[2];
+            const targetName = studentInfo.split(',')[3];
+
+            let infoMessage = "";
+
+            if(bcStatus === "registBed") infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이<br/>" + "침상안정을 시작하였습니다";
+            else if(bcStatus === "endBed") infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이<br/>" + "침상안정을 종료하였습니다";
+            
+            NotiflixInfo(infoMessage, true, '230px');
+
             setRenderBedRest(true);
-        });
+        };
 
-        socket.on('broadcastWorkStatus', (data) => {
+        const handleBroadcastWorkStatus = (data) => {
+            const workStatus = data.message;
+
+            let infoMessage = "";
+
+            if(workStatus === "working") infoMessage = "보건교사님의 상태가 근무중으로 변경되었습니다";
+            else if(workStatus === "outOfOffice") infoMessage = "보건교사님의 상태가 부재중으로<br/>보건실 방문 요청이 불가합니다";
+            else if(workStatus === "businessTrip") infoMessage = "보건교사님의 상태가 출장중으로<br/>보건실 방문 요청이 불가합니다";
+            else if(workStatus === "vacation") infoMessage = "보건교사님의 상태가 휴가중으로<br/>보건실 방문 요청이 불가합니다";
+
+            let messageWidth = '250px';
+            if(workStatus === "working") messageWidth = '320px';
+
+            NotiflixInfo(infoMessage, true, messageWidth);
+
             setRenderWorkStatus(true);
-        });
+        };
 
-        socket.on('connect_error', (error) => {
-            console.error("소켓 연결 오류:", error);
-        });
-        
-        socket.on('connect_timeout', () => {
-            console.error("소켓 연결 시간 초과");
-        });
-        
-        socket.on('disconnect', (reason) => {
-            console.log("소켓 연결 해제:", reason);
-        });
+        if(!socket.connected) {
+            socket.on('connect', () => {
+                console.log("Request 컴포넌트에서 소켓 연결 성공");
+            });
     
+            socket.on('broadcastBedStatus', handleBroadcastBedStatus);
+            socket.on('broadcastWorkStatus', handleBroadcastWorkStatus);
+    
+            socket.on('connect_error', (error) => {
+                console.error("소켓 연결 오류:", error);
+            });
+            
+            socket.on('connect_timeout', () => {
+                console.error("소켓 연결 시간 초과");
+            });
+            
+            socket.on('disconnect', (reason) => {
+                console.log("소켓 연결 해제:", reason);
+            });
+        }
+
         // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
-        // return () => {
-        //     socket.off('newWorkNote', handleNewWorkNote);
-        // };
+        return () => {
+            socket.off('broadcastBedStatus', handleBroadcastBedStatus);
+            socket.off('broadcastWorkStatus', handleBroadcastWorkStatus);
+        };
     }, []);
 
     const [contentHeight, setContentHeight] = useState("auto");
@@ -372,6 +408,7 @@ function Request({onLogOut}) {
 
             if(response.data) setCurrentInfo(response.data[0]);
         }
+
         if(renderWorkStatus) setRenderWorkStatus(false);
     }, [schoolCode, renderWorkStatus]);
 
@@ -381,6 +418,7 @@ function Request({onLogOut}) {
 
     const fetchOnBedRestInfo = useCallback(async () => {
         const today = moment().format('YYYY-MM-DD');
+
         if(schoolCode) {
             const response = await axios.get("http://localhost:8000/request/getOnBedRestInfo", {
                 params: {
@@ -416,7 +454,7 @@ function Request({onLogOut}) {
         if(onBedRestInfo && onBedRestInfo.length > 0) {
             return onBedRestInfo.map((item, index) => (
                 <div key={index} className="ml-1 mr-1">
-                    <Card className="p-2 text-muted text-center" style={{ border: '1px dashed lightgrey', fontSize: 11, backgroundColor: 'ivory' }}>
+                    <Card className="p-2 text-muted text-center" style={{ border: '1px dashed lightgrey', fontSize: 11, backgroundColor: '#F5F1E7' }}>
                         <span className="flex-nowrap">{item.sGrade}학년 {item.sClass}반 {item.sNumber}번</span><span><b>{item.sName}</b></span>
                         <span className="flex-nowrap">{item.onBedStartTime} ~ {item.onBedEndTime}</span>
                     </Card>
@@ -442,7 +480,7 @@ function Request({onLogOut}) {
                 <MobileView>
                     <Card style={{ width: '100%', height: '15vh' }}>
                         <Row className="d-flex align-items-center no-gutters justify-content-center p-2">
-                            <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}중</Badge>
+                            <span className="text-muted font-weight-bold">보건교사님은 현재 </span> <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}중</Badge> <span className="text-muted font-weight-bold">&nbsp;입니다</span>
                         </Row>
                         <Row className="d-flex align-items-center no-gutters flex-nowrap p-1">
                             {generateBedBox()}
