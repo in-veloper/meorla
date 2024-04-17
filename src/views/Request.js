@@ -585,7 +585,7 @@ function Request({onLogOut}) {
     fetchSelectedStudentData();
     }, [fetchSelectedStudentData]);
 
-    const sendVisitRequest = (e) => {
+    const sendVisitRequest = async (e) => {
         e.preventDefault();
 
         if(selectedStudent) {
@@ -594,10 +594,21 @@ function Request({onLogOut}) {
             const targetClass = selectedStudent.sClass;
             const targetNumber = selectedStudent.sNumber;
             const targetName = selectedStudent.sName;
+            const requestContent = document.getElementById('requestContent').value;
+
+            const response = await axios.post("http://localhost:8000/request/saveVisitRequest", {
+                schoolCode: schoolCode,
+                targetGrade: targetGrade,
+                targetClass: targetClass,
+                targetNumber: targetNumber,
+                targetName: targetName,
+                requestContent: requestContent
+            });
+
+            if(response.data === "success") {
+                debugger
+            }
         }
-        
-        const requestContent = document.getElementById('requestContent').value;
-        debugger
     };
 
     const resetVisitRequestForm = (e) => {
