@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge, CardHeader, Alert, CustomInput } from "reactstrap";
+import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge, CardHeader, Alert, CustomInput, Form } from "reactstrap";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
@@ -302,7 +302,7 @@ function Request({onLogOut}) {
         { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
         { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
         { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
-        { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
+        { field: "sName", headerName: "이름", flex: 1.3, cellStyle: { textAlign: "center" }}
     ]);
 
     const notEditDefaultColDef = {
@@ -324,7 +324,7 @@ function Request({onLogOut}) {
         if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 방문 요청';
 
         const logoutButton = document.createElement('button');
-        logoutButton.className = 'btn btn-secondary mobile-logout-btn';
+        logoutButton.className = 'btn btn-secondary mobile-logout-btn btn-sm';
         logoutButton.textContent = "로그아웃";
         logoutButton.onclick = onLogOut;
         logoutButton.style.display = 'block';
@@ -479,7 +479,7 @@ function Request({onLogOut}) {
         if(onBedRestInfo && onBedRestInfo.length > 0) {
             return onBedRestInfo.map((item, index) => (
                 <div key={index} className="ml-1 mr-1">
-                    <Card className="p-2 text-muted text-center" style={{ border: '1px dashed lightgrey', fontSize: 11, backgroundColor: '#F5F1E7' }}>
+                    <Card className="p-2 text-muted text-center" style={{ border: '1.5px solid lightgrey', fontSize: 11, backgroundColor: '#F5F1E7' }}>
                         <span className="flex-nowrap">{item.sGrade}학년 {item.sClass}반 {item.sNumber}번</span><span><b>{item.sName}</b></span>
                         <span className="flex-nowrap">{item.onBedStartTime} ~ {item.onBedEndTime}</span>
                     </Card>
@@ -527,7 +527,7 @@ function Request({onLogOut}) {
           const { iGrade, iClass, iNumber, iName } = criteria;
           
           if(schoolCode) {
-            const response = await axios.get(`http://localhost:8000/studentsTable/getStudentInfoBySearch`, {
+            const response = await axios.get(`http://localhost:8000/studentsTable/getStudentInfoBySearchInRequest`, {
               params: {
                 schoolCode: schoolCode,
                 sGrade:  iGrade,
@@ -585,6 +585,30 @@ function Request({onLogOut}) {
     fetchSelectedStudentData();
     }, [fetchSelectedStudentData]);
 
+    const sendVisitRequest = (e) => {
+        e.preventDefault();
+
+        if(selectedStudent) {
+            const schoolCode = selectedStudent.schoolCode;
+            const targetGrade = selectedStudent.sGrade;
+            const targetClass = selectedStudent.sClass;
+            const targetNumber = selectedStudent.sNumber;
+            const targetName = selectedStudent.sName;
+        }
+        
+        const requestContent = document.getElementById('requestContent').value;
+        debugger
+    };
+
+    const resetVisitRequestForm = (e) => {
+        e.preventDefault();
+
+        const api = searchStudentGridRef.current.api;
+        api.setRowData([]);
+        setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
+        document.getElementById('requestContent').value = "";
+    };
+
     return(
         <>
             <div className="content" style={{ height: isBrowser ? '83.4vh' : contentHeight }}>
@@ -596,60 +620,64 @@ function Request({onLogOut}) {
                 </BrowserView>
 
                 <MobileView>
-                    <Card style={{ width: '100%', height: '15vh' }}>
-                        <Row className="d-flex align-items-center no-gutters justify-content-center p-2">
+                    <Card className="mb-2" style={{ width: '100%', height: '19vh', border: '1px dashed lightgrey' }}>
+                        <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
+                            <b>보건실 현황</b>
+                        </CardHeader>
+                        <Row className="d-flex align-items-center no-gutters justify-content-center p-1 pb-2">
                             <span className="text-muted font-weight-bold">보건교사님은 현재 </span> <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}중</Badge> <span className="text-muted font-weight-bold">&nbsp;입니다</span>
                         </Row>
                         <Row className="d-flex align-items-center no-gutters flex-nowrap p-1">
                             {generateBedBox()}
                         </Row>
                     </Card>
-                    <Card style={{ width: '100%', height: '59.7vh' }}>
-                        <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
-                            <b>학생 조회</b>
+                    <Card style={{ width: '100%', height: '58vh', border: '1px dashed lightgrey' }}>
+                        <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
+                            <b>보건실 방문 요청</b>
                         </CardHeader>
                         <CardBody className="pb-1 pt-0">
                             <Row className="d-flex align-items-center no-gutters">
-                                <label className="mr-1">학년</label>
+                                <label className="mr-1 pt-1">학년</label>
                                 <Input
                                     className="text-right mr-1"
-                                    style={{ width: '30px', height: '30px' }}
+                                    style={{ width: '30px', height: '27px' }}
                                     onChange={(e) => onInputChange("iGrade", e.target.value)}
                                     value={searchCriteria.iGrade}
                                     onKeyDown={(e) => handleKeyDown(e, "iGrade")}
                                 />
-                                <label className="mr-1">반</label>
+                                <label className="mr-1 pt-1">반</label>
                                 <Input
                                     className="text-right mr-1"
-                                    style={{ width: '30px', height: '30px' }}
+                                    style={{ width: '30px', height: '27px' }}
                                     onChange={(e) => onInputChange("iClass", e.target.value)}
                                     value={searchCriteria.iClass}
                                     onKeyDown={(e) => handleKeyDown(e, "iClass")}
                                 />
-                                <label className="mr-1">번호</label>
+                                <label className="mr-1 pt-1">번호</label>
                                 <Input
                                     className="text-right mr-1"
-                                    style={{ width: '45px', height: '30px' }}
+                                    style={{ width: '42px', height: '27px' }}
                                     onChange={(e) => onInputChange("iNumber", e.target.value)}
                                     value={searchCriteria.iNumber}
                                     onKeyDown={(e) => handleKeyDown(e, "iNumber")}
                                 />
-                                <label className="mr-1">이름</label>
+                                <label className="mr-1 pt-1">이름</label>
                                 <Input
-                                    className="text-right mr-1"
-                                    style={{ width: '65px', height: '30px' }}
+                                    className="text-right"
+                                    style={{ width: '65px', height: '27px', marginRight: 5 }}
                                     onChange={(e) => onInputChange("iName", e.target.value)}
                                     value={searchCriteria.iName}
                                     onKeyDown={(e) => handleKeyDown(e, "iName")}
                                 />
                                 {/* <Button size="sm" style={{ height: '30px', paddingLeft: '10px', paddingRight: '10px' }} onClick={onResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button> */}
-                                <Button size="sm" style={{ height: '30px', paddingLeft: '10px', paddingRight: '10px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
+                                <Button size="sm" style={{ height: '27px', paddingLeft: '10px', paddingRight: '10px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
                             </Row>
                             <Row className="pt-1">
                                 <Col md="12">
                                     <div className="ag-theme-alpine" style={{ height: '19.7vh' }}>
                                     <AgGridReact
-                                        rowHeight={30}
+                                        rowHeight={27}
+                                        headerHeight={32}
                                         ref={searchStudentGridRef}
                                         rowData={searchStudentRowData} 
                                         columnDefs={searchStudentColumnDefs}
@@ -660,12 +688,31 @@ function Request({onLogOut}) {
                                         onSelectionChanged={onGridSelectionChanged}
                                         suppressCellFocus={true}
                                         overlayLoadingTemplate={
-                                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                                            '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                                         }
                                     />
                                     </div>
                                 </Col>
                             </Row>
+                            <Form onSubmit={sendVisitRequest} className="mt-3" style={{ border: '1px dotted #babfc7', backgroundColor: '#fcfcfc', borderRadius: 4, height: '20vh' }}>
+                                <Row className="d-flex align-items-center justify-content-center no-gutters mt-2">
+                                    <b className="p-1 pl-2 pr-2 text-muted" style={{ float: 'right', fontSize: '12px', backgroundColor: '#F5F1E7', borderRadius: '7px'}}>
+                                        {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
+                                    </b>
+                                </Row>
+                                <Row className="d-flex align-items-center no-gutters pt-2 pl-2 pr-2 pb-0" style={{ marginTop: 3}}>
+                                    <Input
+                                        id="requestContent"
+                                        className="p-2"
+                                        type="textarea"
+                                        placeholder="특이사항을 입력해주세요"
+                                    />
+                                </Row>
+                                <Row className="d-flex align-items-center justify-content-center no-gutters">
+                                    <Button size="sm" onClick={sendVisitRequest}>전송</Button>
+                                    <Button className="ml-1" size="sm" onClick={resetVisitRequestForm}>초기화</Button>
+                                </Row>
+                            </Form>
                         </CardBody>
                     </Card>
                     <Row className="justify-content-end no-gutters">

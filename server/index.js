@@ -484,6 +484,50 @@ app.get("/studentsTable/getStudentInfoBySearch", async (req, res) => {
     });
 });
 
+app.get("/studentsTable/getStudentInfoBySearchInRequest", async (req, res) => {
+    const schoolCode = req.query.schoolCode;
+    const sGrade = req.query.sGrade;
+    const sClass = req.query.sClass;
+    const sNumber = req.query.sNumber;
+    const sName = req.query.sName;
+    
+    // 초기 쿼리
+    let sqlQuery = "SELECT * FROM teaform_db.students WHERE schoolCode = ?";
+    const queryParams = [schoolCode];
+
+    // 동적으로 조건 추가
+    if (sGrade) {
+        sqlQuery += " AND sGrade = ?";
+        queryParams.push(sGrade);
+    }
+
+    if (sClass) {
+        sqlQuery += " AND sClass = ?";
+        queryParams.push(sClass);
+    }
+
+    if (sNumber) {
+        sqlQuery += " AND sNumber = ?";
+        queryParams.push(sNumber);
+    }
+
+    if (sName) {
+        // 이름 일부만 입력되었을 때를 위한 LIKE 구문 사용
+        sqlQuery += " AND sName LIKE ?";
+        queryParams.push(`%${sName}%`);
+    }
+
+    // 최종 쿼리 수행
+    db.query(sqlQuery, queryParams, (err, result) => {
+        if (err) {
+            console.log("학생 정보 조회 중 ERROR", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        } else {
+            res.json({ studentData: result });
+        }
+    });
+});
+
 app.post("/symptom/insert", async (req, res) => {
     const userId = req.body.userId;
     const schoolCode = req.body.schoolCode;
