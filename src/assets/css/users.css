@@ -1,8 +1,8 @@
 /* Input 속성 내 Font Style 처리*/
-label {
+/* label {
     font-size: 15px !important;
     font-weight: bold;
-}
+} */
 
 /* Disable Input 회색 음영처리 제거*/
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {

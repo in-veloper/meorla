@@ -1099,6 +1099,15 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
     })
 });
 
+
+
+
+
+
+
+
+
+// 여기서 계속 에러 발생함 - 수정필요
 app.post('/request/saveVisitRequest', async (req, res) => {
     const schoolCode = req.body.schoolCode;
     const targetGrade = req.body.targetGrade;
@@ -1106,9 +1115,26 @@ app.post('/request/saveVisitRequest', async (req, res) => {
     const targetNumber = req.body.targetNumber;
     const targetName = req.body.targetName;
     const requestContent = req.body.requestContent;
+    const teacherClassification = req.body.teacherClassification;
+    const teacherName = req.body.teacherName;
 
-    
+    const sqlQuery = "INSERT INTO teaform_db.visitRequest (schoolCode, teacherClassification, teacherName, sGrade, sClass, sNumber, sName) VALUES (?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [schoolCode, teacherClassification, teacherName, targetGrade, targetClass, targetNumber, targetName, requestContent ], (err, result) => {
+        if(err) {
+            console.log("보건실 방문 요청 내 요청 메시지 Insert 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
 });
+
+
+
+
+
+
+
+
 
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);

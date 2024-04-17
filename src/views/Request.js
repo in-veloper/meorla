@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge, CardHeader, Alert, CustomInput, Form } from "reactstrap";
+import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge, CardHeader, Form, FormGroup } from "reactstrap";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
@@ -295,6 +295,7 @@ function Request({onLogOut}) {
     const [searchStudentRowData, setSearchStudentRowData] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
+    const [selectedTeacherClassification, setSelectedTeacherClassification] = useState("hr");
 
     const searchStudentGridRef = useRef();
 
@@ -587,7 +588,7 @@ function Request({onLogOut}) {
 
     const sendVisitRequest = async (e) => {
         e.preventDefault();
-
+        
         if(selectedStudent) {
             const schoolCode = selectedStudent.schoolCode;
             const targetGrade = selectedStudent.sGrade;
@@ -595,6 +596,7 @@ function Request({onLogOut}) {
             const targetNumber = selectedStudent.sNumber;
             const targetName = selectedStudent.sName;
             const requestContent = document.getElementById('requestContent').value;
+            const teacherName = document.getElementById('teacherName');
 
             const response = await axios.post("http://localhost:8000/request/saveVisitRequest", {
                 schoolCode: schoolCode,
@@ -602,7 +604,9 @@ function Request({onLogOut}) {
                 targetClass: targetClass,
                 targetNumber: targetNumber,
                 targetName: targetName,
-                requestContent: requestContent
+                requestContent: requestContent,
+                teacherClassification: selectedTeacherClassification,
+                teacherName: teacherName
             });
 
             if(response.data === "success") {
@@ -618,6 +622,10 @@ function Request({onLogOut}) {
         api.setRowData([]);
         setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
         document.getElementById('requestContent').value = "";
+    };
+
+    const handleTeacherClassificationChange = (e) => {
+        setSelectedTeacherClassification(e.target.value);
     };
 
     return(
@@ -647,32 +655,74 @@ function Request({onLogOut}) {
                             <b>보건실 방문 요청</b>
                         </CardHeader>
                         <CardBody className="pb-1 pt-0">
+                            <Row className="d-flex align-items-center mt-3" style={{ height: 23, marginLeft: 7 }}>
+                                <Col xs="3">
+                                    <FormGroup style={{  }}>
+                                        <Input
+                                            id="hr"
+                                            name="teacherClassification"
+                                            type="radio"
+                                            value="hr"
+                                            checked={selectedTeacherClassification === "hr"}
+                                            onChange={handleTeacherClassificationChange}
+                                        />
+                                        <Label htmlFor="hr" style={{ fontSize: 13 }}>담임교사</Label>
+                                    </FormGroup>
+                                </Col>
+                                <Col xs="3" style={{ }}>
+                                    <FormGroup style={{  }}>
+                                        <Input
+                                            id="sb"
+                                            name="teacherClassification"
+                                            type="radio"
+                                            value="sb"
+                                            checked={selectedTeacherClassification === "sb"}
+                                            onChange={handleTeacherClassificationChange}
+                                        />
+                                        <Label htmlFor="sb" style={{ fontSize: 13 }}>교과교사</Label>
+                                    </FormGroup>
+                                </Col>
+                                <Col xs="4" style={{ marginLeft: 9 }}>
+                                    <FormGroup style={{ }}>
+                                        <Label style={{ fontSize: 13 }}>요청교사</Label>
+                                    </FormGroup>
+                                </Col>
+                                <Col xs="2" style={{ marginLeft: '-50px' }}>
+                                    <FormGroup>
+                                        <Input
+                                            id="teacherName"
+                                            type="text"
+                                            style={{ width: '65px', height: '27px' }}
+                                        />
+                                    </FormGroup>
+                                </Col>
+                            </Row>
                             <Row className="d-flex align-items-center no-gutters">
-                                <label className="mr-1 pt-1">학년</label>
+                                <Label className="mr-1 pt-1" style={{ fontSize: 13 }}>학년</Label>
                                 <Input
-                                    className="text-right mr-1"
+                                    className="text-right mr-2"
                                     style={{ width: '30px', height: '27px' }}
                                     onChange={(e) => onInputChange("iGrade", e.target.value)}
                                     value={searchCriteria.iGrade}
                                     onKeyDown={(e) => handleKeyDown(e, "iGrade")}
                                 />
-                                <label className="mr-1 pt-1">반</label>
+                                <Label className="mr-1 pt-1" style={{ fontSize: 13 }}>반</Label>
                                 <Input
-                                    className="text-right mr-1"
+                                    className="text-right mr-2"
                                     style={{ width: '30px', height: '27px' }}
                                     onChange={(e) => onInputChange("iClass", e.target.value)}
                                     value={searchCriteria.iClass}
                                     onKeyDown={(e) => handleKeyDown(e, "iClass")}
                                 />
-                                <label className="mr-1 pt-1">번호</label>
+                                <Label className="mr-1 pt-1" style={{ fontSize: 13 }}>번호</Label>
                                 <Input
-                                    className="text-right mr-1"
+                                    className="text-right mr-2"
                                     style={{ width: '42px', height: '27px' }}
                                     onChange={(e) => onInputChange("iNumber", e.target.value)}
                                     value={searchCriteria.iNumber}
                                     onKeyDown={(e) => handleKeyDown(e, "iNumber")}
                                 />
-                                <label className="mr-1 pt-1">이름</label>
+                                <label className="mr-1 pt-1" style={{ fontSize: 13 }}>이름</label>
                                 <Input
                                     className="text-right"
                                     style={{ width: '65px', height: '27px', marginRight: 5 }}
