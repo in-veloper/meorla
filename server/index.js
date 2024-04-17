@@ -1099,6 +1099,17 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
     })
 });
 
+app.post('/request/saveVisitRequest', async (req, res) => {
+    const schoolCode = req.body.schoolCode;
+    const targetGrade = req.body.targetGrade;
+    const targetClass = req.body.targetClass;
+    const targetNumber = req.body.targetNumber;
+    const targetName = req.body.targetName;
+    const requestContent = req.body.requestContent;
+
+    
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
