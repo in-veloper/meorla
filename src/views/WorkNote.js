@@ -1092,10 +1092,24 @@ function WorkNote(args) {
     }
   };
 
-  const handleVisitRequestClose = (e, id) => {
-    debugger
+  const handleVisitRequestClose = async (e, id) => {
     const isCloseButtonClick = e.target.textContent === "x" ? true : false;
-    // 닫았을때 isRead 상태 바꾸는거부터 하면 됨
+    debugger
+    if(isCloseButtonClick) {
+      const selectedRequest = visitRequestList.find(request => request.id === id);
+      debugger
+      if(selectedRequest) {
+        const response = await axios.post("http://localhost:8000/workNote/updateRequestReadStatus", {
+          id: selectedRequest.id,  
+          schoolCode: selectedRequest.schoolCode,
+          isRead: true
+        });
+
+        if(response.data === "success") {
+          debugger
+        }
+      }
+    }
 
   }
 

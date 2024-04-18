@@ -1136,6 +1136,21 @@ app.get('/workNote/getVisitRequest', async (req, res) => {
     });
 });
 
+app.post('/workNote/updateRequestReadStatus', async (req, res) => {
+    const id = req.body.id;
+    const schoolCode = req.body.schoolCode;
+    const isRead = req.body.isRead;
+
+    const sqlQuery = "UPDATE teaform_db.visitRequest SET isRead = ? WHERE id = ? AND schoolCode = ?";
+    db.query(sqlQuery, [isRead, id, schoolCode], (err, result) => {
+       if(err) {
+            console.log("보건실 방문 요청 알람 내역 읽음 처리 중 ERROR", err)
+       }else{
+            res.send("success");
+       } 
+    });
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
