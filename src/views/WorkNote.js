@@ -59,6 +59,7 @@ function WorkNote(args) {
   const [oxygenSaturationValue, setOxygenSaturationValue] = useState(0);
   const [bloodSugarValue, setBloodSugarValue] = useState(0);
   const [nonSelectedHighlight, setNonSelectedHighlight] = useState(false);
+  const [visitRequestList, setVisitRequestList] = useState([]);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -1055,37 +1056,48 @@ function WorkNote(args) {
     e.currentTarget.childNodes[0].lastChild.classList.remove('exit-use-bed');
   };
 
-  const notifyVisitRequest = () => {
-    
-    /**
-     * 방문 요청 내역이 없을 경우 출력 위해 미리 처리
-     */
-    // return(
-    //   <div className="d-flex justify-content-center align-items-center text-center" style={{ height: '100%'}}>
-    //     <span className="text-muted"><b>보건실 방문 요청 내역이 없습니다</b></span>
-    //   </div>
-    // )
+  const fetchVisitRequest = useCallback(async () => {
+    if(user) {
+      const response = await axios.get("http://localhost:8000/workNote/getVisitRequest", {
+        params: {
+          schoolCode: user.schoolCode,
+          isRead: false
+        }
+      });
 
-    return (
-      <div>
-        <UncontrolledAlert color="warning" fade={false}>
+      if(response.data.length > 0) setVisitRequestList(response.data);
+    }
+  }, [user]);
+
+  useEffect(() => {
+   fetchVisitRequest(); 
+  }, [fetchVisitRequest]);
+
+  const notifyVisitRequest = () => {
+    // 신청 시간도 넣어서 받아주는 부분 필요
+
+    if(visitRequestList.length > 0) {
+      return visitRequestList.map((request, index) => (
+        <UncontrolledAlert key={request.id} color="warning" onClick={(e) => handleVisitRequestClose(e, request.id)}>
           <span>
             <b>알림 &nbsp; </b>
-            [13:20] 2학년 3반 정영인 방문 요청</span>
+            [{request.requestTime}] {request.sGrade}학년 {request.sClass}반 {request.sNumber}번 {request.sName} 방문 요청
+          </span>
         </UncontrolledAlert>
-        <UncontrolledAlert color="warning" fade={false}>
-          <span>
-            <b>알림 &nbsp; </b>
-            [15:33] 3학년 1반 김은지 방문 요청</span>
-        </UncontrolledAlert>
-        <UncontrolledAlert color="warning" fade={false}>
-          <span>
-            <b>알림 &nbsp; </b>
-            [11:10] 1학년 2반 홍길동 방문 요청</span>
-        </UncontrolledAlert>
-      </div>
-    );
+      ));
+    }else{
+      return <div className="d-flex justify-content-center align-items-center text-center" style={{ height: '100%'}}>
+               <span className="text-muted"><b>보건실 방문 요청 내역이 없습니다</b></span>
+             </div>
+    }
   };
+
+  const handleVisitRequestClose = (e, id) => {
+    debugger
+    const isCloseButtonClick = e.target.textContent === "x" ? true : false;
+    // 닫았을때 isRead 상태 바꾸는거부터 하면 됨
+
+  }
 
   const fetchMaskedStatus = useCallback(async () => {
     if(user) {
@@ -1454,6 +1466,50 @@ function WorkNote(args) {
     }
   };
 
+  useEffect(() => {
+    const serverUrl = 'http://localhost:8000';
+    const socket = io(serverUrl);
+
+    const handleBroadcastVisitRequest = (data) => {
+      const bcMessage = data.message;
+      const requestMessage = bcMessage.split('::')[0];
+      const studentInfo = bcMessage.split('::')[1];
+      const targetGrade = studentInfo.split(',')[0];
+      const targetClass = studentInfo.split(',')[1];
+      const targetNumber = studentInfo.split(',')[2];
+      const targetName = studentInfo.split(',')[3];
+      
+      if(requestMessage === "visitRequest") {
+        const infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이 보건실 방문 요청을 하였습니다";
+        NotiflixInfo(infoMessage, true, '400px');
+      }
+    };
+
+    if(!socket.connected) {
+      socket.on('connect', () => {
+        console.log("Request 컴포넌트에서 소켓 연결 성공");
+      });
+
+      socket.on('broadcastVisitRequest', handleBroadcastVisitRequest);
+
+      socket.on('connect_error', (error) => {
+          console.error("소켓 연결 오류:", error);
+      });
+      
+      socket.on('connect_timeout', () => {
+          console.error("소켓 연결 시간 초과");
+      });
+      
+      socket.on('disconnect', (reason) => {
+          console.log("소켓 연결 해제:", reason);
+      });
+    }
+
+    return () => {
+      socket.off('broadcastVisitRequest', handleBroadcastVisitRequest);
+  };
+  }, []);
+
   const validateAndHighlight = () => {
     setNonSelectedHighlight(true);
     setTimeout(() => {
@@ -1508,7 +1564,7 @@ function WorkNote(args) {
         </Row>
         <Row>
           <Col className="pr-2" md="4">
-            <Card style={{ minHeight: '420px', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
+            <Card className="studentInfo" style={{ minHeight: '420px', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
@@ -1644,7 +1700,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '252px', overflowY: 'auto', border: '1px solid lightgrey' }}>
+            <Card style={{ height: '252px', border: '1px solid lightgrey' }}>
               <CardHeader className="text-muted" style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-items-center">
                   <Col className="text-left pl-4" md="3">
@@ -1665,12 +1721,14 @@ function WorkNote(args) {
                 </Row>
               </CardHeader>
               <CardBody>
-                {notifyVisitRequest()}
+                <div style={{ height: '100%', overflowY: 'auto' }}>
+                  {notifyVisitRequest()}
+                </div>
               </CardBody>
             </Card>
           </Col>
           <Col className="pl-2" md="8">
-            <Card style={{ border: '1px solid lightgrey' }}>
+            <Card className="workNoteForm" style={{ border: '1px solid lightgrey' }}>
               <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
                 <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
                 <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>

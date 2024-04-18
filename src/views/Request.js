@@ -15,8 +15,6 @@ import Neis from "@my-school.info/neis-api";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { IoMdRefresh } from "react-icons/io";
-import { FaInfoCircle } from "react-icons/fa";
 import { RiSearchLine } from "react-icons/ri";
 import "../assets/css/request.css";
 
@@ -188,13 +186,13 @@ function RequesterLogin({onLogin}) {
         <>
             <div className="content d-flex justify-content-center align-items-center" style={{ height: isBrowser ? '83.3vh' : contentHeight }}>
                 <BrowserView>
-                    <Card style={{ width: '100%', height: '33vh' }}>
-                        <CardBody className="mt-3">
+                    <Card style={{ width: '400px', height: 'auto' }}>
+                        <CardBody className="mt-2">
                             <Row className="mt-2 align-items-center">    
-                                <Col md="3" className="text-center">
+                                <Col md="4" className="text-center">
                                     <Label>학교명</Label>
                                 </Col>
-                                <Col md="9">
+                                <Col md="8">
                                     <div style={{ width: '93%'}}>
                                         <Typeahead
                                             id="basic-typeahead-single"
@@ -212,20 +210,20 @@ function RequesterLogin({onLogin}) {
                                 </Col>
                             </Row>
                             <Row className="mt-3 align-items-center">
-                                <Col md="3" className="text-center">
+                                <Col md="4" className="text-center">
                                     <Label>비밀번호</Label>
                                 </Col>
-                                <Col md="9">
+                                <Col md="8">
                                     <Input type="password" placeholder="학교 공통 비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '93%' }}/>
                                 </Col>
                             </Row>
-                            <Row className="p-3 ml-1 mr-1">
-                                <blockquote className="request-blockquote text-center" style={{ width: '100%' }}>
-                                    <FaCheck className="mr-2" style={{ color: 'gray' }}/>학교 공통 비밀번호를 모르는 경우, 보건교사님께 문의하세요.                                 
-                                </blockquote>
+                            <Row className="d-flex align-items-center no-gutters mt-3">
+                                <div className="p-2 text-muted align-items-center text-center" style={{ border: '1px dashed lightgrey', width: '100%', fontSize: 12, borderRadius: 5, backgroundColor: '#fcfcfc' }}>
+                                    <span>학교 공통 비밀번호를 모르는 경우<br/>보건교사님께 문의하세요</span>
+                                </div>
                             </Row>
                         </CardBody>
-                        <CardFooter className="mb-3">
+                        <CardFooter className="mb-2">
                             <Row className="d-flex justify-content-center align-items-center">
                                 <Button className="mr-1" onClick={handleLogin}>로그인</Button>
                                 <Button className="ml-1">초기화</Button>
@@ -235,13 +233,13 @@ function RequesterLogin({onLogin}) {
                 </BrowserView>
 
                 <MobileView>
-                    <Card style={{ width: '100%', height: '40vh' }}>
-                        <CardBody className="mt-3">
+                    <Card style={{ width: '350px', height: 'auto' }}>
+                        <CardBody className="mt-2">
                             <Row className="mt-2 align-items-center">    
-                                <Col xs="3" className="text-center">
+                                <Col xs="4" className="text-center">
                                     <Label>학교명</Label>
                                 </Col>
-                                <Col xs="9">
+                                <Col xs="8">
                                     <div style={{ width: '93%' }}>
                                         <Typeahead
                                             id="basic-typeahead-single"
@@ -259,20 +257,20 @@ function RequesterLogin({onLogin}) {
                                 </Col>
                             </Row>
                             <Row className="mt-3 align-items-center">
-                                <Col xs="3" className="text-center">
+                                <Col xs="4" className="text-center">
                                     <Label>비밀번호</Label>
                                 </Col>
-                                <Col xs="9">
+                                <Col xs="8">
                                     <Input type="password" placeholder="학교 공통 비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '93%' }}/>
                                 </Col>
                             </Row>
-                            <Row className="p-3 ml-1 mr-1">
-                                <blockquote className="request-blockquote text-center" style={{ width: '100%' }}>
-                                    <FaCheck className="mr-2" style={{ color: 'gray' }}/>학교 공통 비밀번호를 모르는 경우, 보건교사님께 문의하세요.                                 
-                                </blockquote>
+                            <Row className="d-flex align-items-center no-gutters mt-3">
+                                <div className="p-2 text-muted align-items-center text-center" style={{ border: '1px dashed lightgrey', width: '100%', fontSize: 12, borderRadius: 5, backgroundColor: '#fcfcfc' }}>
+                                    <span>학교 공통 비밀번호를 모르는 경우<br/>보건교사님께 문의하세요</span>
+                                </div>
                             </Row>
                         </CardBody>
-                        <CardFooter className="mb-3">
+                        <CardFooter className="mb-2">
                             <Row className="d-flex justify-content-center align-items-center">
                                 <Button className="mr-1" onClick={handleLogin}>로그인</Button>
                                 <Button className="ml-1">초기화</Button>
@@ -336,7 +334,6 @@ function Request({onLogOut}) {
     }, []);
 
     useEffect(() => {
-
         const serverUrl = 'http://localhost:8000';
         const socket = io(serverUrl);
 
@@ -488,7 +485,7 @@ function Request({onLogOut}) {
                 </div>
             ));
         }else{
-            return null;
+            return <span className="text-muted">현재 침상안정중인 학생이 없습니다</span>;
         };
          
     };
@@ -588,6 +585,10 @@ function Request({onLogOut}) {
 
     const sendVisitRequest = async (e) => {
         e.preventDefault();
+
+        const serverUrl = 'http://localhost:8000';
+        const socket = io(serverUrl);
+        const currentTime = moment().format('HH:mm');
         
         if(selectedStudent) {
             const schoolCode = selectedStudent.schoolCode;
@@ -596,7 +597,7 @@ function Request({onLogOut}) {
             const targetNumber = selectedStudent.sNumber;
             const targetName = selectedStudent.sName;
             const requestContent = document.getElementById('requestContent').value;
-            const teacherName = document.getElementById('teacherName');
+            const teacherName = document.getElementById('teacherName').value;
 
             const response = await axios.post("http://localhost:8000/request/saveVisitRequest", {
                 schoolCode: schoolCode,
@@ -606,22 +607,28 @@ function Request({onLogOut}) {
                 targetName: targetName,
                 requestContent: requestContent,
                 teacherClassification: selectedTeacherClassification,
-                teacherName: teacherName
+                teacherName: teacherName,
+                requestTime: currentTime
             });
 
             if(response.data === "success") {
-                debugger
+                socket.emit('sendVisitRequest', { message : "visitRequest::" + targetGrade + "," + targetClass + "," + targetNumber + "," + targetName });
+                resetVisitRequestForm();
+
+                const infoMessage = "보건실 방문 요청이 정상적으로 처리되었습니다";
+                NotiflixInfo(infoMessage, true, '320px');
             }
         }
     };
 
-    const resetVisitRequestForm = (e) => {
-        e.preventDefault();
-
+    const resetVisitRequestForm = () => {
         const api = searchStudentGridRef.current.api;
         api.setRowData([]);
         setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
         document.getElementById('requestContent').value = "";
+        document.getElementById('teacherName').value = "";
+        setSelectedTeacherClassification('hr');
+        setSelectedStudent("");
     };
 
     const handleTeacherClassificationChange = (e) => {
@@ -644,9 +651,11 @@ function Request({onLogOut}) {
                             <b>보건실 현황</b>
                         </CardHeader>
                         <Row className="d-flex align-items-center no-gutters justify-content-center p-1 pb-2">
-                            <span className="text-muted font-weight-bold">보건교사님은 현재 </span> <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}중</Badge> <span className="text-muted font-weight-bold">&nbsp;입니다</span>
+                            <div className="pt-1 pb-1 pl-2 pr-2" style={{ border: '0.5px solid lightgrey', borderRadius: 5, backgroundColor: '#fcfcfc' }}>
+                                <span className="text-muted font-weight-bold">보건교사님은 현재 </span> <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}중</Badge> <span className="text-muted font-weight-bold">&nbsp;입니다</span>
+                            </div>
                         </Row>
-                        <Row className="d-flex align-items-center no-gutters flex-nowrap p-1">
+                        <Row className="d-flex align-items-center no-gutters flex-nowrap p-1" style={{ verticalAlign: 'middle', height: '100%' }}>
                             {generateBedBox()}
                         </Row>
                     </Card>
@@ -755,18 +764,19 @@ function Request({onLogOut}) {
                                     </div>
                                 </Col>
                             </Row>
-                            <Form onSubmit={sendVisitRequest} className="mt-3" style={{ border: '1px dotted #babfc7', backgroundColor: '#fcfcfc', borderRadius: 4, height: '20vh' }}>
+                            <Form onSubmit={sendVisitRequest} className="mt-3" style={{ border: '1px dotted #babfc7', backgroundColor: '#fcfcfc', borderRadius: 4, height: '19vh' }}>
                                 <Row className="d-flex align-items-center justify-content-center no-gutters mt-2">
                                     <b className="p-1 pl-2 pr-2 text-muted" style={{ float: 'right', fontSize: '12px', backgroundColor: '#F5F1E7', borderRadius: '7px'}}>
                                         {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
                                     </b>
                                 </Row>
-                                <Row className="d-flex align-items-center no-gutters pt-2 pl-2 pr-2 pb-0" style={{ marginTop: 3}}>
+                                <Row className="d-flex align-items-center no-gutters pt-2 pl-2 pr-2 pb-0" style={{ marginTop: 3 }}>
                                     <Input
                                         id="requestContent"
-                                        className="p-2"
+                                        className="p-1"
                                         type="textarea"
                                         placeholder="특이사항을 입력해주세요"
+                                        style={{ height: 66 }}
                                     />
                                 </Row>
                                 <Row className="d-flex align-items-center justify-content-center no-gutters">

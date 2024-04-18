@@ -96,3 +96,12 @@
     /* background-color: #f07446 !important; */
 }
 
+.studentInfo label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.workNoteForm label {
+    font-size: 14px;
+    font-weight: bold;
+}

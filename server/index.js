@@ -693,7 +693,7 @@ app.post("/medication/update", async (req, res) => {
     const schoolCode = req.body.schoolCode;
     const medicationString = req.body.medication;
 
-    const sqlQuery = "UPDATE teaform_db.medication  SET medication = ? WHERE userId = ? AND schoolCode = ?";
+    const sqlQuery = "UPDATE teaform_db.medication SET medication = ? WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [medicationString, userId, schoolCode], (err, result) => {
         if(err) {
             console.log("투약사항 데이터 Insert 중 ERROR" + err);
@@ -1099,14 +1099,6 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
     })
 });
 
-
-
-
-
-
-
-
-
 // 여기서 계속 에러 발생함 - 수정필요
 app.post('/request/saveVisitRequest', async (req, res) => {
     const schoolCode = req.body.schoolCode;
@@ -1117,9 +1109,10 @@ app.post('/request/saveVisitRequest', async (req, res) => {
     const requestContent = req.body.requestContent;
     const teacherClassification = req.body.teacherClassification;
     const teacherName = req.body.teacherName;
+    const requestTime = req.body.requestTime;
 
-    const sqlQuery = "INSERT INTO teaform_db.visitRequest (schoolCode, teacherClassification, teacherName, sGrade, sClass, sNumber, sName) VALUES (?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [schoolCode, teacherClassification, teacherName, targetGrade, targetClass, targetNumber, targetName, requestContent ], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.visitRequest (schoolCode, teacherClassification, teacherName, sGrade, sClass, sNumber, sName, requestContent, requestTime) VALUES (?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [schoolCode, teacherClassification, teacherName, targetGrade, targetClass, targetNumber, targetName, requestContent, requestTime ], (err, result) => {
         if(err) {
             console.log("보건실 방문 요청 내 요청 메시지 Insert 처리 중 ERROR", err);
         }else{
@@ -1128,13 +1121,20 @@ app.post('/request/saveVisitRequest', async (req, res) => {
     });
 });
 
+// DB에서 조회할때 오늘날짜로 등록된 목록만 조회하도록 수정 필요
+app.get('/workNote/getVisitRequest', async (req, res) => {
+    const schoolCode = req.query.schoolCode;
+    const isRead = req.query.isRead;
 
-
-
-
-
-
-
+    const sqlQuery = "SELECT * FROM teaform_db.visitRequest WHERE schoolCode = ? AND isRead = ?";
+    db.query(sqlQuery, [schoolCode, isRead], (err, result) => {
+        if(err) {
+            console.log("보건실 방문 신청 내역 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
 
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
@@ -1156,9 +1156,14 @@ io.on('connection', (socket) => {
         const handleSendWorkStatus = (data) => {
             io.emit('broadcastWorkStatus', { message: data.message });
         };
+
+        const handleSendVisitRequest = (data) => {
+            io.emit('broadcastVisitRequest', {message: data.message });
+        }
     
         socket.on('sendBedStatus', handleSendBedStatus);
         socket.on('sendWorkStatus', handleSendWorkStatus);
+        socket.on('sendVisitRequest', handleSendVisitRequest);
     
         socket.on('disconnect', () => {
             console.log("클라이언트가 소켓 연결을 해제했습니다.");
