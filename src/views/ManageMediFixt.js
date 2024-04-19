@@ -421,7 +421,7 @@ function ManageMediFixt() {
                                     stopEditingWhenCellsLoseFocus={true}
                                     onRowClicked={onRowClicked}
                                     paginationPageSize={4} // 페이지 크기를 원하는 값으로 설정
-                                    overlayNoRowsTemplate={ '<span>등록된 증상이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                    overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 증상이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                                     overlayLoadingTemplate={
                                         '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                                     }

@@ -1151,6 +1151,20 @@ app.post('/workNote/updateRequestReadStatus', async (req, res) => {
     });
 });
 
+app.post('/workNote/updateEntireRequestReadStatus', async (req, res) => {
+    const requestIds = req.body.requestIds;
+    const isRead = req.body.isRead;
+
+    const sqlQuery = "UPDATE teaform_db.visitRequest SET isRead = ? WHERE id IN (?)";
+    db.query(sqlQuery, [isRead, requestIds], (err, result) => {
+        if(err) {
+            console.log("보건실 방문 요청 알람 내역 전체 읽음 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

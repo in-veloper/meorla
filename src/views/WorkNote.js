@@ -1,5 +1,5 @@
 import React, {useState, useRef, useCallback, useEffect} from "react";
-import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput } from "reactstrap";
+import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput, Tooltip } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -15,10 +15,12 @@ import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixPrompt from "components/Notiflix/NotiflixPrompt";
+import { Block } from 'notiflix/build/notiflix-block-aio';
 import axios from "axios";
 import moment from "moment";
 import io from "socket.io-client";
 import '../assets/css/worknote.css';
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 function WorkNote(args) {
   const { user } = useUser();                              // 사용자 정보
@@ -60,6 +62,7 @@ function WorkNote(args) {
   const [bloodSugarValue, setBloodSugarValue] = useState(0);
   const [nonSelectedHighlight, setNonSelectedHighlight] = useState(false);
   const [visitRequestList, setVisitRequestList] = useState([]);
+  const [visitRequestTooltipOpen, setVisitRequestTooltipOpen] = useState(false);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -77,6 +80,7 @@ function WorkNote(args) {
   const toggleMedicationModal = () => setMedicationModal(!medicationModal);
   const toggleActionMatterModal = () => setActionMatterModal(!actionMatterModal);
   const toggleTreatmentMatterModal = () => setTreatmentMatterModal(!treatmentMatterModal);
+  const toggleVisitRequestTooltip = () => setVisitRequestTooltipOpen(!visitRequestTooltipOpen);
 
   const [searchStudentColumnDefs] = useState([
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
@@ -1057,6 +1061,8 @@ function WorkNote(args) {
   };
 
   const fetchVisitRequest = useCallback(async () => {
+    Block.dots('.request-alert-box');
+
     if(user) {
       const response = await axios.get("http://localhost:8000/workNote/getVisitRequest", {
         params: {
@@ -1065,7 +1071,8 @@ function WorkNote(args) {
         }
       });
 
-      if(response.data.length > 0) setVisitRequestList(response.data);
+      if(response.data) setVisitRequestList(response.data);
+      if(document.querySelector('.notiflix-block')) Block.remove('.request-alert-box');
     }
   }, [user]);
 
@@ -1074,30 +1081,46 @@ function WorkNote(args) {
   }, [fetchVisitRequest]);
 
   const notifyVisitRequest = () => {
-    // 신청 시간도 넣어서 받아주는 부분 필요
-
     if(visitRequestList.length > 0) {
       return visitRequestList.map((request, index) => (
-        <UncontrolledAlert key={request.id} color="warning" onClick={(e) => handleVisitRequestClose(e, request.id)}>
-          <span>
-            <b>알림 &nbsp; </b>
-            [{request.requestTime}] {request.sGrade}학년 {request.sClass}반 {request.sNumber}번 {request.sName} 방문 요청
-          </span>
+        <UncontrolledAlert key={request.id} color="warning" toggle={(e) => handleVisitRequestClose(e, request.id)}>
+          <div id="visitRequestInfo">
+            <span style={{ maxWidth: '100%' }}>
+              <b>알림 &nbsp; </b>
+              [{request.requestTime}] {alertHidden ? "*" : request.sGrade}학년 {alertHidden ? "*" : request.sClass}반 {alertHidden ? "*" : request.sNumber}번 {alertHidden ? Masking(request.sName) : request.sName} 방문 요청 - {request.teacherClassification === 'hr' ? "담임교사" : "교과목교사"} {request.teacherName}
+            </span>
+            <Tooltip
+              placement="auto"
+              isOpen={visitRequestTooltipOpen}
+              autohide={true}
+              target="visitRequestInfo"
+              toggle={toggleVisitRequestTooltip}
+            >
+              <div className="text-left">
+                <b>요청시간</b> : {request.requestTime.split(":")[0]}시 {request.requestTime.split(":")[1]}분<br/>
+                <b>방문학생</b> : {request.sGrade}학년 {request.sClass}반 {request.sNumber}번 {request.sName}<br/>
+                <b>요청교사</b> : {request.teacherClassification === 'hr' ? "담임교사" : "교과목교사"} {request.teacherName}<br/>
+                <b>요청내용</b> : {request.requestContent}
+              </div>
+            </Tooltip>
+          </div>
         </UncontrolledAlert>
       ));
     }else{
       return <div className="d-flex justify-content-center align-items-center text-center" style={{ height: '100%'}}>
-               <span className="text-muted"><b>보건실 방문 요청 내역이 없습니다</b></span>
+               <span className="text-muted">보건실 방문 요청 내역이 없습니다</span>
              </div>
     }
   };
 
   const handleVisitRequestClose = async (e, id) => {
-    const isCloseButtonClick = e.target.textContent === "x" ? true : false;
-    debugger
-    if(isCloseButtonClick) {
-      const selectedRequest = visitRequestList.find(request => request.id === id);
-      debugger
+    e.stopPropagation();
+    
+    const selectedRequest = visitRequestList.find(request => request.id === id);
+    const confirmTitle = "보건실 방문 요청 확인";
+    const confirmMessage = selectedRequest.sName + " 학생의 방문 요청 알림을 목록에서 삭제하시겠습니까?";
+
+    const yesCallback = async () => {
       if(selectedRequest) {
         const response = await axios.post("http://localhost:8000/workNote/updateRequestReadStatus", {
           id: selectedRequest.id,  
@@ -1106,12 +1129,45 @@ function WorkNote(args) {
         });
 
         if(response.data === "success") {
-          debugger
+          fetchVisitRequest();
         }
       }
-    }
+    };
 
-  }
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '377px');
+  };
+
+  const handleEntireVisitRequestClose = async () => {
+    const confirmTitle = "보건실 방문 요청 전체 확인";
+    const confirmMessage = "보건실 방문 요청 알림을 모두 삭제하시겠습니까?";
+
+    if(visitRequestList.length > 0) {
+      const yesCallback = async () => {
+        const requestIds = visitRequestList.map(request => request.id);
+        const response = await axios.post("http://localhost:8000/workNote/updateEntireRequestReadStatus", {
+          requestIds: requestIds,
+          isRead: true
+        });
+
+        if(response.data === "success") {
+          fetchVisitRequest();
+        }
+      };
+
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+    }else{
+      const infoMessage = "삭제할 보건실 방문 요청 내역이 없습니다";
+      NotiflixInfo(infoMessage, true, '320px');
+    }
+  };
 
   const fetchMaskedStatus = useCallback(async () => {
     if(user) {
@@ -1413,7 +1469,7 @@ function WorkNote(args) {
     fetchEntireWorkNoteGrid();
     setIsEntireWorkNoteOpen(!isEntireWorkNoteOpen);
 
-    if(!isEntireWorkNoteOpen) document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh + 370px)';
+    if(!isEntireWorkNoteOpen) document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh + 410px)';
     else document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh - 163px)';
   };
 
@@ -1496,6 +1552,7 @@ function WorkNote(args) {
       if(requestMessage === "visitRequest") {
         const infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이 보건실 방문 요청을 하였습니다";
         NotiflixInfo(infoMessage, true, '400px');
+        fetchVisitRequest();
       }
     };
 
@@ -1675,7 +1732,7 @@ function WorkNote(args) {
                     <CustomInput 
                        type="switch"
                        id="maskingName"
-                       label={<span style={{ fontSize: 13}}>이름 마스킹</span>}
+                       label={<span style={{ fontSize: 13}}>학생정보 숨김</span>}
                        checked={masked}
                        onChange={handleMasking}
                     />
@@ -1683,23 +1740,34 @@ function WorkNote(args) {
                 </Row>
                 <Row className="pt-1">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '19.7vh' }}>
-                      <AgGridReact
-                        rowHeight={30}
-                        ref={searchStudentGridRef}
-                        rowData={searchStudentRowData} 
-                        columnDefs={searchStudentColumnDefs}
-                        defaultColDef={notEditDefaultColDef}
-                        paginationPageSize={4}
-                        overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                        rowSelection="single"
-                        onSelectionChanged={onGridSelectionChanged}
-                        suppressCellFocus={true}
-                        overlayLoadingTemplate={
-                          '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                        }
-                      />
-                    </div>
+
+
+                    <ContextMenuTrigger id="trigger">
+                      <div className="ag-theme-alpine" style={{ height: '19.7vh' }}>
+                        <AgGridReact
+                          rowHeight={30}
+                          ref={searchStudentGridRef}
+                          rowData={searchStudentRowData} 
+                          columnDefs={searchStudentColumnDefs}
+                          defaultColDef={notEditDefaultColDef}
+                          paginationPageSize={4}
+                          overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                          rowSelection="single"
+                          onSelectionChanged={onGridSelectionChanged}
+                          suppressCellFocus={true}
+                          overlayLoadingTemplate={
+                            '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                          }
+                        />
+                      </div>
+                    </ContextMenuTrigger>
+                    <ContextMenu id="trigger">
+                      <MenuItem>1</MenuItem>
+                      <MenuItem>2</MenuItem>
+                      <MenuItem>3</MenuItem>
+                    </ContextMenu>
+
+                    
                   </Col>
                 </Row>
                 <Row className="pt-1">
@@ -1721,7 +1789,7 @@ function WorkNote(args) {
                     <CustomInput 
                        type="switch"
                        id="hidePrivacyInfo"
-                       label={<span style={{ fontSize: 13}}>내용숨김</span>}
+                       label={<span style={{ fontSize: 13 }}><b>내용 숨김</b></span>}
                        checked={alertHidden}
                        onChange={handleHideAlert}
                     />
@@ -1729,13 +1797,13 @@ function WorkNote(args) {
                   <Col className="text-center" md="6">
                     <b>보건실 방문 요청 내역</b>
                   </Col>
-                  <Col className="text-right pr-4" md="3" style={{ marginTop: -3}}>
-                    <b style={{ fontSize: '13px', color: '#9A9A9A' }}>전체읽음</b>
+                  <Col className="text-right pr-4" md="3" style={{ marginTop: -8 }}>
+                    <b style={{ fontSize: '13px', color: '#9A9A9A' }} onClick={handleEntireVisitRequestClose}>전체읽음</b>
                   </Col>
                 </Row>
               </CardHeader>
               <CardBody>
-                <div style={{ height: '100%', overflowY: 'auto' }}>
+                <div className="request-alert-box" style={{ height: '100%', overflowY: 'auto' }}>
                   {notifyVisitRequest()}
                 </div>
               </CardBody>
@@ -1759,7 +1827,7 @@ function WorkNote(args) {
                         rowData={personalStudentRowData} 
                         columnDefs={personalStudentColumnDefs}
                         defaultColDef={notEditDefaultColDef}
-                        overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                        overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       />
                     </div>
                   </Col>
@@ -2028,14 +2096,21 @@ function WorkNote(args) {
         <Row>
         </Row>
         <Collapse isOpen={isEntireWorkNoteOpen} {...args}>
-          <div className="ag-theme-alpine" style={{ height: '50vh' }}>
-            <AgGridReact
-              ref={registeredAllGridRef}
-              rowData={entireWorkNoteRowData}
-              columnDefs={entireWorkNoteColumnDefs} 
-              overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
-            />
-          </div>
+          <Card>
+            <CardHeader>
+
+            </CardHeader>
+            <CardBody>
+              <div className="ag-theme-alpine" style={{ height: '50vh' }}>
+                <AgGridReact
+                  ref={registeredAllGridRef}
+                  rowData={entireWorkNoteRowData}
+                  columnDefs={entireWorkNoteColumnDefs} 
+                  overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                />
+              </div>
+            </CardBody>
+          </Card>
         </Collapse>
       </div>
 

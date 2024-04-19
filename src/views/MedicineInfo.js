@@ -184,7 +184,7 @@ function MedicalInfo() {
                 rowData={searchResult}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
-                overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                 pagination={true}                                               // Pagination 사용 설정
                 paginationPageSize={28}                                         // 한 페이지에 표시하고 싶은 데이터 Row 수
                 enableBrowserTooltips="true"

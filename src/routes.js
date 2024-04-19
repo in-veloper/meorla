@@ -122,13 +122,6 @@ const GetRoutes = () => {
         component: <Request />,
         layout: "/meorla"
       },
-      // {
-      //   path: `/request/${thirdPartyUserCode}`,
-      //   name: "보건실 사용 요청",
-      //   icon: "nc-icon nc-tap-01",
-      //   component: <Request />,
-      //   layout: "/meorla"
-      // },
       {
         path: "/icons",
         name: "Icons",
@@ -137,33 +130,8 @@ const GetRoutes = () => {
         layout: "/meorla",
       },
     ];
-  // }else{
-    // routes = [
-    //   {
-    //     path: `/request/${thirdPartyUserCode}`,
-    //     name: "보건실 사용 요청",
-    //     icon: "nc-icon nc-tap-01",
-    //     component: <Request />,
-    //     layout: "/meorla"
-    //   },
-    // ]
-  // }
 
   return routes;
-  // }else{                              // Login한 User가 일반교사인 경우
-  //   debugger
-  //   routes = [
-  //     {
-  //       path: `/request/${schoolCode}`,
-  //       name: "보건실 사용 요청",
-  //       icon: "nc-icon nc-tap-01",
-  //       component: <Request />,
-  //       layout: "/meorla"
-  //     },
-  //   ];
-
-  //   return routes;
-  // }
 }
 
 const routes = GetRoutes();

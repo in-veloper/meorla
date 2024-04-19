@@ -93,19 +93,20 @@ function Sidebar(props) {
                 </li>
               );
             }else if(prop.path.split('/')[1] === 'request') {
-              return (
-                <li
-                  className={
-                    activeRoute(prop.path) + (prop.pro ? " active-pro" : "")
-                  }
-                  key={key}
-                >
-                  <NavLink to={`/meorla/request/${schoolCodeByParams}`} className="nav-NavLink">
-                    <i className={prop.icon} />
-                    <p>{prop.name}</p>
-                  </NavLink>
-                </li>
-              )
+              // return (
+              //   <li
+              //     className={
+              //       activeRoute(prop.path) + (prop.pro ? " active-pro" : "")
+              //     }
+              //     key={key}
+              //   >
+              //     <NavLink to={`/meorla/request/${schoolCodeByParams}`} className="nav-NavLink">
+              //       <i className={prop.icon} />
+              //       <p>{prop.name}</p>
+              //     </NavLink>
+              //   </li>
+              // )
+              return null;
             }
             return null;
           })}

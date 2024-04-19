@@ -485,7 +485,9 @@ function Request({onLogOut}) {
                 </div>
             ));
         }else{
-            return <span className="text-muted">현재 침상안정중인 학생이 없습니다</span>;
+            return <div className="text-center w-100">
+                        <span className="text-muted">현재 침상안정중인 학생이 없습니다</span>
+                   </div>
         };
          
     };

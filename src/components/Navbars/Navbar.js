@@ -432,7 +432,7 @@ function Header(props) {
   };
 
   const fetchAirConditionData = useCallback(async () => {
-    Block.dots('.scrollable-dropdown-items');
+    // Block.dots('.scrollable-dropdown-items');
 
     if(user && user.pmStation) {
       try {
@@ -461,11 +461,11 @@ function Header(props) {
           setPm25Text(pm25Text);
           setSelectedStation(user.pmStation);
 
-          if(document.querySelector('.notiflix-block')) Block.remove('.scrollable-dropdown-items');
+          // if(document.querySelector('.notiflix-block')) Block.remove('.scrollable-dropdown-items');
         }
       } catch (error) {
         console.log("선택한 미세먼지 측정소 기준 조회 중 ERROR", error);
-        if(document.querySelector('.notiflix-block')) Block.remove('.scrollable-dropdown-items');
+        // if(document.querySelector('.notiflix-block')) Block.remove('.scrollable-dropdown-items');
       }
     }
   }, [user]);
