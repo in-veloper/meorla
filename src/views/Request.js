@@ -337,66 +337,63 @@ function Request({onLogOut}) {
         const serverUrl = 'http://localhost:8000';
         const socket = io(serverUrl);
 
-        const handleBroadcastBedStatus = (data) => {
-            const bcMessage = data.message;
-            const bcStatus = bcMessage.split('::')[0];
-            const studentInfo = bcMessage.split('::')[1];
-            const targetGrade = studentInfo.split(',')[0];
-            const targetClass = studentInfo.split(',')[1];
-            const targetNumber = studentInfo.split(',')[2];
-            const targetName = studentInfo.split(',')[3];
+        const connectedSockets = new Set();
 
-            let infoMessage = "";
+        if(!connectedSockets.has(socket.id)) {
+            connectedSockets.add(socket.id);
 
-            if(bcStatus === "registBed") infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이<br/>" + "침상안정을 시작하였습니다";
-            else if(bcStatus === "endBed") infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이<br/>" + "침상안정을 종료하였습니다";
-            
-            NotiflixInfo(infoMessage, true, '230px');
+            const handleBroadcastBedStatus = (data) => {
+                const bcMessage = data.message;
+                const bcStatus = bcMessage.split('::')[0];
+                const studentInfo = bcMessage.split('::')[1];
+                const targetGrade = studentInfo.split(',')[0];
+                const targetClass = studentInfo.split(',')[1];
+                const targetNumber = studentInfo.split(',')[2];
+                const targetName = studentInfo.split(',')[3];
 
-            setRenderBedRest(true);
-        };
+                let infoMessage = "";
 
-        const handleBroadcastWorkStatus = (data) => {
-            const workStatus = data.message;
+                if(bcStatus === "registBed") infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이<br/>" + "침상안정을 시작하였습니다";
+                else if(bcStatus === "endBed") infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이<br/>" + "침상안정을 종료하였습니다";
+                
+                NotiflixInfo(infoMessage, true, '230px');
 
-            let infoMessage = "";
+                setRenderBedRest(true);
+            };
 
-            if(workStatus === "working") infoMessage = "보건교사님의 상태가 온라인으로 변경되었습니다";
-            else infoMessage = "보건교사님의 상태가 오프라인으로 변경되었습니다";
+            const handleBroadcastWorkStatus = (data) => {
+                const workStatus = data.message;
 
-            let messageWidth = '250px';
-            if(workStatus === "working") messageWidth = '320px';
+                let infoMessage = "";
 
-            NotiflixInfo(infoMessage, true, messageWidth);
+                if(workStatus === "working") infoMessage = "보건교사님의 상태가 온라인으로 변경되었습니다";
+                else infoMessage = "보건교사님의 상태가 오프라인으로 변경되었습니다";
 
-            setRenderWorkStatus(true);
-        };
+                let messageWidth = '250px';
+                if(workStatus === "working") messageWidth = '320px';
 
-        if(!socket.connected) {
-            socket.on('connect', () => {
-                console.log("Request 컴포넌트에서 소켓 연결 성공");
-            });
-    
+                NotiflixInfo(infoMessage, true, messageWidth);
+
+                setRenderWorkStatus(true);
+            };
+        
             socket.on('broadcastBedStatus', handleBroadcastBedStatus);
             socket.on('broadcastWorkStatus', handleBroadcastWorkStatus);
-    
-            socket.on('connect_error', (error) => {
-                console.error("소켓 연결 오류:", error);
-            });
-            
-            socket.on('connect_timeout', () => {
-                console.error("소켓 연결 시간 초과");
-            });
             
             socket.on('disconnect', (reason) => {
                 console.log("소켓 연결 해제:", reason);
+                connectedSockets.delete(socket.id);
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error("소켓 연결 오류:", error);
             });
         }
 
         // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
         return () => {
-            socket.off('broadcastBedStatus', handleBroadcastBedStatus);
-            socket.off('broadcastWorkStatus', handleBroadcastWorkStatus);
+            socket.off('broadcastBedStatus');
+            socket.off('broadcastWorkStatus');
         };
     }, []);
 

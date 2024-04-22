@@ -1542,59 +1542,56 @@ function WorkNote(args) {
     const serverUrl = 'http://localhost:8000';
     const socket = io(serverUrl);
 
-    const handleBroadcastVisitRequest = (data) => {
-      const bcMessage = data.message;
-      const requestMessage = bcMessage.split('::')[0];
-      const studentInfo = bcMessage.split('::')[1];
-      const targetGrade = studentInfo.split(',')[0];
-      const targetClass = studentInfo.split(',')[1];
-      const targetNumber = studentInfo.split(',')[2];
-      const targetName = studentInfo.split(',')[3];
-      
-      if(requestMessage === "visitRequest") {
-        const notificationMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이 보건실 방문 요청을 하였습니다";
-        const options = {
-          place: 'tc',
-          message: (
-            <div>
+    const connectedSockets = new Set();
+
+    if(!connectedSockets.has(socket.id)) {
+      connectedSockets.add(socket.id);
+
+      const handleBroadcastVisitRequest = (data) => {
+        const bcMessage = data.message;
+        const requestMessage = bcMessage.split('::')[0];
+        const studentInfo = bcMessage.split('::')[1];
+        const targetGrade = studentInfo.split(',')[0];
+        const targetClass = studentInfo.split(',')[1];
+        const targetNumber = studentInfo.split(',')[2];
+        const targetName = studentInfo.split(',')[3];
+        
+        if(requestMessage === "visitRequest") {
+          const notificationMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이 보건실 방문 요청을 하였습니다";
+          const options = {
+            place: 'tc',
+            message: (
               <div>
-                {notificationMessage}
+                <div>
+                  {notificationMessage}
+                </div>
               </div>
-            </div>
-          ),
-          type: 'info',
-          icon: 'nc-icon nc-bell-55',
-          autoDismiss: 7
-        };
+            ),
+            type: 'info',
+            icon: 'nc-icon nc-bell-55',
+            autoDismiss: 7
+          };
 
-        notificationAlert.current.notificationAlert(options);
-        fetchVisitRequest();
-      }
-    };
-
-    if(!socket.connected) {
-      socket.on('connect', () => {
-        console.log("Request 컴포넌트에서 소켓 연결 성공");
-      });
+          notificationAlert.current.notificationAlert(options);
+          fetchVisitRequest();
+        }
+      };
 
       socket.on('broadcastVisitRequest', handleBroadcastVisitRequest);
+        
+      socket.on('disconnect', (reason) => {
+        console.log("소켓 연결 해제:", reason);
+        connectedSockets.delete(socket.id);
+      });
 
       socket.on('connect_error', (error) => {
           console.error("소켓 연결 오류:", error);
       });
-      
-      socket.on('connect_timeout', () => {
-          console.error("소켓 연결 시간 초과");
-      });
-      
-      socket.on('disconnect', (reason) => {
-          console.log("소켓 연결 해제:", reason);
-      });
     }
 
     return () => {
-      socket.off('broadcastVisitRequest', handleBroadcastVisitRequest);
-  };
+      socket.off('broadcastVisitRequest');
+    };
   }, []);
 
   const validateAndHighlight = () => {
