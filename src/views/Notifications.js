@@ -11,8 +11,34 @@ import {
   Row,
   Col,
 } from "reactstrap";
+import { Menu, Item, Separator, Submenu, useContextMenu } from 'react-contexify';
+import 'react-contexify/ReactContexify.css';
+
+const MENU_ID = 'blahblah';
 
 function Notifications() {
+  const { show } = useContextMenu({
+    id: MENU_ID,
+  });
+
+  function handleContextMenu(event){
+      show({
+        event,
+        props: {
+            key: 'value'
+        }
+      })
+  }
+
+  const handleItemClick = ({ id, event, props }) => {
+    switch (id) {
+      case "copy":
+        break;
+      case "cut":
+        break;
+    }
+  }
+
   const notificationAlert = React.useRef();
   const notify = (place) => {
     var color = Math.floor(Math.random() * 5 + 1);
@@ -53,9 +79,29 @@ function Notifications() {
     };
     notificationAlert.current.notificationAlert(options);
   };
+
+
   return (
     <>
       <div className="content">
+
+
+      <div>
+        <p onContextMenu={handleContextMenu}>lorem ipsum blabladhasi blaghs blah</p>  
+        <Menu id={MENU_ID}>
+          <Item id="copy" onClick={handleItemClick}>Copy</Item>
+          <Item id="cut" onClick={handleItemClick}>Cut</Item>
+          <Separator />
+          <Item disabled>Disabled</Item>
+          <Separator />
+          <Submenu label="Foobar">
+            <Item id="reload" onClick={handleItemClick}>Reload</Item>
+            <Item id="something" onClick={handleItemClick}>Do something else</Item>
+          </Submenu>
+        </Menu>
+      </div>
+
+
         <NotificationAlert ref={notificationAlert} />
         <Row>
           <Col md="12">

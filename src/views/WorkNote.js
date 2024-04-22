@@ -17,11 +17,13 @@ import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixPrompt from "components/Notiflix/NotiflixPrompt";
 import NotificationAlert from "react-notification-alert";
 import { Block } from 'notiflix/build/notiflix-block-aio';
+import { Menu, Item, Separator, Submenu, useContextMenu } from 'react-contexify';
 import axios from "axios";
 import moment from "moment";
 import io from "socket.io-client";
 import '../assets/css/worknote.css';
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+
+const MENU_ID = 'students_context_menu';
 
 function WorkNote(args) {
   const { user } = useUser();                              // 사용자 정보
@@ -73,6 +75,10 @@ function WorkNote(args) {
   const actionMatterGridRef = useRef();
   const treatmentMatterGridRef = useRef();
   const notificationAlert = useRef();
+
+  const { show } = useContextMenu({
+    id: MENU_ID,
+  });
 
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
@@ -448,8 +454,25 @@ function WorkNote(args) {
     try {
       const studentData = await fetchStudentData(criteria);
 
-      if (Array.isArray(studentData) && searchStudentGridRef.current) searchStudentGridRef.current.api.setRowData(studentData); // Update the grid
-      setSearchStudentRowData(studentData);
+      // if (Array.isArray(studentData) && searchStudentGridRef.current) searchStudentGridRef.current.api.setRowData(studentData); // Update the grid
+      // setSearchStudentRowData(studentData);
+
+      if(Array.isArray(studentData) && searchStudentGridRef.current) {
+        const updatedStudentData = studentData.map(student => {
+          if(student.isDiabetes) {
+            return {
+              ...student,
+              sName: (`${student.sName}*`)
+            };
+          }else{
+            return student;
+          }
+        });
+
+        searchStudentGridRef.current.api.setRowData(updatedStudentData);
+        setSearchStudentRowData(updatedStudentData);
+      }
+
 
       if(masked) {
         const maskedStudentData = studentData.map(student => ({
@@ -1098,12 +1121,14 @@ function WorkNote(args) {
               target="visitRequestInfo"
               toggle={toggleVisitRequestTooltip}
             >
-              <div className="text-left">
-                <b>요청시간</b> : {request.requestTime.split(":")[0]}시 {request.requestTime.split(":")[1]}분<br/>
-                <b>방문학생</b> : {request.sGrade}학년 {request.sClass}반 {request.sNumber}번 {request.sName}<br/>
-                <b>요청교사</b> : {request.teacherClassification === 'hr' ? "담임교사" : "교과목교사"} {request.teacherName}<br/>
-                <b>요청내용</b> : {request.requestContent}
-              </div>
+              {request.requestTime ? (
+                <div className="text-left">
+                  <b>요청시간</b> : {request.requestTime.split(":")[0]}시 {request.requestTime.split(":")[1]}분<br/>
+                  <b>방문학생</b> : {request.sGrade}학년 {request.sClass}반 {request.sNumber}번 {request.sName}<br/>
+                  <b>요청교사</b> : {request.teacherClassification === 'hr' ? "담임교사" : "교과목교사"} {request.teacherName}<br/>
+                  <b>요청내용</b> : {request.requestContent}
+                </div>
+              ) : null}
             </Tooltip>
           </div>
         </UncontrolledAlert>
@@ -1606,6 +1631,69 @@ function WorkNote(args) {
     autoUpdateBedBox();
   }, 1000);
 
+  const handleItemClick = async ({ id, event, props }) => {
+    if(id === "registDiagetes" && contextStudentInfo && user) {
+      const targetGrade = contextStudentInfo.split(",")[0];
+      const targetClass = contextStudentInfo.split(",")[1];
+      const targetNumber = contextStudentInfo.split(",")[2];
+      const targetName = contextStudentInfo.split(",")[3];
+      
+      const confirmTitle = "당뇨질환학생 등록";
+      const confirmMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생을<br/>당뇨질환 학생으로 등록하시겠습니까?";
+      
+      const yesCallback = async () => {
+        const response = await axios.post("http://localhost:8000/workNote/updateDiabetesStudent", {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          targetGrade: targetGrade,
+          targetClass: targetClass,
+          targetNumber: targetNumber,
+          targetName: targetName,
+          isDiabetes: true
+        });
+  
+        if(response.data === "success") {
+          const infoMessage = "정상적으로 등록되었습니다";
+          NotiflixInfo(infoMessage);
+        }
+      };
+
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback)
+
+    }
+  };
+
+  const getRowStyle = (params) => {
+
+  };
+
+  const [contextStudentInfo, setContextStudentInfo] = useState("");
+
+  function handleContextMenu(event){
+    if(event.target.classList.value === "ag-header-cell-label" || event.target.classList.value === "ag-center-cols-viewport") {
+      return;
+    }else{
+      const selectedGrade = event.target.parentNode.childNodes[0].textContent;
+      const selectedClass = event.target.parentNode.childNodes[1].textContent;
+      const selectedNumber = event.target.parentNode.childNodes[2].textContent;
+      const selectedName = event.target.parentNode.childNodes[3].textContent;
+      const selectedStudentInfo = selectedGrade + "," + selectedClass + "," + selectedNumber + "," + selectedName;
+
+      setContextStudentInfo(selectedStudentInfo);
+
+      show({
+        event,
+        props: {
+            key: 'value'
+        }
+      })
+    }
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
@@ -1754,34 +1842,37 @@ function WorkNote(args) {
                 </Row>
                 <Row className="pt-1">
                   <Col md="12">
-
-
-                    <ContextMenuTrigger id="trigger">
-                      <div className="ag-theme-alpine" style={{ height: '19.7vh' }}>
-                        <AgGridReact
-                          rowHeight={30}
-                          ref={searchStudentGridRef}
-                          rowData={searchStudentRowData} 
-                          columnDefs={searchStudentColumnDefs}
-                          defaultColDef={notEditDefaultColDef}
-                          paginationPageSize={4}
-                          overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                          rowSelection="single"
-                          onSelectionChanged={onGridSelectionChanged}
-                          suppressCellFocus={true}
-                          overlayLoadingTemplate={
-                            '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                          }
-                        />
-                      </div>
-                    </ContextMenuTrigger>
-                    <ContextMenu id="trigger">
-                      <MenuItem>1</MenuItem>
-                      <MenuItem>2</MenuItem>
-                      <MenuItem>3</MenuItem>
-                    </ContextMenu>
-
-                    
+                    <div className="ag-theme-alpine" style={{ height: '19.7vh' }} onContextMenu={handleContextMenu}>
+                      <AgGridReact
+                        rowHeight={30}
+                        ref={searchStudentGridRef}
+                        rowData={searchStudentRowData} 
+                        columnDefs={searchStudentColumnDefs}
+                        defaultColDef={notEditDefaultColDef}
+                        paginationPageSize={4}
+                        overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                        rowSelection="single"
+                        onSelectionChanged={onGridSelectionChanged}
+                        suppressCellFocus={true}
+                        overlayLoadingTemplate={
+                          '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Menu id={MENU_ID} animation="fade">
+                        <Item id="registDiagetes" onClick={handleItemClick}>당뇨질환학생 등록</Item>
+                        <Item id="protectedsStdentd" onClick={handleItemClick}>보호학생 등록</Item>
+                        {/* <Item id="cut" onClick={handleItemClick}>Cut</Item>
+                        <Separator />
+                        <Item disabled>Disabled</Item>
+                        <Separator />
+                        <Submenu label="Foobar">
+                          <Item id="reload" onClick={handleItemClick}>Reload</Item>
+                          <Item id="something" onClick={handleItemClick}>Do something else</Item>
+                        </Submenu> */}
+                      </Menu>
+                    </div>
                   </Col>
                 </Row>
                 <Row className="pt-1">

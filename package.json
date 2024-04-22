@@ -36,6 +36,7 @@
     "react-bootstrap-typeahead": "^6.3.2",
     "react-chartjs-2": "3.3.0",
     "react-color": "^2.19.3",
+    "react-contexify": "^6.0.0",
     "react-cookie": "^6.1.1",
     "react-device-detect": "^2.2.3",
     "react-dom": ">=16.8.0",

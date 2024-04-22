@@ -1165,6 +1165,26 @@ app.post('/workNote/updateEntireRequestReadStatus', async (req, res) => {
     });
 });
 
+app.post('/workNote/updateDiabetesStudent', async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const targetGrade = req.body.targetGrade;
+    const targetClass = req.body.targetClass;
+    const targetNumber = req.body.targetNumber;
+    const targetName = req.body.targetName;
+    const isDiabetes = req.body.isDiabetes;
+
+
+    const sqlQuery = "UPDATE teaform_db.students SET isDiabetes = ? WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sName = ?";
+    db.query(sqlQuery, [isDiabetes, userId, schoolCode, targetGrade, targetClass, targetNumber, targetName], (err, result) => {
+        if(err) {
+            console.log("당뇨질환학생 등록 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
