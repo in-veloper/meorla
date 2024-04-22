@@ -15,6 +15,7 @@ import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixPrompt from "components/Notiflix/NotiflixPrompt";
+import NotificationAlert from "react-notification-alert";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import axios from "axios";
 import moment from "moment";
@@ -71,6 +72,7 @@ function WorkNote(args) {
   const medicationGridRef = useRef();
   const actionMatterGridRef = useRef();
   const treatmentMatterGridRef = useRef();
+  const notificationAlert = useRef();
 
   // 최초 Grid Render Event
   const onGridReady = useCallback((params) => {
@@ -1550,8 +1552,22 @@ function WorkNote(args) {
       const targetName = studentInfo.split(',')[3];
       
       if(requestMessage === "visitRequest") {
-        const infoMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이 보건실 방문 요청을 하였습니다";
-        NotiflixInfo(infoMessage, true, '400px');
+        const notificationMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생이 보건실 방문 요청을 하였습니다";
+        const options = {
+          place: 'tc',
+          message: (
+            <div>
+              <div>
+                {notificationMessage}
+              </div>
+            </div>
+          ),
+          type: 'info',
+          icon: 'nc-icon nc-bell-55',
+          autoDismiss: 7
+        };
+
+        notificationAlert.current.notificationAlert(options);
         fetchVisitRequest();
       }
     };
@@ -1596,6 +1612,7 @@ function WorkNote(args) {
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
+        <NotificationAlert ref={notificationAlert} />
         <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
           <Table bordered className="stats-table text-center text-muted">
             <thead>

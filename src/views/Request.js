@@ -361,10 +361,8 @@ function Request({onLogOut}) {
 
             let infoMessage = "";
 
-            if(workStatus === "working") infoMessage = "보건교사님의 상태가 근무중으로 변경되었습니다";
-            else if(workStatus === "outOfOffice") infoMessage = "보건교사님의 상태가 부재중으로<br/>보건실 방문 요청이 불가합니다";
-            else if(workStatus === "businessTrip") infoMessage = "보건교사님의 상태가 출장중으로<br/>보건실 방문 요청이 불가합니다";
-            else if(workStatus === "vacation") infoMessage = "보건교사님의 상태가 휴가중으로<br/>보건실 방문 요청이 불가합니다";
+            if(workStatus === "working") infoMessage = "보건교사님의 상태가 온라인으로 변경되었습니다";
+            else infoMessage = "보건교사님의 상태가 오프라인으로 변경되었습니다";
 
             let messageWidth = '250px';
             if(workStatus === "working") messageWidth = '320px';
@@ -464,10 +462,8 @@ function Request({onLogOut}) {
         let convertedWorkStatus = "";
         if(currentInfo) {
             const workStatus = currentInfo.workStatus;
-            if(workStatus === "working") convertedWorkStatus = "근무";
-            else if(workStatus === "outOfOffice") convertedWorkStatus = "부재";
-            else if(workStatus === "businessTrip") convertedWorkStatus = "출장";
-            else if(workStatus === "vacation") convertedWorkStatus = "휴가";
+            if(workStatus === "working") convertedWorkStatus = "온라인";
+            else convertedWorkStatus = "오프라인";
         }
 
         return convertedWorkStatus;
@@ -654,7 +650,7 @@ function Request({onLogOut}) {
                         </CardHeader>
                         <Row className="d-flex align-items-center no-gutters justify-content-center p-1 pb-2">
                             <div className="pt-1 pb-1 pl-2 pr-2" style={{ border: '0.5px solid lightgrey', borderRadius: 5, backgroundColor: '#fcfcfc' }}>
-                                <span className="text-muted font-weight-bold">보건교사님은 현재 </span> <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}중</Badge> <span className="text-muted font-weight-bold">&nbsp;입니다</span>
+                                <span className="text-muted font-weight-bold">보건실은 현재 </span> <Badge className="ml-2" style={{ fontSize: 13 }}>{workStatusInfo()}</Badge> <span className="text-muted font-weight-bold">&nbsp;상태입니다</span>
                             </div>
                         </Row>
                         <Row className="d-flex align-items-center no-gutters flex-nowrap p-1" style={{ verticalAlign: 'middle', height: '100%' }}>
