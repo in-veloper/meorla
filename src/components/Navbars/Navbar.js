@@ -512,11 +512,13 @@ function Header(props) {
       else if(pmValue >= 31 && pmValue <= 80) returnGrade = <Badge color="success">보통</Badge>;
       else if(pmValue >= 81 && pmValue <= 150) returnGrade = <Badge color="warning">나쁨</Badge>;
       else if(pmValue >= 151) returnGrade = <Badge color="danger">매우나쁨</Badge>;
+      else if(pmValue === "-") returnGrade = <Badge color="secondary">&nbsp;&nbsp;-&nbsp;&nbsp;</Badge>;
     }else if(pmCategory === "pm25") {
       if(pmValue >= 0 && pmValue <= 15) returnGrade = <Badge color="primary">좋음</Badge>;
       else if(pmValue >= 16 && pmValue <= 35) returnGrade = <Badge color="success">보통</Badge>;
       else if(pmValue >= 36 && pmValue <= 75) returnGrade = <Badge color="warning">나쁨</Badge>;
       else if(pmValue >= 76) returnGrade = <Badge color="danger">매우나쁨</Badge>;
+      else if(pmValue === "-") returnGrade = <Badge color="secondary">&nbsp;&nbsp;-&nbsp;&nbsp;</Badge>;
     }
 
     return returnGrade;
