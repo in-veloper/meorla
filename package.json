@@ -42,6 +42,7 @@
     "react-dom": ">=16.8.0",
     "react-dropzone": "^14.2.3",
     "react-icons": "^4.12.0",
+    "react-image-mapper": "^0.0.15",
     "react-notification-alert": "0.0.13",
     "react-router-dom": "6.11.1",
     "react-scripts": "5.0.1",
