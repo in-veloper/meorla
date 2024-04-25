@@ -40,6 +40,12 @@ function MedicalInfo() {
   const [modal, setModal] = useState(false);                            // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
   const [selectedRowData, setSelectedRowData] = useState(null);         // 선택한 Row Data 할당 변수 (상세화면 출력)
   const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
+  const [selectedCells, setSelectedCells] = useState({
+    shape: null,
+    color: null,
+    formulation: null,
+    dividing: null
+  });
   
   const gridRef = useRef();                                             // 검색 결과 출력 Grid
 
@@ -93,7 +99,7 @@ function MedicalInfo() {
   const [columnDefs] = useState([
     {field: 'itemName', headerName: '제품명', flex: 2, tooltipValueGetter: (params) => params.value},
     {field: 'entpName', headerName: '업체명', flex: 1.5, tooltipValueGetter: (params) => params.value},
-    {field: 'itemSeq', headerName: '품목코드', flex: 1, tooltipValueGetter: (params) => params.value},
+    {field: 'itemSeq', headerName: '품목코드', flex: 1.5, tooltipValueGetter: (params) => params.value},
     {field: 'efcyQesitm', headerName: '효능', flex: 2, tooltipValueGetter: (params) => params.value},
     {field: 'useMethodQesitm', headerName: '사용법', flex: 2, tooltipValueGetter: (params) => params.value},
     {field: 'atpnQesitm', headerName: '주의사항', flex: 2, tooltipValueGetter: (params) => params.value},
@@ -210,43 +216,95 @@ function MedicalInfo() {
     setMedicineBookmarked((prev) => !prev);     // 이전 Bookmark 상태 획득 후 Toggle 값 반환
   }
 
+  const handleCellClick = (e, category, label) => {
+    const prevSelectedCells = document.querySelectorAll('.search-' + category +  ' td.selected-cell');
+    prevSelectedCells.forEach(cell => {
+        cell.classList.remove('selected-cell');
+    });
+
+    setSelectedCells(prevState => ({
+      ...prevState,
+      [category]: label
+    }));
+
+    e.currentTarget.classList.add('selected-cell');
+    if(grainMedicineAllResult) {
+      debugger
+    }
+  };
+
+  const handleEntireCellClick = (e, category) => {
+    const prevSelectedCells = document.querySelectorAll('.search-' + category +  ' td.selected-cell');
+    prevSelectedCells.forEach(cell => {
+        cell.classList.remove('selected-cell');
+    });
+
+    document.querySelector('.search-' + category).getElementsByTagName('td')[0].classList.add('selected-cell');
+  };
+
+  const [grainMedicineAllResult, setGrainMedicineAllResult] = useState(null);
+
+  const fetchGrainMedicine = async () => {
+    try {
+      Block.dots('.ag-theme-alpine', '약품 정보를 불러오는 중');
+      const response = await axios.get("http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
+        params: {
+          serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
+          type: "json"
+        }
+      });
+
+      if(response.data.hasOwnProperty('body')) {
+        const totalCount = response.data.body.totalCount;               // 검색 결과 총 수
+        const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
+        const allResults = [];                                          // 모든 결과 할당 변수
+        const requests = [];
+
+        for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
+          requests.push(axios.get("http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
+            params: {
+              serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
+              pageNo: page,                                                 // 페이지 수
+              numOfRows: 100,                                               // Row 수
+              type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
+            }
+          }));
+        }
+
+        const responses = await Promise.all(requests);
+        responses.forEach(response => {
+          if(response.data.hasOwnProperty('body')) {
+            allResults.push(...response.data.body.items);
+          }
+        });
+
+        setGrainMedicineAllResult(allResults);
+        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+      }
+    } catch (error) {
+      console.log("약품 낱알정보 조회 중 ERROR", error);
+      if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+    }
+  };
+
+  useEffect(() => {
+    fetchGrainMedicine();
+  }, []);
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
-          <Input
-            className="ml-3 mr-2"
-            id="searchCategory"
-            name="select"
-            type="select"
-            style={{ width: '120px'}}
-            onChange={handleSearchCategory}
-            value={searchCategory}
-          >
-            <option value='mName'>제품명</option>
-            <option value='mCompany'>업체명</option>
-            <option value='mEffect'>효능</option>
-            <option value='mCode'>품목기준코드</option>
-          </Input>
-          <Input
-            type="search"
-            value={searchText}
-            placeholder="검색 키워드를 입력하세요"
-            onKeyDown={handleKeyDown}
-            autoFocus={true}
-            style={{ width: '250px', height: '40px'}}
-            onChange={handleSearchText}
-          />
-          <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
-          <Col>
-            <Table bordered className="text-center text-muted search-shape" style={{ width: 'auto' }}>
+          <Col md="7">
+            <Table bordered className="text-center text-muted search-shape mb-1" style={{ width: 'auto' }}>
               <tbody>
                 <tr>
-                  <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                  {/* <td className={`align-items-center justify-content-center text-muted fixed-width-cell ${selectedCells.shape === '전체' ? 'selected-cell' : ''}`}> */}
+                  <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'shape')}>
                     <span style={{ fontSize: 12 }}>모양<br/>전체</span>
                   </td>
                   {shapes.map((shape, index) => (
-                    <td key={index}>
+                    <td key={index} onClick={(e) => handleCellClick(e, 'shape', shape.label)}>
                       <img src={shape.image} alt={shape.label} />
                       <span>{shape.label}</span>
                     </td>
@@ -254,16 +312,16 @@ function MedicalInfo() {
                 </tr>
               </tbody>
             </Table>
-            <Table bordered className="text-center text-muted search-shape" style={{ width: 'auto' }}>
+            <Table bordered className="text-center text-muted search-color mb-1" style={{ width: 'auto' }}>
               <tbody>
                 <tr>
-                  <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                  <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell"  onClick={(e) => handleEntireCellClick(e, 'color')}>
                     <span style={{ fontSize: 12 }}>색상<br/>전체</span>
                   </td>
                   {colors.map((color, index) => (
-                    <td className="text-center" key={index}>
+                    <td className="text-center" key={index} onClick={(e) => handleCellClick(e, 'color', color.label)}>
                       <div className="d-flex justify-content-center mb-1" style={{ marginTop: -5 }}>
-                        <div style={{ border: '1px solid lightgrey', borderRadius: 10, height: 12, width: 12, backgroundColor: color.color }}></div>
+                        <div style={{ border: '0.5px solid lightgrey', borderRadius: 10, height: 12, width: 12, backgroundColor: color.color }}></div>
                       </div>
                       <div style={{ marginBottom: -9 }}>
                         <span>{color.label}</span>
@@ -274,14 +332,14 @@ function MedicalInfo() {
               </tbody>
             </Table>
             <Row className="d-flex no-gutters">
-              <Table bordered className="text-center text-muted search-shape" style={{ width: 'auto', }}>
+              <Table bordered className="text-center text-muted search-formulation" style={{ width: 'auto', }}>
                 <tbody>
                   <tr>
-                    <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                    <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'formulation')}>
                       <span style={{ fontSize: 12 }}>제형<br/>전체</span>
                     </td>
                     {formulation.map((formulation, index) => (
-                      <td key={index}>
+                      <td key={index} onClick={(e) => handleCellClick(e, 'formulation', formulation.label)}>
                         <img src={formulation.image} alt={formulation.label} />
                         <span>{formulation.label}</span>
                       </td>
@@ -289,14 +347,14 @@ function MedicalInfo() {
                   </tr>
                 </tbody>
               </Table>
-              <Table bordered className="text-center text-muted search-shape ml-5" style={{ width: 'auto' }}>
+              <Table bordered className="text-center text-muted search-dividing ml-5" style={{ width: 'auto' }}>
                 <tbody>
                   <tr>
-                    <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                    <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'dividing')}>
                       <span style={{ fontSize: 12 }}>분할선<br/>전체</span>
                     </td>
                     {dividing.map((dividing, index) => (
-                      <td key={index}>
+                      <td key={index} onClick={(e) => handleCellClick(e, 'dividing', dividing.label)}>
                         <img src={dividing.image} alt={dividing.label} />
                         <span>{dividing.label}</span>
                       </td>
@@ -306,11 +364,48 @@ function MedicalInfo() {
               </Table>
             </Row>
           </Col>
+          <Col md="5">
+            <Row style={{ height: '4vh' }}></Row>
+            <Row className="justify-content-end no-gutters">
+              <Input
+                className="ml-3 mr-2"
+                id="searchCategory"
+                name="select"
+                type="select"
+                style={{ width: '120px'}}
+                onChange={handleSearchCategory}
+                value={searchCategory}
+              >
+                <option value='mName'>제품명</option>
+                <option value='mCompany'>업체명</option>
+                <option value='mEffect'>효능</option>
+                <option value='mCode'>품목기준코드</option>
+              </Input>
+              <Input
+                type="search"
+                value={searchText}
+                placeholder="검색 키워드를 입력하세요"
+                onKeyDown={handleKeyDown}
+                autoFocus={true}
+                style={{ width: '250px', height: '40px'}}
+                onChange={handleSearchText}
+              />
+              <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>&nbsp;약 정보로 검색&nbsp;&nbsp;</Button>
+            </Row>
+            <Row className="d-flex align-items-center justify-content-end no-gutters" style={{ marginTop: -7}}>
+              <Input 
+                type="text"
+                placeholder="식별문자 (약의 앞면이나 뒷면에 표기된 문자)로 검색"
+                style={{ width: '377px', height: '40px' }}
+              />
+              <Button className="ml-2">약 모양으로 검색</Button>
+            </Row>
+          </Col>
         </Row>
         <br/>
         <Row>
          <Col md="12">
-            <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '77.9vh', maxHeight: '77.9vh' }}>
+            <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '67.9vh', maxHeight: '67.9vh' }}>
               <AgGridReact
                 ref={gridRef}
                 rowData={searchResult}

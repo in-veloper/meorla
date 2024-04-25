@@ -11,7 +11,7 @@
     float: right;
  }
 
- .search-shape img {
+ .search-shape img, .search-color img, .search-formulation img, .search-dividing img {
    max-width: 100%; /* 이미지의 최대 너비를 설정하여 셀에 맞춥니다. */
    max-height: 100%; /* 이미지의 최대 높이를 설정하여 셀에 맞춥니다. */
    height: 20px; /* 이미지의 너비를 자동으로 설정하여 가로 비율을 유지합니다. */
@@ -20,18 +20,25 @@
    margin: 0 auto;
  }
 
- .search-shape tbody tr td {
+ .search-shape tbody tr td, .search-color tbody tr td, .search-formulation tbody tr td, .search-dividing tbody tr td {
    background-color: #FFFFFF;
    padding: 0 !important;
    margin: 0 !important;
    width: 50px !important; /* 셀의 너비를 설정합니다. */
  }
 
- .search-shape tbody tr td span {
+ .search-shape tbody tr td span, .search-color tbody tr td span, .search-formulation tbody tr td span, .search-dividing tbody tr td span {
    font-size: 12px;
    padding-top: 0px;
  }
 
  .fixed-width-cell {
    width: 70px !important;
+ }
+
+ .selected-cell {
+  color: orange !important;
+  border: 2px solid orange !important;
+  border-left: 2px solid orange !important;
+  font-weight: bold;
  }
