@@ -7,10 +7,28 @@ import axios from "axios";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg } from "reactstrap";
+import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg, Table } from "reactstrap";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import { FaRegStar } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
+import Circle from "../assets/img/medicine/circle.png";
+import Oval from "../assets/img/medicine/oval.png";
+import SemiCircular from "../assets/img/medicine/semicircular.png";
+import Triangle from "../assets/img/medicine/triangle.png";
+import Square from "../assets/img/medicine/square.png";
+import Rhombus from "../assets/img/medicine/rhombus.png";
+import Rectangle from "../assets/img/medicine/rectangle.png";
+import Pentagon from "../assets/img/medicine/pentagon.png";
+import Hexagon from "../assets/img/medicine/hexagon.png";
+import Octagon from "../assets/img/medicine/octagon.png";
+import EtcShape from "../assets/img/medicine/etcShape.png";
+import Tablets from "../assets/img/medicine/tablets.png";
+import HardCapsule from "../assets/img/medicine/hardCapsule.png";
+import SoftCapsule from "../assets/img/medicine/softCapsule.png";
+import None from "../assets/img/medicine/none.png";
+import Minus from "../assets/img/medicine/minus.png";
+import Plus from "../assets/img/medicine/plus.png";
+import Etc from "../assets/img/medicine/etc.png";
 import '../assets/css/medicalInfo.css';
 
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
@@ -24,6 +42,52 @@ function MedicalInfo() {
   const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
   
   const gridRef = useRef();                                             // 검색 결과 출력 Grid
+
+  const shapes = [
+    { image: Circle, label: "원형" },
+    { image: Oval, label: "타원형" },
+    { image: SemiCircular, label: "반원형" },
+    { image: Triangle, label: "삼각형" },
+    { image: Square, label: "사각형" },
+    { image: Rhombus, label: "마름모형" },
+    { image: Rectangle, label: "장방형" },
+    { image: Pentagon, label: "오각형" },
+    { image: Hexagon, label: "육각형" },
+    { image: Octagon, label: "팔각형" },
+    { image: EtcShape, label: "기타" }
+  ];
+
+  const colors = [
+   { color: "white", label: "하양" },
+   { color: "yellow", label: "노랑" },
+   { color: "orange", label: "주황" },
+   { color: "pink", label: "분홍" },
+   { color: "red", label: "빨강" },
+   { color: "brown", label: "갈색" },
+   { color: "lightgreen", label: "연두" },
+   { color: "green", label: "초록" },
+   { color: "turquoise", label: "청록" },
+   { color: "blue", label: "파랑" },
+   { color: "navy", label: "남색" },
+   { color: "magenta", label: "자주" },
+   { color: "purple", label: "보라" },
+   { color: "grey", label: "회색" },
+   { color: "black", label: "검정" },
+   { color: "transparent", label: "투명" }
+  ];
+
+  const formulation = [
+    { image: Tablets, label: "정제류" },
+    { image: HardCapsule, label: "경질캡슐" },
+    { image: SoftCapsule, label: "연질캡슐" }
+  ];
+
+  const dividing = [
+    { image: None, label: "없음" },
+    { image: Minus, label: "(-)형" },
+    { image: Plus, label: "(+)형" },
+    { image: Etc, label: "기타" }
+  ];
 
   // 약품 정보 Grid Column 정의
   const [columnDefs] = useState([
@@ -170,10 +234,78 @@ function MedicalInfo() {
             placeholder="검색 키워드를 입력하세요"
             onKeyDown={handleKeyDown}
             autoFocus={true}
-            style={{ width: '300px', height: '40px'}}
+            style={{ width: '250px', height: '40px'}}
             onChange={handleSearchText}
           />
           <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
+          <Col>
+            <Table bordered className="text-center text-muted search-shape" style={{ width: 'auto' }}>
+              <tbody>
+                <tr>
+                  <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                    <span style={{ fontSize: 12 }}>모양<br/>전체</span>
+                  </td>
+                  {shapes.map((shape, index) => (
+                    <td key={index}>
+                      <img src={shape.image} alt={shape.label} />
+                      <span>{shape.label}</span>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </Table>
+            <Table bordered className="text-center text-muted search-shape" style={{ width: 'auto' }}>
+              <tbody>
+                <tr>
+                  <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                    <span style={{ fontSize: 12 }}>색상<br/>전체</span>
+                  </td>
+                  {colors.map((color, index) => (
+                    <td className="text-center" key={index}>
+                      <div className="d-flex justify-content-center mb-1" style={{ marginTop: -5 }}>
+                        <div style={{ border: '1px solid lightgrey', borderRadius: 10, height: 12, width: 12, backgroundColor: color.color }}></div>
+                      </div>
+                      <div style={{ marginBottom: -9 }}>
+                        <span>{color.label}</span>
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </Table>
+            <Row className="d-flex no-gutters">
+              <Table bordered className="text-center text-muted search-shape" style={{ width: 'auto', }}>
+                <tbody>
+                  <tr>
+                    <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                      <span style={{ fontSize: 12 }}>제형<br/>전체</span>
+                    </td>
+                    {formulation.map((formulation, index) => (
+                      <td key={index}>
+                        <img src={formulation.image} alt={formulation.label} />
+                        <span>{formulation.label}</span>
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </Table>
+              <Table bordered className="text-center text-muted search-shape ml-5" style={{ width: 'auto' }}>
+                <tbody>
+                  <tr>
+                    <td className="align-items-center justify-content-center text-muted fixed-width-cell">
+                      <span style={{ fontSize: 12 }}>분할선<br/>전체</span>
+                    </td>
+                    {dividing.map((dividing, index) => (
+                      <td key={index}>
+                        <img src={dividing.image} alt={dividing.label} />
+                        <span>{dividing.label}</span>
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </Table>
+            </Row>
+          </Col>
         </Row>
         <br/>
         <Row>
