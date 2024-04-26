@@ -40,6 +40,9 @@ function MedicalInfo() {
   const [modal, setModal] = useState(false);                            // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
   const [selectedRowData, setSelectedRowData] = useState(null);         // 선택한 Row Data 할당 변수 (상세화면 출력)
   const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
+  const [medicineData, setMedicineData] = useState(null);
+  const [grainMedicineAllResult, setGrainMedicineAllResult] = useState(null);
+  const [discriminationText, setDiscriminationText] = useState("");
   const [selectedCells, setSelectedCells] = useState({
     shape: null,
     color: null,
@@ -127,70 +130,84 @@ function MedicalInfo() {
 
   // 검색 Event
   const handleSearch = async (e) => {
+    resetShapeSearchArea();
+    
     try {
-      // 약품 정보 API(e약은요) 호출
-      Block.dots('.ag-theme-alpine');
+      if (!document.querySelector('.notiflix-block')) Block.dots('.ag-theme-alpine');
 
-      const totalResponse = await axios.get(URL, {
-        params: {
-          serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-          pageNo: 1,                                                    // 페이지 수
-          numOfRows: 1,                                                 // Row 수
-          entpName: searchCategory === 'mCompany' ? searchText : '',    // 업체명
-          itemName: searchCategory === 'mName' ? searchText : '',       // 제품명
-          itemSeq: searchCategory === 'mCode' ? searchText : '',        // 품목코드
-          efcyQesitm: searchCategory === 'mEffect' ? searchText : '',   // 효능
-          type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
+      if(medicineData.length > 0) {
+        let filteredResults = medicineData;
+
+        if(searchText.trim() !== "") {
+          filteredResults = medicineData.filter(item => (
+            (searchCategory === 'mCompany' && item.entpName.includes(searchText)) ||
+            (searchCategory === 'mName' && item.itemName.includes(searchText)) ||
+            (searchCategory === 'mCode' && item.itemSeq.includes(searchText)) ||
+            (searchCategory === 'mEffect' && item.efcyQesitm.includes(searchText))
+          ));
+        }
+
+        setSearchResult(filteredResults);
+        if (document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+      }
+    } catch (error) {
+      console.log("검색 조건과 일치하는 약품 조회 처리 중 ERROR", error);
+      if (document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+    }
+  };
+
+  const fetchMedicineData = async () => {
+    if (!document.querySelector('.notiflix-block')) Block.dots('.ag-theme-alpine');
+
+    const response = await axios.get(URL, {
+      params: {
+        serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
+        type: "json"
+      }
+    });
+
+    if(response.data.hasOwnProperty('body')) {
+      const totalCount = response.data.body.totalCount;               // 검색 결과 총 수
+      const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
+      const allResults = [];                                          // 모든 결과 할당 변수
+      const requests = [];
+
+      for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
+        requests.push(axios.get(URL, {
+          params: {
+            serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
+            pageNo: page,                                                 // 페이지 수
+            numOfRows: 100,                                               // Row 수
+            type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
+          }
+        }));
+      }
+
+      const responses = await Promise.all(requests);
+      responses.forEach(response => {
+        if(response.data.hasOwnProperty('body')) {
+          allResults.push(...response.data.body.items);
         }
       });
 
-      if (totalResponse.data.hasOwnProperty('body')) {                  // 조회 결과 있을 경우(body가 존재할 경우)
-        const totalCount = totalResponse.data.body.totalCount;          // 검색 결과 총 수
-        const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
-        const allResults = [];                                          // 모든 결과 할당 변수
-        const requests = [];
-
-        for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
-          requests.push(axios.get(URL, {
-            params: {
-              serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-              pageNo: page,                                                 // 페이지 수
-              numOfRows: 100,                                               // Row 수
-              entpName: searchCategory === 'mCompany' ? searchText : '',    // 업체명
-              itemName: searchCategory === 'mName' ? searchText : '',       // 제품명
-              itemSeq: searchCategory === 'mCode' ? searchText : '',        // 품목코드
-              efcyQesitm: searchCategory === 'mEffect' ? searchText : '',   // 효능
-              type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
-            }
-          }));
-        }
-
-        const responses = await Promise.all(requests);
-        responses.forEach(response => {
-          if(response.data.hasOwnProperty('body')) {
-            allResults.push(...response.data.body.items);
-          }
-        });
-        
-        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
-        setSearchResult(allResults);                                        // 최종 조회 결과 Grid Row Data로 할당
-      }
-    } catch (error) {
-      if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
-      console.log("약품 정보 조회 중 ERROR", error);
+      setMedicineData(allResults);
     }
-  }
+  };
 
   // 검색어 입력 후 Enter 입력 시 검색 Event
   const handleKeyDown = (e) => {
     if(e.key === 'Enter') handleSearch(); // Key 입력이 Enter인 경우 검색 Event 호출
-  }
+  };
+
+  const handleSearchShapeKeyDown = (e) => {
+    if(e.key === 'Enter') searchByMedicineShape();
+  };
 
   // 검색어 입력 시 입력 값 전역 변수에 할당 
   const handleSearchText = (e) => {   
     e.preventDefault();             // 기본 Event 방지
     setSearchText(e.target.value);  // 전역 변수에 검색어 입력 값 할당
-  }
+  };
 
   // 검색 결과 중 Row 선택 시 상세화면 Modal Open 상태 Handle Event
   const toggleModal = () => setModal(!modal);
@@ -199,12 +216,17 @@ function MedicalInfo() {
   const handleRowDoubleClick = (params) => {
     setSelectedRowData(params.data);  // 전역 변수에 선택한 Row 값 할당
     toggleModal();                    // 상세화면 Modal Open
-  }
+  };
 
   // 검색 결과 총 페이지 수 계산 Function
   const calculateTotalPages = (totalCount) => {
     return Math.ceil(totalCount / 100); // 페이지당 보여질 개수 100 Row로 Divide
-  }
+  };
+
+  const handleDiscriminationText = (e) => {
+    e.preventDefault();
+    setDiscriminationText(e.target.value);
+  };
 
   // // 검색 처리 시 Loading 화면 출력 Event
   // const onBtShowLoading = useCallback(() => {
@@ -228,9 +250,6 @@ function MedicalInfo() {
     }));
 
     e.currentTarget.classList.add('selected-cell');
-    if(grainMedicineAllResult) {
-      debugger
-    }
   };
 
   const handleEntireCellClick = (e, category) => {
@@ -241,8 +260,6 @@ function MedicalInfo() {
 
     document.querySelector('.search-' + category).getElementsByTagName('td')[0].classList.add('selected-cell');
   };
-
-  const [grainMedicineAllResult, setGrainMedicineAllResult] = useState(null);
 
   const fetchGrainMedicine = async () => {
     try {
@@ -289,7 +306,90 @@ function MedicalInfo() {
 
   useEffect(() => {
     fetchGrainMedicine();
+    fetchMedicineData();
   }, []);
+
+  const searchByMedicineShape = async () => {
+    Block.dots('.ag-theme-alpine', '검색 조건으로 조회중');
+
+    const selectedShape = document.querySelectorAll('td.selected-cell')[0].getElementsByTagName('span')[0].textContent === "모양전체" ? null : document.querySelectorAll('td.selected-cell')[0].getElementsByTagName('span')[0].textContent;
+    const selectedColor = document.querySelectorAll('td.selected-cell')[1].getElementsByTagName('span')[0].textContent === "색상전체" ? null : document.querySelectorAll('td.selected-cell')[1].getElementsByTagName('span')[0].textContent;
+    const selectedFormulation = document.querySelectorAll('td.selected-cell')[2].getElementsByTagName('span')[0].textContent === "제형전체" ? null : document.querySelectorAll('td.selected-cell')[2].getElementsByTagName('span')[0].textContent;
+    const selectedDividing = document.querySelectorAll('td.selected-cell')[3].getElementsByTagName('span')[0].textContent === "분할선전체" ? null : document.querySelectorAll('td.selected-cell')[3].getElementsByTagName('span')[0].textContent;
+
+    // FORM_CODE_NAME 값에 따라 패턴 정의
+    let formulationPattern;
+    if (selectedFormulation === '정제류') {
+      formulationPattern = /정$/; // '정'으로 끝나는 경우
+    } else if (selectedFormulation === '연질캡슐') {
+      formulationPattern = /연질캡슐/; // '연질캡슐'이 포함된 경우
+    } else if (selectedFormulation === '경질캡슐') {
+      formulationPattern = /경질캡슐/; // '경질캡슐'이 포함된 경우
+    }
+
+    // LINE_BACK 값에 따라 패턴 정의
+    let dividingPattern;
+    if (selectedDividing === 'none') {
+      dividingPattern = /^null$/; // 'null'인 경우
+    } else if (selectedDividing === '(-)') {
+      dividingPattern = /^-$/; // '-'인 경우
+    } else if (selectedDividing === '(+)') {
+      dividingPattern = /^\+$/; // '+'인 경우
+    } else {
+      dividingPattern = /^null$|^-$|^\+$/; // 'none', '(-)', '(+)'이 아닌 경우
+    }
+
+    try {
+      if(!selectedShape && !selectedColor && !selectedFormulation && !selectedDividing) {
+        setSearchResult(medicineData); // 모든 약데이터를 검색결과로 설정
+        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+      }else{
+        const filteredItemSeqs = grainMedicineAllResult.filter(item => {
+          return (
+            (!selectedShape || item.DRUG_SHAPE === selectedShape) &&
+            (!selectedColor || item.COLOR_CLASS1 === selectedColor) &&
+            (!selectedFormulation || formulationPattern.test(item.FORM_CODE_NAME)) &&
+            (!selectedDividing || formulationPattern.test(item.LINE_BACK)) &&
+            (!discriminationText || 
+              (item.PRINT_FRONT && item.PRINT_FRONT.includes(discriminationText)) ||
+              (item.PRINT_BACK && item.PRINT_BACK.includes(discriminationText))
+            )
+          )
+        }).map(item => item.ITEM_SEQ);
+  
+        const filteredMedicineData = medicineData.filter(item => filteredItemSeqs.includes(item.itemSeq));
+        setSearchResult(filteredMedicineData);
+        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+      }
+    } catch (error) {
+      console.log("약품 모양으로 일치하는 검색 결과 조회 중 ERROR", error);
+      if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+    }
+  };
+
+  const resetSearch = () => {
+    setSearchText("");
+    setSearchResult([]);
+    setSearchCategory("mName");
+  };
+
+  const resetSearchByMedicineShape = () => {
+    setDiscriminationText("");
+    setSearchResult([]);
+    resetShapeSearchArea();
+  };
+
+  const resetShapeSearchArea = () => {
+    const selectedCells = document.querySelectorAll('td.selected-cell');
+    selectedCells.forEach(cell => {
+      cell.classList.remove('selected-cell');
+    });
+
+    document.querySelector('.search-shape').getElementsByTagName('td')[0].classList.add('selected-cell');
+    document.querySelector('.search-color').getElementsByTagName('td')[0].classList.add('selected-cell');
+    document.querySelector('.search-formulation').getElementsByTagName('td')[0].classList.add('selected-cell');
+    document.querySelector('.search-dividing').getElementsByTagName('td')[0].classList.add('selected-cell');
+  };
 
   return (
     <>
@@ -365,7 +465,7 @@ function MedicalInfo() {
             </Row>
           </Col>
           <Col md="5">
-            <Row style={{ height: '4vh' }}></Row>
+            <Row style={{ height: '4.7vh' }}></Row>
             <Row className="justify-content-end no-gutters">
               <Input
                 className="ml-3 mr-2"
@@ -391,18 +491,22 @@ function MedicalInfo() {
                 onChange={handleSearchText}
               />
               <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>&nbsp;약 정보로 검색&nbsp;&nbsp;</Button>
+              <Button className="ml-1" style={{ height: '38px', marginTop: 1 }} onClick={resetSearch}>초기화</Button>
             </Row>
             <Row className="d-flex align-items-center justify-content-end no-gutters" style={{ marginTop: -7}}>
               <Input 
                 type="text"
                 placeholder="식별문자 (약의 앞면이나 뒷면에 표기된 문자)로 검색"
                 style={{ width: '377px', height: '40px' }}
+                value={discriminationText}
+                onChange={handleDiscriminationText}
+                onKeyDown={handleSearchShapeKeyDown}
               />
-              <Button className="ml-2">약 모양으로 검색</Button>
+              <Button className="ml-2" onClick={searchByMedicineShape}>약 모양으로 검색</Button>
+              <Button className="ml-1" style={{ height: '38px' }} onClick={resetSearchByMedicineShape}>초기화</Button>
             </Row>
           </Col>
         </Row>
-        <br/>
         <Row>
          <Col md="12">
             <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '67.9vh', maxHeight: '67.9vh' }}>
