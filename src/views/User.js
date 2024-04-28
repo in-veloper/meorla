@@ -13,6 +13,8 @@ import '../assets/css/users.css';
 import QRCode from "qrcode-generator";
 import { useReactToPrint } from "react-to-print";
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 function User() {
   const { user } = useUser();                                   // 사용자 정보
   const [currentUser, setCurrentUser] = useState(null);         // 받아온 사용자 정보
@@ -60,7 +62,7 @@ function User() {
   };
   const toggleRequestURLModal = () => {
     setRequestURLModal(!requestURLModal);
-    const requestURL = "http://localhost:8000/request/" + user.schoolCode;
+    const requestURL = `http://${BASE_URL}:8000/request/` + user.schoolCode;
     setRequestURLValue(requestURL);
   };
 
@@ -85,7 +87,7 @@ function User() {
     if(currentUser) {                                         // 현재 사용자 정보 존재할 경우
       const fetchGradeData = async () => {                    // 명렬표 미리보기 표시 위한 학년별 등록 학생 정보 조회
         try {
-          const response = await axios.get('http://localhost:8000/studentsTable/getStudentInfo', {
+          const response = await axios.get(`http://${BASE_URL}:8000/studentsTable/getStudentInfo`, {
             params: {
               userId: user.userId,                            // 사용자 ID
               schoolCode: user.schoolCode                     // 소속 학교 코드
@@ -129,7 +131,7 @@ function User() {
 
     try {
       // 선택한 학년에 따른 등록한 학생 정보 조회
-      const response = await axios.get('http://localhost:8000/studentsTable/getStudentInfoByGrade', {
+      const response = await axios.get(`http://${BASE_URL}:8000/studentsTable/getStudentInfoByGrade`, {
         params: {
           userId: user.userId,                            // 사용자 ID
           schoolCode: user.schoolCode,                    // 소속 학교 코드
@@ -250,7 +252,7 @@ function User() {
         });
       }
 
-      const response = await axios.post('http://localhost:8000/studentsTable/insert', { studentsArray });
+      const response = await axios.post(`http://${BASE_URL}:8000/studentsTable/insert`, { studentsArray });
 
       if(response.data === "success") {
         setIsRegisteredStudentsTable(true);
@@ -279,7 +281,7 @@ function User() {
         position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '300px'
       });
     }else{
-      const response = await axios.post('http://localhost:8000/user/updateCommonPassword', {
+      const response = await axios.post(`http://${BASE_URL}:8000/user/updateCommonPassword`, {
         userId: currentUser.userId,
         schoolCode: currentUser.schoolCode,
         updatedPassword: updatedCommonPassword
@@ -312,10 +314,10 @@ function User() {
         formData.append("uploadPath", currentUser.userId + "/backgroundImage");
         formData.append("file", file);
 
-        axios.post("http://localhost:8000/upload/image", formData, config).then((response) => {
+        axios.post(`http://${BASE_URL}:8000/upload/image`, formData, config).then((response) => {
           if(response.status === 200) {
             const fileName = response.data.filename;
-            const callbackResponse = axios.post("http://localhost:8000/upload/insert", {
+            const callbackResponse = axios.post(`http://${BASE_URL}:8000/upload/insert`, {
               userId: currentUser.userId,
               schoolCode: currentUser.schoolCode,
               category: "background",
@@ -349,10 +351,10 @@ function User() {
         formData.append("uploadPath", currentUser.userId + "/profileImage");
         formData.append("file", file);
 
-        axios.post("http://localhost:8000/upload/image", formData, config).then((response) => {
+        axios.post(`http://${BASE_URL}:8000/upload/image`, formData, config).then((response) => {
           if(response.status === 200) {
             const fileName = response.data.filename;
-            const callbackResponse = axios.post("http://localhost:8000/upload/insert", {
+            const callbackResponse = axios.post(`http://${BASE_URL}:8000/upload/insert`, {
               userId: currentUser.userId,
               schoolCode: currentUser.schoolCode,
               category: "profile",
@@ -378,7 +380,7 @@ function User() {
     if(currentUser) {
       const fetchUploadFileData = async () => {
         try {
-          const response = await axios.get("http://localhost:8000/upload/getFileName", {
+          const response = await axios.get(`http://${BASE_URL}:8000/upload/getFileName`, {
             params: {
               userId: user.userId,
               schoolCode: user.schoolCode
@@ -457,7 +459,7 @@ function User() {
 
   const fetchCommonPasswordData = useCallback(async () => {
     if(user?.userId && user?.schoolCode) {
-      const response = await axios.get("http://localhost:8000/user/getCommonPassword", {
+      const response = await axios.get(`http://${BASE_URL}:8000/user/getCommonPassword`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -480,7 +482,7 @@ function User() {
 
     Notiflix.Confirm.show('사용자 정보 수정', '입력하신 내용과 같이 사용자 정보를 수정하시겠습니까?', '예', '아니요', async () => {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post("http://localhost:8000/user/updateUserInfo", {
+        const response = await axios.post(`http://${BASE_URL}:8000/user/updateUserInfo`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           userName: updateUserName,
@@ -509,7 +511,7 @@ function User() {
   };
 
   const generateQRCode = () => {
-    const url = 'http://localhost:8000/request/' + user.schoolCode;
+    const url = `http://${BASE_URL}:8000/request/` + user.schoolCode;
     const typeNumber = 10;
     const errorCorrectionLevel = 'L';
 

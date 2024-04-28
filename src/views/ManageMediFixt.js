@@ -11,6 +11,7 @@ import axios from "axios";
 import '../assets/css/managemedifixt.css';
 import { useMemo } from "react";
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function ManageMediFixt() {
@@ -158,7 +159,7 @@ function ManageMediFixt() {
                 '예',
                 '아니요',
                 async () => {
-                    const response = await axios.post('http://localhost:8000/stockMedicine/insert', {
+                    const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/insert`, {
                         userId: user.userId,
                         schoolCode: user.schoolCode,
                         medicineName: medicineName,
@@ -193,7 +194,7 @@ function ManageMediFixt() {
     const fetchStockMedicineData = useCallback(async () => {
         try {
             if(user?.userId && user?.schoolCode) {
-                const response = await axios.post('http://localhost:8000/stockMedicine/getStockMedicine', {
+                const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/getStockMedicine`, {
                     userId: user.userId,
                     schoolCode: user.schoolCode
                 });

@@ -18,6 +18,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import { RiSearchLine } from "react-icons/ri";
 import "../assets/css/request.css";
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
 // Local Storage에 로그인 정보 저장
@@ -145,7 +146,7 @@ function RequesterLogin({onLogin}) {
         let commonPassword = "";
 
         if(schoolName && schoolCode) {
-            const response = await axios.get('http://localhost:8000/request/getCommonPassword', {
+            const response = await axios.get(`http://${BASE_URL}:8000/request/getCommonPassword`, {
                 params: {
                     schoolCode: schoolCode,
                     schoolName: schoolName
@@ -334,7 +335,7 @@ function Request({onLogOut}) {
     }, []);
 
     useEffect(() => {
-        const serverUrl = 'http://localhost:8000';
+        const serverUrl = `http://localhost:8000`;
         const socket = io(serverUrl);
 
         const connectedSockets = new Set();
@@ -418,7 +419,7 @@ function Request({onLogOut}) {
 
     const fetchCurrentInfo = useCallback(async () => {
         if(schoolCode) {
-            const response = await axios.get("http://localhost:8000/request/getCurrentInfo", {
+            const response = await axios.get(`http://${BASE_URL}:8000/request/getCurrentInfo`, {
                 params: {
                     schoolCode: schoolCode
                 }
@@ -438,7 +439,7 @@ function Request({onLogOut}) {
         const today = moment().format('YYYY-MM-DD');
 
         if(schoolCode) {
-            const response = await axios.get("http://localhost:8000/request/getOnBedRestInfo", {
+            const response = await axios.get(`http://${BASE_URL}:8000/request/getOnBedRestInfo`, {
                 params: {
                     schoolCode: schoolCode,
                     today: today
@@ -520,7 +521,7 @@ function Request({onLogOut}) {
           const { iGrade, iClass, iNumber, iName } = criteria;
           
           if(schoolCode) {
-            const response = await axios.get(`http://localhost:8000/studentsTable/getStudentInfoBySearchInRequest`, {
+            const response = await axios.get(`http://${BASE_URL}:8000/studentsTable/getStudentInfoBySearchInRequest`, {
               params: {
                 schoolCode: schoolCode,
                 sGrade:  iGrade,
@@ -547,7 +548,7 @@ function Request({onLogOut}) {
 
     const fetchSelectedStudentData = useCallback(async () => {
         if(schoolCode && selectedStudent) {
-          const response = await axios.get("http://localhost:8000/workNote/getSelectedStudentData", {
+          const response = await axios.get(`http://${BASE_URL}:8000/workNote/getSelectedStudentData`, {
             params: {
               schoolCode: schoolCode,
               sGrade: selectedStudent.sGrade,
@@ -581,7 +582,7 @@ function Request({onLogOut}) {
     const sendVisitRequest = async (e) => {
         e.preventDefault();
 
-        const serverUrl = 'http://localhost:8000';
+        const serverUrl = `http://localshot:8000`;
         const socket = io(serverUrl);
         const currentTime = moment().format('HH:mm');
         
@@ -594,7 +595,7 @@ function Request({onLogOut}) {
             const requestContent = document.getElementById('requestContent').value;
             const teacherName = document.getElementById('teacherName').value;
 
-            const response = await axios.post("http://localhost:8000/request/saveVisitRequest", {
+            const response = await axios.post(`http://${BASE_URL}:8000/request/saveVisitRequest`, {
                 schoolCode: schoolCode,
                 targetGrade: targetGrade,
                 targetClass: targetClass,

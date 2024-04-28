@@ -29,6 +29,7 @@ import moment from "moment";
 import io from "socket.io-client";
 import '../assets/css/worknote.css';
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const MENU_ID = 'students_context_menu';
 
 function WorkNote(args) {
@@ -430,7 +431,7 @@ function WorkNote(args) {
       const { iGrade, iClass, iNumber, iName } = criteria;
       
       if(user) {
-        const response = await axios.get(`http://localhost:8000/studentsTable/getStudentInfoBySearch`, {
+        const response = await axios.get(`http://${BASE_URL}:8000/studentsTable/getStudentInfoBySearch`, {
           params: {
             userId: user.userId,
             schoolCode: user.schoolCode,
@@ -562,13 +563,13 @@ function WorkNote(args) {
       
       let response = null;                  // response 데이터 담을 변수
       if(symptomRowData.length > 0) {       // 등록된 증상이 있는 경우 - Update
-        response = await axios.post('http://localhost:8000/symptom/update', {
+        response = await axios.post(`http://${BASE_URL}:8000/symptom/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           symptom: symptomString
         });
       }else{                            // 등록된 증상이 없는 경우 - Insert
-        response = await axios.post('http://localhost:8000/symptom/insert', {
+        response = await axios.post(`http://${BASE_URL}:8000/symptom/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           symptom: symptomString
@@ -611,13 +612,13 @@ function WorkNote(args) {
       
       let response = null;                     // response 데이터 담을 변수
       if(medicationRowData.length > 0) {       // 등록된 투약사항이 있는 경우 - Update
-        response = await axios.post('http://localhost:8000/medication/update', {
+        response = await axios.post(`http://${BASE_URL}:8000/medication/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           medication: medicationString
         });
       }else{                                    // 등록된 투약사항이 없는 경우 - Insert
-        response = await axios.post('http://localhost:8000/medication/insert', {
+        response = await axios.post(`http://${BASE_URL}:8000/medication/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           medication: medicationString
@@ -660,13 +661,13 @@ function WorkNote(args) {
       
       let response = null;                  // response 데이터 담을 변수
       if(actionMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
-        response = await axios.post('http://localhost:8000/actionMatter/update', {
+        response = await axios.post(`http://${BASE_URL}:8000/actionMatter/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           actionMatter: actionMatterString
         });
       }else{                            // 등록된 증상이 없는 경우 - Insert
-        response = await axios.post('http://localhost:8000/actionMatter/insert', {
+        response = await axios.post(`http://${BASE_URL}:8000/actionMatter/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           actionMatter: actionMatterString
@@ -709,13 +710,13 @@ function WorkNote(args) {
       
       let response = null;                  // response 데이터 담을 변수
       if(treatmentMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
-        response = await axios.post('http://localhost:8000/treatmentMatter/update', {
+        response = await axios.post(`http://${BASE_URL}:8000/treatmentMatter/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           treatmentMatter: treatmentMatterString
         });
       }else{                            // 등록된 증상이 없는 경우 - Insert
-        response = await axios.post('http://localhost:8000/treatmentMatter/insert', {
+        response = await axios.post(`http://${BASE_URL}:8000/treatmentMatter/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           treatmentMatter: treatmentMatterString
@@ -740,7 +741,7 @@ function WorkNote(args) {
   const fetchSymptomData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post('http://localhost:8000/symptom/getSymptom', {
+        const response = await axios.post(`http://${BASE_URL}:8000/symptom/getSymptom`, {
           userId: user.userId,
           schoolCode: user.schoolCode
         });
@@ -770,7 +771,7 @@ function WorkNote(args) {
   const fetchActionMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post('http://localhost:8000/actionMatter/getActionMatter', {
+        const response = await axios.post(`http://${BASE_URL}:8000/actionMatter/getActionMatter`, {
           userId: user.userId,
           schoolCode: user.schoolCode
         });
@@ -800,7 +801,7 @@ function WorkNote(args) {
   const fetchTreatmentMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post('http://localhost:8000/treatmentMatter/getTreatmentMatter', {
+        const response = await axios.post(`http://${BASE_URL}:8000/treatmentMatter/getTreatmentMatter`, {
           userId: user.userId,
           schoolCode: user.schoolCode
         });
@@ -883,7 +884,7 @@ function WorkNote(args) {
 
   const fetchStockMedicineData = useCallback(async () => {
     if(user?.userId && user?.schoolCode) {
-      const response = await axios.get("http://localhost:8000/workNote/getStockMedication", {
+      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getStockMedication`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -909,7 +910,7 @@ function WorkNote(args) {
 
   const fetchEntireWorkNoteGrid = useCallback(async () => {
     if(user) {
-      const response = await axios.get('http://localhost:8000/workNote/getEntireWorkNote',{
+      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getEntireWorkNote`,{
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -935,7 +936,7 @@ function WorkNote(args) {
   const handleExitOnBed = useCallback(async (e, item) => {
     e.preventDefault();
 
-    const serverUrl = 'http://localhost:8000';
+    const serverUrl = `http://localhost:8000`;
     const socket = io(serverUrl);
 
     const currentTime = moment().format('HH:mm');
@@ -946,7 +947,7 @@ function WorkNote(args) {
     const noText = "취소";
 
     const yesCallback = async (promptValue) => {
-      const response = await axios.post('http://localhost:8000/workNote/updateOnBedEndTime', {
+      const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateOnBedEndTime`, {
         onBedEndTime: promptValue,
         userId: user.userId,
         schoolCode: user.schoolCode,
@@ -1096,7 +1097,7 @@ function WorkNote(args) {
     Block.dots('.request-alert-box');
 
     if(user) {
-      const response = await axios.get("http://localhost:8000/workNote/getVisitRequest", {
+      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getVisitRequest`, {
         params: {
           schoolCode: user.schoolCode,
           isRead: false
@@ -1156,7 +1157,7 @@ function WorkNote(args) {
 
     const yesCallback = async () => {
       if(selectedRequest) {
-        const response = await axios.post("http://localhost:8000/workNote/updateRequestReadStatus", {
+        const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateRequestReadStatus`, {
           id: selectedRequest.id,  
           schoolCode: selectedRequest.schoolCode,
           isRead: true
@@ -1182,7 +1183,7 @@ function WorkNote(args) {
     if(visitRequestList.length > 0) {
       const yesCallback = async () => {
         const requestIds = visitRequestList.map(request => request.id);
-        const response = await axios.post("http://localhost:8000/workNote/updateEntireRequestReadStatus", {
+        const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateEntireRequestReadStatus`, {
           requestIds: requestIds,
           isRead: true
         });
@@ -1205,7 +1206,7 @@ function WorkNote(args) {
 
   const fetchMaskedStatus = useCallback(async () => {
     if(user) {
-      const response = await axios.get("http://localhost:8000/user/getMaskedStatus", {
+      const response = await axios.get(`http://${BASE_URL}:8000/user/getMaskedStatus`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -1231,7 +1232,7 @@ function WorkNote(args) {
 
     const yesCallback = async () => {
       if(user) {
-        const response = await axios.post("http://localhost:8000/user/updateMaskedStatus", {
+        const response = await axios.post(`http://${BASE_URL}:8000/user/updateMaskedStatus`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           masked: !masked
@@ -1254,7 +1255,7 @@ function WorkNote(args) {
 
   const fetchAlertHiddenStatus = useCallback(async () => {
     if(user) {
-      const response = await axios.get("http://localhost:8000/user/getAlertHiddenStatus", {
+      const response = await axios.get(`http://${BASE_URL}:8000/user/getAlertHiddenStatus`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -1280,7 +1281,7 @@ function WorkNote(args) {
 
     const yesCallback = async () => {
       if(user) {
-        const response = await axios.post("http://localhost:8000/user/updateAlertHiddenStatus", {
+        const response = await axios.post(`http://${BASE_URL}:8000/user/updateAlertHiddenStatus`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           alertHidden: !alertHidden
@@ -1346,7 +1347,7 @@ function WorkNote(args) {
   const saveWorkNote = (e) => {
     e.preventDefault();
     
-    const serverUrl = 'http://localhost:8000';
+    const serverUrl = `http://localhost:8000`;
     const socket = io(serverUrl);
 
     let symptomString = "";
@@ -1421,7 +1422,7 @@ function WorkNote(args) {
       }
 
       const yesCallback = async () => {
-        const response = await axios.post("http://localhost:8000/workNote/saveWorkNote", {
+        const response = await axios.post(`http://${BASE_URL}:8000/workNote/saveWorkNote`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           sGrade: selectedStudent.sGrade,
@@ -1467,7 +1468,7 @@ function WorkNote(args) {
 
   const fetchSelectedStudentData = useCallback(async () => {
     if(user && selectedStudent) {
-      const response = await axios.get("http://localhost:8000/workNote/getSelectedStudentData", {
+      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getSelectedStudentData`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode,
@@ -1571,7 +1572,7 @@ function WorkNote(args) {
   };
 
   useEffect(() => {
-    const serverUrl = 'http://localhost:8000';
+    const serverUrl = `http://${BASE_URL}:8000`;
     const socket = io(serverUrl);
 
     const connectedSockets = new Set();
@@ -1649,7 +1650,7 @@ function WorkNote(args) {
       const confirmMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생을<br/>당뇨질환 학생으로 등록하시겠습니까?";
       
       const yesCallback = async () => {
-        const response = await axios.post("http://localhost:8000/workNote/updateDiabetesStudent", {
+        const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateDiabetesStudent`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           targetGrade: targetGrade,
@@ -2453,39 +2454,55 @@ function WorkNote(args) {
        <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '50%' }}>
           <ModalHeader toggle={toggleManageEmergencyModal}><b className="text-muted">응급학생관리</b></ModalHeader>
           <ModalBody>
+            <div className="ag-theme-alpine" style={{ height: '11.8vh' }}>
+              <AgGridReact
+                rowHeight={25}
+                headerHeight={30}
+                ref={searchStudentGridRef}
+                rowData={searchStudentRowData} 
+                columnDefs={searchStudentColumnDefs}
+                defaultColDef={notEditDefaultColDef}
+                paginationPageSize={4}
+                overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                rowSelection="single"
+                onSelectionChanged={onGridSelectionChanged}
+                suppressCellFocus={true}
+              />
+            </div>
+            <hr/>
             <Row className="d-flex no-gutters">
               <Col md="7">
                 <Row className="d-flex align-items-center no-gutters">
                   <Col md="9" className="pl-5">
                     <Row className="text-muted align-items-center">
-                      <label className="pr-1">학년</label>
+                      <label className="pr-1 pt-1">학년</label>
                       <Input
                         className="text-right"
-                        style={{ width: '40px' }}
+                        style={{ width: '40px', height: '27px' }}
                         onChange={(e) => onInputChange("iGrade", e.target.value)}
                         value={searchCriteria.iGrade}
                         onKeyDown={(e) => handleKeyDown(e, "iGrade")}
                       />
-                      <label className="pr-1 pl-2">반</label>
+                      <label className="pr-1 pl-2 pt-1">반</label>
                       <Input
                         className="text-right"
-                        style={{ width: '40px' }}
+                        style={{ width: '40px', height: '27px' }}
                         onChange={(e) => onInputChange("iClass", e.target.value)}
                         value={searchCriteria.iClass}
                         onKeyDown={(e) => handleKeyDown(e, "iClass")}
                       />
-                      <label className="pr-1 pl-2">번호</label>
+                      <label className="pr-1 pl-2 pt-1">번호</label>
                       <Input
                         className="text-right"
-                        style={{ width: '40px' }}
+                        style={{ width: '40px', height: '27px' }}
                         onChange={(e) => onInputChange("iNumber", e.target.value)}
                         value={searchCriteria.iNumber}
                         onKeyDown={(e) => handleKeyDown(e, "iNumber")}
                       />
-                      <label className="pr-1 pl-2">이름</label>
+                      <label className="pr-1 pl-2 pt-1">이름</label>
                       <Input
                         className="text-right"
-                        style={{ width: '80px' }}
+                        style={{ width: '80px', height: '27px' }}
                         onChange={(e) => onInputChange("iName", e.target.value)}
                         value={searchCriteria.iName}
                         onKeyDown={(e) => handleKeyDown(e, "iName")}
@@ -2494,16 +2511,17 @@ function WorkNote(args) {
                   </Col>
                   <Col md="3">
                     <Row className="d-flex align-items-center">
-                      <Button size="sm" style={{ height: 30 }} onClick={onResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button>
-                      <Button size="sm" style={{ height: 30 }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
+                      <Button size="sm" style={{ height: 27 }} onClick={onResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button>
+                      <Button size="sm" style={{ height: 27 }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
                     </Row>
                   </Col>
                 </Row>
                 <Row className="pt-1 pr-4 d-flex no-gutters">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '13.8vh' }}>
+                    <div className="ag-theme-alpine" style={{ height: '11.8vh' }}>
                       <AgGridReact
-                        rowHeight={30}
+                        rowHeight={25}
+                        headerHeight={30}
                         ref={searchStudentGridRef}
                         rowData={searchStudentRowData} 
                         columnDefs={searchStudentColumnDefs}
@@ -2517,8 +2535,36 @@ function WorkNote(args) {
                     </div>
                   </Col>
                 </Row>
+                <Row className="d-flex no-gutters pr-4 text-muted mt-4">
+                  <Col>
+                    <label>응급상황 발생시기</label>
+                    <Input 
+                      type="datetime-local"
+                      style={{ width: 200 }}
+                    />
+                  </Col>
+                  <Col>
+                    <label>응급상황 발생장소</label>
+                    <Input 
+                      type="text"
+                      style={{ height: 33 }}
+                    />
+                  </Col>
+                </Row>
+                <Row className="d-flex no-gutters pr-4 text-muted mt-2">
+                  <label>응급상황</label>
+                  <Input 
+                    type="textarea"
+                  />
+                </Row>
+                <Row className="d-flex no-gutters pr-4 text-muted mt-2">
+                  <label>응급처치</label>
+                  <Input 
+                    type="textarea"
+                  />
+                </Row>
               </Col>
-              <Col md="5">
+              <Col md="5" className="mt-2">
                 <div className="d-flex no-gutters" style={{ border: '1.5px solid lightgrey' }} onMouseEnter={handleImageMapperEnter}>
                   <ImageMapper 
                     key={clickCounter}
@@ -2533,10 +2579,29 @@ function WorkNote(args) {
                     onImageClick={handleImageMapperClick}
                   />
                 </div>
+                <Row className="d-flex no-gutters text-muted mt-2">
+                  <label>내원 병원</label>
+                  <Input 
+                    type="text"
+                  />
+                </Row>
+                <Row className="d-flex no-gutters text-muted mt-2">
+                  <label>특이사항</label>
+                  <Input 
+                    type="text"
+                  />
+                </Row>
               </Col>
             </Row>
           </ModalBody>
-          <ModalFooter className="p-0">
+          <ModalFooter className="p-0 pr-2" style={{ marginRight: 5 }}>
+            <Row className="d-flow">
+              <Col className="justify-content-start">
+                <Button>초기화</Button>
+              </Col>
+              <Button className="ml-1">등록</Button>
+              <Button className="ml-1" onClick={toggleManageEmergencyModal}>취소</Button>
+            </Row>
           </ModalFooter>
       </Modal>
     </>

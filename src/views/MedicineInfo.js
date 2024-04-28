@@ -4,6 +4,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useMedicineContext } from "contexts/MedicineContext";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
@@ -34,14 +35,13 @@ import '../assets/css/medicalInfo.css';
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function MedicalInfo() {
+  const { medicineData, grainMedicineAllResult } = useMedicineContext();
   const [searchCategory, setSearchCategory] = useState("");             // 약품 정보 검색 시 선택 분류
   const [searchText, setSearchText] = useState("");                     // 검색어 입력 값 할당 변수
   const [searchResult, setSearchResult] = useState([]);                 // 검색 결과 할당 변수
   const [modal, setModal] = useState(false);                            // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
   const [selectedRowData, setSelectedRowData] = useState(null);         // 선택한 Row Data 할당 변수 (상세화면 출력)
   const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
-  const [medicineData, setMedicineData] = useState(null);
-  const [grainMedicineAllResult, setGrainMedicineAllResult] = useState(null);
   const [discriminationText, setDiscriminationText] = useState("");
   const [selectedCells, setSelectedCells] = useState({
     shape: null,
@@ -118,6 +118,13 @@ function MedicalInfo() {
     resizable: true,
   };
 
+  useEffect(() => {
+    Block.dots('.ag-theme-alpine', '약품 정보를 불러오는 중');
+    if(medicineData && grainMedicineAllResult) {
+      if (document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+    }
+  }, [medicineData, grainMedicineAllResult]);
+
   // 검색 분류 선택 Event
   const handleSearchCategory = (e) => {
     const selectedCategory = e.target.value;  // 선택한 분류 값
@@ -156,44 +163,6 @@ function MedicalInfo() {
     }
   };
 
-  const fetchMedicineData = async () => {
-    if (!document.querySelector('.notiflix-block')) Block.dots('.ag-theme-alpine');
-
-    const response = await axios.get(URL, {
-      params: {
-        serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
-        type: "json"
-      }
-    });
-
-    if(response.data.hasOwnProperty('body')) {
-      const totalCount = response.data.body.totalCount;               // 검색 결과 총 수
-      const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
-      const allResults = [];                                          // 모든 결과 할당 변수
-      const requests = [];
-
-      for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
-        requests.push(axios.get(URL, {
-          params: {
-            serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-            pageNo: page,                                                 // 페이지 수
-            numOfRows: 100,                                               // Row 수
-            type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
-          }
-        }));
-      }
-
-      const responses = await Promise.all(requests);
-      responses.forEach(response => {
-        if(response.data.hasOwnProperty('body')) {
-          allResults.push(...response.data.body.items);
-        }
-      });
-
-      setMedicineData(allResults);
-    }
-  };
-
   // 검색어 입력 후 Enter 입력 시 검색 Event
   const handleKeyDown = (e) => {
     if(e.key === 'Enter') handleSearch(); // Key 입력이 Enter인 경우 검색 Event 호출
@@ -218,20 +187,10 @@ function MedicalInfo() {
     toggleModal();                    // 상세화면 Modal Open
   };
 
-  // 검색 결과 총 페이지 수 계산 Function
-  const calculateTotalPages = (totalCount) => {
-    return Math.ceil(totalCount / 100); // 페이지당 보여질 개수 100 Row로 Divide
-  };
-
   const handleDiscriminationText = (e) => {
     e.preventDefault();
     setDiscriminationText(e.target.value);
   };
-
-  // // 검색 처리 시 Loading 화면 출력 Event
-  // const onBtShowLoading = useCallback(() => {
-  //     gridRef.current.api.showLoadingOverlay(); // Overlay로 로딩 Animation 출력
-  // }, []);
 
   // 약품별 Bookmark 상태 Toggle Function
   const handleBookmarkMedicine = () => {
@@ -260,54 +219,6 @@ function MedicalInfo() {
 
     document.querySelector('.search-' + category).getElementsByTagName('td')[0].classList.add('selected-cell');
   };
-
-  const fetchGrainMedicine = async () => {
-    try {
-      Block.dots('.ag-theme-alpine', '약품 정보를 불러오는 중');
-      const response = await axios.get("http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
-        params: {
-          serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
-          type: "json"
-        }
-      });
-
-      if(response.data.hasOwnProperty('body')) {
-        const totalCount = response.data.body.totalCount;               // 검색 결과 총 수
-        const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
-        const allResults = [];                                          // 모든 결과 할당 변수
-        const requests = [];
-
-        for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
-          requests.push(axios.get("http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
-            params: {
-              serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-              pageNo: page,                                                 // 페이지 수
-              numOfRows: 100,                                               // Row 수
-              type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
-            }
-          }));
-        }
-
-        const responses = await Promise.all(requests);
-        responses.forEach(response => {
-          if(response.data.hasOwnProperty('body')) {
-            allResults.push(...response.data.body.items);
-          }
-        });
-
-        setGrainMedicineAllResult(allResults);
-        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
-      }
-    } catch (error) {
-      console.log("약품 낱알정보 조회 중 ERROR", error);
-      if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
-    }
-  };
-
-  useEffect(() => {
-    fetchGrainMedicine();
-    fetchMedicineData();
-  }, []);
 
   const searchByMedicineShape = async () => {
     Block.dots('.ag-theme-alpine', '검색 조건으로 조회중');
@@ -338,7 +249,7 @@ function MedicalInfo() {
     } else {
       dividingPattern = /^null$|^-$|^\+$/; // 'none', '(-)', '(+)'이 아닌 경우
     }
-
+    
     try {
       if(!selectedShape && !selectedColor && !selectedFormulation && !selectedDividing) {
         setSearchResult(medicineData); // 모든 약데이터를 검색결과로 설정
@@ -349,14 +260,14 @@ function MedicalInfo() {
             (!selectedShape || item.DRUG_SHAPE === selectedShape) &&
             (!selectedColor || item.COLOR_CLASS1 === selectedColor) &&
             (!selectedFormulation || formulationPattern.test(item.FORM_CODE_NAME)) &&
-            (!selectedDividing || formulationPattern.test(item.LINE_BACK)) &&
+            (!selectedDividing || dividingPattern.test(item.LINE_BACK)) &&
             (!discriminationText || 
               (item.PRINT_FRONT && item.PRINT_FRONT.includes(discriminationText)) ||
               (item.PRINT_BACK && item.PRINT_BACK.includes(discriminationText))
             )
           )
         }).map(item => item.ITEM_SEQ);
-  
+        
         const filteredMedicineData = medicineData.filter(item => filteredItemSeqs.includes(item.itemSeq));
         setSearchResult(filteredMedicineData);
         if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
