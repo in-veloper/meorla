@@ -4,11 +4,13 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { useMedicineContext } from "contexts/MedicineContext";
+// import { useMedicineContext } from "contexts/MedicineContext";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg, Table } from "reactstrap";
+import { userSelector, useDispatch, useSelector } from 'react-redux';
+import { fetchMedicineData, fetchGrainMedicineData } from "store/actions/medicineActions";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import { FaRegStar } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
@@ -35,7 +37,10 @@ import '../assets/css/medicalInfo.css';
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function MedicalInfo() {
-  const { medicineData, grainMedicineAllResult } = useMedicineContext();
+  const medicineData = useSelector(state => state.medicine.medicineData);
+  const grainMedicineData = useSelector(state => state.medicine.grainMedicineData);
+  const dispatch = useDispatch();
+  // const { medicineData, grainMedicineAllResult } = useMedicineContext();
   const [searchCategory, setSearchCategory] = useState("");             // 약품 정보 검색 시 선택 분류
   const [searchText, setSearchText] = useState("");                     // 검색어 입력 값 할당 변수
   const [searchResult, setSearchResult] = useState([]);                 // 검색 결과 할당 변수
@@ -119,11 +124,19 @@ function MedicalInfo() {
   };
 
   useEffect(() => {
+    if(!medicineData) dispatch(fetchMedicineData());
+  }, [dispatch, medicineData]);
+
+  useEffect(() => {
+    if(!grainMedicineData) dispatch(fetchGrainMedicineData());
+  }, [dispatch, grainMedicineData]);
+
+  useEffect(() => {
     Block.dots('.ag-theme-alpine', '약품 정보를 불러오는 중');
-    if(medicineData && grainMedicineAllResult) {
+    if(medicineData && grainMedicineData) {
       if (document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
     }
-  }, [medicineData, grainMedicineAllResult]);
+  }, [medicineData, grainMedicineData]);
 
   // 검색 분류 선택 Event
   const handleSearchCategory = (e) => {
@@ -255,7 +268,7 @@ function MedicalInfo() {
         setSearchResult(medicineData); // 모든 약데이터를 검색결과로 설정
         if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
       }else{
-        const filteredItemSeqs = grainMedicineAllResult.filter(item => {
+        const filteredItemSeqs = grainMedicineData.filter(item => {
           return (
             (!selectedShape || item.DRUG_SHAPE === selectedShape) &&
             (!selectedColor || item.COLOR_CLASS1 === selectedColor) &&
