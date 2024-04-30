@@ -14,6 +14,9 @@ const cookies = new Cookies();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cron = require('node-cron');
+const axios = require('axios');
+const moment = require('moment');
 
 const http = require('http');
 const socketIo = require('socket.io');
@@ -1224,3 +1227,154 @@ io.on('connection', (socket) => {
         });
     }
 });
+
+const dbConfig = {
+    host: 'localhost',
+    user: 'root',
+    password: 'yeeh01250412!@',
+    database: 'teaform_db'
+};
+
+const medicineApiUrl = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
+
+async function getUpdateDeFromDB() {
+    try {
+        const connection = mysql.createConnection(dbConfig);
+        const result = connection.execute('SELECT MAX(updateDe) AS maxUpdateDe FROM teaform_db.medicineApiData');
+        connection.end();
+
+        if(result) {
+            console.log(result);
+        }else{
+            console.log("안됨...")
+        }
+        // if(rows.length > 0) {
+        //     const firstRowData = rows[0];
+        //     const updateDe = firstRowData.updateDe;
+        //     return updateDe;
+        // }else{
+        //     console.log('DB에 등록된 약품 정보 없음');
+        //     return 0;
+        // }
+    } catch (error) {
+        console.log('DB에서 약품 조회 최종 수정일 조회 중 ERROR', error);
+        return 0;
+    }
+};
+
+async function getUpdateDeFromAPI() {
+    try {
+        let updateDe = 0;
+        const response = await axios.get(medicineApiUrl, {
+            params: {
+                serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
+                type: "json"
+            }
+        });
+
+        if(response.data.hasOwnProperty('body')) {
+            const updateDeFromApi = response.data.body.items[0].updateDe;
+            updateDe = updateDeFromApi;
+        }
+
+        return updateDe;
+    } catch (error) {
+        console.error('약품 정보 API 최종 UPDATE 날짜 조회 중 ERROR', error);
+    }
+}
+
+async function fetchMedicineApiData() {
+    try {
+        const response = await axios.get(medicineApiUrl, {
+            params: {
+                serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
+                type: "json"
+            }
+        });
+    
+        if(response.data.hasOwnProperty('body')) {
+            const totalCount = response.data.body.totalCount;               // 검색 결과 총 수
+            const totalPages = calculateTotalPages(totalCount);             // 검색결과에 따른 총 페이지 수
+            const allResults = [];                                          // 모든 결과 할당 변수
+            const requests = [];
+
+            for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
+                requests.push(axios.get(medicineApiUrl, {
+                    params: {
+                    serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
+                    pageNo: page,                                                 // 페이지 수
+                    numOfRows: 100,                                               // Row 수
+                    type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
+                    }
+                }));
+            }
+
+            const responses = await Promise.all(requests);
+            responses.forEach(response => {
+                if(response.data.hasOwnProperty('body')) {
+                    allResults.push(...response.data.body.items);
+                }
+            });
+
+            return allResults;
+        }
+    } catch (error) {
+        console.log('약품정보 (e약은요) API 호출 -> 데이터 조회 중 ERROR', error);
+    }
+};
+
+async function updateMedicineApiData(fetchedData) {
+    try {
+        const connection = mysql.createConnection(dbConfig);
+        for (const item of fetchedData) {
+            await connection.execute(
+                'INSERT INTO teaform_db.medicineApiData (entpName, itemName, itemSeq, efcyQesitm, useMethodQesitm, atpnWarnQesitm, atpnQesitm, intrcQesitm, seQesitm, depositMethodQesitm, openDe, updateDe, itemImage) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                [item.entpName, item.itemName, item.itemSeq, item.efcyQesitm, item.useMethodQesitm, item.atpnWarnQesitm, item.atpnQesitm, item.intrcQesitm, item.seQesitm, item.depositMethodQesitm, item.openDe, item.updateDe, item.itemImage]
+            );
+        }
+    
+        connection.end();
+        console.log('약품 정보 (e약은요) UPDATE 완료');
+    } catch (error) {
+        console.error('약품 정보 (e약은요) UPDATE 처리 중 ERROR', error);
+    }
+};
+
+async function getMaxUpdateDe(fetchedData) {
+    let maxUpdateDe = new Date(0); // 초기 값으로 가장 작은 날짜 설정
+
+    // fetchedData 배열을 순회하면서 updateDe가 가장 큰 값을 찾음
+    fetchedData.forEach(item => {
+        const itemUpdateDe = new Date(item.updateDe);
+        if (itemUpdateDe > maxUpdateDe) {
+            maxUpdateDe = itemUpdateDe;
+        }
+    });
+
+    return maxUpdateDe;
+}
+
+
+// 스케쥴러
+cron.schedule('* * * * *', async () => {
+    console.log('약품정보 (e약은요) DB UPDATE SCHEDULER 시작');
+    const updateDeFromDB = await getUpdateDeFromDB();
+    const fetchedMedicineData = await fetchMedicineApiData();
+    const maxUpdateDe = await getMaxUpdateDe(fetchedMedicineData);
+
+    try {
+        const currentDateTime = new Date().toISOString().slice(0, 10);
+        const maxUpdateDeDate = new Date(maxUpdateDe).toISOString().slice(0, 10);
+        
+        if(updateDeFromDB == 0 || moment(maxUpdateDeDate).isAfter(currentDateTime)) {
+            // updateMedicineApiData(fetchedMedicineData);
+        }
+    } catch (error) {
+        console.error('약품정보 UPDATE SCHEDULER 실행 중 ERROR', error);
+    }
+});
+
+ // 검색 결과 총 페이지 수 계산 Function
+const calculateTotalPages = (totalCount) => {
+    return Math.ceil(totalCount / 100); // 페이지당 보여질 개수 100 Row로 Divide
+};
