@@ -32,7 +32,7 @@ import Plus from "../assets/img/medicine/plus.png";
 import Etc from "../assets/img/medicine/etc.png";
 import '../assets/css/medicalInfo.css';
 
-const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function MedicalInfo() {
   const [searchCategory, setSearchCategory] = useState("");             // 약품 정보 검색 시 선택 분류
@@ -40,7 +40,10 @@ function MedicalInfo() {
   const [searchResult, setSearchResult] = useState([]);                 // 검색 결과 할당 변수
   const [modal, setModal] = useState(false);                            // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
   const [selectedRowData, setSelectedRowData] = useState(null);         // 선택한 Row Data 할당 변수 (상세화면 출력)
-  const { medicineData, grainMedicineData } = useMedicineContext();
+  // const { medicineData, grainMedicineData } = useMedicineContext();
+
+  const [medicineData, setMedicineData] = useState(null);
+  const [grainMedicineData, setGrainMedicineData] = useState(null);
   const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
   const [discriminationText, setDiscriminationText] = useState("");
   const [selectedCells, setSelectedCells] = useState({
@@ -312,6 +315,26 @@ function MedicalInfo() {
     document.querySelector('.search-dividing').getElementsByTagName('td')[0].classList.add('selected-cell');
   };
 
+  const fetchMedicineData = async () => {
+    const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getMedicineData`, {});
+
+    if(response.data) {
+      setMedicineData(response.data);
+      setSearchResult(response.data)
+    }
+  };
+
+  const fetchGrainMedicineData = async () => {
+    const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getGrainMedicineData`, {});
+
+    if(response.data) setGrainMedicineData(response.data);
+  };
+
+  useEffect(() => {
+    fetchMedicineData();
+    fetchGrainMedicineData();
+  }, []);
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
@@ -438,7 +461,7 @@ function MedicalInfo() {
                 defaultColDef={defaultColDef}
                 overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                 pagination={true}                                               // Pagination 사용 설정
-                paginationPageSize={28}                                         // 한 페이지에 표시하고 싶은 데이터 Row 수
+                paginationPageSize={14}                                         // 한 페이지에 표시하고 싶은 데이터 Row 수
                 enableBrowserTooltips="true"
                 onRowDoubleClicked={handleRowDoubleClick}
                 // overlayLoadingTemplate={

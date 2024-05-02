@@ -18,12 +18,7 @@ import NotiflixPrompt from "components/Notiflix/NotiflixPrompt";
 import NotificationAlert from "react-notification-alert";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import { Menu, Item, Separator, Submenu, useContextMenu } from 'react-contexify';
-import ImageMapper from "react-image-mapper";
-import anatomyImage from "../../src/assets/img/anatomy_image.png";
-// import anatomyImageRightHand from "../../src/assets/img/anatomy_image_right_hand.png";
-// import anatomyImageLeftHand from "../../src/assets/img/anatomy_image_left_hand.png";
-// import anatomyImageRightFoot from "../../src/assets/img/anatomy_image_right_foot.png";
-// import anatomyImageLeftFoot from "../../src/assets/img/anatomy_image_left_foot.png";
+import EmergencyModal from "components/Modal/EmergencyModal";
 import axios from "axios";
 import moment from "moment";
 import io from "socket.io-client";
@@ -73,7 +68,6 @@ function WorkNote(args) {
   const [nonSelectedHighlight, setNonSelectedHighlight] = useState(false);
   const [visitRequestList, setVisitRequestList] = useState([]);
   const [visitRequestTooltipOpen, setVisitRequestTooltipOpen] = useState(false);
-  const [clickCounter, setClickCounter] = useState(0);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -305,7 +299,7 @@ function WorkNote(args) {
       [field]: value
     }));
   };
-  
+
   // Grid 행 삭제 Function
   const removeSymptomRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = symptomGridRef.current.api;                                          // api 획득
@@ -461,9 +455,6 @@ function WorkNote(args) {
   const onSearchStudent = async (criteria) => {
     try {
       const studentData = await fetchStudentData(criteria);
-
-      // if (Array.isArray(studentData) && searchStudentGridRef.current) searchStudentGridRef.current.api.setRowData(studentData); // Update the grid
-      // setSearchStudentRowData(studentData);
 
       if(Array.isArray(studentData) && searchStudentGridRef.current) {
         const updatedStudentData = studentData.map(student => {
@@ -1709,35 +1700,6 @@ function WorkNote(args) {
     toggleManageEmergencyModal();
   };
 
-  const [clickedPoints, setClickedPoints] = useState([]);
-
-  const handleImageMapperClick = (e) => {
-    const x = e.nativeEvent.offsetX;
-    const y = e.nativeEvent.offsetY;
-    
-    // 새로운 클릭한 지점을 배열에 추가
-    setClickedPoints([...clickedPoints, { x, y }]);
-    setClickCounter(clickCounter + 1);
-  };
-
-  const handleImageMapperEnter = (e) => {
-    // console.log(e.nativeEvent.offsetX);
-    // console.log(e.nativeEvent.offsetY);
-  };
-
-  const handleImageMapperMove = (e) => {
-    // console.log(e.nativeEvent.offsetX);
-    // console.log(e.nativeEvent.offsetY);
-  }
-
-  const generateAreas = () => {
-    return clickedPoints.map((point, index) => ({
-      name: `point_${index}`,
-      shape: 'circle',
-      coords: [point.x, point.y, 5], // 동그라미의 반지름
-      preFillColor: 'rgba(255, 0, 0, 0.5)'
-    }));
-  };
 
   return (
     <>
@@ -2451,159 +2413,14 @@ function WorkNote(args) {
           </ModalFooter>
        </Modal>
 
-       <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '50%' }}>
-          <ModalHeader toggle={toggleManageEmergencyModal}><b className="text-muted">응급학생관리</b></ModalHeader>
-          <ModalBody>
-            <div className="ag-theme-alpine" style={{ height: '11.8vh' }}>
-              <AgGridReact
-                rowHeight={25}
-                headerHeight={30}
-                ref={searchStudentGridRef}
-                rowData={searchStudentRowData} 
-                columnDefs={searchStudentColumnDefs}
-                defaultColDef={notEditDefaultColDef}
-                paginationPageSize={4}
-                overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                rowSelection="single"
-                onSelectionChanged={onGridSelectionChanged}
-                suppressCellFocus={true}
-              />
-            </div>
-            <hr/>
-            <Row className="d-flex no-gutters">
-              <Col md="7">
-                <Row className="d-flex align-items-center no-gutters">
-                  <Col md="9" className="pl-5">
-                    <Row className="text-muted align-items-center">
-                      <label className="pr-1 pt-1">학년</label>
-                      <Input
-                        className="text-right"
-                        style={{ width: '40px', height: '27px' }}
-                        onChange={(e) => onInputChange("iGrade", e.target.value)}
-                        value={searchCriteria.iGrade}
-                        onKeyDown={(e) => handleKeyDown(e, "iGrade")}
-                      />
-                      <label className="pr-1 pl-2 pt-1">반</label>
-                      <Input
-                        className="text-right"
-                        style={{ width: '40px', height: '27px' }}
-                        onChange={(e) => onInputChange("iClass", e.target.value)}
-                        value={searchCriteria.iClass}
-                        onKeyDown={(e) => handleKeyDown(e, "iClass")}
-                      />
-                      <label className="pr-1 pl-2 pt-1">번호</label>
-                      <Input
-                        className="text-right"
-                        style={{ width: '40px', height: '27px' }}
-                        onChange={(e) => onInputChange("iNumber", e.target.value)}
-                        value={searchCriteria.iNumber}
-                        onKeyDown={(e) => handleKeyDown(e, "iNumber")}
-                      />
-                      <label className="pr-1 pl-2 pt-1">이름</label>
-                      <Input
-                        className="text-right"
-                        style={{ width: '80px', height: '27px' }}
-                        onChange={(e) => onInputChange("iName", e.target.value)}
-                        value={searchCriteria.iName}
-                        onKeyDown={(e) => handleKeyDown(e, "iName")}
-                      />
-                    </Row>
-                  </Col>
-                  <Col md="3">
-                    <Row className="d-flex align-items-center">
-                      <Button size="sm" style={{ height: 27 }} onClick={onResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button>
-                      <Button size="sm" style={{ height: 27 }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
-                    </Row>
-                  </Col>
-                </Row>
-                <Row className="pt-1 pr-4 d-flex no-gutters">
-                  <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '11.8vh' }}>
-                      <AgGridReact
-                        rowHeight={25}
-                        headerHeight={30}
-                        ref={searchStudentGridRef}
-                        rowData={searchStudentRowData} 
-                        columnDefs={searchStudentColumnDefs}
-                        defaultColDef={notEditDefaultColDef}
-                        paginationPageSize={4}
-                        overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                        rowSelection="single"
-                        onSelectionChanged={onGridSelectionChanged}
-                        suppressCellFocus={true}
-                      />
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="d-flex no-gutters pr-4 text-muted mt-4">
-                  <Col>
-                    <label>응급상황 발생시기</label>
-                    <Input 
-                      type="datetime-local"
-                      style={{ width: 200 }}
-                    />
-                  </Col>
-                  <Col>
-                    <label>응급상황 발생장소</label>
-                    <Input 
-                      type="text"
-                      style={{ height: 33 }}
-                    />
-                  </Col>
-                </Row>
-                <Row className="d-flex no-gutters pr-4 text-muted mt-2">
-                  <label>응급상황</label>
-                  <Input 
-                    type="textarea"
-                  />
-                </Row>
-                <Row className="d-flex no-gutters pr-4 text-muted mt-2">
-                  <label>응급처치</label>
-                  <Input 
-                    type="textarea"
-                  />
-                </Row>
-              </Col>
-              <Col md="5" className="mt-2">
-                <div className="d-flex no-gutters" style={{ border: '1.5px solid lightgrey' }} onMouseEnter={handleImageMapperEnter}>
-                  <ImageMapper 
-                    key={clickCounter}
-                    src={anatomyImage}
-                    width={500}
-                    imgWidth={500}
-                    map={{
-                      name: 'anatomy-map',
-                      areas: generateAreas()
-                    }}
-                    onImageMouseMove={handleImageMapperMove}
-                    onImageClick={handleImageMapperClick}
-                  />
-                </div>
-                <Row className="d-flex no-gutters text-muted mt-2">
-                  <label>내원 병원</label>
-                  <Input 
-                    type="text"
-                  />
-                </Row>
-                <Row className="d-flex no-gutters text-muted mt-2">
-                  <label>특이사항</label>
-                  <Input 
-                    type="text"
-                  />
-                </Row>
-              </Col>
-            </Row>
-          </ModalBody>
-          <ModalFooter className="p-0 pr-2" style={{ marginRight: 5 }}>
-            <Row className="d-flow">
-              <Col className="justify-content-start">
-                <Button>초기화</Button>
-              </Col>
-              <Button className="ml-1">등록</Button>
-              <Button className="ml-1" onClick={toggleManageEmergencyModal}>취소</Button>
-            </Row>
-          </ModalFooter>
-      </Modal>
+      <EmergencyModal 
+        manageEmergencyModal={manageEmergencyModal}
+        toggleManageEmergencyModal={toggleManageEmergencyModal}
+        searchStudentColumnDefs={searchStudentColumnDefs}
+        notEditDefaultColDef={notEditDefaultColDef}
+        fetchSelectedStudentData={fetchSelectedStudentData}
+        fetchStudentData={fetchStudentData}
+      />
     </>
   );
 }
