@@ -1465,7 +1465,7 @@ const medicineTask = cron.schedule('0 0 * * *', async () => {
         const currentDateTime = new Date().toISOString().slice(0, 10);
         const maxUpdateDeDate = new Date(maxUpdateDe).toISOString().slice(0, 10);
         
-        if(updateDeFromDB == 0 || moment(maxUpdateDeDate).isAfter(currentDateTime)) {
+        if(updateDeFromDB === 0 || moment(maxUpdateDeDate).isAfter(currentDateTime)) {
             updateMedicineApiData(fetchedMedicineData);
         }
     } catch (error) {
@@ -1487,7 +1487,7 @@ const grainMedicineTask = cron.schedule('0 0 * * *', async () => {
         const currentDateTime = new Date().toISOString().slice(0, 10);
         const maxChangeConvertDate = new Date(maxChangeDate).toISOString().slice(0, 10);
         
-        if(changeDateFromDB == 0 || moment(maxChangeConvertDate).isAfter(currentDateTime)) {
+        if(changeDateFromDB === 0 || moment(maxChangeConvertDate).isAfter(currentDateTime)) {
             updateGrainMedicineApiData(fetchedGrainMedicineData)
         }
     } catch (error) {
