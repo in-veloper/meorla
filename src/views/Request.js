@@ -582,7 +582,7 @@ function Request({onLogOut}) {
     const sendVisitRequest = async (e) => {
         e.preventDefault();
 
-        const serverUrl = `http://localshot:8000`;
+        const serverUrl = `http://localhost:8000`;
         const socket = io(serverUrl);
         const currentTime = moment().format('HH:mm');
         
