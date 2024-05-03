@@ -14,6 +14,7 @@ function WorkSchedule() {
   const { user } = useUser();
   const [todayScheduleRowData, setTodayScheduleRowData] = useState([]);
   const [entireScheduleRowData, setEntireScheduleRowData] = useState([]);
+  const [filteredScheduleRowData, setFilteredScheduleRowData] = useState([]);
   const [selectedColor, setSelectedColor] = useState(null);
 
   const calendarRef = useRef(null);
@@ -66,7 +67,10 @@ function WorkSchedule() {
         }
       });
 
-      if(response.data) setEntireScheduleRowData(response.data);
+      if(response.data) {
+        setEntireScheduleRowData(response.data);
+        setFilteredScheduleRowData(response.data);
+      }
     }
   };
 
@@ -136,6 +140,20 @@ function WorkSchedule() {
     }
   };
 
+  const handleSearch = () => {
+    if(selectedColor) {
+      const searchFilteredRowData = entireScheduleRowData.filter(item => {
+        return item.eventColor === selectedColor;
+      });
+
+      setFilteredScheduleRowData(searchFilteredRowData);
+    }
+  };
+
+  const handleSearchReset = () => {
+
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
@@ -165,7 +183,7 @@ function WorkSchedule() {
                 ref={entireGridRef}
                 columnDefs={gridColumnDefs}
                 defaultColDef={defaultColDef}
-                rowData={entireScheduleRowData}
+                rowData={filteredScheduleRowData}
                 overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 일정이 없습니다</span>' } 
                 rowSelection="single"
                 onRowClicked={onEntireGridRowClicked}
@@ -207,10 +225,10 @@ function WorkSchedule() {
                   <Row className="justify-content-center" style={{ marginTop: '-3px' }}>
                     <div className="" style={{ height: '100%' }}>
                       <Row style={{ height: '6vh' }}>
-                        <Button className="mb-1" style={{ width: 80 }}>검색</Button>
+                        <Button className="mb-1" style={{ width: 80 }} onClick={handleSearch}>검색</Button>
                       </Row>
                       <Row style={{ height: '6vh' }}>
-                        <Button className="mt-1" style={{ width: 80 }}>초기화</Button>
+                        <Button className="mt-1" style={{ width: 80 }} onClick={handleSearchReset}>초기화</Button>
                       </Row>
                     </div>
                   </Row>
