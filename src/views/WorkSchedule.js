@@ -151,7 +151,7 @@ function WorkSchedule() {
   };
 
   const handleSearchReset = () => {
-
+    setFilteredScheduleRowData(entireScheduleRowData);
   };
 
   return (
