@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from "react";
 import { FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Button, Row, Col, Form } from "reactstrap";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -15,7 +15,7 @@ import "../assets/css/mycalendar.css";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-const MyCalendar = () => {
+const WorkCalendar = forwardRef((props, ref) => {
     const { user } = useUser(); 
     const [showRegistScheduleModal, setRegistScheduleModal] = useState(false);
     const [showUpdateScheduleModal, setUpdateScheduleModal] = useState(false);
@@ -34,6 +34,8 @@ const MyCalendar = () => {
     const [displayColorPicker, setDisplayColorPicker] = useState(false);
     const [selectedEventColor, setSelectedEventColor] = useState("#FF6900");
     const [displayEmojiPicker, setDisplayEmojiPicker] = useState(false);
+
+    const calendarRef = useRef(null);
 
     // 행사 등록 form modal handler
     const toggleRegistModal = () => {
@@ -274,7 +276,7 @@ const MyCalendar = () => {
         const date = new Date(dateString);
         date.setDate(date.getDate() - 1);
         return date.toISOString().slice(0, 10);
-    }
+    };
 
     const handleEventResize = (eventInfo) => {
         const { event, oldEvent } = eventInfo;
@@ -308,13 +310,22 @@ const MyCalendar = () => {
         NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '450px');
     };
 
+    useImperativeHandle(ref, () => ({
+        focusCalendar: (date) => {
+            if(calendarRef && calendarRef.current) {
+                calendarRef.current.getApi().gotoDate(date);
+            }
+        }
+    }));
+
     return (
         <>
             <div className="content">
-                <div className="mt-5">
+                <div className="mt-4">
                     <FullCalendar
+                        ref={calendarRef}
                         locale="kr"
-                        height={'70vh'} // calendar 영역 크기
+                        height={'66.5vh'} // calendar 영역 크기
                         initialView={'dayGridMonth'}
                         headerToolbar={{
                             start: 'prev,next today', 
@@ -531,9 +542,9 @@ const MyCalendar = () => {
             </div>
         </>
     )
-};
+});
 
-export default MyCalendar;
+export default WorkCalendar;
 
 
 // Header Toolbar 설정 참고
