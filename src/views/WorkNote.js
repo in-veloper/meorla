@@ -92,11 +92,26 @@ function WorkNote(args) {
   const toggleTreatmentMatterModal = () => setTreatmentMatterModal(!treatmentMatterModal);
   const toggleVisitRequestTooltip = () => setVisitRequestTooltipOpen(!visitRequestTooltipOpen);
 
+  const customCellRenderer = (params) => {
+    const { value } = params;
+
+    if(params.data.isDiabetes) {
+      return (
+        <span style={{ marginLeft: 10 }}>
+          {value}&nbsp;
+          <span style={{ color: 'red' }}>*</span>
+        </span>
+      )
+    }else{
+      return value;
+    }
+  };
+
   const [searchStudentColumnDefs] = useState([
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
+    { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }, cellRenderer: customCellRenderer }
   ]);
 
   const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
@@ -456,22 +471,8 @@ function WorkNote(args) {
     try {
       const studentData = await fetchStudentData(criteria);
 
-      if(Array.isArray(studentData) && searchStudentGridRef.current) {
-        const updatedStudentData = studentData.map(student => {
-          if(student.isDiabetes) {
-            return {
-              ...student,
-              sName: (`${student.sName}*`)
-            };
-          }else{
-            return student;
-          }
-        });
-
-        searchStudentGridRef.current.api.setRowData(updatedStudentData);
-        setSearchStudentRowData(updatedStudentData);
-      }
-
+      searchStudentGridRef.current.api.setRowData(studentData);
+      setSearchStudentRowData(studentData);
 
       if(masked) {
         const maskedStudentData = studentData.map(student => ({
@@ -1673,7 +1674,7 @@ function WorkNote(args) {
   const [contextStudentInfo, setContextStudentInfo] = useState("");
 
   function handleContextMenu(event){
-    if(event.target.classList.value === "ag-header-cell-label" || event.target.classList.value === "ag-center-cols-viewport") {
+    if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
       return;
     }else{
       const selectedGrade = event.target.parentNode.childNodes[0].textContent;

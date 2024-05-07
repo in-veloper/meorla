@@ -315,6 +315,12 @@ const WorkCalendar = forwardRef((props, ref) => {
             if(calendarRef && calendarRef.current) {
                 calendarRef.current.getApi().gotoDate(date);
             }
+        },
+
+        focusToday: () => {
+            if(calendarRef && calendarRef.current) {
+                calendarRef.current.getApi().today();
+            }
         }
     }));
 

@@ -16,6 +16,9 @@ function WorkSchedule() {
   const [entireScheduleRowData, setEntireScheduleRowData] = useState([]);
   const [filteredScheduleRowData, setFilteredScheduleRowData] = useState([]);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [searchEventStartDate, setSearchEventStartDate] = useState("");
+  const [searchEventEndDate, setSearchEventEndDate] = useState("");
+  const [searchEventTitle, setSearchEventTitle] = useState("");
 
   const calendarRef = useRef(null);
   const todayGridRef = useRef(null);
@@ -79,6 +82,21 @@ function WorkSchedule() {
     fetchEntireSchedule();
   }, []);
 
+  const handleSearchEventStartDate = (event) => {
+    const searchEventStartDateValue = event.target.value;
+    setSearchEventStartDate(searchEventStartDateValue);
+  };
+
+  const handleSearchEventEndDate = (event) => {
+    const searchEventEndDateValue = event.target.value;
+    setSearchEventEndDate(searchEventEndDateValue);
+  };
+
+  const handleSearchEventTitle = (event) => {
+    const searchEventTitleValue = event.target.value;
+    setSearchEventTitle(searchEventTitleValue);
+  };
+
   const generateColorPickerCategory = () => {
     let eventColorSet = new Set();
     let eventColorArray = [];
@@ -141,9 +159,43 @@ function WorkSchedule() {
   };
 
   const handleSearch = () => {
-    if(selectedColor) {
+    if(selectedColor || searchEventTitle || (searchEventStartDate && searchEventEndDate)) {
       const searchFilteredRowData = entireScheduleRowData.filter(item => {
-        return item.eventColor === selectedColor;
+        let meetsAllConditions = true;
+
+        if(selectedColor && item.eventColor !== selectedColor) {
+          meetsAllConditions = false;
+        }
+
+        if(searchEventTitle && !item.eventTitle.includes(searchEventTitle)) {
+          meetsAllConditions = false;
+        }
+
+        if(searchEventStartDate && searchEventEndDate) {
+          const eventStartDate = new Date(item.eventStartDate);
+          const eventEndDate = new Date(item.eventEndDate);
+          const searchStartDate = new Date(searchEventStartDate);
+          const searchEndDate = new Date(searchEventEndDate);
+
+          if(!(eventStartDate >= searchStartDate && eventEndDate <= searchEndDate)) {
+            meetsAllConditions = false;
+          }else if(searchEventStartDate && !searchEventEndDate) {
+            const eventStartDate = new Date(item.eventStartDate);
+            const searchStartDate = new Date(searchEventStartDate);
+            
+            if(!(eventStartDate >= searchStartDate)) {
+              meetsAllConditions = false;
+            }
+          }else if(!searchEventStartDate && searchEventEndDate) {
+            const eventEndDate = new Date(item.eventEndDate);
+            const searchEndDate = new Date(searchEventEndDate);
+
+            if(!(eventEndDate <= searchEndDate)) {
+              meetsAllConditions = false;
+            }
+          }
+        }
+        return meetsAllConditions;
       });
 
       setFilteredScheduleRowData(searchFilteredRowData);
@@ -152,6 +204,14 @@ function WorkSchedule() {
 
   const handleSearchReset = () => {
     setFilteredScheduleRowData(entireScheduleRowData);
+    setSelectedColor(null);
+    setSearchEventTitle("");
+    setSearchEventStartDate("");
+    setSearchEventEndDate("");
+
+    if(calendarRef.current && calendarRef.current.focusToday) {
+      calendarRef.current.focusToday();
+    }
   };
 
   return (
@@ -159,7 +219,7 @@ function WorkSchedule() {
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Col md="4">
-            <label className="text-muted text-center w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>오늘의 일정</label>
+            <label className="text-muted text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>오늘의 일정</label>
             <div className="ag-theme-alpine" style={{ height: '13vh' }}>
               <AgGridReact
                 headerHeight={40}
@@ -175,7 +235,7 @@ function WorkSchedule() {
             </div>
           </Col>
           <Col md="4">
-            <label className="text-muted text-center w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>일정 목록</label>
+            <label className="text-muted text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>일정 목록</label>
             <div className="ag-theme-alpine" style={{ height: '13vh' }}>
               <AgGridReact 
                 headerHeight={40}
@@ -191,7 +251,7 @@ function WorkSchedule() {
             </div>
           </Col>
           <Col md="4">
-            <label className="text-muted text-center w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>상세 검색</label>
+            <label className="text-muted text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>상세 검색</label>
             <div style={{ border: '1px dashed lightgrey', height: '13vh', backgroundColor: '#FFFFFF', display: 'grid'}}>
               <Row className="no-gutters pl-3 pt-2 pb-2">
                 <Col md="9">
@@ -201,11 +261,15 @@ function WorkSchedule() {
                         <Input
                           type="date"
                           style={{ width: 140 }}
+                          value={searchEventStartDate}
+                          onChange={handleSearchEventStartDate}
                         />
                         <span className="text-center" style={{ width: 20 }}>~</span>
                         <Input
                           type="date"
                           style={{ width: 140 }}
+                          value={searchEventEndDate}
+                          onChange={handleSearchEventEndDate}
                         />
                       </Row>
                       <Row className="d-flex align-items-center no-gutters">
@@ -213,6 +277,8 @@ function WorkSchedule() {
                         <Input 
                           type="text"
                           style={{ width: 300 }}
+                          value={searchEventTitle}
+                          onChange={handleSearchEventTitle}
                         />
                       </Row>
                       <Row className="d-flex align-items-center no-gutters">
