@@ -1,6 +1,6 @@
 
 import React, { useState , useRef} from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter, Row, Col, Input, Button } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Row, Col, Input, Button, Label, FormGroup } from 'reactstrap';
 import { AgGridReact } from 'ag-grid-react';
 import { IoMdRefresh } from 'react-icons/io';
 import { RiSearchLine } from 'react-icons/ri';
@@ -99,10 +99,13 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         }));
     };
     
+    const saveManageEmergency = () => {
+        debugger
+    };
 
     return (
         <>
-            <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '50%' }}>
+            <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '54%' }}>
                 <ModalHeader toggle={toggleManageEmergencyModal}>
                     <b className="text-muted">응급학생관리</b>
                 </ModalHeader>
@@ -163,7 +166,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 </Row>
                             </Col>
                             <Col md="3">
-                                <Row className="d-flex align-items-center no-gutters ml-3">
+                                <Row className="d-flex align-items-center justify-content-end no-gutters ml-3 mr-4">
                                     <Button size="sm" style={{ height: 27 }} onClick={onResetSearchInEmergencyManagement}><IoMdRefresh style={{ fontSize: '15px'}} /></Button>
                                     <Button size="sm" style={{ height: 27 }} onClick={() => onSearchStudentInEmergencyManagement(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
                                 </Row>
@@ -188,73 +191,80 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             </div>
                             </Col>
                         </Row>
-                        <Row className='d-flex no-gutters text-muted align-items-center mt-2'>
-                            <label>주증상</label>
-                            <Input 
-                                className='ml-3 p-1'
-                                type='textarea'
-                                style={{ width: '86%'}}
-                            />
+                        <Row className='d-flex no-gutters align-items-center text-muted mt-3'>
+                            <Col className='d-flex'>
+                                <label className='text-center'>최초<br/>발견시간</label>
+                                <Input 
+                                    id='firstDiscoveryTime'
+                                    className='ml-2'
+                                    type='datetime-local'
+                                    style={{ width: '75%' }}
+                                />
+                            </Col>
+                            <Col className='d-flex justify-content-end mr-4'>
+                                <label className='text-center'>보건교사<br/>확인시간</label>
+                                <Input 
+                                    id='teacherConfirmTime'
+                                    className='ml-2'
+                                    type='datetime-local'
+                                    style={{ width: '75%' }}
+                                />
+                            </Col>
                         </Row>
                         <Row className='mt-2'>
-                            <Col md="7" className='pr-0'>
-                                <Row className='d-flex no-gutters align-items-center text-muted'>
-                                    <label>발생장소</label>
-                                    <Input 
-                                        className='ml-1'
-                                        type='text'
-                                        style={{ width: '75%' }}
-                                    />
-
-                                </Row>
+                            <Col md="7" className='d-flex align-items-center text-muted pr-0'>
+                                <label className='text-center'>발생장소</label>
+                                <Input 
+                                    id='occuringArea'
+                                    className='ml-2'
+                                    type='text'
+                                    style={{ width: '75%' }}
+                                />
                             </Col>
-                            <Col md="5">
-                                <Row className='d-flex no-gutters align-items-center text-muted'>
-                                    <label>최초 목격자</label>
-                                    <Input 
-                                        className='ml-1'
-                                        type='text'
-                                        style={{ width: '56%' }}
-                                    />
-                                </Row>
+                            <Col className='d-flex justify-content-start text-muted align-items-center' md="5">
+                                <label>최초 목격자</label>
+                                <Input
+                                    id='firstWitness'
+                                    className='ml-2'
+                                    type='text'
+                                    style={{ width: '57%' }}
+                                />
                             </Col>
                         </Row>
                         <Row className='d-flex no-gutters align-items-center text-muted mt-2'>
-                            <label>최초 발견시간</label>
-                            <Input 
-                                className='ml-2'
-                                type='time'
-                                style={{ width: '27.7%' }}
-                            />
-                            <label className='ml-4'>보건교사 확인시간</label>
-                            <Input 
-                                className='ml-2'
-                                type='time'
-                                style={{ width: '27.7%' }}
-                            />
-                        </Row>
-                        <Row className='d-flex no-gutters align-items-center text-muted mt-2'>
-                            <label>활력징후</label>
-                            <Input 
+                            <label className='text-center'>활력징후</label>
+                            <Input
+                                id='vitalSign'
                                 className='ml-2'
                                 type='text'
-                                style={{ width: '85%' }}
+                                style={{ width: '86%' }}
                             />
                         </Row>
                         <Row className='d-flex no-gutters text-muted align-items-center mt-2'>
-                            <label>사고<br/>개요</label>
-                            <Input 
+                            <label className='text-center' style={{ paddingLeft: 5 }}>주증상</label>
+                            <Input
+                                id='mainSymptom'
                                 className='p-1'
                                 type='textarea'
-                                style={{ width: '85%', marginLeft: 33 }}
+                                style={{ width: '86%', marginLeft: 14 }}
                             />
                         </Row>
                         <Row className='d-flex no-gutters text-muted align-items-center mt-2'>
-                            <label>응급처리<br/>내용</label>
-                            <Input 
+                            <label className='text-center' style={{ paddingLeft: 12}}>사고<br/>개요</label>
+                            <Input
+                                id='accidentOverview'
                                 className='p-1'
                                 type='textarea'
-                                style={{ width: '85%', marginLeft: 8 }}
+                                style={{ width: '86%', marginLeft: 19 }}
+                            />
+                        </Row>
+                        <Row className='d-flex no-gutters text-muted align-items-center mt-2'>
+                            <label className='text-center'>응급<br/>처리내용</label>
+                            <Input
+                                id='emergencyTreatmentDetail'
+                                className='p-1'
+                                type='textarea'
+                                style={{ width: '86%', marginLeft: 8 }}
                             />
                         </Row>
                     </Col>
@@ -273,19 +283,156 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 onImageClick={handleImageMapperClick}
                             />
                         </div>
-                        <Row className="d-flex no-gutters text-muted mt-2">
-                            <label>내원 병원</label>
-                            <Input 
-                            type="text"
-                            />
+                        <Row className="d-flex align-items-center no-gutters text-muted mt-3">
+                            <Col md="6" className='d-flex align-items-center'>
+                                <label>이송시간</label>
+                                <Input
+                                    id='transferTime'
+                                    className='ml-2'
+                                    type="time"
+                                    style={{ width: '60%' }}
+                                />
+                            </Col>
+                            <Col md="6" className='d-flex align-items-center justify-content-end'>
+                                <label>보호자연락처</label>
+                                <Input
+                                    id='guardianContact'
+                                    className='ml-2'
+                                    type='tel'
+                                    placeholder='010-0000-0000'
+                                    pattern='[0-9]{2,3}-[0-9]{3,4}-[0-9]{3,4}'
+                                    maxLength={13}
+                                    style={{ width: '60%' }}    
+                                />
+                            </Col>
                         </Row>
-                        <Row className="d-flex no-gutters text-muted mt-2">
-                            <label>특이사항</label>
-                            <Input 
-                                type="text"
+                        <Row className="d-flex align-items-center no-gutters text-muted mt-2">
+                            <label className='mr-2'>이송차량</label>
+                            <FormGroup className='ml-4' inline>
+                                <Row className='d-flex align-items-center'>
+                                    <Col xs="auto">
+                                        <Input
+                                            id='ambulance'
+                                            type='checkbox'
+                                        />
+                                        <Label check>구급차</Label>
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Input
+                                            id='generalVehicle'
+                                            type='checkbox'
+                                        />
+                                        <Label check>일반차량</Label>
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Input
+                                            id='etcTransfer'
+                                            type='checkbox'
+                                        />
+                                        <Label check>기타</Label>
+                                    </Col>
+                                    <Col style={{ width: 168 }}>
+                                        <Input
+                                            id='etcTransferDetail'
+                                            size='sm'
+                                            type='text'
+                                            style={{ width: '73%', marginLeft: '-20px', height: 30 }}
+                                        />
+                                    </Col>
+                                </Row>
+                            </FormGroup>
+                        </Row>
+                        <Row className="d-flex align-items-center no-gutters text-muted mt-2">
+                            <label style={{ marginRight: 28 }}>이송자</label>
+                            <FormGroup className='ml-3' inline>
+                                <Row className='d-flex align-items-center justify-content-between'>
+                                    <Col xs="auto">
+                                        <Input
+                                            id='paramedic'
+                                            type='checkbox'
+                                        />
+                                        <Label check>119 대원</Label>
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Input
+                                            id='schoolNurse'
+                                            type='checkbox'
+                                        />
+                                        <Label check>보건교사</Label>
+                                    </Col>
+                                    <Col xs="auto">
+                                        <Input
+                                            id='homeroomTeacher'
+                                            type='checkbox'
+                                        />
+                                        <Label check>담임</Label>
+                                    </Col>
+                                </Row>
+                                <Row className='d-flex align-items-center'>
+                                    <Col xs="auto" md="6">
+                                        <Input
+                                            id='parents'
+                                            type='checkbox'
+                                        />
+                                        <Label check>학부모</Label>
+                                    </Col>
+                                    <Col className='d-flex align-items-center' xs="auto" md="6">
+                                        <Input
+                                            id='etcTranspoter'
+                                            type='checkbox'
+                                            style={{ marginLeft: '-48px'}}
+                                        />
+                                        <Label style={{ marginLeft: '-28px' }} check>기타</Label>
+                                        <Input
+                                            id='etcTranspoterDetail'
+                                            size='sm'
+                                            type='text'
+                                            style={{ width: '95%', marginLeft: 10, height: 30 }}
+                                        />
+                                    </Col>
+                                    <Col xs="auto" md="3">
+                                    </Col>
+                                </Row>
+                            </FormGroup>
+                        </Row>
+                        <Row className='d-flex no-gutters text-muted align-items-center mt-2'>
+                            <label>이송병원</label>
+                            <Input
+                                id='trasferHospital'
+                                className='ml-2'
+                                type='text'
+                                style={{ width: '86%' }}
                             />
                         </Row>
                     </Col>
+                </Row>
+                <hr/>
+                <Row>
+                    <Col md="3"></Col>
+                    <Col className='d-flex align-items-center text-muted' md="3">
+                        <label className='mr-3'>작성일</label>
+                        <Input
+                            id='registDate'
+                            type='date'
+                            style={{ width: '60%' }}
+                        />
+                    </Col>
+                    <Col className='d-flex align-items-center text-muted' md="2">
+                        <label className='mr-2'>성명</label>
+                        <Input
+                            id='registerName'
+                            type='text'
+                            style={{ width: '70%' }}
+                        />
+                    </Col>
+                    <Col className='d-flex align-items-center text-muted' md="1">
+                        <div className='mr-2'>
+                            <span>(인)</span>
+                        </div>
+                        {/* <Button size='sm' className='ml-5'>전자서명</Button>
+                        <Button size='sm' className='ml-1'>전자직인</Button> */}
+                    </Col>
+                    <Col md='3'></Col>
                 </Row>
                 </ModalBody>
                 <ModalFooter className="p-0" >
@@ -298,7 +445,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                         </Col>
                         <Col className='d-flex justify-content-end no-gutters'>
                             <Button className='mr-2'>초기화</Button>
-                            <Button className="ml-1">등록</Button>
+                            <Button className="ml-1" onClick={saveManageEmergency}>등록</Button>
                             <Button className="ml-1" onClick={toggleManageEmergencyModal}>취소</Button>
                         </Col>
                     </Row>
