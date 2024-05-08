@@ -6,15 +6,20 @@ import { IoMdRefresh } from 'react-icons/io';
 import { RiSearchLine } from 'react-icons/ri';
 import Masking from "components/Tools/Masking";
 import ImageMapper from "react-image-mapper";
+import { useUser } from "contexts/UserContext";
 // import anatomyImage from "../../src/assets/img/anatomy_image.png";
 import anatomyImage from '../../../src/assets/img/anatomy_image.png';
 import anatomyImageFemale from '../../../src/assets/img/anatomy_image_female.png';
+import axios from 'axios';
 // import anatomyImageRightHand from "../../src/assets/img/anatomy_image_right_hand.png";
 // import anatomyImageLeftHand from "../../src/assets/img/anatomy_image_left_hand.png";
 // import anatomyImageRightFoot from "../../src/assets/img/anatomy_image_right_foot.png";
 // import anatomyImageLeftFoot from "../../src/assets/img/anatomy_image_left_foot.png";
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, searchStudentColumnDefs, notEditDefaultColDef, fetchSelectedStudentData, fetchStudentData }) => {
+    const { user } = useUser();  
     const [searchStudentInEmergencyManagementRowData, setSearchStudentInEmergencyManagementRowData] = useState([]);
     const [selectedStudentInEmergencyManagement, setSelectedStudentInEmergencyManagement] = useState(null);
     const [searchCriteria, setSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
@@ -22,6 +27,20 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const [masked, setMasked] = useState(false);
     const [clickedPoints, setClickedPoints] = useState([]);
     const [clickCounter, setClickCounter] = useState(0);
+    const [transferCheckedItems, setTransferCheckedItems] = useState({
+        ambulance: false,
+        generalVehicle: false,
+        etcTransfer: false
+    });
+    const [etcTransferDetail, setEtcTransferDetail] = useState('');
+    const [transpoterCheckedItems, setTranspoterCheckedItems] = useState({
+        paramedic: false,
+        schoolNurse: false,
+        homeroomTeacher: false,
+        parents: false,
+        etcTranspoter: false
+    });
+    const [etcTranspoterDetail, setEtcTranspoterDetail] = useState('');
 
     const searchStudentInEmergencyManagementGridRef = useRef();
 
@@ -99,10 +118,96 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         }));
     };
     
-    const saveManageEmergency = () => {
-        debugger
+    const saveManageEmergency = async () => {
+        const firstDiscoveryTime = document.getElementById('firstDiscoveryTime').value;
+        const teacherConfirmTime = document.getElementById('teacherConfirmTime').value;
+        const occuringArea = document.getElementById('occuringArea').value;
+        const firstWitness = document.getElementById('firstWitness').value;
+        const vitalSign = document.getElementById('emergencyVitalSign').value;
+        const mainSymptom = document.getElementById('mainSymptom').value;
+        const accidentOverview = document.getElementById('accidentOverview').value;
+        const emergencyTreatmentDetail = document.getElementById('emergencyTreatmentDetail').value;
+        const transferTime = document.getElementById('transferTime').value;
+        const guardianContact = document.getElementById('guardianContact').value;
+        const registDate = document.getElementById('registDate').value;
+        const registerName = document.getElementById('registerName').value;
+        const bodyChartPoints = clickedPoints;
+
+        
+        const selectedTranspoter = Object.entries(transpoterCheckedItems)
+        .filter(([key, value]) => value)
+        .map(([key]) => key)[0];
+        
+        if(transpoterCheckedItems.etcTranspoter) {
+            selectedTranspoter.push('기타', etcTranspoterDetail);
+        }
+
+        const selectedTransfer = Object.entries(transferCheckedItems)
+        .filter(([key, value]) => value)
+        .map(([key]) => key)[0];
+
+        if(transferCheckedItems.etcTransfer) {
+            selectedTransfer.push('기타', etcTransferDetail);
+        }
+
+        if(user && selectedStudentInEmergencyManagement) {
+            const sGrade = selectedStudentInEmergencyManagement.sGrade;
+            const sClass = selectedStudentInEmergencyManagement.sClass;
+            const sNumber = selectedStudentInEmergencyManagement.sNumber;
+            const sGender = selectedStudentInEmergencyManagement.sGender;
+            const sName = selectedStudentInEmergencyManagement.sName;
+            
+            const response = await axios.post(`http://${BASE_URL}:8000/manageEmergency/saveEmergencyManagement`, {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                sGrade: sGrade,
+                sClass: sClass,
+                sNumber: sNumber,
+                sGender: sGender,
+                sName: sName,
+                firstDiscoveryTime: firstDiscoveryTime,
+                teacherConfirmTime: teacherConfirmTime,
+                occuringArea: occuringArea,
+                firstWitness: firstWitness,
+                vitalSign: vitalSign,
+                mainSymptom: mainSymptom,
+                accidentOverview: accidentOverview,
+                emergencyTreatmentDetail: emergencyTreatmentDetail,
+                transferTime: transferTime,
+                guardianContact: guardianContact,
+                registDate: registDate,
+                registerName: registerName,
+                bodyChartPoints: JSON.stringify(bodyChartPoints),
+                transferVehicle: selectedTransfer,
+                transpoter: selectedTranspoter
+            });
+
+            if(response.data === 'success') {
+                // 저장 inform 출력 처리 필요
+                debugger
+            }
+        }else{
+            // 학생 선택하라는 Alert 출력 필요
+        }
     };
 
+    const handleTranspoterCheckboxChange = (e) => {
+        const { id, checked } = e.target;
+        setTranspoterCheckedItems({ ...transpoterCheckedItems, [id]: checked });
+    };
+
+    const handleEtcTranspoterDetailChange = (e) => {
+        setEtcTranspoterDetail(e.target.value);
+    };
+
+    const handleTransferCheckboxChange = (e) => {
+        const { id, checked } = e.target;
+        setTransferCheckedItems({ ...transferCheckedItems, [id]: checked });
+    };
+
+    const handleEtcTransferDetailChange = (e) => {
+        setEtcTransferDetail(e.target.value);
+    };
     return (
         <>
             <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '54%' }}>
@@ -234,7 +339,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                         <Row className='d-flex no-gutters align-items-center text-muted mt-2'>
                             <label className='text-center'>활력징후</label>
                             <Input
-                                id='vitalSign'
+                                id='emergencyVitalSign'
                                 className='ml-2'
                                 type='text'
                                 style={{ width: '86%' }}
@@ -310,33 +415,41 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             <label className='mr-2'>이송차량</label>
                             <FormGroup className='ml-4' inline>
                                 <Row className='d-flex align-items-center'>
-                                    <Col xs="auto">
+                                    <Col xs="auto" md="3">
                                         <Input
                                             id='ambulance'
                                             type='checkbox'
+                                            onChange={handleTransferCheckboxChange}
+                                            checked={transferCheckedItems.ambulance}
                                         />
                                         <Label check>구급차</Label>
                                     </Col>
-                                    <Col xs="auto">
+                                    <Col xs="auto" md="4">
                                         <Input
                                             id='generalVehicle'
                                             type='checkbox'
+                                            onChange={handleTransferCheckboxChange}
+                                            checked={transferCheckedItems.generalVehicle}
                                         />
                                         <Label check>일반차량</Label>
                                     </Col>
-                                    <Col xs="auto">
+                                    <Col xs="auto" md="2" style={{ marginLeft: '-10px'}}>
                                         <Input
                                             id='etcTransfer'
                                             type='checkbox'
+                                            onChange={handleTransferCheckboxChange}
+                                            checked={transferCheckedItems.etcTransfer}
                                         />
                                         <Label check>기타</Label>
                                     </Col>
-                                    <Col style={{ width: 168 }}>
+                                    <Col md="3" style={{ width: 168 }}>
                                         <Input
                                             id='etcTransferDetail'
                                             size='sm'
                                             type='text'
-                                            style={{ width: '73%', marginLeft: '-20px', height: 30 }}
+                                            style={{ width: 109, marginLeft: '-30px', height: 30 }}
+                                            onChange={handleEtcTransferDetailChange}
+                                            value={etcTransferDetail}
                                         />
                                     </Col>
                                 </Row>
@@ -350,6 +463,8 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                         <Input
                                             id='paramedic'
                                             type='checkbox'
+                                            onChange={handleTranspoterCheckboxChange}
+                                            checked={transpoterCheckedItems.paramedic}
                                         />
                                         <Label check>119 대원</Label>
                                     </Col>
@@ -357,37 +472,47 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                         <Input
                                             id='schoolNurse'
                                             type='checkbox'
+                                            onChange={handleTranspoterCheckboxChange}
+                                            checked={transpoterCheckedItems.schoolNurse}
                                         />
                                         <Label check>보건교사</Label>
                                     </Col>
-                                    <Col xs="auto">
+                                    <Col xs="auto" style={{ marginRight: '-50px'}}>
                                         <Input
                                             id='homeroomTeacher'
                                             type='checkbox'
+                                            onChange={handleTranspoterCheckboxChange}
+                                            checked={transpoterCheckedItems.homeroomTeacher}
                                         />
                                         <Label check>담임</Label>
                                     </Col>
                                 </Row>
                                 <Row className='d-flex align-items-center'>
-                                    <Col xs="auto" md="6">
+                                    <Col xs="auto" md="7">
                                         <Input
                                             id='parents'
                                             type='checkbox'
+                                            onChange={handleTranspoterCheckboxChange}
+                                            checked={transpoterCheckedItems.parents}
                                         />
                                         <Label check>학부모</Label>
                                     </Col>
-                                    <Col className='d-flex align-items-center' xs="auto" md="6">
+                                    <Col className='d-flex align-items-center' xs="auto" md="5" style={{ width: '100%'}}>
                                         <Input
                                             id='etcTranspoter'
                                             type='checkbox'
-                                            style={{ marginLeft: '-48px'}}
+                                            style={{ marginLeft: '-49px'}}
+                                            onChange={handleTranspoterCheckboxChange}
+                                            checked={transpoterCheckedItems.etcTranspoter}
                                         />
-                                        <Label style={{ marginLeft: '-28px' }} check>기타</Label>
+                                        <Label style={{ marginLeft: '-29px' }} check>기타</Label>
                                         <Input
                                             id='etcTranspoterDetail'
                                             size='sm'
                                             type='text'
-                                            style={{ width: '95%', marginLeft: 10, height: 30 }}
+                                            style={{ width: '93%', marginLeft: 10, height: 30 }}
+                                            onChange={handleEtcTranspoterDetailChange}
+                                            value={etcTranspoterDetail}
                                         />
                                     </Col>
                                     <Col xs="auto" md="3">

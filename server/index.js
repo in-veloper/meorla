@@ -4,10 +4,8 @@ const dotenv = require('dotenv');
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
-const mysqlPromise = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { urlencoded } = require('body-parser');
 const cookieParser = require('cookie-parser');
 const PORT = process.env.PORT || 8000;
 const { Cookies } = require('react-cookie');
@@ -15,9 +13,6 @@ const cookies = new Cookies();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const cron = require('node-cron');
-const axios = require('axios');
-const moment = require('moment');
 const { startMedicineScheduler } = require('./scheduler/medicineScheduler')
 
 const http = require('http');
@@ -1239,6 +1234,40 @@ app.get('/medicineInfo/getGrainMedicineData', async (req, res) => {
             res.json(result);
         }
     })
+});
+
+app.post('/manageEmergency/saveEmergencyManagement', async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const sGrade = req.body.sGrade;
+    const sClass = req.body.sClass;
+    const sNumber = req.body.sNumber;
+    const sGender = req.body.sGender;
+    const sName = req.body.sName;
+    const firstDiscoveryTime = req.body.firstDiscoveryTime;
+    const teacherConfirmTime = req.body.teacherConfirmTime;
+    const occuringArea = req.body.occuringArea;
+    const firstWitness = req.body.firstWitness;
+    const vitalSign = req.body.vitalSign;
+    const mainSymptom = req.body.mainSymptom;
+    const accidentOverview = req.body.accidentOverview;
+    const emergencyTreatmentDetail = req.body.emergencyTreatmentDetail;
+    const transferTime = req.body.transferTime;
+    const guardianContact = req.body.guardianContact;
+    const registDate = req.body.registDate;
+    const registerName = req.body.registerName;
+    const bodyChartPoints = req.body.bodyChartPoints;
+    const transferVehicle = req.body.transferVehicle;
+    const transpoter = req.body.transpoter;
+
+    const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
+        if(err) {
+            console.log("응급학생관리 등록 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
 });
 
 server.listen(PORT, () => {
