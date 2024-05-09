@@ -1254,18 +1254,33 @@ app.post('/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const emergencyTreatmentDetail = req.body.emergencyTreatmentDetail;
     const transferTime = req.body.transferTime;
     const guardianContact = req.body.guardianContact;
+    const transferHospital = req.body.transferHospital;
     const registDate = req.body.registDate;
     const registerName = req.body.registerName;
     const bodyChartPoints = req.body.bodyChartPoints;
     const transferVehicle = req.body.transferVehicle;
     const transpoter = req.body.transpoter;
 
-    const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
         if(err) {
             console.log("응급학생관리 등록 중 ERROR", err);
         }else{
             res.send('success');
+        }
+    });
+});
+
+app.get('/manageEmergency/getManageEmergencyData', async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.manageEmergency WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("응급학생관리 전체 목록 조회 중 ERROR", err);
+        }else{
+            res.json(result);
         }
     });
 });
