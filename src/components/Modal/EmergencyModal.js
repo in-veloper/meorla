@@ -16,8 +16,8 @@ import NotiflixWarn from 'components/Notiflix/NotiflixWarn';
 import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import malgun from '../../assets/fonts/malgun.ttf.base64';
-import NanumGothic from '../../assets/fonts/NanumGothic.ttf.base64';
+// import malgun from '../../assets/fonts/malgun.ttf.base64';
+import NanumGothic from '../../assets/fonts/NanumGothic.ttf';
 // import anatomyImageRightHand from "../../src/assets/img/anatomy_image_right_hand.png";
 // import anatomyImageLeftHand from "../../src/assets/img/anatomy_image_left_hand.png";
 // import anatomyImageRightFoot from "../../src/assets/img/anatomy_image_right_foot.png";
@@ -63,6 +63,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const [etcTranspoterDetail, setEtcTranspoterDetail] = useState('');
     const [entireManageEmergencyRowData, setEntireManageEmergencyRowData] = useState([]);
     const [genderInImageMapper, setGenderInImageMapper] = useState('M');
+    const [selectedEmergencyStudent, setSelectedEmergencyStudent] = useState(null);
 
     const searchStudentInEmergencyManagementGridRef = useRef();
     const entireManageEmergencyGridRef = useRef();
@@ -308,6 +309,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
         if(selectedRow) selectedRow.sGender === "여" ? setGenderInImageMapper('F') : setGenderInImageMapper('M');
 
+        setSelectedEmergencyStudent(selectedRow);
         setFirstDiscoveryTimeValue(selectedRow.firstDiscoveryTime);
         setTeacherConfirmTimeValue(selectedRow.teacherConfirmTime);
         setOccuringAreaValue(selectedRow.occuringArea);
@@ -344,19 +346,60 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         }
     };
 
-    const handleDownloadHwp = () => {
+    const handleDownloadPDF = () => {
         const doc = new jsPDF("p", "mm", "a4");
 
-        doc.addFileToVFS('NanumGothic.ttf', NanumGothic);
-        doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
-        doc.setFont('NanumGothic');
-        // doc.addFileToVFS('malgun.ttf', malgun);
-        // doc.addFont('malgun.ttf', 'malgun', 'normal');
-        // doc.setFont('malgun');
-        doc.text(20, 20, '1234');
-        doc.text(50, 50, '가나다라');
+        fetch(NanumGothic)
+        .then(response => response.blob())
+        .then(fontBlob => {
+            const reader = new FileReader();
+            reader.readAsDataURL(fontBlob);
+            reader.onload = () => {
+                const NanumGothicBase64 = reader.result.split(',')[1];
+                const tableWidth = 150; // 표의 너비
+                const pageWidth = doc.internal.pageSize.getWidth(); // 용지의 너비
 
-        doc.save('document.pdf');
+                doc.addFileToVFS('NanumGothic.ttf', NanumGothicBase64);
+                doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+                doc.setFont('NanumGothic');
+
+                doc.autoTable({
+                    startX: (pageWidth - tableWidth) / 2,
+                    startY: 20,
+                    tableWidth: tableWidth,
+                    styles: { font: 'NanumGothic', fontStyle: 'bold', fontSize: 25, textColor: [255, 255, 255] },
+                    margin: { left: (pageWidth - tableWidth) / 2, },
+                    body: [
+                        [
+                            { content: '응급사고 및 이송 기록지', styles: { fillColor: [240, 114, 106], halign: 'center' } }
+                        ]
+                    ]
+                });
+                doc.setFontSize(12);
+                doc.text(165, 45, user.schoolName);
+
+                doc.autoTable({
+                    startY: 50,
+                    headStyles: { fillColor: [243, 159, 155], halign: 'center', fontStyle: 'bold', textColor: [0, 0, 0] },
+                    theme: 'grid',
+                    tableLineColor: [187, 67, 48],
+                    lineWidth: 1.5,
+                    styles: { font: 'NanumGothic', fontStyle: 'bold', fontSize: 12, textColor: [255, 255, 255] },
+                    head: [['학년반', '학생명', '성별', '보호자 전화번호', '담임교사']],
+                    body: [
+                        [
+                            { content: selectedEmergencyStudent.sGrade + "학년 " + selectedEmergencyStudent.sClass + "반", textColor: [0, 0, 0] }, // 폰트 색상 변경
+                            { content: selectedEmergencyStudent.sName, textColor: [0, 0, 0] },
+                            { content: selectedEmergencyStudent.sGender, textColor: [0, 0, 0] },
+                            { content: selectedEmergencyStudent.guardianContact, textColor: [0, 0, 0] },
+                            { content: "", textColor: [0, 0, 0] }
+                        ]
+                    ]
+                });
+                
+                doc.save('document.pdf');
+            }
+        });
     };
     
     return (
@@ -742,7 +785,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                 <ModalFooter className="p-0" >
                     <Row className="w-100">
                         <Col className="d-flex justify-content-start no-gutters">
-                            <Button onClick={handleDownloadHwp}>한글파일 다운로드</Button>
+                            <Button onClick={handleDownloadPDF}>PDF 다운로드</Button>
                         </Col>
                         <Col>
 
