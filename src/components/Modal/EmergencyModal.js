@@ -5,11 +5,8 @@ import { AgGridReact } from 'ag-grid-react';
 import { IoMdRefresh } from 'react-icons/io';
 import { RiSearchLine } from 'react-icons/ri';
 import Masking from "components/Tools/Masking";
-// import ImageMapper from "react-image-mapper";
 import ImageMapper from "react-img-mapper";
-import html2canvas from 'html2canvas';
 import { useUser } from "contexts/UserContext";
-// import anatomyImage from "../../src/assets/img/anatomy_image.png";
 import anatomyImage from '../../../src/assets/img/anatomy_image.png';
 import anatomyImageFemale from '../../../src/assets/img/anatomy_image_female.png';
 import axios from 'axios';
@@ -17,13 +14,9 @@ import NotiflixWarn from 'components/Notiflix/NotiflixWarn';
 import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-// import malgun from '../../assets/fonts/malgun.ttf.base64';
+import * as htmlToImage from 'html-to-image';
 import NanumGothic from '../../assets/fonts/NanumGothic.ttf';
 import NanumGothicBold from '../../assets/fonts/NanumGothicBold.ttf';
-// import anatomyImageRightHand from "../../src/assets/img/anatomy_image_right_hand.png";
-// import anatomyImageLeftHand from "../../src/assets/img/anatomy_image_left_hand.png";
-// import anatomyImageRightFoot from "../../src/assets/img/anatomy_image_right_foot.png";
-// import anatomyImageLeftFoot from "../../src/assets/img/anatomy_image_left_foot.png";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -54,7 +47,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         generalVehicle: false,
         etcTransfer: false
     });
-    const [etcTransferDetail, setEtcTransferDetail] = useState('');
+    const [etcTransferDetail, setEtcTransferDetail] = useState("");
     const [transpoterCheckedItems, setTranspoterCheckedItems] = useState({
         paramedic: false,
         schoolNurse: false,
@@ -62,7 +55,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         parents: false,
         etcTranspoter: false
     });
-    const [etcTranspoterDetail, setEtcTranspoterDetail] = useState('');
+    const [etcTranspoterDetail, setEtcTranspoterDetail] = useState("");
     const [entireManageEmergencyRowData, setEntireManageEmergencyRowData] = useState([]);
     const [genderInImageMapper, setGenderInImageMapper] = useState('M');
     const [selectedEmergencyStudent, setSelectedEmergencyStudent] = useState(null);
@@ -176,22 +169,18 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         const bodyChartPoints = clickedPoints;
 
         
-        const selectedTranspoter = Object.entries(transpoterCheckedItems)
+        let selectedTranspoter = Object.entries(transpoterCheckedItems)
         .filter(([key, value]) => value)
         .map(([key]) => key)[0];
         
-        if(transpoterCheckedItems.etcTranspoter) {
-            selectedTranspoter.push('기타', etcTranspoterDetail);
-        }
+        if(transpoterCheckedItems.etcTranspoter) selectedTranspoter = selectedTranspoter + "::" + etcTranspoterDetail;
 
-        const selectedTransfer = Object.entries(transferCheckedItems)
+        let selectedTransfer = Object.entries(transferCheckedItems)
         .filter(([key, value]) => value)
         .map(([key]) => key)[0];
 
-        if(transferCheckedItems.etcTransfer) {
-            selectedTransfer.push('기타', etcTransferDetail);
-        }
-
+        if(transferCheckedItems.etcTransfer) selectedTransfer = selectedTransfer + "::" + etcTransferDetail;
+        
         if(user && selectedStudentInEmergencyManagement) {
             const sGrade = selectedStudentInEmergencyManagement.sGrade;
             const sClass = selectedStudentInEmergencyManagement.sClass;
@@ -310,8 +299,8 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     const onSelectionChangedInEntireEmergencyGrid = (param) => {
         const selectedRow = param.api.getSelectedRows()[0];
-        const { transferVehicle, transpoter, etcTransferDetail, etcTranspoterDetail } = selectedRow;
-
+        let { transferVehicle, transpoter } = selectedRow;
+        
         if(selectedRow) selectedRow.sGender === "여" ? setGenderInImageMapper('F') : setGenderInImageMapper('M');
 
         setSelectedEmergencyStudent(selectedRow);
@@ -329,21 +318,29 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         setRegistDateValue(selectedRow.registDate);
         setRegisterNameValue(selectedRow.registerName);
 
-        setTransferCheckedItems({
-            ambulance: transferVehicle === 'ambulance',
-            generalVehicle: transferVehicle === 'generalVehicle',
-            etcTransfer: transferVehicle === 'etcTransfer'
-        });
-        setEtcTransferDetail(etcTransferDetail);
+        if(transferVehicle.includes("etcTransferVehicle")) {
+            setEtcTransferDetail(transferVehicle.split("::")[1]);
+            transferVehicle = "etcTransfer";
+        }else{
+            setTransferCheckedItems({
+                ambulance: transferVehicle === 'ambulance',
+                generalVehicle: transferVehicle === 'generalVehicle',
+                etcTransfer: transferVehicle === 'etcTransfer'
+            });
+        }
 
-        setTranspoterCheckedItems({
-            paramedic: transpoter === 'paramedic',
-            schoolNurse: transpoter === 'schoolNurse',
-            homeroomTeacher: transpoter === 'homeroomTeacher',
-            parents: transpoter === 'parents',
-            etcTranspoter: transpoter === 'etcTranspoter'
-        });
-        setEtcTranspoterDetail(etcTranspoterDetail);
+        if(transpoter.includes("etcTranspoter")) {
+            setEtcTranspoterDetail(transpoter.split("::")[1]);
+            transpoter = "etcTranspoter";
+        }else{
+            setTranspoterCheckedItems({
+                paramedic: transpoter === 'paramedic',
+                schoolNurse: transpoter === 'schoolNurse',
+                homeroomTeacher: transpoter === 'homeroomTeacher',
+                parents: transpoter === 'parents',
+                etcTranspoter: transpoter === 'etcTranspoter'
+            });
+        }
 
         if(selectedRow.bodyChartPoints) {
             const bodyChartPoints = JSON.parse(selectedRow.bodyChartPoints);
@@ -353,7 +350,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF("p", "mm", "a4");
-        console.log(selectedEmergencyStudent)
+        
         fetch(NanumGothic)
         .then(response => response.blob())
         .then(fontBlob => {
@@ -396,12 +393,6 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                         doc.setFontSize(12);
                         doc.text(165, 47, user.schoolName);
 
-                        html2canvas(imageMapperRef.current).then(canvas => {
-                            const imgData = canvas.toDataURL('image/png');
-                            debugger
-                            doc.addImage(imgData, 'PNG', 50, 50, 50, 50);
-                        })
-        
                         doc.autoTable({
                             startY: 50,
                             headStyles: { font: 'NanumGothicBold', lineColor: [187, 67, 48], lineWidth: 0.3, fillColor: [243, 159, 155], halign: 'center', fontStyle: 'bold', textColor: [0, 0, 0] },
@@ -443,11 +434,11 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 ],
                                 [
                                     { content: "최초\r발견\r시간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
-                                    { content: selectedEmergencyStudent.firstDiscoveryTime ? selectedEmergencyStudent.firstDiscoveryTime : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
+                                    { content: selectedEmergencyStudent.firstDiscoveryTime ? convertDateTimeValue("dt", selectedEmergencyStudent.firstDiscoveryTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
                                 ],
                                 [
                                     { content: "보건\r교사\r확인\r시간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
-                                    { content: selectedEmergencyStudent.teacherConfirmTime ? selectedEmergencyStudent.teacherConfirmTime : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
+                                    { content: selectedEmergencyStudent.teacherConfirmTime ? convertDateTimeValue("dt", selectedEmergencyStudent.teacherConfirmTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
                                 ],
                                 [ 
                                     { content: "활력징후", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle', minCellHeight: 12 }, colSpan: 2 },
@@ -480,18 +471,44 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 ],
                                 [
                                     { content: "작성일 및\r작성자", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', valign: 'middle', fillColor: [251, 225, 206] }, colSpan: 2 },
-                                    { content: selectedEmergencyStudent.registDate + "\r\r성명 :            " + selectedEmergencyStudent.registerName + "       (인)", styles: { textColor: [0, 0, 0], halign: 'center' }, colSpan: 5 }
+                                    { content: convertDateTimeValue("d", selectedEmergencyStudent.registDate) + "\r\r성명 :            " + selectedEmergencyStudent.registerName + "       (인)", styles: { textColor: [0, 0, 0], halign: 'center' }, colSpan: 5 }
                                 ]
                             ]
                         });
 
                         doc.text(15, 267, "* 안전사고 발생 시 환자 상태, 사고 현황, 응급처치 내용 및 이송 상황에 대하여 육하원칙에 의거 기록\r   (사건 개요는 담임교사 또는 사고 당시 교과담당 교사가 작성)");
-        
-                        doc.save('document.pdf');
+                        
+                        const imageMapperDiv = document.getElementById("imageMapperContainer");
+                        htmlToImage.toPng(imageMapperDiv)
+                        .then((dataUrl) => {
+                            const base64Img = dataUrl.split(',')[1];
+                            const img = new Image();
+                            img.src = 'data:image/png;base64,' + base64Img;
+                            img.onload = function() {
+                                doc.addImage(img, 'PNG', 126, 67, 69.5, 87.5);
+                                doc.save('document.pdf');
+                            }
+                        });
                     };
                 });
             };
         });
+    };
+
+    const convertDateTimeValue = (category, dateTime) => {
+        if(category === "dt") {
+            let dateValue = dateTime.split("T")[0];
+            let timeValue = dateTime.split("T")[1];
+            const returnDateValue = dateValue.split("-")[0] + "년 " + parseInt(dateValue.split("-")[1]).toString() + "월 " + parseInt(dateValue.split("-")[2]).toString() + "일   ";
+            const returnTimeValue = (timeValue.split(":")[0] === "00" ? "00" : parseInt(timeValue.split(":")[0]).toString()) + "시 " + (timeValue.split(":")[1] === "00" ? "00" : parseInt(timeValue.split(":")[1]).toString()) + "분";
+
+            return returnDateValue + returnTimeValue;
+        }else if(category === "d") {
+            let dateValue = dateTime.split("T")[0];
+            const returnDateValue = dateValue.split("-")[0] + "년 " + parseInt(dateValue.split("-")[1]).toString() + "월 " + parseInt(dateValue.split("-")[2]).toString() + "일   ";
+
+            return returnDateValue;
+        }
     };
     
     return (
@@ -683,7 +700,9 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 <ImageMapper 
                                     src={genderInImageMapper && genderInImageMapper === 'F' ? anatomyImageFemale : anatomyImage}
                                     width={500}
+                                    imgWidth={500}
                                     height={300}
+                                    imgHeight={300}
                                     map={{
                                         name: 'anatomy-map',
                                         areas: generateAreas()
@@ -757,7 +776,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                                 type='text'
                                                 style={{ width: 109, marginLeft: '-30px', height: 30 }}
                                                 onChange={handleEtcTransferDetailChange}
-                                                value={etcTransferDetail}
+                                                value={etcTransferDetail || ""}
                                             />
                                         </Col>
                                     </Row>
@@ -835,7 +854,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                     className='ml-2'
                                     type='text'
                                     style={{ width: '86%' }}
-                                    value={transferHospitalValue}
+                                    value={transferHospitalValue || ""}
                                     onChange={(e) => setTransferHospitalValue(e.target.value)}
                                 />
                             </Row>
