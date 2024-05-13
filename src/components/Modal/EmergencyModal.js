@@ -455,15 +455,15 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 [
                                     { content: "이송시간 및\r이송방법", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle' }, rowSpan: 4, colSpan: 2 },
                                     { content: "이송시간", styles: { textColor: [0, 0, 0], halign: 'center', cellWidth: 25 } },
-                                    { content: selectedEmergencyStudent.transferTime ? selectedEmergencyStudent.transferTime : "", styles: { textColor: [0, 0, 0] }, colSpan: 4 }
+                                    { content: selectedEmergencyStudent.transferTime ? convertDateTimeValue("t", selectedEmergencyStudent.transferTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 4 }
                                 ],
                                 [
                                     { content: "이송차량", styles: { textColor: [0, 0, 0], halign: 'center' } },
-                                    { content: (selectedEmergencyStudent.transferVehicle === "ambulance" ? "\u25A0" : "\u25A1") + "구급차     " + (selectedEmergencyStudent.transferVehicle === "generalVehicle" ? "\u25A0" : "\u25A1") + "일반차량     " + (selectedEmergencyStudent.transferVehicle === "etcTransfer" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.etcTransfer ? selectedEmergencyStudent.etcTransfer : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
+                                    { content: (selectedEmergencyStudent.transferVehicle === "ambulance" ? "\u25A0" : "\u25A1") + "구급차     " + (selectedEmergencyStudent.transferVehicle === "generalVehicle" ? "\u25A0" : "\u25A1") + "일반차량     " + (selectedEmergencyStudent.transferVehicle.split("::")[0] === "etcTransfer" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.transferVehicle.split("::")[0] === "etcTransfer" ? selectedEmergencyStudent.transferVehicle.split("::")[1] : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
                                 ],
                                 [
-                                    { content: "이송자", styles: { textColor: [0, 0, 0], halign: 'center' } },
-                                    { content: (selectedEmergencyStudent.transpoter === "paramedic" ? "\u25A0" : "\u25A1") + "119 대원     " + (selectedEmergencyStudent.transpoter === "schoolNurse" ? "\u25A0" : "\u25A1") + "보건교사     " + (selectedEmergencyStudent.transpoter === "homeroomTeacher" ? "\u25A0" : "\u25A1") + "담임     " + (selectedEmergencyStudent.transpoter === "parents" ? "\u25A0" : "\u25A1") + "학부모     " + (selectedEmergencyStudent.transpoter === "etcTranspoter" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.etcTranspoter ? selectedEmergencyStudent.etcTranspoter : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
+                                    { content: "이송자", styles: { textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+                                    { content: (selectedEmergencyStudent.transpoter === "paramedic" ? "\u25A0" : "\u25A1") + "119 대원          " + (selectedEmergencyStudent.transpoter === "schoolNurse" ? "\u25A0" : "\u25A1") + "보건교사          " + (selectedEmergencyStudent.transpoter === "homeroomTeacher" ? "\u25A0" : "\u25A1") + "담임          " + (selectedEmergencyStudent.transpoter === "parents" ? "\u25A0" : "\u25A1") + "학부모\r" + (selectedEmergencyStudent.transpoter.split("::")[0] === "etcTranspoter" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.transpoter.split("::")[0] === "etcTranspoter" ? selectedEmergencyStudent.transpoter.split("::")[1] : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
                                 ],
                                 [
                                     { content: "이송병원", styles: { textColor: [0, 0, 0], halign: 'center' } },
@@ -476,7 +476,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             ]
                         });
 
-                        doc.text(15, 267, "* 안전사고 발생 시 환자 상태, 사고 현황, 응급처치 내용 및 이송 상황에 대하여 육하원칙에 의거 기록\r   (사건 개요는 담임교사 또는 사고 당시 교과담당 교사가 작성)");
+                        doc.text(15, 270, "* 안전사고 발생 시 환자 상태, 사고 현황, 응급처치 내용 및 이송 상황에 대하여 육하원칙에 의거 기록\r   (사건 개요는 담임교사 또는 사고 당시 교과담당 교사가 작성)");
                         
                         const imageMapperDiv = document.getElementById("imageMapperContainer");
                         htmlToImage.toPng(imageMapperDiv)
@@ -496,6 +496,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     };
 
     const convertDateTimeValue = (category, dateTime) => {
+        debugger
         if(category === "dt") {
             let dateValue = dateTime.split("T")[0];
             let timeValue = dateTime.split("T")[1];
@@ -508,6 +509,10 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
             const returnDateValue = dateValue.split("-")[0] + "년 " + parseInt(dateValue.split("-")[1]).toString() + "월 " + parseInt(dateValue.split("-")[2]).toString() + "일   ";
 
             return returnDateValue;
+        }else if(category === "t") {
+            const returnTimeValue = (dateTime.split(":")[0] === "00" ? "00" : parseInt(dateTime.split(":")[0]).toString()) + "시 " + (dateTime.split(":")[1] === "00" ? "00" : parseInt(dateTime.split(":")[1]).toString()) + "분";
+
+            return returnTimeValue;
         }
     };
     
