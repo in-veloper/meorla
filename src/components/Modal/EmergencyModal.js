@@ -244,7 +244,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         setEtcTransferDetail(e.target.value);
     };
 
-    const resetManageEmergency = () => {
+    const resetManageEmergency = useCallback(() => {
         setFirstDiscoveryTimeValue("");
         setTeacherConfirmTimeValue("");
         setOccuringAreaValue("");
@@ -258,6 +258,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         setTransferHospitalValue("");
         setRegistDateValue("");
         setRegisterNameValue("");
+        setGenderInImageMapper("M");
 
         setTransferCheckedItems({
             ambulance: false,
@@ -275,10 +276,17 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         });
         setEtcTranspoterDetail("");
 
+        if(entireManageEmergencyGridRef) entireManageEmergencyGridRef.current.api.deselectAll();
         onResetSearchInEmergencyManagement();
         setSearchStudentInEmergencyManagementRowData([]);
         setClickedPoints([]);
-    };
+    }, [manageEmergencyModal]);
+
+    useEffect(() => {
+        if(searchStudentInEmergencyManagementGridRef.current) {
+            resetManageEmergency();
+        }
+    }, [resetManageEmergency]);
 
     const fetchEntireManageEmergencyData = useCallback( async () => {
         if(user) {
@@ -299,53 +307,68 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     const onSelectionChangedInEntireEmergencyGrid = (param) => {
         const selectedRow = param.api.getSelectedRows()[0];
-        let { transferVehicle, transpoter } = selectedRow;
-        
         if(selectedRow) selectedRow.sGender === "여" ? setGenderInImageMapper('F') : setGenderInImageMapper('M');
 
-        setSelectedEmergencyStudent(selectedRow);
-        setFirstDiscoveryTimeValue(selectedRow.firstDiscoveryTime);
-        setTeacherConfirmTimeValue(selectedRow.teacherConfirmTime);
-        setOccuringAreaValue(selectedRow.occuringArea);
-        setFirstWitnessValue(selectedRow.firstWitness);
-        setVitalSignValue(selectedRow.vitalSign);
-        setMainSymptomValue(selectedRow.mainSymptom);
-        setAccidentOverviewValue(selectedRow.accidentOverview);
-        setEmergencyTreatmentDetailValue(selectedRow.emergencyTreatmentDetail);
-        setTransferTimeValue(selectedRow.transferTime);
-        setGuardianContactValue(selectedRow.guardianContact);
-        setTransferHospitalValue(selectedRow.transferHospital);
-        setRegistDateValue(selectedRow.registDate);
-        setRegisterNameValue(selectedRow.registerName);
+        if(selectedRow) {
+            setSelectedEmergencyStudent(selectedRow);
+            setFirstDiscoveryTimeValue(selectedRow.firstDiscoveryTime);
+            setTeacherConfirmTimeValue(selectedRow.teacherConfirmTime);
+            setOccuringAreaValue(selectedRow.occuringArea);
+            setFirstWitnessValue(selectedRow.firstWitness);
+            setVitalSignValue(selectedRow.vitalSign);
+            setMainSymptomValue(selectedRow.mainSymptom);
+            setAccidentOverviewValue(selectedRow.accidentOverview);
+            setEmergencyTreatmentDetailValue(selectedRow.emergencyTreatmentDetail);
+            setTransferTimeValue(selectedRow.transferTime);
+            setGuardianContactValue(selectedRow.guardianContact);
+            setTransferHospitalValue(selectedRow.transferHospital);
+            setRegistDateValue(selectedRow.registDate);
+            setRegisterNameValue(selectedRow.registerName);
 
-        if(transferVehicle.includes("etcTransferVehicle")) {
-            setEtcTransferDetail(transferVehicle.split("::")[1]);
-            transferVehicle = "etcTransfer";
-        }else{
-            setTransferCheckedItems({
-                ambulance: transferVehicle === 'ambulance',
-                generalVehicle: transferVehicle === 'generalVehicle',
-                etcTransfer: transferVehicle === 'etcTransfer'
-            });
+            if(selectedRow.transferVehicle.includes("etcTransferVehicle")) {
+                setEtcTransferDetail(selectedRow.transferVehicle.split("::")[1]);
+                setTransferCheckedItems({ 
+                    ambulance: false,
+                    generalVehicle: false,
+                    etcTransfer: true 
+                });
+            }else{
+                setTransferCheckedItems({
+                    ambulance: selectedRow.transferVehicle === 'ambulance',
+                    generalVehicle: selectedRow.transferVehicle === 'generalVehicle',
+                    etcTransfer: false
+                });
+            }
+    
+            if(selectedRow.transpoter.includes("etcTranspoter")) {
+                setEtcTranspoterDetail(selectedRow.transpoter.split("::")[1]);
+                setTranspoterCheckedItems({ 
+                    paramedic: false,
+                    schoolNurse: false,
+                    homeroomTeacher: false,
+                    parents: false,
+                    etcTranspoter: true
+                });
+            }else{
+                setTranspoterCheckedItems({
+                    paramedic: selectedRow.transpoter === 'paramedic',
+                    schoolNurse: selectedRow.transpoter === 'schoolNurse',
+                    homeroomTeacher: selectedRow.transpoter === 'homeroomTeacher',
+                    parents: selectedRow.transpoter === 'parents',
+                    etcTranspoter: false
+                });
+            }
+
+            if(selectedRow.bodyChartPoints) {
+                const bodyChartPoints = JSON.parse(selectedRow.bodyChartPoints);
+                setClickedPoints(bodyChartPoints);
+            }
         }
 
-        if(transpoter.includes("etcTranspoter")) {
-            setEtcTranspoterDetail(transpoter.split("::")[1]);
-            transpoter = "etcTranspoter";
-        }else{
-            setTranspoterCheckedItems({
-                paramedic: transpoter === 'paramedic',
-                schoolNurse: transpoter === 'schoolNurse',
-                homeroomTeacher: transpoter === 'homeroomTeacher',
-                parents: transpoter === 'parents',
-                etcTranspoter: transpoter === 'etcTranspoter'
-            });
-        }
+    };
 
-        if(selectedRow.bodyChartPoints) {
-            const bodyChartPoints = JSON.parse(selectedRow.bodyChartPoints);
-            setClickedPoints(bodyChartPoints);
-        }
+    const handleDownloadEntirePDF = () => {
+
     };
 
     const handleDownloadPDF = () => {
@@ -485,8 +508,8 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             const img = new Image();
                             img.src = 'data:image/png;base64,' + base64Img;
                             img.onload = function() {
-                                doc.addImage(img, 'PNG', 126, 67, 69.5, 87.5);
-                                doc.save('document.pdf');
+                                doc.addImage(img, 'PNG', 126, 67, 69.9, 87.5);
+                                doc.save('응급사고 및 이송 기록지_' + selectedEmergencyStudent.sName +  '.pdf');
                             }
                         });
                     };
@@ -496,7 +519,6 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     };
 
     const convertDateTimeValue = (category, dateTime) => {
-        debugger
         if(category === "dt") {
             let dateValue = dateTime.split("T")[0];
             let timeValue = dateTime.split("T")[1];
@@ -516,6 +538,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         }
     };
     
+
     return (
         <>
             <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '54%' }}>
@@ -770,7 +793,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                                 id='etcTransfer'
                                                 type='checkbox'
                                                 onChange={handleTransferCheckboxChange}
-                                                checked={transferCheckedItems.etcTransfer}
+                                                checked={transferCheckedItems.etcTransfer || false}
                                             />
                                             <Label check>기타</Label>
                                         </Col>
@@ -835,7 +858,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                                 type='checkbox'
                                                 style={{ marginLeft: '-49px'}}
                                                 onChange={handleTranspoterCheckboxChange}
-                                                checked={transpoterCheckedItems.etcTranspoter}
+                                                checked={transpoterCheckedItems.etcTranspoter || false}
                                             />
                                             <Label style={{ marginLeft: '-29px' }} check>기타</Label>
                                             <Input
@@ -844,7 +867,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                                 type='text'
                                                 style={{ width: '93%', marginLeft: 10, height: 30 }}
                                                 onChange={handleEtcTranspoterDetailChange}
-                                                value={etcTranspoterDetail}
+                                                value={etcTranspoterDetail || ""}
                                             />
                                         </Col>
                                         <Col xs="auto" md="3">
@@ -901,7 +924,8 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                 <ModalFooter className="p-0" >
                     <Row className="w-100">
                         <Col className="d-flex justify-content-start no-gutters">
-                            <Button onClick={handleDownloadPDF}>PDF 다운로드</Button>
+                            <Button className='mr-1' onClick={handleDownloadEntirePDF}>전체 PDF 다운로드</Button>
+                            <Button onClick={handleDownloadPDF}>선택 PDF 다운로드</Button>
                         </Col>
                         <Col>
 
