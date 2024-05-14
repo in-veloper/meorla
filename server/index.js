@@ -1251,6 +1251,20 @@ app.post('/medicineInfo/saveBookmarkMedicine', async (req, res) => {
     });
 });
 
+app.get('/medicineInfo/getBookmarkMedicine', async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.bookmarkMedicine WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("약품정보 북마크 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.post('/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const userId = req.body.userId;
     const schoolCode = req.body.schoolCode;

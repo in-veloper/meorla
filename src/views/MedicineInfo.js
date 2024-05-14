@@ -2,7 +2,7 @@
   - 분류 선택하지 않은 채로 조회 시 해당 키워드가 모든 카테고리에 포함된 경우 가정 -> 동작하도록 처리
 */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useUser } from "contexts/UserContext";
 import axios from "axios";
 // import { useMedicineContext } from "contexts/MedicineContext";
@@ -339,6 +339,29 @@ function MedicalInfo() {
     fetchGrainMedicineData();
   }, []);
 
+  const [bookmarkMedicineData, setBookmarkMedicineData] = useState(null);
+
+  const fetchBookmarkMedicineData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getBookmarkMedicine`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) setBookmarkMedicineData(response.data);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchBookmarkMedicineData();
+  }, [fetchBookmarkMedicineData]);
+
+  const isBookmarkedMedicine = (itemSeq) => {
+    return bookmarkMedicineData?.some(bookmark => bookmark.itemSeq === itemSeq);
+  }
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
@@ -485,7 +508,7 @@ function MedicalInfo() {
                   <ListGroupItem>
                     <span className="mr-1 row-detail-span" >제품명</span> 
                     <div className="row-detail-div">{selectedRowData.itemName}
-                      {!selectedRowData.isBookmarked ? (
+                      {!isBookmarkedMedicine(selectedRowData.itemSeq) ? (
                         <FaRegStar className="ml-2" style={{ fontSize: 18, marginTop: -2 }} onClick={handleBookmarkMedicine}/>
                       ) : (
                         <FaStar className="ml-2" style={{ fontSize: 18, marginTop: -2 }} onClick={handleBookmarkMedicine}/>
