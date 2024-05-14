@@ -1236,6 +1236,21 @@ app.get('/medicineInfo/getGrainMedicineData', async (req, res) => {
     })
 });
 
+app.post('/medicineInfo/saveBookmarkMedicine', async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const itemSeq = req.body.itemSeq;
+
+    const sqlQuery = "INSERT INTO teaform_db.bookmarkMedicine (userId, schoolCode, itemSeq) VALUES(?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, itemSeq], (err, result) => {
+        if(err) {
+            console.log("약품정보 북마크 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
 app.post('/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const userId = req.body.userId;
     const schoolCode = req.body.schoolCode;
@@ -1255,14 +1270,15 @@ app.post('/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const transferTime = req.body.transferTime;
     const guardianContact = req.body.guardianContact;
     const transferHospital = req.body.transferHospital;
+    const homeroomTeacherName = req.body.homeroomTeacherName;
     const registDate = req.body.registDate;
     const registerName = req.body.registerName;
     const bodyChartPoints = req.body.bodyChartPoints;
     const transferVehicle = req.body.transferVehicle;
     const transpoter = req.body.transpoter;
 
-    const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
         if(err) {
             console.log("응급학생관리 등록 중 ERROR", err);
         }else{

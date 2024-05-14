@@ -3,6 +3,7 @@
 */
 
 import React, { useEffect, useRef, useState } from "react";
+import { useUser } from "contexts/UserContext";
 import axios from "axios";
 // import { useMedicineContext } from "contexts/MedicineContext";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
@@ -35,6 +36,7 @@ import '../assets/css/medicalInfo.css';
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function MedicalInfo() {
+  const { user } = useUser();
   const [searchCategory, setSearchCategory] = useState("");             // 약품 정보 검색 시 선택 분류
   const [searchText, setSearchText] = useState("");                     // 검색어 입력 값 할당 변수
   const [searchResult, setSearchResult] = useState([]);                 // 검색 결과 할당 변수
@@ -190,24 +192,26 @@ function MedicalInfo() {
     toggleModal();                    // 상세화면 Modal Open
   };
 
-  // 검색 결과 총 페이지 수 계산 Function
-  const calculateTotalPages = (totalCount) => {
-    return Math.ceil(totalCount / 100); // 페이지당 보여질 개수 100 Row로 Divide
-  };
-
   const handleDiscriminationText = (e) => {
     e.preventDefault();
     setDiscriminationText(e.target.value);
   };
 
-  // // 검색 처리 시 Loading 화면 출력 Event
-  // const onBtShowLoading = useCallback(() => {
-  //     gridRef.current.api.showLoadingOverlay(); // Overlay로 로딩 Animation 출력
-  // }, []);
-
   // 약품별 Bookmark 상태 Toggle Function
-  const handleBookmarkMedicine = () => {
-    setMedicineBookmarked((prev) => !prev);     // 이전 Bookmark 상태 획득 후 Toggle 값 반환
+  const handleBookmarkMedicine = async () => {
+    const response = await axios.post(`http://${BASE_URL}:8000/medicineInfo/saveBookmarkMedicine`, {
+      userId: user.userId,
+      schoolCode: user.schoolCode,
+      itemSeq: selectedRowData.itemSeq
+    });
+
+    if(response.data === "success") {
+      debugger
+    }
+    // if(selectedRowData) {
+      
+    // }
+    // setMedicineBookmarked((prev) => !prev);     // 이전 Bookmark 상태 획득 후 Toggle 값 반환
   }
 
   const handleCellClick = (e, category, label) => {
@@ -481,7 +485,7 @@ function MedicalInfo() {
                   <ListGroupItem>
                     <span className="mr-1 row-detail-span" >제품명</span> 
                     <div className="row-detail-div">{selectedRowData.itemName}
-                      {!medicineBookmarked ? (
+                      {!selectedRowData.isBookmarked ? (
                         <FaRegStar className="ml-2" style={{ fontSize: 18, marginTop: -2 }} onClick={handleBookmarkMedicine}/>
                       ) : (
                         <FaStar className="ml-2" style={{ fontSize: 18, marginTop: -2 }} onClick={handleBookmarkMedicine}/>
