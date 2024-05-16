@@ -6,6 +6,8 @@ import moment from 'moment';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -15,6 +17,7 @@ function Dashboard() {
   const [todayScheduleRowData, setTodayScheduleRowData] = useState([]);
   const [entireScheduleRowData, setEntireScheduleRowData] = useState([]);
   const [filteredScheduleRowData, setFilteredScheduleRowData] = useState([]);
+  const [quillValue, setQuillValue] = useState("");
 
   const gridRef = useRef();
 
@@ -114,6 +117,78 @@ function Dashboard() {
     fetchEntireSchedule();
   }, []);
 
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [
+        { list: "ordered" },
+        { list: "bullet" }
+      ],
+      ["link", "image"],
+      [{ align: [] }, { color: [] }, { background: [] }], // dropdown with defaults from theme
+    ],
+  };
+
+  const formats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "indent",
+    "link",
+    "image",
+    "align",
+    "color",
+    "background",
+  ];
+
+  const handleQuillChange = (content, delta, source, editor) => {
+    setQuillValue(editor.getContents());
+  };
+
+  const resetMemo = () => {
+    setQuillValue("");
+  };
+
+  const saveMemo = async () => {
+    const payload = { content: quillValue };
+    
+    const response = await axios.post(`http://${BASE_URL}:8000/dashboard/saveMemo`, {
+      userId: user.userId,
+      schoolCode: user.schoolCode,
+      memo: JSON.stringify(payload)
+    });
+
+    if(response.data === "success") {
+      debugger
+    }
+  };
+
+  const [memoData, setMemoData] = useState("");
+  const fetchMemoData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`http://${BASE_URL}:8000/dashboard/getMemo`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        debugger
+        setMemoData(response.data.content)
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchMemoData()
+  }, [fetchMemoData]);
+
   return (
     <>
       <div className="content">
@@ -149,6 +224,7 @@ function Dashboard() {
                   ref={gridRef}
                   rowData={visitRequestList}
                   columnDefs={visitRequestColumnDefs}
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">침상안정 신청내역이 없습니다</span>' } 
                 />
               </div>
             </Card>
@@ -203,17 +279,25 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>메모</b>
                 </Col>
                 <Col className="d-flex justify-content-end" md="6">
-                  <Button className="m-0" size="sm">초기화</Button>
-                  <Button className="m-0 ml-1" size="sm">저장</Button>
+                  <Button className="m-0" size="sm" onClick={resetMemo}>초기화</Button>
+                  <Button className="m-0 ml-1" size="sm" onClick={saveMemo}>저장</Button>
                 </Col>
               </Row>
             </CardTitle>
             <Card>
-              <div style={{ height: '20.6vh'}}>
-                <Input 
+              <div style={{ height: '20.6vh'}} dangerouslySetInnerHTML={{ __html: memoData}}>
+                <ReactQuill
+                  style={{ height: "16.6vh" }}
+                  theme="snow"
+                  modules={modules}
+                  formats={formats}
+                  value={quillValue || ""}
+                  onChange={handleQuillChange}
+                />
+                {/* <Input 
                   type="textarea"
                   style={{ minHeight: '100%' }}
-                />
+                /> */}
               </div>
             </Card>
           </Col>

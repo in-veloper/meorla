@@ -1330,6 +1330,35 @@ app.get('/manageEmergency/getManageEmergencyData', async (req, res) => {
     });
 });
 
+app.post('/dashboard/saveMemo', async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const memo = req.body.memo;
+
+    const sqlQuery = "INSERT INTO teaform_db.memo (userId, schoolCode, memo) VALUES (?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, memo], (err, result) => {
+        if(err) {
+            console.log("대시보드 메모 저장 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
+app.get('/dashboard/getMemo', async (req, res) => {
+    const userId = req.query.userId;
+    const schoolCode = req.query.schoolCode;
+
+    const sqlQuery = "SELECT * FROM teaform_db.memo WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("대시보드 메모 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
