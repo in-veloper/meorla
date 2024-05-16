@@ -1,7 +1,8 @@
 import React, {useEffect, useRef, useState, useCallback} from "react";
-import {Card, CardTitle, Row, Col, UncontrolledAlert} from "reactstrap";
+import {Card, CardTitle, Row, Col, UncontrolledAlert, Input, Button} from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import axios from "axios";
+import moment from 'moment';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
@@ -11,6 +12,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 function Dashboard() {
   const { user } = useUser();
   const [visitRequestList, setVisitRequestList] = useState([]);
+  const [todayScheduleRowData, setTodayScheduleRowData] = useState([]);
   const [entireScheduleRowData, setEntireScheduleRowData] = useState([]);
   const [filteredScheduleRowData, setFilteredScheduleRowData] = useState([]);
 
@@ -75,6 +77,22 @@ function Dashboard() {
    fetchVisitRequest(); 
   }, [fetchVisitRequest]);
 
+  const fetchTodaySchedule = async () => {
+    const today = moment().format('YYYY-MM-DD');
+
+    if(user) {
+      const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getTodaySchedule`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          today: today
+        }
+      });
+  
+      if(response.data) setTodayScheduleRowData(response.data);
+    }
+  };
+
   const fetchEntireSchedule = async () => {
     if(user) {
       const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getEntireSchedule`, {
@@ -92,7 +110,7 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    // fetchTodaySchedule();
+    fetchTodaySchedule();
     fetchEntireSchedule();
   }, []);
 
@@ -150,8 +168,22 @@ function Dashboard() {
           </Col>
         </Row>
         <Row>
-          <Col md="12">
-            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>보건일정</b></CardTitle>
+          <Col md="4">
+            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>오늘의 보건일정</b></CardTitle>
+            <Card>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+                <AgGridReact 
+                  rowHeight={35}
+                  ref={gridRef}
+                  rowData={todayScheduleRowData}
+                  columnDefs={eventColumnDefs}
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">오늘 등록된 일정이 없습니다</span>' } 
+                />
+              </div>
+            </Card>
+          </Col>
+          <Col md="4">
+            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>전체 보건일정</b></CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
@@ -159,6 +191,28 @@ function Dashboard() {
                   ref={gridRef}
                   rowData={filteredScheduleRowData}
                   columnDefs={eventColumnDefs}
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 일정이 없습니다</span>' } 
+                />
+              </div>
+            </Card>
+          </Col>
+          <Col md="4">
+            <CardTitle style={{ marginBottom: 10 }}>
+              <Row className="no-gutters">
+                <Col md="6">
+                  <b className="text-muted" style={{ fontSize: '17px' }}>메모</b>
+                </Col>
+                <Col className="d-flex justify-content-end" md="6">
+                  <Button className="m-0" size="sm">초기화</Button>
+                  <Button className="m-0 ml-1" size="sm">저장</Button>
+                </Col>
+              </Row>
+            </CardTitle>
+            <Card>
+              <div style={{ height: '20.6vh'}}>
+                <Input 
+                  type="textarea"
+                  style={{ minHeight: '100%' }}
                 />
               </div>
             </Card>
