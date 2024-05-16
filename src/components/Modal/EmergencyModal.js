@@ -446,7 +446,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             { content: entry.sName, styles: { textColor: [0, 0, 0], halign: 'center' } },
                             { content: entry.sGender, styles: { textColor: [0, 0, 0], halign: 'center' } },
                             { content: entry.guardianContact ? entry.guardianContact : "", styles: { textColor: [0, 0, 0], halign: 'center' } },
-                            { content: entry.homeroomTeacherName, styles: { textColor: [0, 0, 0], halign: 'center' } }
+                            { content: entry.homeroomTeacherName ? entry.homeroomTeacherName : "", styles: { textColor: [0, 0, 0], halign: 'center' } }
                         ],
                         [
                             { content: "주증상", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], minCellHeight: 20, valign: 'middle' }, colSpan: 2 },
@@ -1061,7 +1061,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 id='homeroomTeacherName'
                                 type='text'
                                 style={{ width: '25%' }}
-                                value={homeroomTeacherNameValue}
+                                value={homeroomTeacherNameValue || ""}
                                 onChange={(e) => setHomeroomTeacherNameValue(e.target.value)}
                             />
                             <Button style={{ margin: 0, height: 31, paddingTop: 8, marginLeft: 20}}>교직원 조회</Button>

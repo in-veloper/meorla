@@ -5,7 +5,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useUser } from "contexts/UserContext";
 import axios from "axios";
-// import { useMedicineContext } from "contexts/MedicineContext";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
@@ -41,13 +40,12 @@ function MedicalInfo() {
   const [searchText, setSearchText] = useState("");                     // 검색어 입력 값 할당 변수
   const [searchResult, setSearchResult] = useState([]);                 // 검색 결과 할당 변수
   const [modal, setModal] = useState(false);                            // 검색 결과 중 선택 Row 상세보기 Modal Open 상태 값 변수
+  const [bookmarkMedicineModal, setBookmarkMedicineModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState(null);         // 선택한 Row Data 할당 변수 (상세화면 출력)
-  // const { medicineData, grainMedicineData } = useMedicineContext();
-
   const [medicineData, setMedicineData] = useState(null);
   const [grainMedicineData, setGrainMedicineData] = useState(null);
-  const [medicineBookmarked, setMedicineBookmarked] = useState(false);  // 약품별 Bookmark 상태
   const [discriminationText, setDiscriminationText] = useState("");
+  const [bookmarkMedicineData, setBookmarkMedicineData] = useState(null);
   const [selectedCells, setSelectedCells] = useState({
     shape: null,
     color: null,
@@ -114,6 +112,12 @@ function MedicalInfo() {
     {field: 'intrcQesitm', headerName: '상호작용', flex: 2, tooltipValueGetter: (params) => params.value},
     {field: 'seQesitm', headerName: '부작용', flex: 2, tooltipValueGetter: (params) => params.value},
     {field: 'depositMethodQesitm', headerName: '보관법', flex: 2, tooltipValueGetter: (params) => params.value}
+  ]);
+
+  const [bookmarkMedicineColumnDefs] = useState([
+    {field: 'itemName', headerName: '제품명', flex: 2, tooltipValueGetter: (params) => params.value},
+    {field: 'entpName', headerName: '업체명', flex: 1.5, tooltipValueGetter: (params) => params.value},
+    {field: 'itemSeq', headerName: '품목코드', flex: 1.5, tooltipValueGetter: (params) => params.value},
   ]);
 
   // 기본(공통) Column 정의
@@ -186,6 +190,8 @@ function MedicalInfo() {
   // 검색 결과 중 Row 선택 시 상세화면 Modal Open 상태 Handle Event
   const toggleModal = () => setModal(!modal);
 
+  const toggleBookmarkMedicineModal = () => setBookmarkMedicineModal(!bookmarkMedicineModal);
+
   // 검색 결과 중 Row Double Click 시 상세화면 출력 Event
   const handleRowDoubleClick = (params) => {
     setSelectedRowData(params.data);  // 전역 변수에 선택한 Row 값 할당
@@ -199,20 +205,26 @@ function MedicalInfo() {
 
   // 약품별 Bookmark 상태 Toggle Function
   const handleBookmarkMedicine = async () => {
-    const response = await axios.post(`http://${BASE_URL}:8000/medicineInfo/saveBookmarkMedicine`, {
-      userId: user.userId,
-      schoolCode: user.schoolCode,
-      itemSeq: selectedRowData.itemSeq
-    });
+    const isBookmarked = bookmarkMedicineData?.some(bookmark => bookmark.itemSeq === selectedRowData.itemSeq);
 
-    if(response.data === "success") {
-      debugger
-    }
-    // if(selectedRowData) {
+    if(!isBookmarked) {
+      const response = await axios.post(`http://${BASE_URL}:8000/medicineInfo/saveBookmarkMedicine`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        itemSeq: selectedRowData.itemSeq
+      });
       
-    // }
-    // setMedicineBookmarked((prev) => !prev);     // 이전 Bookmark 상태 획득 후 Toggle 값 반환
-  }
+      if(response.data === "success") fetchBookmarkMedicineData();
+    }else{
+      const response = await axios.post(`http://${BASE_URL}:8000/medicineInfo/deleteBookmarkMedicine`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        itemSeq: selectedRowData.itemSeq
+      });
+
+      if(response.data === "success") fetchBookmarkMedicineData();
+    }
+  };
 
   const handleCellClick = (e, category, label) => {
     const prevSelectedCells = document.querySelectorAll('.search-' + category +  ' td.selected-cell');
@@ -339,8 +351,6 @@ function MedicalInfo() {
     fetchGrainMedicineData();
   }, []);
 
-  const [bookmarkMedicineData, setBookmarkMedicineData] = useState(null);
-
   const fetchBookmarkMedicineData = useCallback(async () => {
     if(user) {
       const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getBookmarkMedicine`, {
@@ -360,7 +370,40 @@ function MedicalInfo() {
 
   const isBookmarkedMedicine = (itemSeq) => {
     return bookmarkMedicineData?.some(bookmark => bookmark.itemSeq === itemSeq);
-  }
+  };
+
+  const handleBookmarkMedicineList = () => {
+    toggleBookmarkMedicineModal();
+  };
+
+  const [convertedBookmarkMedicineData, setConvertedBookmarkMedicineData] = useState([]);
+
+  const convertBookmarkMedicineData = () => {
+    if (!Array.isArray(bookmarkMedicineData) || bookmarkMedicineData.length === 0) {
+      setConvertedBookmarkMedicineData([]);
+    }else{
+      const result = bookmarkMedicineData.map(bookmark => {
+        return medicineData.find(med => med.itemSeq === bookmark.itemSeq);
+      });
+
+      setConvertedBookmarkMedicineData(result);
+    }
+  
+    // const result = bookmarkMedicineData.map(bookmark => {
+    //   const medicine = medicineData.find(med => med.itemSeq === bookmark.itemSeq);
+    //   return medicine ? { ...medicine } : null;  // 찾지 못한 경우 null 반환 (또는 적절한 기본값 설정)
+    // }).filter(item => item !== null);  // null이 아닌 항목만 필터링
+  
+    // console.log("Converted Grid Data: ", result);
+    // return result;
+  };
+
+  useEffect(() => {
+    if(bookmarkMedicineData && medicineData) {
+      // setConvertedBookmarkMedicineData(convertBookmarkMedicineData());
+      convertBookmarkMedicineData();
+    }
+  }, [bookmarkMedicineData, medicineData]);
 
   return (
     <>
@@ -436,7 +479,9 @@ function MedicalInfo() {
             </Row>
           </Col>
           <Col md="5">
-            <Row style={{ height: '4.7vh' }}></Row>
+            <Row className="justify-content-end no-gutters" style={{ height: '4.7vh', marginTop: '-7px', marginBottom: 12 }}>
+              <Button onClick={handleBookmarkMedicineList}>북마크 약품 목록</Button>
+            </Row>
             <Row className="justify-content-end no-gutters">
               <Input
                 className="ml-3 mr-2"
@@ -491,9 +536,6 @@ function MedicalInfo() {
                 paginationPageSize={14}                                         // 한 페이지에 표시하고 싶은 데이터 Row 수
                 enableBrowserTooltips="true"
                 onRowDoubleClicked={handleRowDoubleClick}
-                // overlayLoadingTemplate={
-                //   '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                // }
               />
             </div>
           </Col>
@@ -530,6 +572,28 @@ function MedicalInfo() {
           </ModalBody>
           <ModalFooter>
             <Button color="secondary" onClick={toggleModal}>닫기</Button>
+          </ModalFooter>
+        </Modal>
+
+        <Modal isOpen={bookmarkMedicineModal} toggle={toggleBookmarkMedicineModal} centered style={{ minWidth: '25%' }}>
+          <ModalHeader toggle={toggleBookmarkMedicineModal}><b className="text-muted">북마크 약품 목록</b></ModalHeader>
+          <ModalBody>
+            <div className="ag-theme-alpine" style={{ height: '30vh', minHeight: '30vh', maxHeight: '30vh' }}>
+              <AgGridReact
+                // ref={gridRef}
+                rowData={convertedBookmarkMedicineData}
+                columnDefs={bookmarkMedicineColumnDefs}
+                defaultColDef={defaultColDef}
+                overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                pagination={true}                                               // Pagination 사용 설정
+                paginationPageSize={10}                                         // 한 페이지에 표시하고 싶은 데이터 Row 수
+                enableBrowserTooltips="true"
+                onRowDoubleClicked={handleRowDoubleClick}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={toggleBookmarkMedicineModal}>닫기</Button>
           </ModalFooter>
         </Modal>
       </div>

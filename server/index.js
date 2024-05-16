@@ -1244,7 +1244,22 @@ app.post('/medicineInfo/saveBookmarkMedicine', async (req, res) => {
     const sqlQuery = "INSERT INTO teaform_db.bookmarkMedicine (userId, schoolCode, itemSeq) VALUES(?,?,?)";
     db.query(sqlQuery, [userId, schoolCode, itemSeq], (err, result) => {
         if(err) {
-            console.log("약품정보 북마크 처리 중 ERROR", err);
+            console.log("약품정보 북마크 설정 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
+app.post('/medicineInfo/deleteBookmarkMedicine', async (req, res) => {
+    const userId = req.body.userId;
+    const schoolCode = req.body.schoolCode;
+    const itemSeq = req.body.itemSeq;
+
+    const sqlQuery = "DELETE FROM teaform_db.bookmarkMedicine WHERE userId = ? AND schoolCode = ? AND itemSeq = ?";
+    db.query(sqlQuery, [userId, schoolCode, itemSeq], (err, result) => {
+        if(err) {
+            console.log("약품정보 북마크 해제 처리 중 ERROR", err);
         }else{
             res.send("success");
         }

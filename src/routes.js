@@ -122,13 +122,13 @@ const GetRoutes = () => {
         component: <Request />,
         layout: "/meorla"
       },
-      {
-        path: "/icons",
-        name: "Icons",
-        icon: "nc-icon nc-diamond",
-        component: <Icons />,
-        layout: "/meorla",
-      },
+      // {
+      //   path: "/icons",
+      //   name: "Icons",
+      //   icon: "nc-icon nc-diamond",
+      //   component: <Icons />,
+      //   layout: "/meorla",
+      // },
     ];
 
   return routes;
