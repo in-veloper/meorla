@@ -1331,18 +1331,34 @@ app.get('/manageEmergency/getManageEmergencyData', async (req, res) => {
 });
 
 app.post('/dashboard/saveMemo', async (req, res) => {
-    const userId = req.body.userId;
-    const schoolCode = req.body.schoolCode;
-    const memo = req.body.memo;
+    const { userId, schoolCode, memo } = req.body
 
-    const sqlQuery = "INSERT INTO teaform_db.memo (userId, schoolCode, memo) VALUES (?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, memo], (err, result) => {
+    const checkQuery = "SELECT * FROM teaform_db.memo WHERE userId = ? AND schoolCode = ?";
+    db.query(checkQuery, [userId, schoolCode], (err, result) => {
         if(err) {
-            console.log("대시보드 메모 저장 처리 중 ERROR", err);
+            console.log("메모 등록 여부 조회 중 ERROR", err);
         }else{
-            res.send("success");
+            if(result.length > 0) {
+                const updateQuery = "UPDATE teaform_db.memo SET memo = ? WHERE userId = ? AND schoolCode = ?";
+                db.query(updateQuery, [memo, userId, schoolCode], (err, result) => {
+                    if(err) {
+                        console.log("메모 Update 처리 중 ERROR", err);
+                    }else{
+                        res.send("success");
+                    }
+                });
+            }else{
+                const insertQuery = "INSERT INTO teaform_db.memo (userId, schoolCode, memo) VALUES (?,?,?)";
+                db.query(insertQuery, [userId, schoolCode, memo], (err, result) => {
+                    if(err) {
+                        console.log("대시보드 메모 저장 처리 중 ERROR", err);
+                    }else{
+                        res.send("success");
+                    }
+                });
+            }
         }
-    });
+    })
 });
 
 app.get('/dashboard/getMemo', async (req, res) => {

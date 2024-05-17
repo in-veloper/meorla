@@ -1,6 +1,8 @@
 import React, {useEffect, useRef, useState, useCallback} from "react";
 import {Card, CardTitle, Row, Col, UncontrolledAlert, Input, Button} from "reactstrap";
 import { useUser } from "contexts/UserContext";
+import NotiflixWarn from "components/Notiflix/NotiflixWarn";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import axios from "axios";
 import moment from 'moment';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
@@ -17,9 +19,10 @@ function Dashboard() {
   const [todayScheduleRowData, setTodayScheduleRowData] = useState([]);
   const [entireScheduleRowData, setEntireScheduleRowData] = useState([]);
   const [filteredScheduleRowData, setFilteredScheduleRowData] = useState([]);
-  const [quillValue, setQuillValue] = useState("");
+  const [memoData, setMemoData] = useState("");
 
-  const gridRef = useRef();
+  const gridRef = useRef(null);
+  const quillRef = useRef(null);
 
   const [rowData] = useState([
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
@@ -72,7 +75,6 @@ function Dashboard() {
       });
 
       if(response.data) setVisitRequestList(response.data);
-      console.log(response.data)
     }
   }, [user]);
 
@@ -80,7 +82,7 @@ function Dashboard() {
    fetchVisitRequest(); 
   }, [fetchVisitRequest]);
 
-  const fetchTodaySchedule = async () => {
+  const fetchTodaySchedule = useCallback(async () => {
     const today = moment().format('YYYY-MM-DD');
 
     if(user) {
@@ -94,9 +96,9 @@ function Dashboard() {
   
       if(response.data) setTodayScheduleRowData(response.data);
     }
-  };
+  }, [user]);
 
-  const fetchEntireSchedule = async () => {
+  const fetchEntireSchedule = useCallback(async () => {
     if(user) {
       const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getEntireSchedule`, {
         params: {
@@ -110,12 +112,12 @@ function Dashboard() {
         setFilteredScheduleRowData(response.data);
       }
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchTodaySchedule();
     fetchEntireSchedule();
-  }, []);
+  }, [fetchTodaySchedule, fetchEntireSchedule]);
 
   const modules = {
     toolbar: [
@@ -147,15 +149,17 @@ function Dashboard() {
   ];
 
   const handleQuillChange = (content, delta, source, editor) => {
-    setQuillValue(editor.getContents());
+    setMemoData(editor.getContents());
   };
 
   const resetMemo = () => {
-    setQuillValue("");
+    const warnMessage = "초기화 후 저장 버튼 클릭 시 모든 메모 내용이 삭제됩니다";
+    NotiflixWarn(warnMessage, '370px');
+    setMemoData("");
   };
 
   const saveMemo = async () => {
-    const payload = { content: quillValue };
+    const payload = { content: memoData };
     
     const response = await axios.post(`http://${BASE_URL}:8000/dashboard/saveMemo`, {
       userId: user.userId,
@@ -164,11 +168,11 @@ function Dashboard() {
     });
 
     if(response.data === "success") {
-      debugger
+      const infoMessage = "메모가 정상적으로 저장되었습니다";
+      NotiflixInfo(infoMessage);
     }
   };
 
-  const [memoData, setMemoData] = useState("");
   const fetchMemoData = useCallback(async () => {
     if(user) {
       const response = await axios.get(`http://${BASE_URL}:8000/dashboard/getMemo`, {
@@ -178,9 +182,11 @@ function Dashboard() {
         }
       });
 
-      if(response.data) {
-        debugger
-        setMemoData(response.data.content)
+      if(response.data && response.data.length > 0) {
+        const memoData = response.data[0].memo;
+        const parsedContent = JSON.parse(memoData);
+        
+        setMemoData(parsedContent.content);
       }
     }
   }, [user]);
@@ -285,13 +291,14 @@ function Dashboard() {
               </Row>
             </CardTitle>
             <Card>
-              <div style={{ height: '20.6vh'}} dangerouslySetInnerHTML={{ __html: memoData}}>
+              <div style={{ height: '20.6vh'}}>
                 <ReactQuill
+                  ref={quillRef}
                   style={{ height: "16.6vh" }}
                   theme="snow"
                   modules={modules}
                   formats={formats}
-                  value={quillValue || ""}
+                  value={memoData || ""}
                   onChange={handleQuillChange}
                 />
                 {/* <Input 
