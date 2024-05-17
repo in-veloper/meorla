@@ -146,7 +146,7 @@ function Dashboard() {
     "align",
     "color",
     "background",
-  ];
+  ]; 
 
   const handleQuillChange = (content, delta, source, editor) => {
     setMemoData(editor.getContents());
