@@ -1316,6 +1316,19 @@ app.post('/manageEmergency/saveEmergencyManagement', async (req, res) => {
     });
 });
 
+app.post('/manageEmergency/updateEmergencyManagement', async (req, res) => {
+    const { userId, schoolCode, rowId, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.manageEmergency SET firstDiscoveryTime = ?, teacherConfirmTime = ?, occuringArea = ?, firstWitness = ?, vitalSign = ?, mainSymptom = ?, accidentOverview = ?, emergencyTreatmentDetail = ?, transferTime = ?, guardianContact = ?, transferHospital = ?, homeroomTeacherName = ?, registDate = ?, registerName = ?, bodyChartPoints = ?, transferVehicle = ?, transpoter = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+     db.query(sqlQuery, [firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter, userId, schoolCode, rowId, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+        if(err) {
+            console.log("응급학생관리 Update 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+     });
+});
+
 app.get('/manageEmergency/getManageEmergencyData', async (req, res) => {
     const userId = req.query.userId;
     const schoolCode = req.query.schoolCode;

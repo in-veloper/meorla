@@ -52,7 +52,7 @@
 }
 
 .registered-name-table {
-    background-color: #E5C1BD;
+    background-color: #E5C1BD !important;
     color: #fff;
 }
 

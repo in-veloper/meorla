@@ -116,7 +116,8 @@ function User() {
         <Button
           key={currentGrade}                                                                                      // key 값으로 Button에 해당하는 학년
           className={hasDataForCurrentGrade ? "registered-name-table mr-1" : "btn-outline-default name-table-default"}                       // margin 없으면 Button이 다 붙어서 View가 이상 -> mr-1 설정
-          onClick={onClickNameTable}                                                                              // 학년별 Button Click Event
+          onClick={onClickNameTable}                                                                      // 학년별 Button Click Event
+          style={{ border: hasDataForCurrentGrade ? 'none' : '' }}
         >
           {currentGrade}                                                                    
         </Button>

@@ -111,6 +111,7 @@ function WorkNote(args) {
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sGender", headerName: "성별", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }, cellRenderer: customCellRenderer }
   ]);
 

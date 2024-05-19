@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Row, Col, Nav, NavItem, NavLink, Button, Input, Modal, ModalHeader, ModalBody, ModalFooter, Form, Label } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -8,8 +8,8 @@ import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import Notiflix from "notiflix";
 import { useUser } from "../contexts/UserContext.js";
 import axios from "axios";
+import { Block } from 'notiflix/build/notiflix-block-aio';
 import '../assets/css/managemedifixt.css';
-import { useMemo } from "react";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
@@ -23,22 +23,15 @@ function ManageMediFixt() {
     const [searchResult, setSearchResult] = useState([]);             // 검색 결과 할당 변수
     const [selectedMedicine, setSelectedMedicine] = useState({ medicineName: "", coporateName: "" });
     const [medicineFormData, setMedicineFormData] = useState({ unit: "", stockAmount: 0, extinctAmount: 0, registrationUnitAmount: 0, lastestPurchaseDate: "" });
+    const [medicineData, setMedicineData] = useState([]);
+    const [medicineRowData, setMedicineRowData] = useState([]);
+    const [fixtureRowData] = useState([]);
 
     const medicineGridRef = useRef();
     const fixtureGridRef = useRef();
     const registMedicineGridRef = useRef();
 
     const toggleRegistMedicineModal = () => setRegistMedicineModal(!registMedicineModal);
-
-    // const onGridReady = useCallback((params) => {
-    // }, []);
-
-    const [medicineRowData, setMedicineRowData] = useState([]);
-
-    const [fixtureRowData] = useState([]);
-
-
-    // 아래 에러나는거부터 처리
 
     const purchaseDateFormatter = (params) => {
         if (!params.value) return '';
@@ -115,21 +108,23 @@ function ManageMediFixt() {
         const defaultItems = params.defaultItems;
     
         return addItems.concat(defaultItems);
-    }
+    };
 
-    // // Row에 데이터 변경 시 Ag-Grid 내장 Event
-    // const onRowDataUpdated = useCallback(() => {                                    // 행이 추가되고 난 후 이벤트 (이 지점에서 추가된 행 확인 가능)
-    //     const api = medicineGridRef.current.api;                                    // Ag-Grid api 획득
-    //     const displayedRowCount = api.getDisplayedRowCount();                       // 현재 화면에 보여지는 행의 개수
-    //     const lastRowIndex = displayedRowCount - 1;                                 // Edit 속성 부여 위한 마지막 행 Index
-        
-    //     if(isRemoved || isRegistered) {                                             // 항목 삭제 버튼 클릭 시 || 초기 bookmark 데이터 불러왔을 시
-    //         api.stopEditing(true);                                                  // Edit 모드 중지
-    //         return;                                                                 // return
-    //     }
-        
-    //     if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'medicineName' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
-    // }, [isRemoved, isRegistered]);
+    const fetchMedicineData = useCallback(async () => {
+        Block.dots('.search-medicine');
+        const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getMedicineData`, {});
+
+        if(response.data) {
+            setMedicineData(response.data);
+            setSearchResult(response.data);
+        }
+
+        if(document.querySelector('.notiflix-block')) Block.remove('.search-medicine');
+    }, [user]);
+
+    useEffect(() => {
+        fetchMedicineData();
+    }, [fetchMedicineData]);
 
     const addMedicine = () => {
         toggleRegistMedicineModal();
@@ -241,49 +236,26 @@ function ManageMediFixt() {
 
     // 검색 Event
     const handleSearch = async (e) => {
-        try {
-            // 약품 정보 API(e약은요) 호출
-            const totalResponse = await axios.get(URL, {
-                params: {
-                    serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-                    pageNo: 1,                                                    // 페이지 수
-                    numOfRows: 1,                                                 // Row 수
-                    entpName: searchCategory === 'mCompany' ? searchText : '',    // 업체명
-                    itemName: searchCategory === 'mName' ? searchText : '',       // 제품명
-                    itemSeq: searchCategory === 'mCode' ? searchText : '',        // 품목코드
-                    efcyQesitm: searchCategory === 'mEffect' ? searchText : '',   // 효능
-                    type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
-                }
-            });
-
-            if (totalResponse.data.hasOwnProperty('body')) {                    // 조회 결과 있을 경우(body가 존재할 경우)
-                const totalCount = totalResponse.data.body.totalCount;          // 검색 결과 총 수
-                const allResults = [];                                          // 모든 결과 할당 변수
-
-                onBtShowLoading();                                              // 검색 처리 시 Loading 화면 출력
-                
-                const response = await axios.get(URL, {
-                    params: {
-                        serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
-                        pageNo: 1,                                                    // 페이지 수
-                        numOfRows: totalCount,                                        // Row 수
-                        entpName: searchCategory === 'mCompany' ? searchText : '',    // 업체명
-                        itemName: searchCategory === 'mName' ? searchText : '',       // 제품명
-                        itemSeq: searchCategory === 'mCode' ? searchText : '',        // 품목코드
-                        efcyQesitm: searchCategory === 'mEffect' ? searchText : '',   // 효능
-                        type: 'json'                                                  // 조회 시 Return 받을 데이터 Type
-                    }
+        Block.dots('.search-medicine');
+        
+        if(medicineData.length > 0) {
+            let filteredResults = medicineData;
+            
+            if(searchText.trim() !== "") {
+                filteredResults = medicineData.filter(item => {
+                    return (
+                        (searchCategory === 'mCompany' && item.entpName.includes(searchText)) ||
+                        (searchCategory === 'mName' && item.itemName.includes(searchText)) ||
+                        (searchCategory === 'mCode' && item.itemSeq.includes(searchText)) ||
+                        (searchCategory === 'mEffect' && item.efcyQesitm.includes(searchText))
+                    )
                 });
-
-                if(response.data.hasOwnProperty('body')) {                          // 조회 결과 있을 경우(body가 존재할 경우)
-                    allResults.push(...response.data.body.items);                   // 조회 결과 할당
-                }
-
-                setSearchResult(allResults);                                        // 최종 조회 결과 Grid Row Data로 할당
             }
-        } catch (error) {
-            console.log("약품 정보 조회 중 ERROR", error);
+            
+            setSearchResult(filteredResults);
         }
+
+        if(document.querySelector('.notiflix-block')) Block.remove('.search-medicine');
     }
 
     // 검색어 입력 후 Enter 입력 시 검색 Event
@@ -296,11 +268,6 @@ function ManageMediFixt() {
         e.preventDefault();             // 기본 Event 방지
         setSearchText(e.target.value);  // 전역 변수에 검색어 입력 값 할당
     }
-
-    // 검색 처리 시 Loading 화면 출력 Event
-    const onBtShowLoading = useCallback(() => {
-        registMedicineGridRef.current.api.showLoadingOverlay(); // Overlay로 로딩 Animation 출력
-    }, []);
 
     return (
         <>
@@ -358,10 +325,7 @@ function ManageMediFixt() {
                                     preventDefaultOnContextMenu={true}
                                     stopEditingWhenCellsLoseFocus={true}
                                     // onRowDataUpdated={onRowDataUpdated}
-                                    overlayNoRowsTemplate={ '<span>등록된 약품이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                                    overlayLoadingTemplate={
-                                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                                    }
+                                    overlayNoRowsTemplate={ '<span>등록된 약품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                                     rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
                                     enterNavigatesVertically={true}
                                     enterNavigatesVerticallyAfterEdit={true}
@@ -372,6 +336,7 @@ function ManageMediFixt() {
                                     ref={fixtureGridRef}
                                     rowData={fixtureRowData} 
                                     columnDefs={fixtureColDef} 
+                                    overlayNoRowsTemplate={ '<span>등록된 비품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                                 />
                             )}
                         </div>
@@ -414,7 +379,7 @@ function ManageMediFixt() {
                     </Row>
                     <Row>
                         <Col md="12">
-                            <div className="ag-theme-alpine" style={{ height: '17.5vh' }}>
+                            <div className="ag-theme-alpine search-medicine" style={{ height: '17.5vh' }}>
                                 <AgGridReact
                                     ref={registMedicineGridRef}
                                     rowData={searchResult}
@@ -422,10 +387,7 @@ function ManageMediFixt() {
                                     stopEditingWhenCellsLoseFocus={true}
                                     onRowClicked={onRowClicked}
                                     paginationPageSize={4} // 페이지 크기를 원하는 값으로 설정
-                                    overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 증상이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                                    overlayLoadingTemplate={
-                                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                                    }
+                                    overlayNoRowsTemplate={ '<span style="color: #6c757d;">검색 결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                                     rowSelection={'single'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
                                     enterNavigatesVertically={true}
                                     enterNavigatesVerticallyAfterEdit={true}

@@ -388,19 +388,10 @@ function MedicalInfo() {
 
       setConvertedBookmarkMedicineData(result);
     }
-  
-    // const result = bookmarkMedicineData.map(bookmark => {
-    //   const medicine = medicineData.find(med => med.itemSeq === bookmark.itemSeq);
-    //   return medicine ? { ...medicine } : null;  // 찾지 못한 경우 null 반환 (또는 적절한 기본값 설정)
-    // }).filter(item => item !== null);  // null이 아닌 항목만 필터링
-  
-    // console.log("Converted Grid Data: ", result);
-    // return result;
   };
 
   useEffect(() => {
     if(bookmarkMedicineData && medicineData) {
-      // setConvertedBookmarkMedicineData(convertBookmarkMedicineData());
       convertBookmarkMedicineData();
     }
   }, [bookmarkMedicineData, medicineData]);

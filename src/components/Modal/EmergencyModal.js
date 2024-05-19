@@ -61,6 +61,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const [entireManageEmergencyRowData, setEntireManageEmergencyRowData] = useState([]);
     const [genderInImageMapper, setGenderInImageMapper] = useState('M');
     const [selectedEmergencyStudent, setSelectedEmergencyStudent] = useState(null);
+    const [entireSelectedRow, setEntireSelectedRow] = useState(null);
 
     const searchStudentInEmergencyManagementGridRef = useRef(null);
     const entireManageEmergencyGridRef = useRef(null);
@@ -136,13 +137,11 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     };
 
     const handleImageMapperEnter = (e) => {
-        // console.log(e.nativeEvent.offsetX);
-        // console.log(e.nativeEvent.offsetY);
+
     };
 
     const handleImageMapperMove = (e) => {
-        // console.log(e.nativeEvent.offsetX);
-        // console.log(e.nativeEvent.offsetY);
+
     };
     
     const generateAreas = () => {
@@ -230,6 +229,81 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         }
     };
 
+    const updateManageEmergency = async () => {
+        if(entireSelectedRow) {
+            const rowId = entireSelectedRow.id;
+            const sGrade = entireSelectedRow.sGrade;
+            const sClass = entireSelectedRow.sClass;
+            const sNumber = entireSelectedRow.sNumber;
+            const sGender = entireSelectedRow.sGender;
+            const sName = entireSelectedRow.sName;
+            const firstDiscoveryTime = document.getElementById('firstDiscoveryTime').value;
+            const teacherConfirmTime = document.getElementById('teacherConfirmTime').value;
+            const occuringArea = document.getElementById('occuringArea').value;
+            const firstWitness = document.getElementById('firstWitness').value;
+            const vitalSign = document.getElementById('emergencyVitalSign').value;
+            const mainSymptom = document.getElementById('mainSymptom').value;
+            const accidentOverview = document.getElementById('accidentOverview').value;
+            const emergencyTreatmentDetail = document.getElementById('emergencyTreatmentDetail').value;
+            const transferTime = document.getElementById('transferTime').value;
+            const guardianContact = document.getElementById('guardianContact').value;
+            const transferHospital = document.getElementById('transferHospital').value;
+            const homeroomTeacherName = document.getElementById('homeroomTeacherName').value;
+            const registDate = document.getElementById('registDate').value;
+            const registerName = document.getElementById('registerName').value;
+            const bodyChartPoints = clickedPoints;
+
+            let selectedTranspoter = Object.entries(transpoterCheckedItems)
+            .filter(([key, value]) => value)
+            .map(([key]) => key)[0];
+            
+            if(transpoterCheckedItems.etcTranspoter) selectedTranspoter = selectedTranspoter + "::" + etcTranspoterDetail;
+
+            let selectedTransfer = Object.entries(transferCheckedItems)
+            .filter(([key, value]) => value)
+            .map(([key]) => key)[0];
+
+            if(transferCheckedItems.etcTransfer) selectedTransfer = selectedTransfer + "::" + etcTransferDetail;
+
+            const response = await axios.post(`http://${BASE_URL}:8000/manageEmergency/updateEmergencyManagement`, {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                rowId: rowId,
+                sGrade: sGrade,
+                sClass: sClass,
+                sNumber: sNumber,
+                sGender: sGender,
+                sName: sName,
+                firstDiscoveryTime: firstDiscoveryTime,
+                teacherConfirmTime: teacherConfirmTime,
+                occuringArea: occuringArea,
+                firstWitness: firstWitness,
+                vitalSign: vitalSign,
+                mainSymptom: mainSymptom,
+                accidentOverview: accidentOverview,
+                emergencyTreatmentDetail: emergencyTreatmentDetail,
+                transferTime: transferTime,
+                guardianContact: guardianContact,
+                transferHospital: transferHospital,
+                homeroomTeacherName: homeroomTeacherName,
+                registDate: registDate,
+                registerName: registerName,
+                bodyChartPoints: JSON.stringify(bodyChartPoints),
+                transferVehicle: selectedTransfer,
+                transpoter: selectedTranspoter
+            });
+
+            if(response.data === "success") {
+                const infoMessage = "응급학생관리 내역이 정상적으로 수정되었습니다";
+                NotiflixInfo(infoMessage, true);
+                fetchEntireManageEmergencyData();
+            }
+        }else{
+            const warnMessage = "선택된 보건일지 내역이 없습니다<br/>대상 내역을 선택해 주세요";
+            NotiflixWarn(warnMessage);
+        }
+    };
+
     const handleTranspoterCheckboxChange = (e) => {
         const { id, checked } = e.target;
         setTranspoterCheckedItems({ ...transpoterCheckedItems, [id]: checked });
@@ -312,6 +386,8 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     const onSelectionChangedInEntireEmergencyGrid = (param) => {
         const selectedRow = param.api.getSelectedRows()[0];
+        setEntireSelectedRow(selectedRow);
+
         if(selectedRow) selectedRow.sGender === "여" ? setGenderInImageMapper('F') : setGenderInImageMapper('M');
 
         if(selectedRow) {
@@ -1071,7 +1147,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             <Input
                                 id='registDate'
                                 type='date'
-                                style={{ width: '25%' }}
+                                style={{ width: '30%' }}
                                 value={registDateValue}
                                 onChange={(e) => setRegistDateValue(e.target.value)}
                             />
@@ -1098,6 +1174,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                         <Col className='d-flex justify-content-end no-gutters'>
                             <Button className='mr-2' onClick={resetManageEmergency}>초기화</Button>
                             <Button className="ml-1" onClick={saveManageEmergency}>등록</Button>
+                            <Button className="ml-1" onClick={updateManageEmergency}>수정</Button>
                             <Button className="ml-1" onClick={toggleManageEmergencyModal}>취소</Button>
                         </Col>
                     </Row>
