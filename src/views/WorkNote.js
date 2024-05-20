@@ -1889,8 +1889,7 @@ function WorkNote(args) {
                     <Button size="sm">학생관리</Button>
                   </Col>
                   <Col className="d-flex justify-content-end" md="8">
-                    <Button size="sm">당뇨질환학생관리</Button>
-                    <Button className="ml-1" size="sm">보호학생관리</Button>
+                    <Button size="sm">보호학생관리</Button>
                     <Button className="ml-1" size="sm" onClick={handleEmergencyStudent}>응급학생관리</Button>
                   </Col>
                 </Row>

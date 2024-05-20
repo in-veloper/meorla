@@ -62,6 +62,9 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const [genderInImageMapper, setGenderInImageMapper] = useState('M');
     const [selectedEmergencyStudent, setSelectedEmergencyStudent] = useState(null);
     const [entireSelectedRow, setEntireSelectedRow] = useState(null);
+    const [searchStartDate, setSearchStartDate] = useState("");
+    const [searchEndDate, setSearchEndDate] = useState("");
+    const [searchSname, setSearchSname] = useState("");
 
     const searchStudentInEmergencyManagementGridRef = useRef(null);
     const entireManageEmergencyGridRef = useRef(null);
@@ -130,7 +133,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const handleImageMapperClick = (e) => {
         const x = e.nativeEvent.offsetX;
         const y = e.nativeEvent.offsetY;
-        
+
         // 새로운 클릭한 지점을 배열에 추가
         setClickedPoints([...clickedPoints, { x, y }]);
         setClickCounter(clickCounter + 1);
@@ -779,6 +782,55 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         }
     };
     
+    // 이미 찍힌 Point 재클릭 시 Event
+    const onClickSpot = (e) => {
+        const x = e.center[0];
+        const y = e.center[1];
+
+        const filteredPoints = clickedPoints.filter(point => point.x !== x || point.y !== y);
+
+        setClickedPoints(filteredPoints);
+    };
+
+    const resetSearchEmergency = () => {
+        setSearchStartDate("");
+        setSearchEndDate("");
+        setSearchSname("");
+        fetchEntireManageEmergencyData();
+    };
+
+    const searchEntireEmergency = () => {
+        if (searchSname || (searchStartDate && searchEndDate)) {
+            const searchFilteredRowData = entireManageEmergencyRowData.filter(item => {
+                let meetsAllConditions = true;
+    
+                // 이름 조건 확인
+                if (searchSname && !item.sName.includes(searchSname)) {
+                    meetsAllConditions = false;
+                }
+    
+                // 날짜 조건 확인
+                if (searchStartDate && searchEndDate) {
+                    const registDate = new Date(item.registDate);
+                    const convertedSearchStartDate = new Date(searchStartDate);
+                    const convertedSearchEndDate = new Date(searchEndDate);
+    
+                    // registDate가 searchStartDate와 searchEndDate 사이에 있는지 확인
+                    if (!(registDate >= convertedSearchStartDate && registDate <= convertedSearchEndDate)) {
+                        meetsAllConditions = false;
+                    }
+                }
+    
+                return meetsAllConditions;
+            });
+    
+            setEntireManageEmergencyRowData(searchFilteredRowData);
+        }
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if(e.key === "Enter") searchEntireEmergency();
+    };
 
     return (
         <>
@@ -787,8 +839,41 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                     <b className="text-muted">응급학생관리</b>
                 </ModalHeader>
                 <ModalBody>
-                    <Row className='d-flex align-items-center no-gutters text-muted pb-2'>
-                        <label style={{ fontSize: 18, fontWeight: 'bold' }}>전체등록내역</label>
+                    <Row className='d-flex align-items-center no-gutters text-muted pb-0'>
+                        <Col md="2">
+                            <label style={{ fontSize: 18, fontWeight: 'bold' }}>전체등록내역</label>
+                        </Col>
+                        <Col className='d-flex align-items-center justify-content-end'>
+                            <label className='mr-1 pt-1'>작성일</label>
+                            <Input
+                                id='searchStartDate'
+                                type='date'
+                                style={{ width: '17%', height: 28 }}
+                                value={searchStartDate}
+                                onChange={(e) => setSearchStartDate(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
+                            />
+                            <span className='ml-1 mr-1'>~</span>
+                            <Input
+                                id='searchEndDate'
+                                type='date'
+                                style={{ width: '17%', height: 28 }}
+                                value={searchEndDate}
+                                onChange={(e) => setSearchEndDate(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
+                            />
+                            <label className='ml-3 mr-1 pt-1'>이름</label>
+                            <Input 
+                                id='searchSname'
+                                type='text'
+                                style={{ width: '10%', height: 28 }}
+                                value={searchSname}
+                                onChange={(e) => setSearchSname(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
+                            />
+                            <Button className='ml-3 mr-1' size='sm' onClick={resetSearchEmergency}>초기화</Button>
+                            <Button size='sm' onClick={searchEntireEmergency}>검색</Button>
+                        </Col>
                     </Row>
                     <div className="ag-theme-alpine" style={{ height: '10.5vh' }}>
                         <AgGridReact
@@ -976,6 +1061,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                         name: 'anatomy-map',
                                         areas: generateAreas()
                                     }}
+                                    onClick={onClickSpot}
                                     onImageMouseMove={handleImageMapperMove}
                                     onImageClick={handleImageMapperClick}
                                 />
