@@ -75,8 +75,8 @@ function Login() {
 
     // 계정 확인 후 로그인하는 함수 (계정 확인 및 Token 확인 로직 필요 -> 추가)
     const handleLogin = async (e) => {
-        e.preventDefault();
         Loading.dots();
+        
         try {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
@@ -281,6 +281,10 @@ function Login() {
         
     });
 
+    const handleKeyDown = (e) => {
+        if(e.key === "Enter") handleLogin();
+    };
+
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
             <Container id="container">
@@ -317,7 +321,7 @@ function Login() {
                     <Form action="#">
                     <h1>로그인</h1>
                     <input type="email" placeholder="아이디" value={confirmUserId} onChange={(e) => setConfirmUserId(e.target.value)} />
-                    <input type="password" placeholder="비밀번호" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                    <input type="password" placeholder="비밀번호" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={handleKeyDown}/>
                     {/* <input type='file' accept='.cer' onChange={handleCertChange} /> */}
                     <a href="/forgot-password">비밀번호를 잊으셨나요?</a>
                     <Button onClick={handleLogin}>로그인</Button>

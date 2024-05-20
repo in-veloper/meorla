@@ -83,7 +83,7 @@ function Examination() {
         <>
             <div className="content" style={{ height: '84.8vh' }}>
                 <Card style={{ width: '100%', height: '7vh' }}>
-                    <CardBody className="mt-1 d-flex align-items-center">
+                    <CardBody className="d-flex align-items-center pt-2">
                         <Row className="align-items-center w-100">
                             <Col md="1" className="text-center">
                                 <Label className="text-muted">병·의원명</Label>
