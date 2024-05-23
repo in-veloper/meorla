@@ -68,6 +68,9 @@ function WorkNote(args) {
   const [nonSelectedHighlight, setNonSelectedHighlight] = useState(false);
   const [visitRequestList, setVisitRequestList] = useState([]);
   const [visitRequestTooltipOpen, setVisitRequestTooltipOpen] = useState(false);
+  const [searchStartDate, setSearchStartDate] = useState("");
+  const [searchEndDate, setSearchEndDate] = useState("");
+  const [searchSname, setSearchSname] = useState("");
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -1702,6 +1705,41 @@ function WorkNote(args) {
     toggleManageEmergencyModal();
   };
 
+  const handleSearchKeyDown = (e) => {
+    if(e.key === "Enter") searchEntireWorkNote();
+  };
+
+  const resetSearchEntireWorkNote = () => {
+    setSearchStartDate("");
+    setSearchEndDate("");
+    setSearchSname("");
+    fetchEntireWorkNoteGrid();
+  };
+
+  const searchEntireWorkNote = () => {
+    if(searchSname || (searchStartDate && searchEndDate)) {
+      const searchFilteredRowData = entireWorkNoteRowData.filter(item => {
+        let meetsAllConditions = true;
+
+        if(searchSname && !item.sName.includes(searchSname)) {
+          meetsAllConditions = false;
+        }
+
+        if(searchStartDate && searchEndDate) {
+          const createdAt = new Date(item.createdAt);
+          const convertedSearchStartDate = new Date(searchStartDate);
+          const convertedSearchEndDate = new Date(searchEndDate);
+
+          if(!(createdAt >= convertedSearchStartDate && createdAt <= convertedSearchEndDate)) {
+            meetsAllConditions = false;
+          }
+        }
+
+        return meetsAllConditions;
+      });
+      setEntireWorkNoteRowData(searchFilteredRowData);
+    }
+  };
 
   return (
     <>
@@ -2211,10 +2249,46 @@ function WorkNote(args) {
         <Collapse isOpen={isEntireWorkNoteOpen} {...args}>
           <Card>
             <CardHeader>
-
+              <Row className="d-flex align-items-center">
+                <Col md="4">
+                  <Button className="mr-1" size="sm">저장</Button>
+                  <Button size="sm">프린트</Button>
+                </Col>
+                <Col className="d-flex align-items-center justify-content-end" md="8">
+                  <label className="mr-1 pt-1">작성일</label>
+                  <Input 
+                    id="searchStartDate"
+                    type="date"
+                    style={{ width: '17%', height: 28 }}
+                    value={searchStartDate}
+                    onChange={(e) => setSearchStartDate(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                  />
+                  <span className="ml-1 mr-1">~</span>
+                  <Input 
+                    id="searchEndDate"
+                    type="date"
+                    style={{ width: '17%', height: 28 }}
+                    value={searchEndDate}
+                    onChange={(e) => setSearchEndDate(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                  />
+                  <label className="ml-3 mr-1 pt-1">이름</label>
+                  <Input 
+                    id="searchSname"
+                    type="text"
+                    style={{ width: '10%', height: 28 }}
+                    value={searchSname}
+                    onChange={(e) => setSearchSname(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                  />
+                  <Button className="ml-3 mr-1" size="sm" onClick={resetSearchEntireWorkNote}>초기화</Button>
+                  <Button size="sm" onClick={searchEntireWorkNote}>검색</Button>
+                </Col>
+              </Row>
             </CardHeader>
-            <CardBody>
-              <div className="ag-theme-alpine" style={{ height: '50vh' }}>
+            <CardBody className="pt-0">
+              <div className="ag-theme-alpine" style={{ height: '47.5vh' }}>
                 <AgGridReact
                   ref={registeredAllGridRef}
                   rowData={entireWorkNoteRowData}
