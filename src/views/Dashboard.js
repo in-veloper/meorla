@@ -64,10 +64,16 @@ function Dashboard() {
     return params.data.displayContent;
   };
 
+  const replyFormatter = (params) => {
+    if(params.data.reply) return "답변";
+    else return "미답변";
+  };
+
   const [qrColumnDefs] = useState([
-    { field: "qrCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: categoryFormatter },
+    { field: "qrCategory", headerName: "분류", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: categoryFormatter },
     { field: "qrTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
-    { field: "qrContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "left" }, cellRenderer: customContentRenderer }
+    { field: "qrContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "left" }, cellRenderer: customContentRenderer },
+    { field: "reply", headerName: "답변여부", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: replyFormatter }
   ]);
 
   const [eventColumnDefs] = useState([

@@ -1246,6 +1246,21 @@ app.post('/qnaRequest/incrementViewCount', async (req, res) => {
     });
 });
 
+app.post('/qnaRequest/replyQnaRequest', async (req, res) => {
+    const { rowId, userId, reply } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.qnaRequest SET reply = ? WHERE id = ?";
+    if(userId === "admin") {
+        db.query(sqlQuery, [reply, rowId], (err, result) => {
+            if(err) {
+                console.log("문의 및 요청사항 답변 UPDATE 처리 중 ERROR", err);
+            }else{
+                res.send('success');
+            }
+        });
+    }
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });

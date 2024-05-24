@@ -69,6 +69,11 @@ function QnaRequest() {
     const customContentRenderer = (params) => {
         return params.data.displayContent;
     };
+
+    const replyFormatter = (params) => {
+        if(params.data.reply) return "답변";
+        else return "미답변";
+    };
  
     const [columnDefs] = useState([
         { field: "qrCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: categoryFormatter },
@@ -76,7 +81,8 @@ function QnaRequest() {
         { field: "qrContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "left" }, cellRenderer: customContentRenderer },
         { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
         { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
-        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } }
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "reply", headerName: "답변여부", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: replyFormatter }
     ]);
 
     const handleWriting = () => {
@@ -99,6 +105,7 @@ function QnaRequest() {
                 const infoMessage = "문의 및 요청사항이 정상적으로 등록되었습니다";
                 NotiflixInfo(infoMessage);
                 fetchQnaRequestData();
+                toggleDetailModal();
             }
         }
     };
@@ -135,6 +142,7 @@ function QnaRequest() {
                 const infoMessage = "문의 및 요청사항이 정상적으로 수정되었습니다";
                 NotiflixInfo(infoMessage);
                 fetchQnaRequestData();
+                toggleDetailModal();
             } 
         }
     };
@@ -158,6 +166,7 @@ function QnaRequest() {
         setQnaRequestContentValue(params.data.qrContent);
         setWritingCategory(params.data.qrCategory);
         setIsSecretChecked(params.data.isSecret);
+        setQnaRequestReplyValue(params.data.reply);
         setIsEditMode(params.data.userId === user.userId || isAdmin);
         
         toggleDetailModal();
@@ -173,8 +182,19 @@ function QnaRequest() {
         if(response.data === "success") fetchQnaRequestData();
     };
 
-    const handleReply = () => {
+    const handleReply = async () => {
+        const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/replyQnaRequest`, {
+            rowId: selectedRowData.id,
+            userId: user.userId,
+            reply: qnaRequestReplyValue
+        });
 
+        if(response.data === 'success') {
+            const infoMessage = "답변이 정상적으로 등록되었습니다";
+            NotiflixInfo(infoMessage);
+            fetchQnaRequestData();
+            toggleDetailModal();
+        }
     };
 
     return (
