@@ -16,11 +16,16 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 function Dashboard() {
   const { user } = useUser();
   const [visitRequestList, setVisitRequestList] = useState([]);
+  const [qnaRequestData, setQnaRequestData] = useState([]);
   const [todayScheduleRowData, setTodayScheduleRowData] = useState([]);
   const [entireScheduleRowData, setEntireScheduleRowData] = useState([]);
   const [filteredScheduleRowData, setFilteredScheduleRowData] = useState([]);
   const [memoData, setMemoData] = useState("");
 
+  const qrGridRef = useRef(null);
+  const visitRequestGridRef = useRef(null);
+  const todayScheduleGridRef = useRef(null);
+  const entireScheduleGridRef = useRef(null);
   const gridRef = useRef(null);
   const quillRef = useRef(null);
 
@@ -50,6 +55,21 @@ function Dashboard() {
     else return eventStartDate + " ~ " + eventEndDate;
   };
 
+  const categoryFormatter = (params) => {
+    if(params.data.qrCategory === "qna") return "문의사항";
+    else if(params.data.qrCategory === "request") return "요청사항";
+  };
+
+  const customContentRenderer = (params) => {
+    return params.data.displayContent;
+  };
+
+  const [qrColumnDefs] = useState([
+    { field: "qrCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: categoryFormatter },
+    { field: "qrTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+    { field: "qrContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "left" }, cellRenderer: customContentRenderer }
+  ]);
+
   const [eventColumnDefs] = useState([
     { field: 'eventPeriod', headerName: '기간', valueFormatter: eventPeriodFormatter, flex: 1, cellStyle: { textAlign: "center" } },
     { field: 'eventTitle', headerName: '일정명', flex: 1 }
@@ -61,9 +81,25 @@ function Dashboard() {
     { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" } },
     { field: "sGender", headerName: "성별", flex: 1, cellStyle: { textAlign: "center" } },
     { field: "sName", headerName: "이름", flex: 1.5, cellStyle: { textAlign: "center" } },
-    { field: "requestContent", headerName: "요청내용", flex: 3, cellStyle: { textAlign: "center" } },
+    { field: "requestContent", headerName: "요청내용", flex: 4, cellStyle: { textAlign: "center" } },
     { field: "teacherName", headerName: "요청교사", flex: 1.5, cellStyle: { textAlign: "center" } }
   ]);
+
+  const fetchQnaRequestData = useCallback(async () => {
+    if(user) {
+        const response = await axios.get(`http://${BASE_URL}:8000/qnaRequest/getQnaRequest`, {});
+        
+        if(response.data) {
+            const convertedData = response.data.map(item => {
+                return {
+                    ...item,
+                    displayContent: item.isSecret && item.userId !== user.userId ? "비밀글" : item.qrContent
+                };
+            });
+            setQnaRequestData(convertedData);
+        }
+    }
+  }, [user]);
 
   const fetchVisitRequest = useCallback(async () => {
     if(user) {
@@ -115,9 +151,10 @@ function Dashboard() {
   }, [user]);
 
   useEffect(() => {
+    fetchQnaRequestData();
     fetchTodaySchedule();
     fetchEntireSchedule();
-  }, [fetchTodaySchedule, fetchEntireSchedule]);
+  }, [fetchQnaRequestData, fetchTodaySchedule, fetchEntireSchedule]);
 
   const modules = {
     toolbar: [
@@ -206,7 +243,7 @@ function Dashboard() {
           </span>
         </UncontrolledAlert>
         <Row>
-          <Col md="12">
+          <Col md="7">
             <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>공지사항</b></CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
@@ -219,6 +256,19 @@ function Dashboard() {
               </div>
             </Card>
           </Col>
+          <Col md="5">
+            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>문의 및 요청</b></CardTitle>
+            <Card>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+                <AgGridReact 
+                  rowHeight={35}
+                  ref={qrGridRef}
+                  rowData={qnaRequestData}
+                  columnDefs={qrColumnDefs}
+                />
+              </div>
+            </Card>
+          </Col>
         </Row>
         <Row>
           <Col md="6">
@@ -227,7 +277,7 @@ function Dashboard() {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
                   rowHeight={35}
-                  ref={gridRef}
+                  ref={visitRequestGridRef}
                   rowData={visitRequestList}
                   columnDefs={visitRequestColumnDefs}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">침상안정 신청내역이 없습니다</span>' } 
@@ -256,7 +306,7 @@ function Dashboard() {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
                   rowHeight={35}
-                  ref={gridRef}
+                  ref={todayScheduleGridRef}
                   rowData={todayScheduleRowData}
                   columnDefs={eventColumnDefs}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">오늘 등록된 일정이 없습니다</span>' } 
@@ -270,7 +320,7 @@ function Dashboard() {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
                   rowHeight={35}
-                  ref={gridRef}
+                  ref={entireScheduleGridRef}
                   rowData={filteredScheduleRowData}
                   columnDefs={eventColumnDefs}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 일정이 없습니다</span>' } 

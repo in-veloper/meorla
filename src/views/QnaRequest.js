@@ -1,20 +1,31 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { Row, Col, Input, Button, Modal, ModalHeader, ModalBody, Form, ModalFooter, FormGroup, Label } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '../assets/css/qnarequest.css';
 import { FaCheck } from "react-icons/fa";
+import { useUser } from "contexts/UserContext";
+import axios from "axios";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function QnaRequest() {
+    const { user } = useUser();
+    const isAdmin = user?.userId === "admin";
     const [searchCategory, setSearchCategory] = useState("");
     const [searchText, setSearchText] = useState("");
     const [writingModal, setWritingModal] = useState(false);
-    const [writingCategory, setWritingCategory] = useState("");
-    const [quaRequestTitleValue, setQnaRequestTitleValue] = useState("");
+    const [detailModal, setDetailModal] = useState(false);
+    const [writingCategory, setWritingCategory] = useState("qna");
+    const [qnaRequestTitleValue, setQnaRequestTitleValue] = useState("");
     const [qnaRequestContentValue, setQnaRequestContentValue] = useState("");
+    const [isSecretChecked, setIsSecretChecked] = useState(false);
+    const [qnaRequestData, setQnaRequestData] = useState(null);
+    const [selectedRowData, setSelectedRowData] = useState(null);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [qnaRequestReplyValue, setQnaRequestReplyValue] = useState("");
     
     const gridRef = useRef();
     
@@ -25,6 +36,7 @@ function QnaRequest() {
     };
 
     const toggleWritingModal = () => setWritingModal(!writingModal);
+    const toggleDetailModal = () => setDetailModal(!detailModal);
 
     // 검색 시 카테고리 선택 Event
     const handleSearchCategory = (e) => {
@@ -38,17 +50,32 @@ function QnaRequest() {
         setSearchText(e.target.value);
     };
 
-    const [rowData] = useState([
-        {inquiryCategory: "수업문의", inquiryTitle: "문의 게시판", writer: "정영인", registDate: "2023-12-13", views: "12"},
-        {inquiryCategory: "기타문의", inquiryTitle: "기타 질문", writer: "정영인", registDate: "2023-12-17", views: "10"},
-        {inquiryCategory: "행사문의", inquiryTitle: "행사 관련하여 질문", writer: "정영인", registDate: "2023-12-15", views: "25"}
-    ]);
+    const categoryFormatter = (params) => {
+        if(params.data.qrCategory === "qna") return "문의사항";
+        else if(params.data.qrCategory === "request") return "요청사항";
+    };
 
+    const registDateFormatter = (params) => {
+        const dateTime = params.data.createdAt;
+
+        let dateValue = dateTime.split("T")[0];
+        let timeValue = dateTime.split("T")[1];
+        const returnDateValue = dateValue.split("-")[0] + "년 " + parseInt(dateValue.split("-")[1]).toString() + "월 " + parseInt(dateValue.split("-")[2]).toString() + "일   ";
+        const returnTimeValue = (timeValue.split(":")[0] === "00" ? "00" : parseInt(timeValue.split(":")[0]).toString()) + "시 " + (timeValue.split(":")[1] === "00" ? "00" : parseInt(timeValue.split(":")[1]).toString()) + "분";
+
+        return returnDateValue + returnTimeValue;
+    };
+
+    const customContentRenderer = (params) => {
+        return params.data.displayContent;
+    };
+ 
     const [columnDefs] = useState([
-        { field: "inquiryCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" } },
-        { field: "inquiryTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
-        { field: "writer", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
-        { field: "registDate", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" } },
+        { field: "qrCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: categoryFormatter },
+        { field: "qrTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+        { field: "qrContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "left" }, cellRenderer: customContentRenderer },
+        { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
         { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } }
     ]);
 
@@ -56,13 +83,98 @@ function QnaRequest() {
         toggleWritingModal();
     };
 
-    const saveQnaRequest = () => {
-        debugger
+    const saveQnaRequest = async () => {
+        if(user) {
+            const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/saveQnaRequest`, {
+                userId: user.userId,
+                userName: user.name,
+                schoolCode: user.schoolCode,
+                writingCategory: writingCategory,
+                qnaRequestTitle: qnaRequestTitleValue,
+                qnaRequestContent: qnaRequestContentValue,
+                isSecret: isSecretChecked
+            });
+
+            if(response.data === 'success') {
+                const infoMessage = "문의 및 요청사항이 정상적으로 등록되었습니다";
+                NotiflixInfo(infoMessage);
+                fetchQnaRequestData();
+            }
+        }
     };
+
+    const fetchQnaRequestData = useCallback(async () => {
+        if(user) {
+            const response = await axios.get(`http://${BASE_URL}:8000/qnaRequest/getQnaRequest`, {});
+            
+            if(response.data) {
+                const convertedData = response.data.map(item => {
+                    return {
+                        ...item,
+                        displayContent: item.isSecret && item.userId !== user.userId && !isAdmin ? "비밀글" : item.qrContent
+                    };
+                });
+                setQnaRequestData(convertedData);
+            }
+        }
+    }, [user, isAdmin]);
+
+    const updateQnaRequest = async () => {
+        if(user) {
+            const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/updateQnaRequest`, {
+                rowId: selectedRowData.id,
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                writingCategory: writingCategory,
+                qnaRequestTitle: qnaRequestTitleValue,
+                qnaRequestContent: qnaRequestContentValue,
+                isSecret: isSecretChecked
+            });
+
+            if(response.data === 'success') {
+                const infoMessage = "문의 및 요청사항이 정상적으로 수정되었습니다";
+                NotiflixInfo(infoMessage);
+                fetchQnaRequestData();
+            } 
+        }
+    };
+
+    useEffect(() => {
+        fetchQnaRequestData();
+    }, [fetchQnaRequestData]);
 
     const handleChangeWritingCategory = (e) => {
         const targetValue = e.target.value;
         setWritingCategory(targetValue);
+    };
+
+    const handleChangeIsSecretCheckBox = (e) => {
+        setIsSecretChecked(e.target.checked);
+    };
+
+    const handleRowDoubleClick = async (params) => {
+        setSelectedRowData(params.data);
+        setQnaRequestTitleValue(params.data.qrTitle);
+        setQnaRequestContentValue(params.data.qrContent);
+        setWritingCategory(params.data.qrCategory);
+        setIsSecretChecked(params.data.isSecret);
+        setIsEditMode(params.data.userId === user.userId || isAdmin);
+        
+        toggleDetailModal();
+
+        await incrementViewCount(params.data.id);
+    };
+
+    const incrementViewCount = async (rowId) => {
+        const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/incrementViewCount`, {
+            rowId: rowId
+        });
+
+        if(response.data === "success") fetchQnaRequestData();
+    };
+
+    const handleReply = () => {
+
     };
 
     return (
@@ -110,9 +222,10 @@ function QnaRequest() {
                         <div className="ag-theme-alpine" style={{ height: '73vh'}}>
                             <AgGridReact 
                                 ref={gridRef}
-                                rowData={rowData}
+                                rowData={qnaRequestData}
                                 columnDefs={columnDefs}
                                 defaultColDef={defaultColDef}
+                                onRowDoubleClicked={handleRowDoubleClick}
                             />
                         </div>
                     </Col>
@@ -147,6 +260,8 @@ function QnaRequest() {
                                     <Input 
                                         id="isSecret"
                                         type="checkbox"
+                                        checked={isSecretChecked}
+                                        onChange={handleChangeIsSecretCheckBox}
                                     />
                                     <Label>비밀글</Label>
                                 </FormGroup>
@@ -160,7 +275,7 @@ function QnaRequest() {
                             className="ml-3 p-2"
                             type="text"
                             style={{ width: '90%' }}
-                            value={quaRequestTitleValue}
+                            value={qnaRequestTitleValue}
                             onChange={(e) => setQnaRequestTitleValue(e.target.value)}
                         />
                     </Row>
@@ -179,6 +294,97 @@ function QnaRequest() {
                 <ModalFooter>
                     <Button className="mr-1" color="secondary" onClick={saveQnaRequest}>등록</Button>
                     <Button color="secondary" onClick={toggleWritingModal}>취소</Button>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={detailModal} toggle={toggleDetailModal} centered style={{ minWidth: '20%' }}>
+                <ModalHeader toggle={toggleDetailModal}><b className="text-muted">문의 및 요청 상세</b></ModalHeader>
+                <ModalBody>
+                    <Row className="d-flex align-items-center no-gutters text-muted mb-2">
+                        <Col className="d-flex align-items center" md="5" xs="auto">
+                            <label className="pt-2" style={{ width: 25 }}>분류</label>
+                            <Input
+                                id="writingCategory"
+                                className="ml-3"
+                                type="select"
+                                style={{ width: '80%' }}
+                                defaultValue={selectedRowData ? selectedRowData.qrCategory : ""}
+                                disabled={!isEditMode}
+                                onChange={(e) => setWritingCategory(e.target.value)}
+                            >
+                                <option value="qna">문의사항</option>
+                                <option value="request">요청사항</option>
+                            </Input>
+                        </Col>
+                        <Col xs="auto" style={{ marginBottom: '-13px'}}>
+                            {isEditMode && (
+                                <Form className="ml-5">
+                                    <FormGroup inline>
+                                        <Input 
+                                            id="isSecret"
+                                            type="checkbox"
+                                            checked={isSecretChecked}
+                                            onChange={handleChangeIsSecretCheckBox}
+                                        />
+                                        {' '}
+                                        <Label>비밀글</Label>
+                                    </FormGroup>
+                                </Form>
+                            )}
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center no-gutters text-muted mb-2">
+                        <label>제목</label>
+                        <Input
+                            id="qnaRequestTitle"
+                            className="ml-3 p-2"
+                            type="text"
+                            style={{ width: '90%' }}
+                            defaultValue={selectedRowData ? selectedRowData.qrTitle : ""}
+                            readOnly={!isEditMode}
+                            onChange={(e) => setQnaRequestTitleValue(e.target.value)}
+                        />
+                    </Row>
+                    <Row className="d-flex align-items-center no-gutters text-muted">
+                        <label>내용</label>
+                        <Input
+                            id="qnaRequestContent"
+                            className="ml-3 p-2" 
+                            type="textarea"
+                            style={{ width: '90%', minHeight: 200 }}
+                            defaultValue={selectedRowData && user ? (selectedRowData.isSecret && selectedRowData.userId !== user.userId ? "비밀글" : selectedRowData.qrContent) : ""}
+                            readOnly={!isEditMode}
+                            onChange={(e) => setQnaRequestContentValue(e.target.value)}
+                        />
+                    </Row>
+                    <hr className="pt-1 pb-1"/>
+                    <Row className="d-flex align-items-center no-gutters text-muted">
+                        <label>답변</label>
+                        <Input 
+                            id="qnaRequestReply"
+                            className="ml-3 p-2"
+                            type="textarea"
+                            style={{ width: '90%', height: 70, textAlign: !qnaRequestReplyValue && !isAdmin ? 'center' : '', lineHeight: !qnaRequestReplyValue && !isAdmin ? '50px' : '', backgroundColor: !qnaRequestReplyValue && !isAdmin ? '#E9ECEF' : '' }}
+                            value={qnaRequestReplyValue ? qnaRequestReplyValue : (isAdmin ? "" : "등록된 답변이 없습니다")}
+                            onChange={(e) => setQnaRequestReplyValue(e.target.value)}
+                            readOnly={!isAdmin}
+                        />
+                    </Row>
+                </ModalBody>
+                <ModalFooter>
+                    {isAdmin && (
+                        <Col className="ml-0">
+                            <Button color="secondary" onClick={handleReply} style={{ marginLeft: '0 auto'}}>답변</Button>
+                        </Col>
+                    )}
+                    {isEditMode ? (
+                        <Row>
+                            <Button color="secondary" onClick={updateQnaRequest}>수정</Button>
+                            <Button className="ml-1" color="secondary" onClick={toggleDetailModal}>취소</Button>
+                        </Row>
+                    ) : (
+                        <Button color="secondary" onClick={toggleDetailModal}>닫기</Button>
+                    )}
                 </ModalFooter>
             </Modal>
         </>

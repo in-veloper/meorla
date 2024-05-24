@@ -1196,6 +1196,56 @@ app.get('/dashboard/getMemo', async (req, res) => {
     });
 });
 
+app.post('/qnaRequest/saveQnaRequest', async (req, res) => {
+    const { userId, userName, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.qnaRequest (userId, userName, schoolCode, qrCategory, qrTitle, qrContent, isSecret) VALUES (?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, userName, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret], (err, result) => {
+        if(err) {
+            console.log("문의 및 요청사항 INSERT 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get('/qnaRequest/getQnaRequest', async (req, res) => {
+    const sqlQuery = "SELECT * FROM teaform_db.qnaRequest";
+    db.query(sqlQuery, [], (err, result) => {
+        if(err) {
+            console.log("문의 및 요청사항 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.post('/qnaRequest/updateQnaRequest', async (req, res) => {
+    const { rowId, userId, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.qnaRequest SET qrCategory = ?, qrTitle = ?, qrContent = ?, isSecret = ? WHERE id = ? AND userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [writingCategory, qnaRequestTitle, qnaRequestContent, isSecret, rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("문의 및 요청사항 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post('/qnaRequest/incrementViewCount', async (req, res) => {
+    const { rowId } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.qnaRequest SET views = views + 1 WHERE id = ?";
+    db.query(sqlQuery, [rowId], (err, result) => {
+        if(err) {
+            console.log("문의 및 요청사항 조회수 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
