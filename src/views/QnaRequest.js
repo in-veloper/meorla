@@ -26,8 +26,10 @@ function QnaRequest() {
     const [selectedRowData, setSelectedRowData] = useState(null);
     const [isEditMode, setIsEditMode] = useState(false);
     const [qnaRequestReplyValue, setQnaRequestReplyValue] = useState("");
+    const [myQnaRequestModal, setMyQnaRequestModal] = useState(false);
     
-    const gridRef = useRef();
+    const gridRef = useRef(null);
+    const myQnaRequestGridRef = useRef(null);
     
     const defaultColDef = {
         sortable: true,
@@ -37,6 +39,7 @@ function QnaRequest() {
 
     const toggleWritingModal = () => setWritingModal(!writingModal);
     const toggleDetailModal = () => setDetailModal(!detailModal);
+    const toggleMyQnaRequestModal = () => setMyQnaRequestModal(!myQnaRequestModal);
 
     // 검색 시 카테고리 선택 Event
     const handleSearchCategory = (e) => {
@@ -85,8 +88,18 @@ function QnaRequest() {
         { field: "reply", headerName: "답변여부", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: replyFormatter }
     ]);
 
+    const [myQnaRequestColumnDefs] = useState([
+        { field: "qrCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: categoryFormatter },
+        { field: "qrTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+        { field: "qrContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "left" }, cellRenderer: customContentRenderer },
+        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "reply", headerName: "답변여부", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: replyFormatter }
+    ]);
+
     const handleWriting = () => {
         toggleWritingModal();
+        refreshWritingForm();
     };
 
     const saveQnaRequest = async () => {
@@ -105,7 +118,7 @@ function QnaRequest() {
                 const infoMessage = "문의 및 요청사항이 정상적으로 등록되었습니다";
                 NotiflixInfo(infoMessage);
                 fetchQnaRequestData();
-                toggleDetailModal();
+                toggleWritingModal();
             }
         }
     };
@@ -150,6 +163,17 @@ function QnaRequest() {
     useEffect(() => {
         fetchQnaRequestData();
     }, [fetchQnaRequestData]);
+
+    const [filteredMyQnaRequestData, setFilteredQnaRequestData] = useState([]);
+
+    useEffect(() => {
+        if(qnaRequestData && user) {
+            const filteredData = qnaRequestData.filter(item => (
+                item.userId === user.userId
+            ));
+            setFilteredQnaRequestData(filteredData);
+        }
+    }, [qnaRequestData]);
 
     const handleChangeWritingCategory = (e) => {
         const targetValue = e.target.value;
@@ -197,6 +221,17 @@ function QnaRequest() {
         }
     };
 
+    const refreshWritingForm = () => {
+        setWritingCategory("qna");
+        setQnaRequestTitleValue("");
+        setQnaRequestContentValue("");
+        setIsSecretChecked(false);
+    };
+
+    const handleMyQnaRequest = () => {
+        toggleMyQnaRequestModal();
+    };
+
     return (
         <>
             <div className="content" style={{ height: '84.8vh' }}>
@@ -229,7 +264,7 @@ function QnaRequest() {
                                 type="search"
                                 value={searchText}
                                 onChange={handleSearchText}
-                                placeholder="검색 키워들르 입력하세요"
+                                placeholder="검색 키워드를 입력하세요"
                                 autoFocus={true}
                                 style={{ width: '300px', height: '40px' }}
                             />
@@ -246,13 +281,14 @@ function QnaRequest() {
                                 columnDefs={columnDefs}
                                 defaultColDef={defaultColDef}
                                 onRowDoubleClicked={handleRowDoubleClick}
+                                overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 문의 및 요청 내역이 없습니다</span>' } 
                             />
                         </div>
                     </Col>
                 </Row>
                 <Row className="justify-content-end no-gutters">
                     <Button className="mr-1" onClick={handleWriting}>글쓰기</Button>
-                    <Button>내 문의 및 요청 내역</Button>
+                    <Button onClick={handleMyQnaRequest}>내 문의 및 요청 내역</Button>
                 </Row>
             </div>
 
@@ -312,8 +348,11 @@ function QnaRequest() {
                     </Row>
                 </ModalBody>
                 <ModalFooter>
-                    <Button className="mr-1" color="secondary" onClick={saveQnaRequest}>등록</Button>
-                    <Button color="secondary" onClick={toggleWritingModal}>취소</Button>
+                    <Col className="p-0 m-0">
+                        <Button onClick={refreshWritingForm}>초기화</Button>
+                    </Col>
+                    <Button className="mr-1" onClick={saveQnaRequest}>등록</Button>
+                    <Button onClick={toggleWritingModal}>취소</Button>
                 </ModalFooter>
             </Modal>
 
@@ -399,12 +438,31 @@ function QnaRequest() {
                     )}
                     {isEditMode ? (
                         <Row>
-                            <Button color="secondary" onClick={updateQnaRequest}>수정</Button>
-                            <Button className="ml-1" color="secondary" onClick={toggleDetailModal}>취소</Button>
+                            <Button onClick={updateQnaRequest}>수정</Button>
+                            <Button className="ml-1" onClick={toggleDetailModal}>취소</Button>
                         </Row>
                     ) : (
-                        <Button color="secondary" onClick={toggleDetailModal}>닫기</Button>
+                        <Button onClick={toggleDetailModal}>닫기</Button>
                     )}
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={myQnaRequestModal} toggle={toggleMyQnaRequestModal} centered style={{ minWidth: '58%' }}>
+                <ModalHeader toggle={toggleMyQnaRequestModal}><b className="text-muted">내 문의 및 요청 내역</b></ModalHeader>
+                <ModalBody>
+                    <div className="ag-theme-alpine" style={{ height: '30vh'}}>
+                        <AgGridReact 
+                            ref={myQnaRequestGridRef}
+                            rowData={filteredMyQnaRequestData}
+                            columnDefs={myQnaRequestColumnDefs}
+                            defaultColDef={defaultColDef}
+                            onRowDoubleClicked={handleRowDoubleClick}
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 문의 및 요청 내역이 없습니다</span>' } 
+                        />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={toggleMyQnaRequestModal}>닫기</Button>
                 </ModalFooter>
             </Modal>
         </>

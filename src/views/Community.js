@@ -140,7 +140,7 @@ function Community() {
                                 type="search"
                                 value={searchText}
                                 onChange={handleSearchText}
-                                placeholder="검색 키워들르 입력하세요"
+                                placeholder="검색 키워드를 입력하세요"
                                 autoFocus={true}
                                 style={{ width: '300px', height: '40px' }}
                             />

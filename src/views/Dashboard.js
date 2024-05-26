@@ -15,6 +15,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Dashboard() {
   const { user } = useUser();
+  const isAdmin = user?.userId === "admin";
   const [visitRequestList, setVisitRequestList] = useState([]);
   const [qnaRequestData, setQnaRequestData] = useState([]);
   const [todayScheduleRowData, setTodayScheduleRowData] = useState([]);
@@ -250,7 +251,18 @@ function Dashboard() {
         </UncontrolledAlert>
         <Row>
           <Col md="7">
-            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>공지사항</b></CardTitle>
+            <CardTitle>
+              <Row className="no-gutters pl-1 pr-1">
+                <Col md="6">
+                  <b className="text-muted" style={{ fontSize: '17px' }}>공지사항</b>
+                </Col>
+                {isAdmin && (
+                  <Col className="d-flex justify-content-end">
+                    <Button className="m-0 pb-0 pt-0" size="sm">공지사항 작성</Button>
+                  </Col>
+                )}
+              </Row>
+            </CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
@@ -263,7 +275,16 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md="5">
-            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>문의 및 요청</b></CardTitle>
+            <CardTitle>
+              <Row className="no-gutters pl-1 pr-1">
+                <Col md="6">
+                  <b className="text-muted" style={{ fontSize: '17px' }}>문의 및 요청</b>
+                </Col>
+                <Col className="d-flex align-items-center justify-content-end text-muted">
+                  <b>MORE</b>
+                </Col>
+              </Row>
+            </CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
@@ -278,7 +299,16 @@ function Dashboard() {
         </Row>
         <Row>
           <Col md="6">
-          <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>침상안정 신청내역</b></CardTitle>
+            <CardTitle>
+              <Row className="no-gutters pl-1 pr-1">
+                <Col md="6">
+                  <b className="text-muted" style={{ fontSize: '17px' }}>침상안정 신청내역</b>
+                </Col>
+                <Col className="d-flex align-items-center justify-content-end text-muted">
+                  <b>MORE</b>
+                </Col>
+              </Row>
+            </CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
@@ -292,7 +322,16 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md="6">
-            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>커뮤니티 알림</b></CardTitle>
+            <CardTitle>
+              <Row className="no-gutters pl-1 pr-1">
+                <Col md="6">
+                  <b className="text-muted" style={{ fontSize: '17px' }}>커뮤니티 알림</b>
+                </Col>
+                <Col className="d-flex align-items-center justify-content-end text-muted">
+                  <b>MORE</b>
+                </Col>
+              </Row>
+            </CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
@@ -307,7 +346,16 @@ function Dashboard() {
         </Row>
         <Row>
           <Col md="4">
-            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>오늘의 보건일정</b></CardTitle>
+            <CardTitle>
+              <Row className="no-gutters pl-1 pr-1">
+                <Col md="6">
+                  <b className="text-muted" style={{ fontSize: '17px' }}>오늘의 보건일정</b>
+                </Col>
+                <Col className="d-flex align-items-center justify-content-end text-muted">
+                  <b>MORE</b>
+                </Col>
+              </Row>
+            </CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
@@ -321,7 +369,16 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md="4">
-            <CardTitle><b className="text-muted" style={{ fontSize: '17px' }}>전체 보건일정</b></CardTitle>
+            <CardTitle>
+              <Row className="no-gutters pl-1 pr-1">
+                <Col md="6">
+                  <b className="text-muted" style={{ fontSize: '17px' }}>전체 보건일정</b>
+                </Col>
+                <Col className="d-flex align-items-center justify-content-end text-muted">
+                  <b>MORE</b>
+                </Col>
+              </Row>
+            </CardTitle>
             <Card>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
@@ -341,8 +398,8 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>메모</b>
                 </Col>
                 <Col className="d-flex justify-content-end" md="6">
-                  <Button className="m-0" size="sm" onClick={resetMemo}>초기화</Button>
-                  <Button className="m-0 ml-1" size="sm" onClick={saveMemo}>저장</Button>
+                  <Button className="m-0 pb-0 pt-0" size="sm" onClick={resetMemo}>초기화</Button>
+                  <Button className="m-0 ml-1 pb-0 pt-0" size="sm" onClick={saveMemo}>저장</Button>
                 </Col>
               </Row>
             </CardTitle>
@@ -357,10 +414,6 @@ function Dashboard() {
                   value={memoData || ""}
                   onChange={handleQuillChange}
                 />
-                {/* <Input 
-                  type="textarea"
-                  style={{ minHeight: '100%' }}
-                /> */}
               </div>
             </Card>
           </Col>

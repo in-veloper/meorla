@@ -36,8 +36,10 @@ function Notifications() {
         break;
       case "cut":
         break;
+      default:
+        break;
     }
-  }
+  };
 
   const notificationAlert = React.useRef();
   const notify = (place) => {
