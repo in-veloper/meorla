@@ -660,18 +660,44 @@ app.post("/stockMedicine/insert", async (req, res) => {
     });
 });
 
-app.post("/stockMedicine/getStockMedicine", async (req, res) => {
-    const { userId, schoolCode } = req.body;
+app.get("/stockMedicine/getStockMedicine", async (req, res) => {
+    const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("약품 재고 조회 중 ERROR", err);
         }else{
-            res.json({ stockMedicineData: result });
+            res.json(result);
+        }
+    });
+});
+
+app.post("/stockFixt/saveStockFixt", async (req, res) => {
+    const { userId, schoolCode, fixtName, fixtCoporate, fixtLastestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.stockFixt (userId, schoolCode, fixtName, fixtCoporate, fixtLastestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount) VALUES (?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, fixtName, fixtCoporate, fixtLastestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount], (err, result) => {
+        if(err) { 
+            console.log("비품 재고 INSERT 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get('/stockFixt/getStockFixt', async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.stockFixt WHERE userID = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("비품 재고 조회 중 ERROR", err);
+        }else{
+            res.json(result);
         }
     })
-});
+})
 
 const storage = multer.diskStorage({
     destination: function(req, file, callback) {

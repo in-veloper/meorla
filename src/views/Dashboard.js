@@ -6,6 +6,7 @@ import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import axios from "axios";
 import moment from 'moment';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
+import { useNavigate } from 'react-router-dom';
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import ReactQuill from "react-quill";
@@ -15,6 +16,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Dashboard() {
   const { user } = useUser();
+  const navigate = useNavigate();
   const isAdmin = user?.userId === "admin";
   const [visitRequestList, setVisitRequestList] = useState([]);
   const [qnaRequestData, setQnaRequestData] = useState([]);
@@ -281,7 +283,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>문의 및 요청</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b>MORE</b>
+                  <b onClick={() => navigate('/meorla/qnaRequest')}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -305,7 +307,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>침상안정 신청내역</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b>MORE</b>
+                  <b onClick={() => navigate('/meorla/workNote')}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -328,7 +330,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>커뮤니티 알림</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b>MORE</b>
+                  <b onClick={() => navigate('/meorla/community')}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -352,7 +354,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>오늘의 보건일정</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b>MORE</b>
+                  <b onClick={() => navigate('/meorla/workSchedule')}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -375,7 +377,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>전체 보건일정</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b>MORE</b>
+                  <b onClick={() => navigate('/meorla/workSchedule')}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>

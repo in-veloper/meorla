@@ -10,6 +10,7 @@ import { useUser } from "../contexts/UserContext.js";
 import axios from "axios";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import '../assets/css/managemedifixt.css';
+import NotiflixInfo from "components/Notiflix/NotiflixInfo.js";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
@@ -18,6 +19,7 @@ function ManageMediFixt() {
     const {user} = useUser();
     const [selectedMenu, setSelectedMenu] = useState("medicine");
     const [registMedicineModal, setRegistMedicineModal] = useState(false);
+    const [registFixtModal, setRegistFixtModal] = useState(false);
     const [searchCategory, setSearchCategory] = useState("");         // 약품 정보 검색 시 선택 분류
     const [searchText, setSearchText] = useState("");                 // 검색어 입력 값 할당 변수
     const [searchResult, setSearchResult] = useState([]);             // 검색 결과 할당 변수
@@ -25,13 +27,21 @@ function ManageMediFixt() {
     const [medicineFormData, setMedicineFormData] = useState({ unit: "", stockAmount: 0, extinctAmount: 0, registrationUnitAmount: 0, lastestPurchaseDate: "" });
     const [medicineData, setMedicineData] = useState([]);
     const [medicineRowData, setMedicineRowData] = useState([]);
-    const [fixtureRowData] = useState([]);
+    const [fixtureRowData, setFixtureRowData] = useState([]);
+    const [fixtNameValue, setFixtNameValue] = useState("");
+    const [fixtCoporateValue, setFixtCoporateValue] = useState("");
+    const [fixtLastestPurchaseDate, setFixtLastestPurchaseDate] = useState("");
+    const [fixtUnit, setFixtUnit] = useState("");
+    const [fixtStockAmount, setFixtStockAmount] = useState("");
+    const [fixtExtinctAmount, setFixtExtinctAmount] = useState("");
+    const [fixtRegistrationUnitAmount, setFixtRgistrationUnitAmount] = useState("");
 
     const medicineGridRef = useRef();
     const fixtureGridRef = useRef();
     const registMedicineGridRef = useRef();
 
     const toggleRegistMedicineModal = () => setRegistMedicineModal(!registMedicineModal);
+    const toggleRegistFixtModal = () => setRegistFixtModal(!registFixtModal);
 
     const purchaseDateFormatter = (params) => {
         if (!params.value) return '';
@@ -41,7 +51,7 @@ function ManageMediFixt() {
         const day = purchaseDate.getDate();
 
         return `${purchaseDate.getFullYear()}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
-    }
+    };
 
     // 최근구매일, 최근수정일 Column Fomatter Function
     const updateAtFormatter = (params) => {
@@ -52,7 +62,7 @@ function ManageMediFixt() {
         const day = updateDate.getDate();
 
         return `${updateDate.getFullYear()}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
-    }
+    };
 
     // 기본 컬럼 속성 정의 (공통 부분)
     const defaultColDef = useMemo(() => {
@@ -93,7 +103,7 @@ function ManageMediFixt() {
     const moveManageMenu = (e) => {
         const targetMenuId = e.target.id;
         setSelectedMenu(targetMenuId);
-    }
+    };
 
     const onCellContextMenu = (params) => {
         const addItems = [
@@ -127,82 +137,61 @@ function ManageMediFixt() {
     }, [fetchMedicineData]);
 
     const addMedicine = () => {
-        toggleRegistMedicineModal();
-        setSearchCategory('mName');
-    }
+        if(selectedMenu === "medicine") {
+            toggleRegistMedicineModal();
+            setSearchCategory('mName');
+        }else if(selectedMenu === "fixture") {
+            toggleRegistFixtModal();
+        }
+    };
 
     const onRowClicked = (params) => {
         const selectedMedicineData = params.data;
         setSelectedMedicine(selectedMedicineData);
-    }
+    };
 
-    const saveMedicine = async (event) => {
-        event.preventDefault();
-        
-        try {
-            const medicineName = document.getElementById('selectedMedicineInput').value;
-            const coporateName = document.getElementById('selectedCoporateInput').value;
-            const unit = document.getElementById('unit').value;
-            const stockAmount = document.getElementById('stockAmount').value;
-            const extinctAmount = document.getElementById('extinctAmount').value;
-            const registrationUnitAmount = document.getElementById('registrationUnitAmount').value;
-            const latestPurchaseDate = document.getElementById('latestPurchaseDate').value;
+    const saveMedicine = async () => {
+        const medicineName = document.getElementById('selectedMedicineInput').value;
+        const coporateName = document.getElementById('selectedCoporateInput').value;
+        const unit = document.getElementById('unit').value;
+        const stockAmount = document.getElementById('stockAmount').value;
+        const extinctAmount = document.getElementById('extinctAmount').value;
+        const registrationUnitAmount = document.getElementById('registrationUnitAmount').value;
+        const latestPurchaseDate = document.getElementById('latestPurchaseDate').value;
 
-            Notiflix.Confirm.show(
-                '약품 등록',
-                '작성하신 약품 정보를 등록하시겠습니까?',
-                '예',
-                '아니요',
-                async () => {
-                    const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/insert`, {
-                        userId: user.userId,
-                        schoolCode: user.schoolCode,
-                        medicineName: medicineName,
-                        coporateName: coporateName,
-                        unit: unit,
-                        stockAmount: stockAmount,
-                        extinctAmount: extinctAmount,
-                        registrationUnitAmount: registrationUnitAmount,
-                        latestPurchaseDate: latestPurchaseDate
-                    });
+        const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/insert`, {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            medicineName: medicineName,
+            coporateName: coporateName,
+            unit: unit,
+            stockAmount: stockAmount,
+            extinctAmount: extinctAmount,
+            registrationUnitAmount: registrationUnitAmount,
+            latestPurchaseDate: latestPurchaseDate
+        });
 
-                    if(response.data === "success") {
-                        fetchStockMedicineData();
+        if(response.data === "success") {
+            const infoMessage = "약품 재고가 정상적으로 등록되었습니다";
+            NotiflixInfo(infoMessage);
 
-                        Notiflix.Notify.info('약품 등록이 정상적으로 처리되었습니다.', {
-                            position: 'center-center', showOnlyTheLastOne: true, plainText: false
-                        });
-
-                        resetMedicineForm();
-                    }
-                },() => {
-                    return;
-                },{
-                    position: 'center-center', showOnlyTheLastOne: true, plainText: false
-                }
-            )
-        } catch (error) {
-            console.error('약품 관리 등록 중 ERROR', error);
+            fetchStockMedicineData();
+            resetMedicineForm();
         }
-    }
+    };
 
     const fetchStockMedicineData = useCallback(async () => {
-        try {
-            if(user?.userId && user?.schoolCode) {
-                const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/getStockMedicine`, {
+        if(user) {
+            const response = await axios.get(`http://${BASE_URL}:8000/stockMedicine/getStockMedicine`, {
+                params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode
-                });
-
-                if(response.data) {
-                    const stockMedicineData = response.data.stockMedicineData;
-                    setMedicineRowData(stockMedicineData);
                 }
-            }
-        } catch (error) {
-            console.log("약품 재고 조회 중 ERROR", error);
+            });
+
+            if(response.data)  setMedicineRowData(response.data);
         }
-    }, [user?.userId, user?.schoolCode]);
+    }, [user]);
     
     useEffect(() => {
         fetchStockMedicineData();
@@ -226,13 +215,13 @@ function ManageMediFixt() {
             registrationUnitAmount: 0,
             lastestPurchaseDate: ""
         });
-    }
+    };
 
     // 검색 분류 선택 Event
     const handleSearchCategory = (e) => {
         const selectedCategory = e.target.value;  // 선택한 분류 값
         setSearchCategory(selectedCategory);      // 전역 변수에 할당
-    }
+    };
 
     // 검색 Event
     const handleSearch = async (e) => {
@@ -256,18 +245,69 @@ function ManageMediFixt() {
         }
 
         if(document.querySelector('.notiflix-block')) Block.remove('.search-medicine');
-    }
+    };
 
     // 검색어 입력 후 Enter 입력 시 검색 Event
     const handleKeyDown = (e) => {
         if(e.key === 'Enter') handleSearch(); // Key 입력이 Enter인 경우 검색 Event 호출
-    }
+    };
 
     // 검색어 입력 시 입력 값 전역 변수에 할당 
     const handleSearchText = (e) => {   
         e.preventDefault();             // 기본 Event 방지
         setSearchText(e.target.value);  // 전역 변수에 검색어 입력 값 할당
-    }
+    };
+
+    const saveFixt = async () => {
+        if(user) {
+            const response = await axios.post(`http://${BASE_URL}:8000/stockFixt/saveStockFixt`, {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                fixtName: fixtNameValue,
+                fixtCoporate: fixtCoporateValue,
+                fixtLastestPurchaseDate: fixtLastestPurchaseDate,
+                fixtUnit: fixtUnit,
+                fixtStockAmount: fixtStockAmount,
+                fixtExtinctAmount: fixtExtinctAmount,
+                fixtRegistrationUnitAmount: fixtRegistrationUnitAmount
+            });
+
+            if(response.data === "success") {
+                const infoMessage = "비품이 정상적으로 등록되었습니다";
+                NotiflixInfo(infoMessage);
+
+                fetchStockFixtData();
+                resetFixtForm();
+            }
+        }
+    };
+
+    const fetchStockFixtData = useCallback(async () => {
+        if(user) {
+            const response = await axios.get(`http://${BASE_URL}:8000/stockFixt/getStockFixt`, {
+                params: {
+                    userId: user.userId,
+                    schoolCode: user.schoolCode
+                }
+            });
+
+            if(response.data) setFixtureRowData(response.data);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchStockFixtData();
+    }, [fetchStockFixtData]);
+
+    const resetFixtForm = () => {
+        setFixtNameValue("");
+        setFixtCoporateValue("");
+        setFixtLastestPurchaseDate("");
+        setFixtUnit("");
+        setFixtStockAmount("");
+        setFixtExtinctAmount("");
+        setFixtRgistrationUnitAmount("");
+    };
 
     return (
         <>
@@ -304,7 +344,7 @@ function ManageMediFixt() {
                                 type="search"
                                 // value={searchText}
                                 // onChange={handleSearchText}
-                                placeholder="검색 키워들르 입력하세요"
+                                placeholder="검색 키워드를 입력하세요"
                                 autoFocus={true}
                                 style={{ width: '300px', height: '40px' }}
                             />
@@ -493,6 +533,112 @@ function ManageMediFixt() {
                         <Col className="d-flex justify-content-end">
                             <Button className="mr-1" color="secondary" onClick={saveMedicine}>저장</Button>
                             <Button color="secondary" onClick={toggleRegistMedicineModal}>취소</Button>
+                        </Col>
+                    </Row>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={registFixtModal} toggle={toggleRegistFixtModal} centered style={{ minWidth: '30%' }}>
+                <ModalHeader toggle={toggleRegistFixtModal}><b className="text-muted">비품 등록</b></ModalHeader>
+                <ModalBody className="pb-0">
+                    <Form onSubmit={saveFixt} className="mb-3" style={{ border: '1px dotted #babfc7', borderRadius: 4 }}>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">비품명</Label>
+                            </Col>
+                            <Col md="10" className="no-gutters">
+                                <Input
+                                    id="fixtName" 
+                                    type="text" 
+                                    value={fixtNameValue}
+                                    onChange={(e) => setFixtNameValue(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">업체명</Label>
+                            </Col>
+                            <Col md="4" className="no-gutters">
+                                <Input
+                                    id="fixtCoporate"
+                                    type="text" 
+                                    value={fixtCoporateValue}
+                                    onChange={(e) => setFixtCoporateValue(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="3" className="text-center align-items-center">
+                                <Label className="text-muted">최근 구매일</Label>
+                            </Col>
+                            <Col md="3" className="no-gutters">
+                                <Input
+                                    id="fixtLatestPurchaseDate"
+                                    type="date" 
+                                    value={fixtLastestPurchaseDate}
+                                    onChange={(e) => setFixtLastestPurchaseDate(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mb-3 mr-3 d-flex align-items-center no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">단위</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtUnit" 
+                                    className="text-right" 
+                                    type="text"
+                                    value={fixtUnit}
+                                    onChange={(e) => setFixtUnit(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">재고량</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtStockAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    value={fixtStockAmount}
+                                    onChange={(e) => setFixtStockAmount(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">소실량</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtExtinctAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    value={fixtExtinctAmount}
+                                    onChange={(e) => setFixtExtinctAmount(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">등록단위</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtRegistrationUnitAmount"
+                                    className="text-right"
+                                    type="number"
+                                    value={fixtRegistrationUnitAmount}
+                                    onChange={(e) => setFixtRgistrationUnitAmount(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                    </Form>
+                </ModalBody>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        <Col className="d-flex justify-content-start">
+                            <Button onClick={resetFixtForm}>초기화</Button>
+                        </Col>
+                        <Col className="d-flex justify-content-end">
+                            <Button className="mr-1" color="secondary" onClick={saveFixt}>저장</Button>
+                            <Button color="secondary" onClick={toggleRegistFixtModal}>취소</Button>
                         </Col>
                     </Row>
                 </ModalFooter>
