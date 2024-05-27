@@ -735,12 +735,11 @@ function Request({onLogOut}) {
                                     value={searchCriteria.iName}
                                     onKeyDown={(e) => handleKeyDown(e, "iName")}
                                 />
-                                {/* <Button size="sm" style={{ height: '30px', paddingLeft: '10px', paddingRight: '10px' }} onClick={onResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button> */}
-                                <Button size="sm" style={{ height: '27px', paddingLeft: '10px', paddingRight: '10px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
+                                <Button size="sm" style={{ height: '27px', paddingLeft: '8px', paddingRight: '10px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
                             </Row>
                             <Row className="pt-1">
                                 <Col md="12">
-                                    <div className="ag-theme-alpine" style={{ height: '19.7vh' }}>
+                                    <div className="ag-theme-alpine" style={{ height: '18.7vh' }}>
                                     <AgGridReact
                                         rowHeight={27}
                                         headerHeight={32}
@@ -760,7 +759,7 @@ function Request({onLogOut}) {
                                     </div>
                                 </Col>
                             </Row>
-                            <Form onSubmit={sendVisitRequest} className="mt-3" style={{ border: '1px dotted #babfc7', backgroundColor: '#fcfcfc', borderRadius: 4, height: '19vh' }}>
+                            <Form onSubmit={sendVisitRequest} className="mt-3" style={{ border: '1px dotted #babfc7', backgroundColor: '#fcfcfc', borderRadius: 4, height: '20vh' }}>
                                 <Row className="d-flex align-items-center justify-content-center no-gutters mt-2">
                                     <b className="p-1 pl-2 pr-2 text-muted" style={{ float: 'right', fontSize: '12px', backgroundColor: '#F5F1E7', borderRadius: '7px'}}>
                                         {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
@@ -772,7 +771,7 @@ function Request({onLogOut}) {
                                         className="p-1"
                                         type="textarea"
                                         placeholder="특이사항을 입력해주세요"
-                                        style={{ height: 66 }}
+                                        style={{ height: 68 }}
                                     />
                                 </Row>
                                 <Row className="d-flex align-items-center justify-content-center no-gutters">

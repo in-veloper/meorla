@@ -92,9 +92,9 @@ function QnaRequest() {
         { field: "qrCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: categoryFormatter },
         { field: "qrTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
         { field: "qrContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "left" }, cellRenderer: customContentRenderer },
-        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+        { field: "createdAt", headerName: "작성일", flex: 3, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
         { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
-        { field: "reply", headerName: "답변여부", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: replyFormatter }
+        { field: "reply", headerName: "답변여부", flex: 1.2, cellStyle: { textAlign: "center" }, valueFormatter: replyFormatter }
     ]);
 
     const handleWriting = () => {

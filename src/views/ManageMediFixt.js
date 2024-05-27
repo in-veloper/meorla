@@ -5,22 +5,22 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
-import Notiflix from "notiflix";
 import { useUser } from "../contexts/UserContext.js";
 import axios from "axios";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import '../assets/css/managemedifixt.css';
 import NotiflixInfo from "components/Notiflix/NotiflixInfo.js";
+import NotiflixWarn from "components/Notiflix/NotiflixWarn.js";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 function ManageMediFixt() {
     const {user} = useUser();
     const [selectedMenu, setSelectedMenu] = useState("medicine");
     const [registMedicineModal, setRegistMedicineModal] = useState(false);
+    const [updateMedicineModal, setUpdateMedicineModal] = useState(false);
     const [registFixtModal, setRegistFixtModal] = useState(false);
-    const [searchCategory, setSearchCategory] = useState("");         // 약품 정보 검색 시 선택 분류
+    const [searchCategory, setSearchCategory] = useState("mName");         // 약품 정보 검색 시 선택 분류
     const [searchText, setSearchText] = useState("");                 // 검색어 입력 값 할당 변수
     const [searchResult, setSearchResult] = useState([]);             // 검색 결과 할당 변수
     const [selectedMedicine, setSelectedMedicine] = useState({ medicineName: "", coporateName: "" });
@@ -30,11 +30,29 @@ function ManageMediFixt() {
     const [fixtureRowData, setFixtureRowData] = useState([]);
     const [fixtNameValue, setFixtNameValue] = useState("");
     const [fixtCoporateValue, setFixtCoporateValue] = useState("");
-    const [fixtLastestPurchaseDate, setFixtLastestPurchaseDate] = useState("");
+    const [fixtLatestPurchaseDate, setFixtLatestPurchaseDate] = useState("");
     const [fixtUnit, setFixtUnit] = useState("");
     const [fixtStockAmount, setFixtStockAmount] = useState("");
     const [fixtExtinctAmount, setFixtExtinctAmount] = useState("");
     const [fixtRegistrationUnitAmount, setFixtRgistrationUnitAmount] = useState("");
+    const [selectedMedicineRowData, setSelectedMedicineRowData] = useState(null);
+    const [selectedFixtRowData, setSelectedFixtRowData] = useState(null);
+    const [updatedMedicineName, setUpdatedMedicineName] = useState("");
+    const [updatedMedicineCoporateName, setUpdateeMedicineCoporateName] = useState("");
+    const [updatedMedicineLatestPurchaseDate, setUpdatedMedicineLatestPurchaseDate] = useState("");
+    const [updatedMedicineUnit, setUpdatedMedicineUnit] = useState("");
+    const [updatedMedicineStockAmount, setUpdatedMedicineStockAmount] = useState("");
+    const [updatedMedicineExtinctAmount, setUpdatedMedicineExtinctAmount] = useState("");
+    const [updatedMedicineRegistrationUnit, setUpdatedMedicineRegistrationUnit] = useState("");
+    const [selectedMedicineInUpdate, setSelectedMedicineInUpdate] = useState("");
+    const [updateFixtModal, setUpdateFixtModal] = useState(false);
+    const [updatedFixtName, setUpdatedFixtName] = useState("");
+    const [updatedFixtCoporate, setUpdatedCoporate] = useState("");
+    const [updatedFixtLatestPurchaseDate, setUpdatedFixtLatestPurchaseDate] = useState("");
+    const [updatedFixtUnit, setUpdatedFixtUnit] = useState("");
+    const [updatedFixtStockAmount, setUpdatedFixtStockAmount] = useState("");
+    const [updatedFixtExtinctAmount, setUpdatedFixtExtinctAmount] = useState("");
+    const [updatedFixtRegistrationUnitAmount, setUpdatedFixtRgistrationUnitAmount] = useState("");
 
     const medicineGridRef = useRef();
     const fixtureGridRef = useRef();
@@ -42,6 +60,8 @@ function ManageMediFixt() {
 
     const toggleRegistMedicineModal = () => setRegistMedicineModal(!registMedicineModal);
     const toggleRegistFixtModal = () => setRegistFixtModal(!registFixtModal);
+    const toggleUpdateMedicineModal = () => setUpdateMedicineModal(!updateMedicineModal);
+    const toggleUpdateFixtModal = () => setUpdateFixtModal(!updateFixtModal);
 
     const purchaseDateFormatter = (params) => {
         if (!params.value) return '';
@@ -70,7 +90,7 @@ function ManageMediFixt() {
             sortable: true,
             resizable: true,
             filter: true,
-            editable: true
+            editable: false
         };
     }, []) ;
 
@@ -82,17 +102,17 @@ function ManageMediFixt() {
         {field: "extinctAmount", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
         {field: "registrationUnitAmount", headerName: "등록단위", flex: 1, cellStyle: { textAlign: "center"}},
         {field: "latestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: purchaseDateFormatter},
-        {field: "updatedAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" },  valueFormatter: updateAtFormatter}
+        {field: "updatedAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: updateAtFormatter}
     ]);
 
     const [fixtureColDef] = useState([
-        {field: "fixtureName", headerName: "비품명", flex: 2, cellStyle: { textAlign: "center" }},
-        {field: "coporateName", headerName: "업체명", flex: 2, cellStyle: { textAlign: "center" }},
-        {field: "unit", headerName: "단위", flex: 1, cellStyle: { textAlign: "center" }},
-        {field: "inventory", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
-        {field: "extinct", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
-        {field: "latestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }},
-        {field: "updateAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" }}
+        {field: "fixtName", headerName: "비품명", flex: 2, cellStyle: { textAlign: "center" }},
+        {field: "fixtCoporate", headerName: "업체명", flex: 2, cellStyle: { textAlign: "center" }},
+        {field: "fixtUnit", headerName: "단위", flex: 1, cellStyle: { textAlign: "center" }},
+        {field: "fixtStockAmount", headerName: "재고량", flex: 1, cellStyle: { textAlign: "center" }},
+        {field: "fixtExtinctAmount", headerName: "소실량", flex: 1, cellStyle: { textAlign: "center" }},
+        {field: "fixtLatestPurchaseDate", headerName: "최근 구매일", flex: 2, cellStyle: { textAlign: "center" }},
+        {field: "updatedAt", headerName: "최근 수정일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: updateAtFormatter}
     ]);
 
     const [registMedicineColDefs] = useState([
@@ -136,7 +156,7 @@ function ManageMediFixt() {
         fetchMedicineData();
     }, [fetchMedicineData]);
 
-    const addMedicine = () => {
+    const addMedicineFixt = () => {
         if(selectedMenu === "medicine") {
             toggleRegistMedicineModal();
             setSearchCategory('mName');
@@ -148,6 +168,16 @@ function ManageMediFixt() {
     const onRowClicked = (params) => {
         const selectedMedicineData = params.data;
         setSelectedMedicine(selectedMedicineData);
+    };
+
+    const onRowClickedInUpdate = (params) => {
+        const selectedMedicineData = params.data;
+        setSelectedMedicineInUpdate(selectedMedicineData);
+        
+        const updatedMedicineInput = document.getElementById("updatedMedicineInput");
+        const updatedCoporateInput = document.getElementById("updatedCoporateInput");
+        updatedMedicineInput.value = selectedMedicineData.itemName;
+        updatedCoporateInput.value = selectedMedicineData.entpName;
     };
 
     const saveMedicine = async () => {
@@ -265,7 +295,7 @@ function ManageMediFixt() {
                 schoolCode: user.schoolCode,
                 fixtName: fixtNameValue,
                 fixtCoporate: fixtCoporateValue,
-                fixtLastestPurchaseDate: fixtLastestPurchaseDate,
+                fixtLatestPurchaseDate: fixtLatestPurchaseDate,
                 fixtUnit: fixtUnit,
                 fixtStockAmount: fixtStockAmount,
                 fixtExtinctAmount: fixtExtinctAmount,
@@ -302,11 +332,162 @@ function ManageMediFixt() {
     const resetFixtForm = () => {
         setFixtNameValue("");
         setFixtCoporateValue("");
-        setFixtLastestPurchaseDate("");
+        setFixtLatestPurchaseDate("");
         setFixtUnit("");
         setFixtStockAmount("");
         setFixtExtinctAmount("");
         setFixtRgistrationUnitAmount("");
+    };
+
+    const updateMedicineFixt = () => {
+        if(selectedMenu === "medicine") {
+            if(selectedMedicineRowData) {
+                toggleUpdateMedicineModal();
+            }else{
+                const warnMessage = "수정할 행을 선택해 주세요";
+                NotiflixWarn(warnMessage);
+            }
+        }else if(selectedMenu === "fixture") {
+            if(selectedFixtRowData) {
+                toggleUpdateFixtModal();
+            }else{
+                const warnMessage = "수정할 행을 선택해 주세요";
+                NotiflixWarn(warnMessage);
+            }
+        }
+    };
+
+    const deleteMedicineFixt = async () => {
+        if(selectedMenu === "medicine") {
+            if(selectedMedicineRowData && user) { 
+                const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/deleteStockMedicine`, {
+                    userId: user.userId,
+                    schoolCode: user.schoolCode,
+                    rowId: selectedMedicineRowData.id
+                });
+
+                if(response.data === 'success') {
+                    const infoMessage = "약품 재고가 정상적으로 삭제되었습니다";
+                    NotiflixInfo(infoMessage);
+                    fetchStockMedicineData();
+                }
+            }else{
+                const warnMessage = "삭제할 행을 선택해 주세요";
+                NotiflixWarn(warnMessage);
+            }
+        }else if(selectedMenu === "fixture") {
+            if(selectedFixtRowData && user) {
+
+            }else{
+                const warnMessage = "삭제할 행을 선택해 주세요";
+                NotiflixWarn(warnMessage);
+            }
+        }
+    };
+
+    const handleMedicineRowClick = (params) => {
+        setSelectedMedicineRowData(params.data);
+        setUpdatedMedicineName(params.data.medicineName);
+        setUpdateeMedicineCoporateName(params.data.coporateName);
+        setUpdatedMedicineLatestPurchaseDate(params.data.latestPurchaseDate);
+        setUpdatedMedicineUnit(params.data.unit);
+        setUpdatedMedicineStockAmount(params.data.stockAmount);
+        setUpdatedMedicineExtinctAmount(params.data.extinctAmount);
+        setUpdatedMedicineRegistrationUnit(params.data.registrationUnitAmount);
+    };
+
+    const handleMedicineRowDoubleClick = () => {
+        toggleUpdateMedicineModal();
+    };
+
+    const handleFixtRowClick = (params) => {
+        setSelectedFixtRowData(params.data);
+        setUpdatedFixtName(params.data.fixtName);
+        setUpdatedCoporate(params.data.fixtCoporate);
+        setUpdatedFixtLatestPurchaseDate(params.data.fixtLatestPurchaseDate);
+        setUpdatedFixtUnit(params.data.fixtUnit);
+        setUpdatedFixtStockAmount(params.data.fixtStockAmount);
+        setUpdatedFixtExtinctAmount(params.data.fixtExtinctAmount);
+        setUpdatedFixtRgistrationUnitAmount(params.data.fixtRegistrationUnitAmount);
+    };
+
+    const handleFixtRowDoubleClick = () => {
+        toggleUpdateFixtModal();
+    };
+
+    const updateMedicine = async () => {
+        const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/updateStockMedicine`,{
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            rowId: selectedMedicineRowData.id,
+            medicineName: updatedMedicineName,
+            coporateName: updatedMedicineCoporateName,
+            latestPurchaseDate: updatedMedicineLatestPurchaseDate,
+            unit: updatedMedicineUnit,
+            stockAmount: updatedMedicineStockAmount,
+            extinctAmount: updatedMedicineExtinctAmount,
+            registrationUnitAmount: updatedMedicineRegistrationUnit
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "약품 재고가 정상적으로 수정되었습니다";
+            NotiflixInfo(infoMessage);
+            fetchStockMedicineData();
+            toggleUpdateMedicineModal();
+        }
+    };
+
+    const resetUpdateMedicineForm = () => {
+        setSearchText("");
+        registMedicineGridRef.current.api.setRowData([]);
+
+        const updatedMedicineInput = document.getElementById("updatedMedicineInput");
+        const updatedCoporateInput = document.getElementById("updatedCoporateInput");
+        const updatedLatestPurchaseDate = document.getElementById("updatedLatestPurchaseDate");
+        const updatedMedicineUnit = document.getElementById("updatedMedicineUnit");
+        const updatedMedicineStockAmount = document.getElementById("updatedMedicineStockAmount");
+        const updatedMedicineExtinctAmount = document.getElementById("updatedMedicineExtinctAmount");
+        const updatedMedicineRegistrationUnitAmount = document.getElementById("updatedMedicineRegistrationUnitAmount");
+
+        updatedMedicineInput.value = "";
+        updatedCoporateInput.value = "";
+        updatedLatestPurchaseDate.value = "";
+        updatedMedicineUnit.value = "";
+        updatedMedicineStockAmount.value = "";
+        updatedMedicineExtinctAmount.value = "";
+        updatedMedicineRegistrationUnitAmount.value = "";
+    };
+
+    const updateFixt = async () => {
+        const response = await axios.post(`http://${BASE_URL}:8000/stockFixt/updateStockFixt`, {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            rowId: selectedFixtRowData.id,
+            fixtName: updatedFixtName,
+            fixtCoporate: updatedFixtCoporate,
+            fixtLatestPurchaseDate: updatedFixtLatestPurchaseDate,
+            fixtUnit: updatedFixtUnit,
+            fixtStockAmount: updatedFixtStockAmount,
+            fixtExtinctAmount: updatedFixtExtinctAmount,
+            fixtRegistrationUnitAmount: updatedFixtRegistrationUnitAmount
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "비품 재고가 정상적으로 수정되었습니다";
+            NotiflixInfo(infoMessage);
+            fetchStockFixtData();
+            toggleUpdateFixtModal();
+        }
+    };
+
+    const resetUpdateFixtForm = () => {
+        setUpdatedFixtName("");
+        setUpdatedCoporate("");
+        setUpdatedFixtLatestPurchaseDate("");
+        setUpdatedFixtUnit("");
+        setUpdatedFixtStockAmount("");
+        setUpdatedFixtExtinctAmount("");
+        setUpdatedFixtRgistrationUnitAmount("");
     };
 
     return (
@@ -361,14 +542,10 @@ function ManageMediFixt() {
                                     rowData={medicineRowData} 
                                     columnDefs={medicineColDef}
                                     defaultColDef={defaultColDef}
-                                    onCellContextMenu={onCellContextMenu}
-                                    preventDefaultOnContextMenu={true}
-                                    stopEditingWhenCellsLoseFocus={true}
-                                    // onRowDataUpdated={onRowDataUpdated}
-                                    overlayNoRowsTemplate={ '<span>등록된 약품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                                    rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
-                                    enterNavigatesVertically={true}
-                                    enterNavigatesVerticallyAfterEdit={true}
+                                    overlayNoRowsTemplate={ '<span>등록된 약품이 없습니다</span>' }
+                                    rowSelection={'single'} 
+                                    onRowClicked={handleMedicineRowClick}
+                                    onRowDoubleClicked={handleMedicineRowDoubleClick}
                                 />
                             )}
                             {selectedMenu === 'fixture' && (
@@ -376,20 +553,25 @@ function ManageMediFixt() {
                                     ref={fixtureGridRef}
                                     rowData={fixtureRowData} 
                                     columnDefs={fixtureColDef} 
-                                    overlayNoRowsTemplate={ '<span>등록된 비품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                    defaultColDef={defaultColDef}
+                                    rowSelection={'single'} 
+                                    overlayNoRowsTemplate={ '<span>등록된 비품이 없습니다</span>' }
+                                    onRowClicked={handleFixtRowClick}
+                                    onRowDoubleClicked={handleFixtRowDoubleClick}
                                 />
                             )}
                         </div>
                     </Col>
                 </Row>
                 <Row className="justify-content-end no-gutters">
-                    <Button id="addMedicineButton" className="" onClick={addMedicine}>추가</Button>
-                    <Button id="removeMedicineButton" className="ml-1">삭제</Button>
+                    <Button id="addMedicineButton" onClick={addMedicineFixt}>추가</Button>
+                    <Button id="updateMedicineButton" className="ml-1" onClick={updateMedicineFixt}>수정</Button>
+                    <Button id="removeMedicineButton" className="ml-1" onClick={deleteMedicineFixt}>삭제</Button>
                 </Row>
             </div>
 
             <Modal isOpen={registMedicineModal} toggle={toggleRegistMedicineModal} centered style={{ minWidth: '30%' }}>
-                <ModalHeader toggle={toggleRegistMedicineModal}><b className="text-muted">약품 등록</b></ModalHeader>
+                <ModalHeader toggle={toggleRegistMedicineModal}><b className="text-muted">약품 재고 등록</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Row>
                         <Input
@@ -538,8 +720,158 @@ function ManageMediFixt() {
                 </ModalFooter>
             </Modal>
 
+            <Modal isOpen={updateMedicineModal} toggle={toggleUpdateMedicineModal} centered style={{ minWidth: '30%' }}>
+                <ModalHeader toggle={toggleUpdateMedicineModal}><b className="text-muted">약품 재고 수정</b></ModalHeader>
+                <ModalBody className="pb-0">
+                    <Row>
+                        <Input
+                            className="ml-3 mr-2"
+                            id="searchCategory"
+                            name="select"
+                            type="select"
+                            style={{ width: '20%'}}
+                            onChange={handleSearchCategory}
+                            value={searchCategory}
+                        >
+                            <option value='mName'>제품명</option>
+                            <option value='mCompany'>업체명</option>
+                            <option value='mEffect'>효능</option>
+                            <option value='mCode'>품목기준코드</option>
+                        </Input>
+                        <Input
+                            type="search"
+                            value={searchText}
+                            placeholder="검색 키워드를 입력하세요"
+                            onKeyDown={handleKeyDown}
+                            autoFocus={true}
+                            style={{ width: '59.5%', height: '40px'}}
+                            onChange={handleSearchText}
+                        />
+                        <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
+                    </Row>
+                    <Row>
+                        <Col md="12">
+                            <div className="ag-theme-alpine search-medicine" style={{ height: '17.5vh' }}>
+                                <AgGridReact
+                                    ref={registMedicineGridRef}
+                                    rowData={searchResult}
+                                    columnDefs={registMedicineColDefs}
+                                    stopEditingWhenCellsLoseFocus={true}
+                                    onRowClicked={onRowClickedInUpdate}
+                                    paginationPageSize={4} // 페이지 크기를 원하는 값으로 설정
+                                    overlayNoRowsTemplate={ '<span style="color: #6c757d;">검색 결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                    rowSelection={'single'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
+                                    enterNavigatesVertically={true}
+                                    enterNavigatesVerticallyAfterEdit={true}
+                                />
+                            </div>
+                        </Col>
+                    </Row>
+                    <Form onSubmit={updateMedicine} className="mt-2 mb-3" style={{ border: '1px dotted #babfc7', borderRadius: 4 }}>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">약품명</Label>
+                            </Col>
+                            <Col md="10" className="no-gutters">
+                                <Input
+                                    id="updatedMedicineInput" 
+                                    type="text" 
+                                    defaultValue={selectedMedicineRowData ? selectedMedicineRowData.medicineName : ""}
+                                    onChange={(e) => setUpdatedMedicineName(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">업체명</Label>
+                            </Col>
+                            <Col md="4" className="no-gutters">
+                                <Input
+                                    id="updatedCoporateInput"
+                                    type="text" 
+                                    defaultValue={selectedMedicineRowData ? selectedMedicineRowData.coporateName : ""}
+                                    onChange={(e) => setUpdateeMedicineCoporateName(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="3" className="text-center align-items-center">
+                                <Label className="text-muted">최근 구매일</Label>
+                            </Col>
+                            <Col md="3" className="no-gutters">
+                                <Input
+                                    id="updatedLatestPurchaseDate"
+                                    type="date" 
+                                    value={selectedMedicineRowData ? selectedMedicineRowData.lastestPurchaseDate : ""}
+                                    onChange={(e) => setUpdatedMedicineLatestPurchaseDate(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mb-3 mr-3 d-flex align-items-center no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">단위</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="updatedMedicineUnit" 
+                                    className="text-right" 
+                                    type="text"
+                                    defaultValue={selectedMedicineRowData ? selectedMedicineRowData.unit : ""}
+                                    onChange={(e) => setUpdatedMedicineUnit(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">재고량</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="updatedMedicineStockAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    value={selectedMedicineRowData ? selectedMedicineRowData.stockAmount : ""}
+                                    onChange={(e) => setUpdatedMedicineStockAmount(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">소실량</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="updatedMedicineExtinctAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    defaultValue={selectedMedicineRowData ? selectedMedicineRowData.extinctAmount : ""}
+                                    onChange={(e) => setUpdatedMedicineExtinctAmount(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">등록단위</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="updatedMedicineRegistrationUnitAmount"
+                                    className="text-right"
+                                    type="number"
+                                    defaultValue={selectedMedicineRowData ? selectedMedicineRowData.registrationUnitAmount : ""}
+                                    onChange={(e) => setUpdatedMedicineRegistrationUnit(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                    </Form>
+                </ModalBody>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        <Col className="d-flex justify-content-start">
+                            <Button onClick={resetUpdateMedicineForm}>초기화</Button>
+                        </Col>
+                        <Col className="d-flex justify-content-end">
+                            <Button className="mr-1" color="secondary" onClick={updateMedicine}>저장</Button>
+                            <Button color="secondary" onClick={toggleUpdateMedicineModal}>취소</Button>
+                        </Col>
+                    </Row>
+                </ModalFooter>
+            </Modal>
+
             <Modal isOpen={registFixtModal} toggle={toggleRegistFixtModal} centered style={{ minWidth: '30%' }}>
-                <ModalHeader toggle={toggleRegistFixtModal}><b className="text-muted">비품 등록</b></ModalHeader>
+                <ModalHeader toggle={toggleRegistFixtModal}><b className="text-muted">비품 재고 등록</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Form onSubmit={saveFixt} className="mb-3" style={{ border: '1px dotted #babfc7', borderRadius: 4 }}>
                         <Row className="mt-3 mr-3 no-gutters">
@@ -574,8 +906,8 @@ function ManageMediFixt() {
                                 <Input
                                     id="fixtLatestPurchaseDate"
                                     type="date" 
-                                    value={fixtLastestPurchaseDate}
-                                    onChange={(e) => setFixtLastestPurchaseDate(e.target.value)}
+                                    value={fixtLatestPurchaseDate}
+                                    onChange={(e) => setFixtLatestPurchaseDate(e.target.value)}
                                 />
                             </Col>
                         </Row>
@@ -639,6 +971,112 @@ function ManageMediFixt() {
                         <Col className="d-flex justify-content-end">
                             <Button className="mr-1" color="secondary" onClick={saveFixt}>저장</Button>
                             <Button color="secondary" onClick={toggleRegistFixtModal}>취소</Button>
+                        </Col>
+                    </Row>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={updateFixtModal} toggle={toggleUpdateFixtModal} centered style={{ minWidth: '30%' }}>
+                <ModalHeader toggle={toggleUpdateFixtModal}><b className="text-muted">비품 재고 수정</b></ModalHeader>
+                <ModalBody className="pb-0">
+                    <Form onSubmit={saveFixt} className="mb-3" style={{ border: '1px dotted #babfc7', borderRadius: 4 }}>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">비품명</Label>
+                            </Col>
+                            <Col md="10" className="no-gutters">
+                                <Input
+                                    id="fixtName" 
+                                    type="text" 
+                                    value={updatedFixtName}
+                                    onChange={(e) => setUpdatedFixtName(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mr-3 no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">업체명</Label>
+                            </Col>
+                            <Col md="4" className="no-gutters">
+                                <Input
+                                    id="fixtCoporate"
+                                    type="text" 
+                                    value={updatedFixtCoporate}
+                                    onChange={(e) => setUpdatedCoporate(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="3" className="text-center align-items-center">
+                                <Label className="text-muted">최근 구매일</Label>
+                            </Col>
+                            <Col md="3" className="no-gutters">
+                                <Input
+                                    id="fixtLatestPurchaseDate"
+                                    type="date" 
+                                    value={updatedFixtLatestPurchaseDate}
+                                    onChange={(e) => setUpdatedFixtLatestPurchaseDate(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className="mt-3 mb-3 mr-3 d-flex align-items-center no-gutters">
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">단위</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtUnit" 
+                                    className="text-right" 
+                                    type="text"
+                                    value={updatedFixtUnit}
+                                    onChange={(e) => setUpdatedFixtUnit(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">재고량</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtStockAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    value={updatedFixtStockAmount}
+                                    onChange={(e) => setUpdatedFixtStockAmount(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">소실량</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtExtinctAmount" 
+                                    className="text-right" 
+                                    type="number" 
+                                    value={updatedFixtExtinctAmount}
+                                    onChange={(e) => setUpdatedFixtExtinctAmount(e.target.value)}
+                                />
+                            </Col>
+                            <Col md="2" className="text-center align-items-center">
+                                <Label className="text-muted">등록단위</Label>
+                            </Col>
+                            <Col md="1" className="no-gutters">
+                                <Input 
+                                    id="fixtRegistrationUnitAmount"
+                                    className="text-right"
+                                    type="number"
+                                    value={updatedFixtRegistrationUnitAmount}
+                                    onChange={(e) => setUpdatedFixtRgistrationUnitAmount(e.target.value)}
+                                />
+                            </Col>
+                        </Row>
+                    </Form>
+                </ModalBody>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        <Col className="d-flex justify-content-start">
+                            <Button onClick={resetUpdateFixtForm}>초기화</Button>
+                        </Col>
+                        <Col className="d-flex justify-content-end">
+                            <Button className="mr-1" color="secondary" onClick={updateFixt}>저장</Button>
+                            <Button color="secondary" onClick={toggleUpdateFixtModal}>취소</Button>
                         </Col>
                     </Row>
                 </ModalFooter>

@@ -673,11 +673,37 @@ app.get("/stockMedicine/getStockMedicine", async (req, res) => {
     });
 });
 
-app.post("/stockFixt/saveStockFixt", async (req, res) => {
-    const { userId, schoolCode, fixtName, fixtCoporate, fixtLastestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount } = req.body;
+app.post("/stockMedicine/updateStockMedicine", async (req, res) => {
+    const { userId, schoolCode, rowId, medicineName, coporateName, latestPurchaseDate, unit, stockAmount, extinctAmount, registrationUnitAmount } = req.body;
 
-    const sqlQuery = "INSERT INTO teaform_db.stockFixt (userId, schoolCode, fixtName, fixtCoporate, fixtLastestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount) VALUES (?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, fixtName, fixtCoporate, fixtLastestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount], (err, result) => {
+    const sqlQuery = "UPDATE teaform_db.stockMedicine SET medicineName = ?, coporateName = ?, latestPurchaseDate = ?, unit = ?, stockAmount = ?, extinctAmount = ?, registrationUnitAmount = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [medicineName, coporateName, latestPurchaseDate, unit, stockAmount, extinctAmount, registrationUnitAmount, userId, schoolCode, rowId], (err, result) => {
+        if(err) {
+            console.log("약품 재고 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/stockMedicine/deleteStockMedicine", async (req, res) => {
+    const { userId, schoolCode, rowId } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [userId, schoolCode, rowId], (err, result) => {
+        if(err) {
+            console.log("약품 재고 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/stockFixt/saveStockFixt", async (req, res) => {
+    const { userId, schoolCode, fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.stockFixt (userId, schoolCode, fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount) VALUES (?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount], (err, result) => {
         if(err) { 
             console.log("비품 재고 INSERT 처리 중 ERROR", err);
         }else{
@@ -696,8 +722,21 @@ app.get('/stockFixt/getStockFixt', async (req, res) => {
         }else{
             res.json(result);
         }
-    })
-})
+    });
+});
+
+app.post('/stockFixt/updateStockFixt', async (req, res) => {
+    const { userId, schoolCode, rowId, fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.stockFixt SET fixtName = ?, fixtCoporate = ?, fixtLatestPurchaseDate = ?, fixtUnit = ?, fixtStockAmount = ?, fixtExtinctAmount = ?, fixtRegistrationUnitAmount = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount, userId, schoolCode, rowId], (err, result) => {
+        if(err) {
+            console.log("비품 재고 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
 
 const storage = multer.diskStorage({
     destination: function(req, file, callback) {
