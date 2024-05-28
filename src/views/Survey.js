@@ -45,63 +45,70 @@ function Survey() {
                         </Row>
                     </CardBody>
                 </Card>
-                <Card style={{ width: '100%', height: '75.8vh' }}>
-                    <Row className="d-flex no-gutters justify-content-center font-weight-bold text-muted pt-3" style={{ fontSize: 20 }}>
-                        학생 건강실태조사 및 학교 내 응급환자 관리 안내
-                    </Row>
-                    <Row className="d-flex no-gutters text-muted pt-3 pl-3">
-                        <span>아래 사항을 작성하시고 서명하신 후&nbsp;&nbsp;</span>
-                        <Input 
-                            type="number"
-                            style={{ width: 35, height: 30 }}
-                        />&nbsp;
-                        <span>월</span>&nbsp;&nbsp;
-                        <Input 
-                            type="number"
-                            style={{ width: 35, height: 30 }}
-                        />
-                        <span>일 (</span>
-                        <Input 
-                            type="text"
-                            style={{ width: 35, height: 30 }}
-                        />
-                        <span>&nbsp;요일)까지 담임선생님께 보내주시기 바랍니다.</span><br/>
-                    </Row>
-                    <Row className="d-flex no-gutters text-muted pl-3 pt-2">
-                        <span>* 직접 방문이나 전화 상담도 가능합니다. (보건실 전화: </span>
-                        <Input
-                            className="ml-2"
-                            type="text"
-                            style={{ width: 150, height: 30 }}
-                        />
-                        <span>)</span>
-                    </Row>
-                    <Row className="d-flex justify-content-center no-gutters text-muted font-weight-bold pl-3 pt-2">
-                        <span>▣ 건강상태 파악을 위한 기초 조사</span>
-                        <Input 
-                            type="number"
-                            style={{ width: 35, height: 30 }}
-                        />
-                        <span>학년</span>
-                        <Input 
-                            type="number"
-                            style={{ width: 35, height: 30 }}
-                        />
-                        <span>반</span>
-                        <Input 
-                            type="number"
-                            style={{ width: 35, height: 30 }}
-                        />
-                        <span>번 이름 (</span>
-                        <Input 
-                            type="text"
-                            style={{ width: 100, height: 30 }}
-                        />
-                        <span>)</span>
-                    </Row>
-                    <Row className="d-flex no-gutters pl-3 pt-2">
-                        <HealthExaminationSurveyForm/>
-                    </Row>
+                <Card style={{ width: '60%', height: '75.8vh', overflow: 'scroll', float: 'left' }}>
+                    <div className="p-3">
+                        <div style={{ border: '1px solid orange'}}>
+                            <Row className="d-flex no-gutters justify-content-center font-weight-bold text-muted pt-3" style={{ fontSize: 20 }}>
+                                학생 건강실태조사 및 학교 내 응급환자 관리 안내
+                            </Row>
+                            <Row className="d-flex justify-content-center no-gutters text-muted pt-3 pl-3">
+                                <span>아래 사항을 작성하시고 서명하신 후&nbsp;&nbsp;</span>
+                                <Input 
+                                    type="number"
+                                    style={{ width: 35, height: 30 }}
+                                />&nbsp;
+                                <span>월</span>&nbsp;&nbsp;
+                                <Input 
+                                    type="number"
+                                    style={{ width: 35, height: 30 }}
+                                />
+                                <span>일 (</span>
+                                <Input 
+                                    type="text"
+                                    style={{ width: 35, height: 30 }}
+                                />
+                                <span>&nbsp;요일)까지 담임선생님께 보내주시기 바랍니다.</span><br/>
+                            </Row>
+                            <Row className="d-flex justify-content-center no-gutters text-muted pl-3 pt-2">
+                                <span style={{ marginLeft: '-145px'}}>* 직접 방문이나 전화 상담도 가능합니다. (보건실 전화: </span>
+                                <Input
+                                    className="ml-2"
+                                    type="text"
+                                    style={{ width: 150, height: 30 }}
+                                />
+                                <span>)</span>
+                            </Row>
+                            <Row className="d-flex justify-content-center no-gutters text-muted font-weight-bold pl-3 pt-2">
+                                <span>▣ 건강상태 파악을 위한 기초 조사</span>
+                                <Input 
+                                    type="number"
+                                    style={{ width: 35, height: 30 }}
+                                />
+                                <span>학년</span>
+                                <Input 
+                                    type="number"
+                                    style={{ width: 35, height: 30 }}
+                                />
+                                <span>반</span>
+                                <Input 
+                                    type="number"
+                                    style={{ width: 35, height: 30 }}
+                                />
+                                <span>번 이름 (</span>
+                                <Input 
+                                    type="text"
+                                    style={{ width: 100, height: 30 }}
+                                />
+                                <span>)</span>
+                            </Row>
+                            <Row className="d-flex justify-content-center no-gutters pl-3 pt-2">
+                                <HealthExaminationSurveyForm/>
+                            </Row>
+                        </div>
+                    </div>
+                </Card>
+                <Card style={{ width: '39%', height: '75.8vh', overflow: 'scroll', float: 'right' }}>
+
                 </Card>
             </div>
         </>
