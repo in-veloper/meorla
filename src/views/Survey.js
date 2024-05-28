@@ -99,7 +99,7 @@ function Survey() {
                         />
                         <span>)</span>
                     </Row>
-                    <Row>
+                    <Row className="d-flex no-gutters pl-3 pt-2">
                         <HealthExaminationSurveyForm/>
                     </Row>
                 </Card>

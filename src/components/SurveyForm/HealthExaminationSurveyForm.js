@@ -5,19 +5,20 @@ function HealthExaminationSurveyForm() {
   return (
     <div>
       <Table bordered responsive>
-        <thead>
-          <tr>
-            <th colSpan="5" className="text-center">현재 건강문제로 인한 학교 내 활동에 지장 없음 (예, 아니오)</th>
-          </tr>
-          <tr>
-            <th>질병</th>
-            <th>예방접종 번호</th>
-            <th>예방접종 필요 유무</th>
-            <th>접종시기 및 간격</th>
-            <th>접종 물질, 내용 등</th>
-          </tr>
-        </thead>
         <tbody>
+          <tr>
+            <td colSpan="7" className='text-center'>현재 건강문제로 인한 학교 내 활동에 지장 없음 (예, 아니오)</td>
+          </tr>
+          <tr>
+            <td colSpan="4">지난 1년 동안 받은 감염병 예방접종은 다음 중 어느 것입니까?</td>
+            <td colSpan="3">① 일본뇌염 ② Td/Tdap ③ 자궁경부 ④ 기타( , ,모름  ) ⑤ 없음</td>
+          </tr>
+          <tr>
+            <td colSpan="2">질환</td>
+            <td>있음</td>
+            <td>없음</td>
+            <td></td>
+          </tr>
           <tr>
             <td>알레르기</td>
             <td>1</td>
