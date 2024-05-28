@@ -106,7 +106,7 @@ function Community() {
                     <Col md="7" className="align-items-left no-gutters">
                         <Nav className="community-nav" pills>
                             <NavItem>
-                                <NavLink id="question" onClick={moveCommunityMenu} active={selectedMenu === 'question'}>문의</NavLink>
+                                <NavLink id="question" onClick={moveCommunityMenu} active={selectedMenu === 'question'}>의견공유</NavLink>
                             </NavItem>
                             <NavItem>
                                 <NavLink id="resourceSharing" onClick={moveCommunityMenu} active={selectedMenu === 'resourceSharing'}>자료공유</NavLink>

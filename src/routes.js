@@ -13,6 +13,7 @@ import Request from "views/Request";
 import Examination from "views/Examination";
 import ManageMediFixt from "views/ManageMediFixt";
 import Statistics from "views/Statistics";
+import Survey from "views/Survey";
 
 
 const GetRoutes = () => {
@@ -98,7 +99,7 @@ const GetRoutes = () => {
         path: "/survey",
         name: "설문조사",
         icon: "nc-icon nc-single-copy-04",
-        component: <Notifications />,
+        component: <Survey />,
         layout: "/meorla",
       },
       {
