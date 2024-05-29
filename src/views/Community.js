@@ -28,6 +28,10 @@ function Community() {
     const [detailModal, setDetailModal] = useState(false);
     const [opinionSharingSelectedRow, setOpinionSharingSelectedRow] = useState(null);
     const [opinionDetailContentData, setOpinionDetailContentData]  = useState("");
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [opinionTitleDetailValue, setOpinionTitleDetailValue] = useState("");
+    const [opinionCategoryDetailValue, setOpinionCategoryDetailValue] = useState("");
+    const [opinionContentDetailValue, setOpinionContentDetailValue] = useState("");
 
     const opinionSharingGridRef = useRef(null);
     const quillRef = useRef(null);
@@ -147,6 +151,7 @@ function Community() {
         if(response.data === 'success') {
             const infoMessage = "의견공유 글이 정상적으로 등록되었습니다";
             NotiflixInfo(infoMessage);
+            toggleWriteModal();
             fetchOpinionSharingData();
         }
     };
@@ -167,6 +172,10 @@ function Community() {
         setContentData(editor.getContents());
     };
 
+    const handleDetailQuillChange = (content, delta, source, editor) => {
+        setOpinionContentDetailValue(editor.getContents());
+    };
+
     const handleSelectCategoryOption = (e) => {
         setSelectedCategoryOption(e.target.value);
     };
@@ -175,6 +184,10 @@ function Community() {
         const selectedRow = params.data;
         
         setOpinionSharingSelectedRow(selectedRow);
+        setOpinionCategoryDetailValue(selectedRow.osCategory);
+        setOpinionTitleDetailValue(selectedRow.osTitle);
+        setOpinionContentDetailValue(selectedRow.osContent);
+        setIsEditMode(params.data.userId === user.userId);
         toggleDetailModal();
 
         const parsedContent = JSON.parse(selectedRow.osContent);
@@ -382,8 +395,9 @@ function Community() {
                                 name="select"
                                 type="select"
                                 style={{ width: '120px' }}
-                                value={opinionSharingSelectedRow ? opinionSharingSelectedRow.osCategory : ""}
-                                disabled
+                                defaultValue={opinionSharingSelectedRow ? opinionSharingSelectedRow.osCategory : ""}
+                                onChange={(e) => setOpinionCategoryDetailValue(e.target.value)}
+                                disabled={!isEditMode}
                             >
                                 <option value='healthClass'>보건수업</option>
                                 <option value='healthEdu'>보건교육</option>
@@ -401,8 +415,9 @@ function Community() {
                             <Input 
                                 id="communityTitle"
                                 type="text"
-                                value={opinionSharingSelectedRow ? opinionSharingSelectedRow.osTitle : ""}
-                                readOnly
+                                defaultValue={opinionSharingSelectedRow ? opinionSharingSelectedRow.osTitle : ""}
+                                onChange={(e) => setOpinionTitleDetailValue(e.target.value)}
+                                readOnly={!isEditMode}
                             />
                         </Col>
                     </Row>
@@ -411,30 +426,52 @@ function Community() {
                             <Label>내용</Label>
                         </Col>
                         <Col md="11" className="pr-4">
-                            <div style={{ height: '26vh'}}>
-                                <ReactQuill
-                                    ref={quillRef}
-                                    style={{ height: "24.5vh" }}
-                                    theme="snow"
-                                    modules={{ toolbar: false }}
-                                    readOnly={true}
-                                    value={opinionDetailContentData || ""}
-                                    onChange={handleQuillChange}
-                                />
-                            </div>
+                                {isEditMode ? (
+                                    <div style={{ height: '24.6vh'}}>
+                                        <ReactQuill
+                                            ref={quillRef}
+                                            style={{ height: "18vh" }}
+                                            theme="snow"
+                                            modules={modules}
+                                            formats={formats}
+                                            defaultValue={opinionDetailContentData || ""}
+                                            onChange={handleDetailQuillChange}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div style={{ height: '26vh'}}>
+                                        <ReactQuill
+                                            ref={quillRef}
+                                            style={{ height: "24.5vh" }}
+                                            theme="snow"
+                                            modules={{ toolbar: false }}
+                                            readOnly={true}
+                                            value={opinionDetailContentData || ""}
+                                        />
+                                    </div>
+                                )}
                         </Col>
                     </Row>
                 </ModalBody>
                 <ModalFooter className="p-0">
                     <Row style={{ width: '100%'}}>
                         <Col className="d-flex justify-content-start">
-                            <Button onClick={resetWrite}>
-                                <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px' }}/>추천
-                            </Button>
+                            {!isEditMode && (
+                                <Button onClick={resetWrite}>
+                                    <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px' }}/>추천
+                                </Button>
+                            )}
                         </Col>
-                        <Col className="d-flex justify-content-end">
-                            <Button onClick={toggleDetailModal}>취소</Button>
-                        </Col>
+                            {isEditMode ? (
+                                <Col className="d-flex justify-content-end">
+                                    <Button>수정</Button>
+                                    <Button className="ml-1" onClick={toggleDetailModal}>취소</Button>
+                                </Col>
+                            ) : (
+                                <Col className="d-flex justify-content-end">
+                                    <Button onClick={toggleDetailModal}>취소</Button>
+                                </Col>
+                            )}
                     </Row>
                 </ModalFooter>
             </Modal>
