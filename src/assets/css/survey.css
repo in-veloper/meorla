@@ -1,0 +1,18 @@
+@media print {
+    body, html {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    .content, .card {
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+        width: auto;
+        height: auto;
+    }
+    div[style*="border: 1px solid orange"] {
+        border: none !important;
+    }
+}

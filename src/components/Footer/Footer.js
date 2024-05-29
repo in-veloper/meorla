@@ -20,6 +20,11 @@ function Footer(props) {
                 {/* </a> */}
               </li>&nbsp;&nbsp;
               <li>
+                {/* <a href="https://blog.creative-tim.com" target="_blank"> */}
+                  Instagram
+                {/* </a> */}
+              </li>&nbsp;&nbsp;
+              <li>
                 {/* <a href="https://www.creative-tim.com/license" target="_blank"> */}
                   Licenses
                 {/* </a> */}

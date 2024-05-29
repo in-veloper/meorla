@@ -1326,6 +1326,43 @@ app.post('/qnaRequest/replyQnaRequest', async (req, res) => {
     }
 });
 
+app.post('/community/saveOpinionSharing', async (req, res) => {
+    const { userId, userName, schoolCode, osCategory, osTitle, osContent } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.opinionSharing (userId, userName, schoolCode, osCategory, osTitle, osContent) VALUES (?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, userName, schoolCode, osCategory, osTitle, osContent], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 의견공유 글 INSERT 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get('/community/getOpinionSharing', async (req, res) => {
+    const sqlQuery = "SELECT * FROM teaform_db.opinionSharing";
+    db.query(sqlQuery, [], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 의견공유 글 조회 중 ERROR", err);
+        }else{
+            res.json(result)
+        }
+    });
+});
+
+app.post('/community/opinionSharingIncrementViewCount', async (req, res) => {
+    const { rowId } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.opinionSharing SET views = views + 1 WHERE id = ?";
+    db.query(sqlQuery, [rowId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 의견공유 조회수 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 server.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
 });
