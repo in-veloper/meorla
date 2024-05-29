@@ -285,6 +285,18 @@ function Community() {
                 </Row>
                 <Row className="justify-content-end no-gutters">
                     <Button onClick={writeInCommunity}>글쓰기</Button>
+                    {selectedMenu === 'opinionSharing' && (
+                        <Button className="ml-1">내가 쓴 의견공유 글</Button>
+                    )}
+                    {selectedMenu === 'resourceSharing' && (
+                        <Button className="ml-1">내가 쓴 자료공유 글</Button>
+                    )}
+                    {selectedMenu === 'interact' && (
+                        <Button className="ml-1">내가 쓴 시도교류 글</Button>
+                    )}
+                    {selectedMenu === 'bambooForest' && (
+                        <Button className="ml-1">내가 쓴 대나무숲 글</Button>
+                    )}
                 </Row>
             </div>
 
@@ -370,8 +382,8 @@ function Community() {
                                 name="select"
                                 type="select"
                                 style={{ width: '120px' }}
-                                value={opinionSharingSelectedRow.osCategory}
-                                readOnly
+                                value={opinionSharingSelectedRow ? opinionSharingSelectedRow.osCategory : ""}
+                                disabled
                             >
                                 <option value='healthClass'>보건수업</option>
                                 <option value='healthEdu'>보건교육</option>
@@ -389,7 +401,7 @@ function Community() {
                             <Input 
                                 id="communityTitle"
                                 type="text"
-                                value={opinionSharingSelectedRow.osTitle}
+                                value={opinionSharingSelectedRow ? opinionSharingSelectedRow.osTitle : ""}
                                 readOnly
                             />
                         </Col>
@@ -417,7 +429,7 @@ function Community() {
                     <Row style={{ width: '100%'}}>
                         <Col className="d-flex justify-content-start">
                             <Button onClick={resetWrite}>
-                                <LiaCrownSolid className="mr-1" style={{ fontSize: 18}}/>추천
+                                <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px' }}/>추천
                             </Button>
                         </Col>
                         <Col className="d-flex justify-content-end">
