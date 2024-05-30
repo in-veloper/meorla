@@ -35,7 +35,7 @@ function Footer(props) {
             <div className="copyright">
               &copy; {1900 + new Date().getYear()} {" "}
               {/* <i className="fa fa-heart heart" />  */}
-              Copyright E:HAE. All right reserved
+              Copyright 이해 컴퍼니. All right reserved
             </div>
           </div>
         </Row>

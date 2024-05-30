@@ -1350,6 +1350,19 @@ app.get('/community/getOpinionSharing', async (req, res) => {
     });
 });
 
+app.post('/community/updateOpinionSharing', async (req, res) => {
+    const { userId, schoolCode, rowId, osCategory, osTitle, osContent } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.opinionSharing SET osCategory = ?, osTitle = ?, osContent = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [osCategory, osTitle, osContent, userId, schoolCode, rowId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 의견공유 글 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.post('/community/opinionSharingIncrementViewCount', async (req, res) => {
     const { rowId } = req.body;
 
@@ -1359,6 +1372,36 @@ app.post('/community/opinionSharingIncrementViewCount', async (req, res) => {
             console.log("커뮤니티 의견공유 조회수 UPDATE 처리 중 ERROR", err);
         }else{
             res.send('success');
+        }
+    });
+});
+
+app.post('/community/thumbsUp', async (req, res) => {
+    const { viewType, userId, postId } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.recommendations (viewType, userId, postId) VALUES (?,?,?)";
+    db.query(sqlQuery, [viewType, userId, postId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 글 추천 INSERT 처리 중 ERROR", err);
+            if(err.code === 'ER_DUP_ENTRY') {
+                res.send('duplicate');
+            }
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get('/community/opinionCheckThumbsUp', async (req, res) => {
+    const { viewType, userId, postId } = req.query;
+
+    const sqlQuery = "SELECT EXISTS (SELECT 1 FROM teaform_db.recommendations WHERE viewType = ? AND userId = ? AND postId = ?) AS hasThumbedUp";
+    db.query(sqlQuery, [viewType, userId, postId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 의견공유 추천여부 조회 중 ERROR", err);
+        }else{
+            const hasThumbedUp = result[0].hasThumbedUp;
+            res.json(hasThumbedUp); // 1: 추천 있음, 0: 추천 없음
         }
     });
 });

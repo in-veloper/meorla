@@ -10,6 +10,7 @@ import "react-quill/dist/quill.snow.css";
 import axios from "axios";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import { LiaCrownSolid } from "react-icons/lia";
+import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -180,9 +181,13 @@ function Community() {
         setSelectedCategoryOption(e.target.value);
     };
 
+
+    // 추천 수 비동기 문제 해결 안됨 -> 처리 필요
     const opinionSharingDoubleClick = async (params) => {
         const selectedRow = params.data;
         
+        const hasThumbedUp = await opinionCheckThumbsUp();
+        debugger
         setOpinionSharingSelectedRow(selectedRow);
         setOpinionCategoryDetailValue(selectedRow.osCategory);
         setOpinionTitleDetailValue(selectedRow.osTitle);
@@ -203,6 +208,58 @@ function Community() {
 
         if(response.data === "success") fetchOpinionSharingData();
     };
+
+    const updateOpinionSharing = async () => {
+        const payload = { content: opinionContentDetailValue };
+
+        const response = await axios.post(`http://${BASE_URL}:8000/community/updateOpinionSharing`, {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            rowId: opinionSharingSelectedRow.id,
+            osCategory: opinionCategoryDetailValue,
+            osTitle: opinionTitleDetailValue,
+            osContent: JSON.stringify(payload)
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "의견공유 글이 정상적으로 수정되었습니다";
+            NotiflixInfo(infoMessage);
+            fetchOpinionSharingData();
+            toggleDetailModal();
+        }
+    };
+
+    const onThumbsUp = async (flag) => {
+        const response = await axios.post(`http://${BASE_URL}:8000/community/thumbsUp`, {
+            viewType: flag,
+            userId: user.userId,
+            postId: opinionSharingSelectedRow.id
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "현재 글을 추천하였습니다";
+            NotiflixInfo(infoMessage);
+        }else if(response.data === 'duplicate') {
+            const warnMessage = "이미 현재 글을 추천하였습니다";
+            NotiflixWarn(warnMessage);
+        }
+    };
+
+    const opinionCheckThumbsUp = async () => {
+        if(opinionSharingSelectedRow) {
+            const response = await axios.get(`http://${BASE_URL}:8000/community/opinionCheckThumbsUp`, {
+                params: {
+                    viewType: 'os',
+                    userId: user.userId,
+                    postId: opinionSharingSelectedRow.id
+                }
+            });
+    
+            return response.data;
+        }
+        return false;
+    };
+
 
     return (
         <>
@@ -457,14 +514,14 @@ function Community() {
                     <Row style={{ width: '100%'}}>
                         <Col className="d-flex justify-content-start">
                             {!isEditMode && (
-                                <Button onClick={resetWrite}>
+                                <Button onClick={() => onThumbsUp("os")}>
                                     <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px' }}/>추천
                                 </Button>
                             )}
                         </Col>
                             {isEditMode ? (
                                 <Col className="d-flex justify-content-end">
-                                    <Button>수정</Button>
+                                    <Button onClick={updateOpinionSharing}>수정</Button>
                                     <Button className="ml-1" onClick={toggleDetailModal}>취소</Button>
                                 </Col>
                             ) : (
