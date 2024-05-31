@@ -75,8 +75,6 @@ function Login() {
 
     // 계정 확인 후 로그인하는 함수 (계정 확인 및 Token 확인 로직 필요 -> 추가)
     const handleLogin = async (e) => {
-        Loading.dots();
-        
         try {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
@@ -91,9 +89,16 @@ function Login() {
                     const warnMessage = "비밀번호가 일치하지 않습니다.";
                     NotiflixWarn(warnMessage);
                 }else{
-                    login(userData, accessToken);
-                    Loading.remove(500);
-                    navigate('/meorla/dashboard');
+                    if(userData === "N") {
+                        const warnMessage = "등록되지 않은 ID입니다<br/>회원가입 후 이용 바랍니다";
+                        NotiflixWarn(warnMessage);
+                    }else if(userData === "UPW"){
+                        const warnMessage = "비밀번호가 일치하지 않습니다";
+                        NotiflixWarn(warnMessage);
+                    }else{
+                        login(userData, accessToken);
+                        navigate('/meorla/dashboard');
+                    }
                 }
             }else{
                 const warnMessage = "ID와 비밀번호를 입력해주세요";
@@ -101,7 +106,6 @@ function Login() {
             }
         } catch (error) {
             console.log("로그인 중 ERROR", error);
-            Loading.remove(500);
         }
     };
 

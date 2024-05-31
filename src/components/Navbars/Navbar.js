@@ -942,3 +942,7 @@ export default Header;
  * OST http://localhost:8000/bookmark/getBookmark net::ERR_CONNECTION_REFUSED
  * 에러 발생
  */
+
+/**
+ * 미세먼지 정보가 관측소를 변경하면 바로 반영이 안되는 현상 발생 -> 수정 필요
+ */

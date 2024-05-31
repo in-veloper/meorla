@@ -8,3 +8,8 @@
     background-color: #F8F9FA;
     cursor: pointer;
 }
+
+.pinned-row {
+    font-weight: bold;
+    color: lightcoral;
+}

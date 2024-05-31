@@ -1340,7 +1340,9 @@ app.post('/community/saveOpinionSharing', async (req, res) => {
 });
 
 app.get('/community/getOpinionSharing', async (req, res) => {
-    const sqlQuery = "SELECT * FROM teaform_db.opinionSharing";
+    // const sqlQuery = "SELECT * FROM teaform_db.opinionSharing";
+    const sqlQuery = "SELECT os.*, COUNT(rec.postId) AS recommendationCount FROM teaform_db.opinionSharing AS os LEFT JOIN teaform_db.recommendations AS rec ON os.id = rec.postId GROUP BY os.id ORDER BY os.createdAt DESC";
+    
     db.query(sqlQuery, [], (err, result) => {
         if(err) {
             console.log("커뮤니티 의견공유 글 조회 중 ERROR", err);
@@ -1392,6 +1394,19 @@ app.post('/community/thumbsUp', async (req, res) => {
     });
 });
 
+app.post('/community/thumbsDown', async (req, res) => {
+    const { viewType, userId, postId } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.recommendations WHERE viewType = ? AND userId = ? AND postId = ?";
+    db.query(sqlQuery, [viewType, userId, postId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 글 추천 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.get('/community/opinionCheckThumbsUp', async (req, res) => {
     const { viewType, userId, postId } = req.query;
 
@@ -1401,7 +1416,7 @@ app.get('/community/opinionCheckThumbsUp', async (req, res) => {
             console.log("커뮤니티 의견공유 추천여부 조회 중 ERROR", err);
         }else{
             const hasThumbedUp = result[0].hasThumbedUp;
-            res.json(hasThumbedUp); // 1: 추천 있음, 0: 추천 없음
+            res.json({hasThumbedUp: hasThumbedUp}); // 1: 추천 있음, 0: 추천 없음
         }
     });
 });

@@ -33,6 +33,8 @@ function Community() {
     const [opinionTitleDetailValue, setOpinionTitleDetailValue] = useState("");
     const [opinionCategoryDetailValue, setOpinionCategoryDetailValue] = useState("");
     const [opinionContentDetailValue, setOpinionContentDetailValue] = useState("");
+    const [isThumbedUp, setIsThumbedUp] = useState(false);
+    const [opinionPinnedRows, setOpinionPinnedRows] = useState([]);
 
     const opinionSharingGridRef = useRef(null);
     const quillRef = useRef(null);
@@ -68,10 +70,10 @@ function Community() {
     const [opinionSharingColDef] = useState([
         { field: "osCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: opinionSharingCategoryFormatter },
         { field: "osTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
-        // { field: "osContent", headerName: "내용", flex: 3, cellStyle: { textAlign: "center" } },
         { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
         { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
-        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } }
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "recommendationCount", headerName: "추천수", flex: 1, cellStyle: { textAlign: "center" } }
     ]);
 
     const modules = {
@@ -103,7 +105,6 @@ function Community() {
         "background",
     ]; 
 
-    // 해야할 부분 : 메뉴 전환될 때 스피너나 로딩화면 찾아서 이곳부터 처리하기 시작해야 함
     useEffect(() => {
         moveCommunityMenu({ target: { id: selectedMenu }});
     }, []);
@@ -161,7 +162,13 @@ function Community() {
         if(user) {
             const response = await axios.get(`http://${BASE_URL}:8000/community/getOpinionSharing`, {});
 
-            if(response.data) setOpinionSharingData(response.data);
+            if(response.data) {
+                const responseData = response.data;
+                setOpinionSharingData(responseData);
+
+                const sortedData = responseData.sort((a, b) => b.recommendationCount - a.recommendationCount);
+                setOpinionPinnedRows(sortedData.slice(0, 3));
+            }
         }
     }, [user]);
 
@@ -181,13 +188,10 @@ function Community() {
         setSelectedCategoryOption(e.target.value);
     };
 
-
-    // 추천 수 비동기 문제 해결 안됨 -> 처리 필요
     const opinionSharingDoubleClick = async (params) => {
         const selectedRow = params.data;
-        
-        const hasThumbedUp = await opinionCheckThumbsUp();
         debugger
+        opinionCheckThumbsUp(selectedRow.id);
         setOpinionSharingSelectedRow(selectedRow);
         setOpinionCategoryDetailValue(selectedRow.osCategory);
         setOpinionTitleDetailValue(selectedRow.osTitle);
@@ -230,36 +234,56 @@ function Community() {
     };
 
     const onThumbsUp = async (flag) => {
-        const response = await axios.post(`http://${BASE_URL}:8000/community/thumbsUp`, {
-            viewType: flag,
-            userId: user.userId,
-            postId: opinionSharingSelectedRow.id
-        });
+        if(isThumbedUp) {
+            const response = await axios.post(`http://${BASE_URL}:8000/community/thumbsDown`, {
+                viewType: flag,
+                userId: user.userId,
+                postId: opinionSharingSelectedRow.id
+            });
 
-        if(response.data === 'success') {
-            const infoMessage = "현재 글을 추천하였습니다";
-            NotiflixInfo(infoMessage);
-        }else if(response.data === 'duplicate') {
-            const warnMessage = "이미 현재 글을 추천하였습니다";
-            NotiflixWarn(warnMessage);
-        }
-    };
-
-    const opinionCheckThumbsUp = async () => {
-        if(opinionSharingSelectedRow) {
-            const response = await axios.get(`http://${BASE_URL}:8000/community/opinionCheckThumbsUp`, {
-                params: {
-                    viewType: 'os',
-                    userId: user.userId,
-                    postId: opinionSharingSelectedRow.id
-                }
+            if(response.data === 'success') {
+                const infoMessage = "추천을 취소하였습니다";
+                NotiflixInfo(infoMessage);
+                await opinionCheckThumbsUp(opinionSharingSelectedRow.id);
+            }
+        }else{
+            const response = await axios.post(`http://${BASE_URL}:8000/community/thumbsUp`, {
+                viewType: flag,
+                userId: user.userId,
+                postId: opinionSharingSelectedRow.id
             });
     
-            return response.data;
+            if(response.data === 'success') {
+                const infoMessage = "현재 글을 추천하였습니다";
+                NotiflixInfo(infoMessage);
+                await opinionCheckThumbsUp(opinionSharingSelectedRow.id);
+            }else if(response.data === 'duplicate') {
+                const warnMessage = "이미 현재 글을 추천하였습니다";
+                NotiflixWarn(warnMessage);
+                await opinionCheckThumbsUp(opinionSharingSelectedRow.id);
+            }
         }
-        return false;
     };
 
+    const opinionCheckThumbsUp = async (rowId) => {
+        const response = await axios.get(`http://${BASE_URL}:8000/community/opinionCheckThumbsUp`, {
+            params: {
+                viewType: 'os',
+                userId: user.userId,
+                postId: rowId
+            }
+        });
+        if(response.data) {
+            if(response.data.hasThumbedUp === 0) setIsThumbedUp(false);
+            else if(response.data.hasThumbedUp === 1) setIsThumbedUp(true);
+        }
+    };
+
+    const getRowClass = (params) => {
+        if(params.node.rowPinned) {
+            return 'pinned-row';
+        }
+    };
 
     return (
         <>
@@ -321,6 +345,8 @@ function Community() {
                                     defaultColDef={defaultColDef}
                                     onRowDoubleClicked={opinionSharingDoubleClick}
                                     overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 의견공유 글이 없습니다</span>' } 
+                                    pinnedTopRowData={opinionPinnedRows}
+                                    getRowClass={getRowClass}
                                 />
                             )}
                             {selectedMenu === 'resourceSharing' && (
@@ -515,7 +541,7 @@ function Community() {
                         <Col className="d-flex justify-content-start">
                             {!isEditMode && (
                                 <Button onClick={() => onThumbsUp("os")}>
-                                    <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px' }}/>추천
+                                    <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px', color: isThumbedUp ? 'gold' : '' }}/>추천
                                 </Button>
                             )}
                         </Col>
