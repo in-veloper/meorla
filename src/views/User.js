@@ -68,7 +68,7 @@ function User() {
 
   const fetchUserData = useCallback(async () => {
     try {
-      if(user?.userId && user?.schoolCode) {
+      if(user) {
         setCurrentUser(user);                           // 전역 변수에 현재 사용자 정보 할당
         setSchoolGrade(user.schoolName);                // 소속 학교(초, 중, 고)별 학년 수만큼 Button 생성 위한 소속 학교명 전역변수 할당
         setCommonPassword(user.commonPassword);
@@ -737,11 +737,11 @@ function User() {
                   <Row>
                     <Col md="12">
                       <FormGroup>
-                        <label>Address</label>
+                        <label>주소</label>
                         <Input
-                          defaultValue="Faker"
-                          placeholder="Home Address"
                           type="text"
+                          defaultValue={user ? user.schoolAddress : ""}
+                          readOnly
                         />
                       </FormGroup>
                     </Col>

@@ -11,6 +11,7 @@ import axios from "axios";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import { LiaCrownSolid } from "react-icons/lia";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
+import { useDropzone } from "react-dropzone";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -21,12 +22,12 @@ function Community() {
     const [selectedMenu, setSelectedMenu] = useState("opinionSharing");
     const [rowData, setRowData] = useState([]);
     const [columnDefs, setColumnDefs] = useState([]);
-    const [writeModal, setWriteModal] = useState(false);
+    const [opinionWriteModal, setOpinionWriteModal] = useState(false);
     const [contentData, setContentData] = useState("");
     const [titleValue, setTitleValue] = useState("");
-    const [selectedCategoryOption, setSelectedCategoryOption] = useState("healthClass");
+    const [selectedOpinionCategoryOption, setSelectedOpinionCategoryOption] = useState("healthClass");
     const [opinionSharingData, setOpinionSharingData] = useState([]);
-    const [detailModal, setDetailModal] = useState(false);
+    const [opinionDetailModal, setOpinionDetailModal] = useState(false);
     const [opinionSharingSelectedRow, setOpinionSharingSelectedRow] = useState(null);
     const [opinionDetailContentData, setOpinionDetailContentData]  = useState("");
     const [isEditMode, setIsEditMode] = useState(false);
@@ -35,12 +36,20 @@ function Community() {
     const [opinionContentDetailValue, setOpinionContentDetailValue] = useState("");
     const [isThumbedUp, setIsThumbedUp] = useState(false);
     const [opinionPinnedRows, setOpinionPinnedRows] = useState([]);
+    const [myOpinionSharingModal, setMyOpinionSharingModal] = useState(false);
+    const [myOpinionSharingData, setMyOpinionSharingData] = useState(null);
+    const [resourceWriteModal, setResourceWriteModal] = useState(false);
+    const [selectedResourceCategoryOption, setSelectedResourceCategoryOption] = useState("classResource");
+    const [fileMessage, setFileMessage] = useState(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일을 업로드 해주세요</div>);
 
     const opinionSharingGridRef = useRef(null);
     const quillRef = useRef(null);
+    const myOpinionSharingGridRef = useRef(null);
 
-    const toggleWriteModal = () => setWriteModal(!writeModal);
-    const toggleDetailModal = () => setDetailModal(!detailModal);
+    const toggleOpinionWriteModal = () => setOpinionWriteModal(!opinionWriteModal);
+    const toggleOpinionDetailModal = () => setOpinionDetailModal(!opinionDetailModal);
+    const toggleMyOpinionSharingModal = () => setMyOpinionSharingModal(!myOpinionSharingModal);
+    const toggleResourceWriteModal = () => setResourceWriteModal(!resourceWriteModal);
 
     const defaultColDef = {
         sortable: true,
@@ -68,6 +77,15 @@ function Community() {
     };
 
     const [opinionSharingColDef] = useState([
+        { field: "osCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: opinionSharingCategoryFormatter },
+        { field: "osTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+        { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "recommendationCount", headerName: "추천수", flex: 1, cellStyle: { textAlign: "center" } }
+    ]);
+
+    const [myOpinionSharingColDef] = useState([
         { field: "osCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: opinionSharingCategoryFormatter },
         { field: "osTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
         { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
@@ -130,22 +148,23 @@ function Community() {
     };
 
     const writeInCommunity = () => {
-        toggleWriteModal();
+        if(selectedMenu === "opinionSharing") toggleOpinionWriteModal();
+        else if(selectedMenu === "resourceSharing") toggleResourceWriteModal();
     };
 
-    const resetWrite = () => {
+    const resetOpinionWrite = () => {
         setTitleValue("");
         setContentData("");
     };
 
-    const saveWrite = async () => {
+    const saveOpinionWrite = async () => {
         const payload = { content: contentData };
 
         const response = await axios.post(`http://${BASE_URL}:8000/community/saveOpinionSharing`, {
             userId: user.userId,
             userName: user.name,
             schoolCode: user.schoolCode,
-            osCategory: selectedCategoryOption,
+            osCategory: selectedOpinionCategoryOption,
             osTitle: titleValue,
             osContent: JSON.stringify(payload)
         });
@@ -153,7 +172,7 @@ function Community() {
         if(response.data === 'success') {
             const infoMessage = "의견공유 글이 정상적으로 등록되었습니다";
             NotiflixInfo(infoMessage);
-            toggleWriteModal();
+            toggleOpinionWriteModal();
             fetchOpinionSharingData();
         }
     };
@@ -184,20 +203,20 @@ function Community() {
         setOpinionContentDetailValue(editor.getContents());
     };
 
-    const handleSelectCategoryOption = (e) => {
-        setSelectedCategoryOption(e.target.value);
+    const handleSelectOpinionCategoryOption = (e) => {
+        setSelectedOpinionCategoryOption(e.target.value);
     };
 
     const opinionSharingDoubleClick = async (params) => {
         const selectedRow = params.data;
-        debugger
+        
         opinionCheckThumbsUp(selectedRow.id);
         setOpinionSharingSelectedRow(selectedRow);
         setOpinionCategoryDetailValue(selectedRow.osCategory);
         setOpinionTitleDetailValue(selectedRow.osTitle);
         setOpinionContentDetailValue(selectedRow.osContent);
         setIsEditMode(params.data.userId === user.userId);
-        toggleDetailModal();
+        toggleOpinionDetailModal();
 
         const parsedContent = JSON.parse(selectedRow.osContent);
         setOpinionDetailContentData(parsedContent.content);
@@ -229,7 +248,7 @@ function Community() {
             const infoMessage = "의견공유 글이 정상적으로 수정되었습니다";
             NotiflixInfo(infoMessage);
             fetchOpinionSharingData();
-            toggleDetailModal();
+            toggleOpinionDetailModal();
         }
     };
 
@@ -284,6 +303,40 @@ function Community() {
             return 'pinned-row';
         }
     };
+
+    useEffect(() => {
+        if(opinionSharingData && user) {
+            const filteredData = opinionSharingData.filter(item => (
+                item.userId === user.userId
+            ));
+            setMyOpinionSharingData(filteredData);
+        }
+    }, [opinionSharingData]);
+
+    const handleMyOpinionSharingView = () => {
+        toggleMyOpinionSharingModal();
+    };
+
+    const resetResourceWrite = () => {
+
+    };
+
+    const saveResourceWrite = () => {
+
+    };
+
+    const handleSelectResourceCategoryOption = () => {
+
+    };
+
+    const onDrop = useCallback((acceptedFiles, fileRejections) => {
+
+    }, []);
+
+    const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        onFileDialogCancel: () => setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일(.cer)을 업로드 해주세요</div>)
+    })
 
     return (
         <>
@@ -382,7 +435,7 @@ function Community() {
                 <Row className="justify-content-end no-gutters">
                     <Button onClick={writeInCommunity}>글쓰기</Button>
                     {selectedMenu === 'opinionSharing' && (
-                        <Button className="ml-1">내가 쓴 의견공유 글</Button>
+                        <Button className="ml-1" onClick={handleMyOpinionSharingView}>내가 쓴 의견공유 글</Button>
                     )}
                     {selectedMenu === 'resourceSharing' && (
                         <Button className="ml-1">내가 쓴 자료공유 글</Button>
@@ -396,8 +449,8 @@ function Community() {
                 </Row>
             </div>
 
-            <Modal isOpen={writeModal} toggle={toggleWriteModal} centered style={{ minWidth: '32%' }}>
-                <ModalHeader toggle={toggleWriteModal}><b className="text-muted">의견공유 글쓰기</b></ModalHeader>
+            <Modal isOpen={opinionWriteModal} toggle={toggleOpinionWriteModal} centered style={{ minWidth: '32%' }}>
+                <ModalHeader toggle={toggleOpinionWriteModal}><b className="text-muted">의견공유 글쓰기</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Row className="d-flex align-items-center text-muted no-gutters">
                         <Col md="1" className="text-center">
@@ -405,12 +458,12 @@ function Community() {
                         </Col>
                         <Col md="11" className="pr-4">
                             <Input
-                                id="communityCategory"
+                                id="opinionCategory"
                                 name="select"
                                 type="select"
                                 style={{ width: '120px' }}
-                                value={selectedCategoryOption}
-                                onChange={handleSelectCategoryOption}
+                                value={selectedOpinionCategoryOption}
+                                onChange={handleSelectOpinionCategoryOption}
                             >
                                 <option value='healthClass'>보건수업</option>
                                 <option value='healthEdu'>보건교육</option>
@@ -455,26 +508,26 @@ function Community() {
                 <ModalFooter className="p-0">
                     <Row style={{ width: '100%'}}>
                         <Col className="d-flex justify-content-start">
-                            <Button onClick={resetWrite}>초기화</Button>
+                            <Button onClick={resetOpinionWrite}>초기화</Button>
                         </Col>
                         <Col className="d-flex justify-content-end">
-                            <Button className="mr-1" color="secondary" onClick={saveWrite}>저장</Button>
-                            <Button color="secondary" onClick={toggleWriteModal}>취소</Button>
+                            <Button className="mr-1" color="secondary" onClick={saveOpinionWrite}>저장</Button>
+                            <Button color="secondary" onClick={toggleOpinionWriteModal}>취소</Button>
                         </Col>
                     </Row>
                 </ModalFooter>
             </Modal>
 
-            <Modal isOpen={detailModal} toggle={toggleDetailModal} centered style={{ minWidth: '32%' }}>
-                <ModalHeader toggle={toggleDetailModal}><b className="text-muted">의견공유 상세</b></ModalHeader>
+            <Modal isOpen={opinionDetailModal} toggle={toggleOpinionDetailModal} centered style={{ minWidth: '32%' }}>
+                <ModalHeader toggle={toggleOpinionDetailModal}><b className="text-muted">의견공유 상세</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Row className="d-flex align-items-center text-muted no-gutters">
                         <Col md="1" className="text-center">
                             <Label>분류</Label>
                         </Col>
-                        <Col md="11" className="pr-4">
+                        <Col md="3" className="pr-4">
                             <Input
-                                id="communityCategory"
+                                id="opinionCategory"
                                 name="select"
                                 type="select"
                                 style={{ width: '120px' }}
@@ -488,6 +541,13 @@ function Community() {
                                 <option value='manageBusiness'>사업관리</option>
                                 <option value='etc'>기타</option>
                             </Input>
+                        </Col>
+                        <Col className="d-flex justify-content-end no-gutters pr-4" md="8">
+                            {!isEditMode && (
+                                <Button className="mb-0 mt-0" onClick={() => onThumbsUp("os")}>
+                                    <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px', color: isThumbedUp ? 'gold' : '' }}/>추천
+                                </Button>
+                            )}
                         </Col>
                     </Row>
                     <Row className="d-flex align-items-center text-muted no-gutters pt-3">
@@ -538,23 +598,114 @@ function Community() {
                 </ModalBody>
                 <ModalFooter className="p-0">
                     <Row style={{ width: '100%'}}>
-                        <Col className="d-flex justify-content-start">
-                            {!isEditMode && (
-                                <Button onClick={() => onThumbsUp("os")}>
-                                    <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px', color: isThumbedUp ? 'gold' : '' }}/>추천
-                                </Button>
-                            )}
+                        {isEditMode ? (
+                            <Col className="d-flex justify-content-end">
+                                <Button onClick={updateOpinionSharing}>수정</Button>
+                                <Button className="ml-1" onClick={toggleOpinionDetailModal}>취소</Button>
+                            </Col>
+                        ) : (
+                            <Col className="d-flex justify-content-end">
+                                <Button onClick={toggleOpinionDetailModal}>취소</Button>
+                            </Col>
+                        )}
+                    </Row>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={myOpinionSharingModal} toggle={toggleMyOpinionSharingModal} centered style={{ minWidth: '58%' }}>
+                <ModalHeader toggle={toggleMyOpinionSharingModal}><b className="text-muted">내 의견공유 글 내역</b></ModalHeader>
+                <ModalBody>
+                    <div className="ag-theme-alpine" style={{ height: '30vh'}}>
+                        <AgGridReact 
+                            ref={myOpinionSharingGridRef}
+                            rowData={myOpinionSharingData}
+                            columnDefs={myOpinionSharingColDef}
+                            defaultColDef={defaultColDef}
+                            onRowDoubleClicked={opinionSharingDoubleClick}
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 문의 및 요청 내역이 없습니다</span>' } 
+                        />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={toggleMyOpinionSharingModal}>닫기</Button>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={resourceWriteModal} toggle={toggleResourceWriteModal} centered style={{ minWidth: '32%' }}>
+                <ModalHeader toggle={toggleResourceWriteModal}><b className="text-muted">자료공유 글쓰기</b></ModalHeader>
+                <ModalBody className="pb-0">
+                    <Row className="d-flex align-items-center text-muted no-gutters">
+                        <Col md="1" className="text-center">
+                            <Label>분류</Label>
                         </Col>
-                            {isEditMode ? (
-                                <Col className="d-flex justify-content-end">
-                                    <Button onClick={updateOpinionSharing}>수정</Button>
-                                    <Button className="ml-1" onClick={toggleDetailModal}>취소</Button>
-                                </Col>
-                            ) : (
-                                <Col className="d-flex justify-content-end">
-                                    <Button onClick={toggleDetailModal}>취소</Button>
-                                </Col>
-                            )}
+                        <Col md="11" className="pr-4">
+                            <Input
+                                id="resourceCategory"
+                                name="select"
+                                type="select"
+                                style={{ width: '120px' }}
+                                value={selectedResourceCategoryOption}
+                                onChange={handleSelectResourceCategoryOption}
+                            >
+                                <option value='classResource'>수업자료</option>
+                                <option value='businessResource'>사업자료</option>
+                                <option value='formResource'>양식</option>
+                                <option value='etcResource'>기타</option>
+                            </Input>
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>제목</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            <Input 
+                                id="communityTitle"
+                                type="text"
+                                value={titleValue}
+                                onChange={(e) => setTitleValue(e.target.value)}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>내용</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            <div style={{ height: '20.6vh' }}>
+                                <ReactQuill
+                                    ref={quillRef}
+                                    style={{ height: "14vh" }}
+                                    theme="snow"
+                                    modules={modules}
+                                    formats={formats}
+                                    value={contentData || ""}
+                                    onChange={handleQuillChange}
+                                />
+                            </div>
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3">
+                        <Col md="1" className="text-center">
+                            <Label>파일</Label>
+                        </Col>
+                        <Col md="11" style={{ border: '1px solid lightgrey'}}>
+                            <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', height: '10vh', paddingTop: '25px', textAlign: 'center' }}>
+                                <input {...getInputProps()}/>
+                                {fileMessage}
+                            </div>
+                        </Col>
+                    </Row>
+                </ModalBody>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        <Col className="d-flex justify-content-start">
+                            <Button onClick={resetResourceWrite}>초기화</Button>
+                        </Col>
+                        <Col className="d-flex justify-content-end">
+                            <Button className="mr-1" color="secondary" onClick={saveResourceWrite}>저장</Button>
+                            <Button color="secondary" onClick={toggleResourceWriteModal}>취소</Button>
+                        </Col>
                     </Row>
                 </ModalFooter>
             </Modal>

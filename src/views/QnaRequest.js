@@ -27,6 +27,7 @@ function QnaRequest() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [qnaRequestReplyValue, setQnaRequestReplyValue] = useState("");
     const [myQnaRequestModal, setMyQnaRequestModal] = useState(false);
+    const [filteredMyQnaRequestData, setFilteredQnaRequestData] = useState([]);
     
     const gridRef = useRef(null);
     const myQnaRequestGridRef = useRef(null);
@@ -163,8 +164,6 @@ function QnaRequest() {
     useEffect(() => {
         fetchQnaRequestData();
     }, [fetchQnaRequestData]);
-
-    const [filteredMyQnaRequestData, setFilteredQnaRequestData] = useState([]);
 
     useEffect(() => {
         if(qnaRequestData && user) {

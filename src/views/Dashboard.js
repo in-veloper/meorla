@@ -283,7 +283,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>문의 및 요청</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b onClick={() => navigate('/meorla/qnaRequest')}>MORE</b>
+                  <b onClick={() => navigate('/meorla/qnaRequest')} style={{ cursor: 'pointer' }}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -307,7 +307,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>침상안정 신청내역</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b onClick={() => navigate('/meorla/workNote')}>MORE</b>
+                  <b onClick={() => navigate('/meorla/workNote')} style={{ cursor: 'pointer' }}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -330,7 +330,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>커뮤니티 알림</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b onClick={() => navigate('/meorla/community')}>MORE</b>
+                  <b onClick={() => navigate('/meorla/community')} style={{ cursor: 'pointer' }}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -354,7 +354,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>오늘의 보건일정</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b onClick={() => navigate('/meorla/workSchedule')}>MORE</b>
+                  <b onClick={() => navigate('/meorla/workSchedule')} style={{ cursor: 'pointer' }}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
@@ -377,7 +377,7 @@ function Dashboard() {
                   <b className="text-muted" style={{ fontSize: '17px' }}>전체 보건일정</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
-                  <b onClick={() => navigate('/meorla/workSchedule')}>MORE</b>
+                  <b onClick={() => navigate('/meorla/workSchedule')} style={{ cursor: 'pointer' }}>MORE</b>
                 </Col>
               </Row>
             </CardTitle>
