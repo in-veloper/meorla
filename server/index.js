@@ -21,11 +21,14 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "http://localhost:3000"
+        origin: "http://223.130.130.53",
+        methods: ["GET", "POST"],
+        credentials: true
+        // origin: "http://localhost:3000"
     }
 });
 
-app.use(cors({ origin: true, credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
+app.use(cors({ origin: "http://223.130.130.53", credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
