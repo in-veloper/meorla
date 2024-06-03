@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const express = require('express');
 const app = express();
