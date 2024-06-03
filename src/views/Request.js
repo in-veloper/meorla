@@ -335,7 +335,8 @@ function Request({onLogOut}) {
     }, []);
 
     useEffect(() => {
-        const serverUrl = `http://localhost:8000`;
+        // const serverUrl = `http://localhost:8000`;
+        const serverUrl = `http://223.130.130.53:8000`;
         const socket = io(serverUrl);
 
         const connectedSockets = new Set();
@@ -582,7 +583,8 @@ function Request({onLogOut}) {
     const sendVisitRequest = async (e) => {
         e.preventDefault();
 
-        const serverUrl = `http://localhost:8000`;
+        // const serverUrl = `http://localhost:8000`;
+        const serverUrl = `http://223.130.130.53:8000`;
         const socket = io(serverUrl);
         const currentTime = moment().format('HH:mm');
         

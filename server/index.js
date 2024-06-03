@@ -47,9 +47,11 @@ const removeCookie = (name) => {
 }
 
 const db = mysql.createPool({
-    host: "localhost",
+    // host: "localhost",
+    host: "223.130.130.53",
     user: "root",
-    password: "yeeh01250412!@",
+    // password: "yeeh01250412!@",
+    password: "Yeeh01250412!@",
     database: "teaform_db"
 });
 
