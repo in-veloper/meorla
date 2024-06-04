@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const dotenv = require('dotenv');
 const express = require('express');
 const app = express();
@@ -36,15 +36,15 @@ app.use(cookieParser());
 const setCookie = (name, value, options) => {
     const result = cookies.set(name, value, { ...options });
     return result;
-}
+};
 
 const getCookie = (name) => {
     return cookies.get(name);
-}
+};
 
 const removeCookie = (name) => {
     return cookies.remove(name);
-}
+};
 
 const db = mysql.createPool({
     // host: "localhost",
@@ -122,14 +122,24 @@ app.get("/user/checkUser", async (req, res) => {
     });
 });
 
+function hashPassword(password) {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return `${salt}:${hash}`;
+};
+
+function verifyPassword(storedHash, inputPassword) {
+    const [salt, originalHash] = storedHash.split(':');
+    const hash = crypto.pbkdf2Sync(inputPassword, salt, 10000, 64, 'sha512').toString('hex');
+    return hash === originalHash;
+};
+
 app.post("/user/insert", async (req, res) => {
     const { schoolName, name, email, userId, password, schoolCode, schoolAddress, refresh_token, commonPassword } = req.body;
-
-    const salt = await bcrypt.genSalt();
-    const hashPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = hashPassword(password);
 
     const sqlQuery = "INSERT INTO teaform_db.users (schoolName, name, email, userId, password, schoolCode, schoolAddress, refresh_token, commonPassword) VALUES (?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [schoolName, name, email, userId, hashPassword, schoolCode, schoolAddress, refresh_token, commonPassword], (err, result) => {
+    db.query(sqlQuery, [schoolName, name, email, userId, hashedPassword, schoolCode, schoolAddress, refresh_token, commonPassword], (err, result) => {
         if(err) {
             console.log("회원가입 데이터 Insert 중 ERROR" + err);
         }else{
@@ -149,8 +159,9 @@ app.post("/user/login", async (req, res) => {
         } else {
             if (results.length > 0) {
                 const user = results[0]; // 첫 번째 사용자 정보만 사용 (userId는 고유해야 함)
-                const match = await bcrypt.compare(password, user.password);
+                const match = verifyPassword(user.password, password);
                 console.log(user)
+
                 if(!match) {
                     const user = "UPW";
                     res.json({ user });
