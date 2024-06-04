@@ -30,7 +30,12 @@ const io = socketIo(server, {
     }
 });
 
-app.use(cors({ origin: "*", credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
+app.use(cors({
+     origin: ['http://223.130.130.53:8002'],
+     credentials: true,
+     methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
+// app.use(cors({ origin: "*", credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
