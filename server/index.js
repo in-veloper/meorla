@@ -102,7 +102,7 @@ app.get("/token", async (req, res) => {
     }
 });
 
-app.post("/user/getUser", async (req, res) => {
+app.post("/user/checkUser", async (req, res) => {
     const userId = req.body.userId;
     const schoolName = req.body.schoolName;
 
