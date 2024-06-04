@@ -102,9 +102,9 @@ app.get("/token", async (req, res) => {
     }
 });
 
-app.post("/user/checkUser", async (req, res) => {
-    const userId = req.body.userId;
-    const schoolName = req.body.schoolName;
+app.get("/user/checkUser", async (req, res) => {
+    const userId = req.query.userId;
+    const schoolName = req.query.schoolName;
 
     const query = "SELECT * FROM teaform_db.users WHERE userId = ? OR schoolName = ?";
     db.query(query, [userId, schoolName], async(err, results) => {
