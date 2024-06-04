@@ -1,6 +1,8 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const dotenv = require('dotenv');
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
