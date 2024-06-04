@@ -3,6 +3,7 @@ import { jwtDecode } from 'jwt-decode';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const UserContext = createContext();
@@ -26,7 +27,7 @@ export const UserProvider = ({ children }) => {
 
             if(!accessToken) return;
             
-            const response = await axios.get(`http://${BASE_URL}:8000/token`, {
+            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/token`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -95,7 +96,7 @@ export const UserProvider = ({ children }) => {
         try {
             const accessToken = sessionStorage.getItem("accessToken");
             if(accessToken) {   // accessToken이 존재할 경우 로그아웃 수행
-                const response = await axios.post(`http://${BASE_URL}:8000/user/logout`, {userId: userId});
+                const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/logout`, {userId: userId});
                 if(response.status === 200) {
                     sessionStorage.removeItem("accessToken");
                     sessionStorage.removeItem("schoolCode");

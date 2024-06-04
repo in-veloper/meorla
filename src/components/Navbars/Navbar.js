@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import io from "socket.io-client";
 import routes from "routes.js";
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Header(props) {
@@ -142,7 +143,7 @@ function Header(props) {
   const fetchBookmarkData = useCallback(async () => {
     try {
       if(user?.userId && user?.email) {
-        const response = await axios.get(`http://${BASE_URL}:8000/bookmark/getBookmark`, {
+        const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/bookmark/getBookmark`, {
           params: {
             userId: user.userId,
             userEmail: user.email
@@ -191,7 +192,7 @@ function Header(props) {
 
   const fetchWorkStatusData = useCallback(async () => {
     if(user?.userId && user?.schoolCode) {
-      const response = await axios.get(`http://${BASE_URL}:8000/user/getWorkStatus`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/user/getWorkStatus`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -210,13 +211,13 @@ function Header(props) {
   }, [fetchWorkStatusData]);
 
   const handleWorkStatus = async (e) => {
-    const serverUrl = `http://${BASE_URL}:8000`;
+    const serverUrl = `http://${BASE_URL}:${BASE_PORT}`;
     const socket = io(serverUrl);
     
     const selectedWorkStatus = e.target.id;
 
     if(user?.userId && user?.schoolCode) {
-      const response = await axios.post(`http://${BASE_URL}:8000/user/updateWorkStatus`, {
+      const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/updateWorkStatus`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         workStatus: selectedWorkStatus
@@ -370,14 +371,14 @@ function Header(props) {
         
         let response = null;              // response 데이터 담을 변수
         if(!isEmptyBookmarkData) {       // 등록된 북마크가 있는 경우 - Update
-          response = await axios.post(`http://${BASE_URL}:8000/bookmark/update`, {
+          response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/bookmark/update`, {
             userId: user.userId,
             userEmail: user.email,
             schoolCode: user.schoolCode,
             bookmarkArray: bookmarkArray
           });
         }else{                            // 등록된 북마크가 없는 경우 - Insert
-          response = await axios.post(`http://${BASE_URL}:8000/bookmark/insert`, {
+          response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/bookmark/insert`, {
             userId: user.userId,
             userEmail: user.email,
             userName: user.name,
@@ -420,7 +421,7 @@ function Header(props) {
     const selectedStation = e.target.text;
 
     if(user && selectedStation) {
-      const response = await axios.post(`http://${BASE_URL}:8000/user/updatePmStation`, {
+      const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/updatePmStation`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         pmStation: selectedStation
@@ -527,7 +528,7 @@ function Header(props) {
 
   const fetchNotifyPmStatus = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/user/getNotifyPmInfo`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/user/getNotifyPmInfo`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -553,7 +554,7 @@ function Header(props) {
 
     const yesCallback = async () => {
       if(user) {
-        const response = await axios.post(`http://${BASE_URL}:8000/user/updateNotifyPmInfo`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/updateNotifyPmInfo`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           notifyPm: !notifyPmChecked
