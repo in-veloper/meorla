@@ -32,6 +32,7 @@ const io = socketIo(server, {
 
 app.use(cors({
      origin: ['http://223.130.130.53:8002'],
+     allowedHeaders: ['Content-Type', 'Authorization'],
      credentials: true,
      methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
