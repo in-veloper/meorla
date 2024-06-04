@@ -12,6 +12,7 @@ import '../assets/css/managemedifixt.css';
 import NotiflixInfo from "components/Notiflix/NotiflixInfo.js";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn.js";
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function ManageMediFixt() {
@@ -142,7 +143,7 @@ function ManageMediFixt() {
 
     const fetchMedicineData = useCallback(async () => {
         Block.dots('.search-medicine');
-        const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getMedicineData`, {});
+        const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/medicineInfo/getMedicineData`, {});
 
         if(response.data) {
             setMedicineData(response.data);
@@ -189,7 +190,7 @@ function ManageMediFixt() {
         const registrationUnitAmount = document.getElementById('registrationUnitAmount').value;
         const latestPurchaseDate = document.getElementById('latestPurchaseDate').value;
 
-        const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/insert`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/insert`, {
             userId: user.userId,
             schoolCode: user.schoolCode,
             medicineName: medicineName,
@@ -212,7 +213,7 @@ function ManageMediFixt() {
 
     const fetchStockMedicineData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:8000/stockMedicine/getStockMedicine`, {
+            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/getStockMedicine`, {
                 params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode
@@ -290,7 +291,7 @@ function ManageMediFixt() {
 
     const saveFixt = async () => {
         if(user) {
-            const response = await axios.post(`http://${BASE_URL}:8000/stockFixt/saveStockFixt`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockFixt/saveStockFixt`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 fixtName: fixtNameValue,
@@ -314,7 +315,7 @@ function ManageMediFixt() {
 
     const fetchStockFixtData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:8000/stockFixt/getStockFixt`, {
+            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/stockFixt/getStockFixt`, {
                 params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode
@@ -360,7 +361,7 @@ function ManageMediFixt() {
     const deleteMedicineFixt = async () => {
         if(selectedMenu === "medicine") {
             if(selectedMedicineRowData && user) { 
-                const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/deleteStockMedicine`, {
+                const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/deleteStockMedicine`, {
                     userId: user.userId,
                     schoolCode: user.schoolCode,
                     rowId: selectedMedicineRowData.id
@@ -416,7 +417,7 @@ function ManageMediFixt() {
     };
 
     const updateMedicine = async () => {
-        const response = await axios.post(`http://${BASE_URL}:8000/stockMedicine/updateStockMedicine`,{
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/updateStockMedicine`,{
             userId: user.userId,
             schoolCode: user.schoolCode,
             rowId: selectedMedicineRowData.id,
@@ -459,7 +460,7 @@ function ManageMediFixt() {
     };
 
     const updateFixt = async () => {
-        const response = await axios.post(`http://${BASE_URL}:8000/stockFixt/updateStockFixt`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockFixt/updateStockFixt`, {
             userId: user.userId,
             schoolCode: user.schoolCode,
             rowId: selectedFixtRowData.id,

@@ -19,6 +19,7 @@ import NanumGothic from '../../assets/fonts/NanumGothic.ttf';
 import NanumGothicBold from '../../assets/fonts/NanumGothicBold.ttf';
 import { Block } from 'notiflix/build/notiflix-block-aio';
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, searchStudentColumnDefs, notEditDefaultColDef, fetchSelectedStudentData, fetchStudentData }) => {
@@ -193,7 +194,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
             const sGender = selectedStudentInEmergencyManagement.sGender;
             const sName = selectedStudentInEmergencyManagement.sName;
             
-            const response = await axios.post(`http://${BASE_URL}:8000/manageEmergency/saveEmergencyManagement`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/manageEmergency/saveEmergencyManagement`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 sGrade: sGrade,
@@ -268,7 +269,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
             if(transferCheckedItems.etcTransfer) selectedTransfer = selectedTransfer + "::" + etcTransferDetail;
 
-            const response = await axios.post(`http://${BASE_URL}:8000/manageEmergency/updateEmergencyManagement`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/manageEmergency/updateEmergencyManagement`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 rowId: rowId,
@@ -372,7 +373,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     const fetchEntireManageEmergencyData = useCallback( async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:8000/manageEmergency/getManageEmergencyData`, {
+            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/manageEmergency/getManageEmergencyData`, {
                 params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode

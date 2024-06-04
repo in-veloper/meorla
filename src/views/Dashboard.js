@@ -12,6 +12,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Dashboard() {
@@ -96,7 +97,7 @@ function Dashboard() {
 
   const fetchQnaRequestData = useCallback(async () => {
     if(user) {
-        const response = await axios.get(`http://${BASE_URL}:8000/qnaRequest/getQnaRequest`, {});
+        const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/getQnaRequest`, {});
         
         if(response.data) {
             const convertedData = response.data.map(item => {
@@ -112,7 +113,7 @@ function Dashboard() {
 
   const fetchVisitRequest = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getVisitRequest`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workNote/getVisitRequest`, {
         params: {
           schoolCode: user.schoolCode,
           isRead: false
@@ -131,7 +132,7 @@ function Dashboard() {
     const today = moment().format('YYYY-MM-DD');
 
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getTodaySchedule`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workSchedule/getTodaySchedule`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode,
@@ -145,7 +146,7 @@ function Dashboard() {
 
   const fetchEntireSchedule = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getEntireSchedule`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workSchedule/getEntireSchedule`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -207,7 +208,7 @@ function Dashboard() {
   const saveMemo = async () => {
     const payload = { content: memoData };
     
-    const response = await axios.post(`http://${BASE_URL}:8000/dashboard/saveMemo`, {
+    const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/dashboard/saveMemo`, {
       userId: user.userId,
       schoolCode: user.schoolCode,
       memo: JSON.stringify(payload)
@@ -221,7 +222,7 @@ function Dashboard() {
 
   const fetchMemoData = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/dashboard/getMemo`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/dashboard/getMemo`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode

@@ -13,6 +13,7 @@ import axios from "axios";
 import { useUser } from "contexts/UserContext";
 import "../assets/css/mycalendar.css";
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const WorkCalendar = forwardRef((props, ref) => {
@@ -84,7 +85,7 @@ const WorkCalendar = forwardRef((props, ref) => {
         const infoMessage = "보건일정이 정상적으로 등록되었습니다.";
         
         const yesCallback = async () => {
-            const response = await axios.post(`http://${BASE_URL}:8000/workSchedule/insert`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workSchedule/insert`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 eventTitle: eventTitle,
@@ -111,7 +112,7 @@ const WorkCalendar = forwardRef((props, ref) => {
     // 등록된 행사일정 획득 function
     const fetchEventData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getWorkSchedule`, {
+            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workSchedule/getWorkSchedule`, {
                 params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode
@@ -182,7 +183,7 @@ const WorkCalendar = forwardRef((props, ref) => {
         const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
 
         const yesCallback = async () => {
-            const response = await axios.post(`http://${BASE_URL}:8000/workSchedule/update`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workSchedule/update`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 eventId: registeredEventId,
@@ -251,7 +252,7 @@ const WorkCalendar = forwardRef((props, ref) => {
         const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
         
         const yesCallback = async () => {
-            const response = await axios.post(`http://${BASE_URL}:8000/workSchedule/reSchedule`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workSchedule/reSchedule`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 eventId: oldEvent.id,
@@ -289,7 +290,7 @@ const WorkCalendar = forwardRef((props, ref) => {
         const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
 
         const yesCallback = async () => {
-            const response = await axios.post(`http://${BASE_URL}:8000/workSchedule/reSchedule`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workSchedule/reSchedule`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 eventId: oldEvent.id,

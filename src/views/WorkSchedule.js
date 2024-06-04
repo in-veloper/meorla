@@ -8,6 +8,7 @@ import { useUser } from "contexts/UserContext";
 import moment from 'moment';
 import axios from "axios";
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function WorkSchedule() {
@@ -49,7 +50,7 @@ function WorkSchedule() {
     const today = moment().format('YYYY-MM-DD');
 
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getTodaySchedule`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workSchedule/getTodaySchedule`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode,
@@ -63,7 +64,7 @@ function WorkSchedule() {
 
   const fetchEntireSchedule = async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workSchedule/getEntireSchedule`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workSchedule/getEntireSchedule`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode

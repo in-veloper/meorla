@@ -32,6 +32,7 @@ import Plus from "../assets/img/medicine/plus.png";
 import Etc from "../assets/img/medicine/etc.png";
 import '../assets/css/medicalInfo.css';
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function MedicalInfo() {
@@ -208,7 +209,7 @@ function MedicalInfo() {
     const isBookmarked = bookmarkMedicineData?.some(bookmark => bookmark.itemSeq === selectedRowData.itemSeq);
 
     if(!isBookmarked) {
-      const response = await axios.post(`http://${BASE_URL}:8000/medicineInfo/saveBookmarkMedicine`, {
+      const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/medicineInfo/saveBookmarkMedicine`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         itemSeq: selectedRowData.itemSeq
@@ -216,7 +217,7 @@ function MedicalInfo() {
       
       if(response.data === "success") fetchBookmarkMedicineData();
     }else{
-      const response = await axios.post(`http://${BASE_URL}:8000/medicineInfo/deleteBookmarkMedicine`, {
+      const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/medicineInfo/deleteBookmarkMedicine`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         itemSeq: selectedRowData.itemSeq
@@ -332,7 +333,7 @@ function MedicalInfo() {
   };
 
   const fetchMedicineData = async () => {
-    const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getMedicineData`, {});
+    const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/medicineInfo/getMedicineData`, {});
 
     if(response.data) {
       setMedicineData(response.data);
@@ -341,7 +342,7 @@ function MedicalInfo() {
   };
 
   const fetchGrainMedicineData = async () => {
-    const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getGrainMedicineData`, {});
+    const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/medicineInfo/getGrainMedicineData`, {});
 
     if(response.data) setGrainMedicineData(response.data);
   };
@@ -353,7 +354,7 @@ function MedicalInfo() {
 
   const fetchBookmarkMedicineData = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/medicineInfo/getBookmarkMedicine`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/medicineInfo/getBookmarkMedicine`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode

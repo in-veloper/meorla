@@ -16,6 +16,7 @@ import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
 import { Loading } from 'notiflix/build/notiflix-loading-aio';
 import '../assets/css/login.css';
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
@@ -78,7 +79,7 @@ function Login() {
         try {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
-                const response = await axios.post(`http://${BASE_URL}:8000/user/login`, { userId: confirmUserId, password: confirmPassword });
+                const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/login`, { userId: confirmUserId, password: confirmPassword });
                 const accessToken = response.data.accessToken;
                 const userData = response.data.user;
                 
@@ -118,7 +119,7 @@ function Login() {
         // 학교명 임의로 입력해서 하도록 하지 못하게 막아야할듯 
         // 가입된 학교 비교 시에 학교명으로 하면 안되고 학교 코드 등으로 해야할듯
         try {
-            const selectResponse = await axios.post(`http://${BASE_URL}:8000/user/getUser`, {
+            const selectResponse = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/getUser`, {
                 userId: userId,
                 schoolName: schoolName
             });
@@ -153,7 +154,7 @@ function Login() {
                 }else{
                     Loading.dots(1000);
                     if(password === confPassword) {
-                        const response = await axios.post(`http://${BASE_URL}:8000/user/insert`, {
+                        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/insert`, {
                             schoolName: schoolName,
                             name: name,
                             userId: userId,

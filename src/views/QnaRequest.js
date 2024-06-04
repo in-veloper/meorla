@@ -9,6 +9,7 @@ import { useUser } from "contexts/UserContext";
 import axios from "axios";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function QnaRequest() {
@@ -105,7 +106,7 @@ function QnaRequest() {
 
     const saveQnaRequest = async () => {
         if(user) {
-            const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/saveQnaRequest`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/saveQnaRequest`, {
                 userId: user.userId,
                 userName: user.name,
                 schoolCode: user.schoolCode,
@@ -126,7 +127,7 @@ function QnaRequest() {
 
     const fetchQnaRequestData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:8000/qnaRequest/getQnaRequest`, {});
+            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/getQnaRequest`, {});
             
             if(response.data) {
                 const convertedData = response.data.map(item => {
@@ -142,7 +143,7 @@ function QnaRequest() {
 
     const updateQnaRequest = async () => {
         if(user) {
-            const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/updateQnaRequest`, {
+            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/updateQnaRequest`, {
                 rowId: selectedRowData.id,
                 userId: user.userId,
                 schoolCode: user.schoolCode,
@@ -198,7 +199,7 @@ function QnaRequest() {
     };
 
     const incrementViewCount = async (rowId) => {
-        const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/incrementViewCount`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/incrementViewCount`, {
             rowId: rowId
         });
 
@@ -206,7 +207,7 @@ function QnaRequest() {
     };
 
     const handleReply = async () => {
-        const response = await axios.post(`http://${BASE_URL}:8000/qnaRequest/replyQnaRequest`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/replyQnaRequest`, {
             rowId: selectedRowData.id,
             userId: user.userId,
             reply: qnaRequestReplyValue

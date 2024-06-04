@@ -24,6 +24,7 @@ import moment from "moment";
 import io from "socket.io-client";
 import '../assets/css/worknote.css';
 
+const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const MENU_ID = 'students_context_menu';
 
@@ -444,7 +445,7 @@ function WorkNote(args) {
       const { iGrade, iClass, iNumber, iName } = criteria;
       
       if(user) {
-        const response = await axios.get(`http://${BASE_URL}:8000/studentsTable/getStudentInfoBySearch`, {
+        const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/studentsTable/getStudentInfoBySearch`, {
           params: {
             userId: user.userId,
             schoolCode: user.schoolCode,
@@ -559,13 +560,13 @@ function WorkNote(args) {
       
       let response = null;                  // response 데이터 담을 변수
       if(symptomRowData.length > 0) {       // 등록된 증상이 있는 경우 - Update
-        response = await axios.post(`http://${BASE_URL}:8000/symptom/update`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/symptom/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           symptom: symptomString
         });
       }else{                            // 등록된 증상이 없는 경우 - Insert
-        response = await axios.post(`http://${BASE_URL}:8000/symptom/insert`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/symptom/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           symptom: symptomString
@@ -608,13 +609,13 @@ function WorkNote(args) {
       
       let response = null;                     // response 데이터 담을 변수
       if(medicationRowData.length > 0) {       // 등록된 투약사항이 있는 경우 - Update
-        response = await axios.post(`http://${BASE_URL}:8000/medication/update`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/medication/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           medication: medicationString
         });
       }else{                                    // 등록된 투약사항이 없는 경우 - Insert
-        response = await axios.post(`http://${BASE_URL}:8000/medication/insert`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/medication/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           medication: medicationString
@@ -657,13 +658,13 @@ function WorkNote(args) {
       
       let response = null;                  // response 데이터 담을 변수
       if(actionMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
-        response = await axios.post(`http://${BASE_URL}:8000/actionMatter/update`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/actionMatter/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           actionMatter: actionMatterString
         });
       }else{                            // 등록된 증상이 없는 경우 - Insert
-        response = await axios.post(`http://${BASE_URL}:8000/actionMatter/insert`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/actionMatter/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           actionMatter: actionMatterString
@@ -706,13 +707,13 @@ function WorkNote(args) {
       
       let response = null;                  // response 데이터 담을 변수
       if(treatmentMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
-        response = await axios.post(`http://${BASE_URL}:8000/treatmentMatter/update`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/treatmentMatter/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           treatmentMatter: treatmentMatterString
         });
       }else{                            // 등록된 증상이 없는 경우 - Insert
-        response = await axios.post(`http://${BASE_URL}:8000/treatmentMatter/insert`, {
+        response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/treatmentMatter/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           treatmentMatter: treatmentMatterString
@@ -737,7 +738,7 @@ function WorkNote(args) {
   const fetchSymptomData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post(`http://${BASE_URL}:8000/symptom/getSymptom`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/symptom/getSymptom`, {
           userId: user.userId,
           schoolCode: user.schoolCode
         });
@@ -767,7 +768,7 @@ function WorkNote(args) {
   const fetchActionMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post(`http://${BASE_URL}:8000/actionMatter/getActionMatter`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/actionMatter/getActionMatter`, {
           userId: user.userId,
           schoolCode: user.schoolCode
         });
@@ -797,7 +798,7 @@ function WorkNote(args) {
   const fetchTreatmentMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post(`http://${BASE_URL}:8000/treatmentMatter/getTreatmentMatter`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/treatmentMatter/getTreatmentMatter`, {
           userId: user.userId,
           schoolCode: user.schoolCode
         });
@@ -880,7 +881,7 @@ function WorkNote(args) {
 
   const fetchStockMedicineData = useCallback(async () => {
     if(user?.userId && user?.schoolCode) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getStockMedication`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workNote/getStockMedication`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -906,7 +907,7 @@ function WorkNote(args) {
 
   const fetchEntireWorkNoteGrid = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getEntireWorkNote`,{
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workNote/getEntireWorkNote`,{
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -933,7 +934,7 @@ function WorkNote(args) {
     e.preventDefault();
 
     // const serverUrl = `http://localhost:8000`;
-    const serverUrl = `http://223.130.130.53:8000`;
+    const serverUrl = `http://223.130.130.53:${BASE_PORT}`;
     const socket = io(serverUrl);
 
     const currentTime = moment().format('HH:mm');
@@ -944,7 +945,7 @@ function WorkNote(args) {
     const noText = "취소";
 
     const yesCallback = async (promptValue) => {
-      const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateOnBedEndTime`, {
+      const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workNote/updateOnBedEndTime`, {
         onBedEndTime: promptValue,
         userId: user.userId,
         schoolCode: user.schoolCode,
@@ -1094,7 +1095,7 @@ function WorkNote(args) {
     Block.dots('.request-alert-box');
 
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getVisitRequest`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workNote/getVisitRequest`, {
         params: {
           schoolCode: user.schoolCode,
           isRead: false
@@ -1154,7 +1155,7 @@ function WorkNote(args) {
 
     const yesCallback = async () => {
       if(selectedRequest) {
-        const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateRequestReadStatus`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workNote/updateRequestReadStatus`, {
           id: selectedRequest.id,  
           schoolCode: selectedRequest.schoolCode,
           isRead: true
@@ -1180,7 +1181,7 @@ function WorkNote(args) {
     if(visitRequestList.length > 0) {
       const yesCallback = async () => {
         const requestIds = visitRequestList.map(request => request.id);
-        const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateEntireRequestReadStatus`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workNote/updateEntireRequestReadStatus`, {
           requestIds: requestIds,
           isRead: true
         });
@@ -1203,7 +1204,7 @@ function WorkNote(args) {
 
   const fetchMaskedStatus = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/user/getMaskedStatus`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/user/getMaskedStatus`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -1229,7 +1230,7 @@ function WorkNote(args) {
 
     const yesCallback = async () => {
       if(user) {
-        const response = await axios.post(`http://${BASE_URL}:8000/user/updateMaskedStatus`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/updateMaskedStatus`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           masked: !masked
@@ -1252,7 +1253,7 @@ function WorkNote(args) {
 
   const fetchAlertHiddenStatus = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:8000/user/getAlertHiddenStatus`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/user/getAlertHiddenStatus`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -1278,7 +1279,7 @@ function WorkNote(args) {
 
     const yesCallback = async () => {
       if(user) {
-        const response = await axios.post(`http://${BASE_URL}:8000/user/updateAlertHiddenStatus`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/updateAlertHiddenStatus`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           alertHidden: !alertHidden
@@ -1345,7 +1346,7 @@ function WorkNote(args) {
     e.preventDefault();
     
     // const serverUrl = `http://localhost:8000`;
-    const serverUrl = `http://223.130.130.53:8000`;
+    const serverUrl = `http://223.130.130.53:${BASE_PORT}`;
     const socket = io(serverUrl);
 
     let symptomString = "";
@@ -1420,7 +1421,7 @@ function WorkNote(args) {
       }
 
       const yesCallback = async () => {
-        const response = await axios.post(`http://${BASE_URL}:8000/workNote/saveWorkNote`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workNote/saveWorkNote`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           sGrade: selectedStudent.sGrade,
@@ -1466,7 +1467,7 @@ function WorkNote(args) {
 
   const fetchSelectedStudentData = useCallback(async () => {
     if(user && selectedStudent) {
-      const response = await axios.get(`http://${BASE_URL}:8000/workNote/getSelectedStudentData`, {
+      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workNote/getSelectedStudentData`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode,
@@ -1570,7 +1571,7 @@ function WorkNote(args) {
   };
 
   useEffect(() => {
-    const serverUrl = `http://${BASE_URL}:8000`;
+    const serverUrl = `http://${BASE_URL}:${BASE_PORT}`;
     const socket = io(serverUrl);
 
     const connectedSockets = new Set();
@@ -1648,7 +1649,7 @@ function WorkNote(args) {
       const confirmMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생을<br/>당뇨질환 학생으로 등록하시겠습니까?";
       
       const yesCallback = async () => {
-        const response = await axios.post(`http://${BASE_URL}:8000/workNote/updateDiabetesStudent`, {
+        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workNote/updateDiabetesStudent`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           targetGrade: targetGrade,
