@@ -23,23 +23,23 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        // origin: "*",
-        origin: "http://223.130.130.53",
+        origin: "*",
+        // origin: "http://223.130.130.53",
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-        allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-        optionsSuccessStatus: 200,
+        // allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+        // optionsSuccessStatus: 200,
         credentials: true
         // origin: "http://localhost:3000"
     }
 });
 
-app.use(cors({
-     origin: ['http://223.130.130.53'],
-     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-     credentials: true,
-     optionsSuccessStatus: 200
-}));
+// app.use(cors({
+//      origin: ['http://223.130.130.53'],
+//      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+//      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+//      credentials: true,
+//      optionsSuccessStatus: 200
+// }));
 // app.use(cors({ origin: "*", credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
