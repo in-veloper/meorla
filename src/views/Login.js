@@ -79,7 +79,8 @@ function Login() {
         try {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
-                const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/api/user/login`, { userId: confirmUserId, password: confirmPassword });
+                // const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/api/user/login`, { userId: confirmUserId, password: confirmPassword });
+                const response = await axios.post(`http://${BASE_URL}/api/user/login`, { userId: confirmUserId, password: confirmPassword });
                 const accessToken = response.data.accessToken;
                 const userData = response.data.user;
                 
@@ -119,7 +120,8 @@ function Login() {
         // 학교명 임의로 입력해서 하도록 하지 못하게 막아야할듯 
         // 가입된 학교 비교 시에 학교명으로 하면 안되고 학교 코드 등으로 해야할듯
         try {
-            const selectResponse = await axios.get(`http://${BASE_URL}:${BASE_PORT}/api/user/checkUser`, {
+            // const selectResponse = await axios.get(`http://${BASE_URL}:${BASE_PORT}/api/user/checkUser`, {
+                const selectResponse = await axios.get(`http://${BASE_URL}/api/user/checkUser`, {
                 params: {
                     userId: userId,
                     schoolName: schoolName
