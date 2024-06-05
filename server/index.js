@@ -26,7 +26,7 @@ const io = socketIo(server, {
         // origin: "*",
         origin: "http://223.130.130.53",
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
         optionsSuccessStatus: 200,
         credentials: true
         // origin: "http://localhost:3000"
@@ -36,7 +36,7 @@ const io = socketIo(server, {
 app.use(cors({
      origin: ['http://223.130.130.53'],
      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-     allowedHeaders: ['Content-Type', 'Authorization'],
+     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
      credentials: true,
      optionsSuccessStatus: 200
 }));
