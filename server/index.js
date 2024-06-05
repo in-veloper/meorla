@@ -69,7 +69,7 @@ const db = mysql.createPool({
 
 dotenv.config();
 
-app.get("/token", async (req, res) => {
+app.get("/api/token", async (req, res) => {
     try {
         const refreshToken = getCookie('refreshToken');
         if(!refreshToken) return res.sendStatus(401);
@@ -114,7 +114,7 @@ app.get("/token", async (req, res) => {
     }
 });
 
-app.get("/user/checkUser", async (req, res) => {
+app.get("/api/user/checkUser", async (req, res) => {
     const userId = req.query.userId;
     const schoolName = req.query.schoolName;
 
@@ -146,7 +146,7 @@ function verifyPassword(storedHash, inputPassword) {
     return hash === originalHash;
 };
 
-app.post("/user/insert", async (req, res) => {
+app.post("/api/user/insert", async (req, res) => {
     const { schoolName, name, email, userId, password, schoolCode, schoolAddress, refresh_token, commonPassword } = req.body;
     const hashedPassword = hashPassword(password);
 
@@ -160,7 +160,7 @@ app.post("/user/insert", async (req, res) => {
     });
 });
 
-app.post("/user/login", async (req, res) => {
+app.post("/api/user/login", async (req, res) => {
     const { userId, password } = req.body;
 
     const sqlQuery = "SELECT * FROM teaform_db.users WHERE userId = ?";
@@ -213,7 +213,7 @@ app.post("/user/login", async (req, res) => {
     })
 });
 
-app.post("/user/logout", (req, res) => {
+app.post("/api/user/logout", (req, res) => {
     const userId = req.body.userId;
     const refreshToken = null;
     const sqlQuery = "UPDATE teaform_db.users SET refresh_token = ? WHERE userId = ?";
@@ -228,7 +228,7 @@ app.post("/user/logout", (req, res) => {
     });
 });
 
-app.post("/user/updateUserInfo", (req, res) => {
+app.post("/api/user/updateUserInfo", (req, res) => {
     const { userId, schoolCode, userName, userEmail, bedCount } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET name = ?, email = ?, bedCount = ? WHERE userId = ? AND schoolCode = ?";
@@ -241,7 +241,7 @@ app.post("/user/updateUserInfo", (req, res) => {
     });
 });
 
-app.get("/user/getMaskedStatus", (req, res) => {
+app.get("/api/user/getMaskedStatus", (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT masked FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
@@ -254,7 +254,7 @@ app.get("/user/getMaskedStatus", (req, res) => {
     });
 });
 
-app.post("/user/updateMaskedStatus", (req, res) => {
+app.post("/api/user/updateMaskedStatus", (req, res) => {
     const { userId, schoolCode, masked } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET masked = ? WHERE userId = ? AND schoolCode = ?";
@@ -267,7 +267,7 @@ app.post("/user/updateMaskedStatus", (req, res) => {
     })
 });
 
-app.get("/user/getAlertHiddenStatus", (req, res) => {
+app.get("/api/user/getAlertHiddenStatus", (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT alertHidden FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
@@ -280,7 +280,7 @@ app.get("/user/getAlertHiddenStatus", (req, res) => {
     });
 });
 
-app.post("/user/updateAlertHiddenStatus", (req, res) => {
+app.post("/api/user/updateAlertHiddenStatus", (req, res) => {
     const { userId, schoolCode, alertHidden } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET alertHidden = ? WHERE userId = ? AND schoolCode = ?";
@@ -293,7 +293,7 @@ app.post("/user/updateAlertHiddenStatus", (req, res) => {
     })
 });
 
-app.post("/user/updatePmStation", (req, res) => {
+app.post("/api/user/updatePmStation", (req, res) => {
     const { userId, schoolCode, pmStation } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET pmStation = ? WHERE userId = ? AND schoolCode = ?";
@@ -306,7 +306,7 @@ app.post("/user/updatePmStation", (req, res) => {
     });
 });
 
-app.post("/user/updateNotifyPmInfo", (req, res) => {
+app.post("/api/user/updateNotifyPmInfo", (req, res) => {
     const { userId, schoolCode, notifyPm } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET notifyPm = ? WHERE userId = ? AND schoolCode = ?";
@@ -332,7 +332,7 @@ app.get("/user/getNotifyPmInfo", (req, res) => {
     });
 });
 
-app.post("/bookmark/insert", async (req, res) => {
+app.post("/api/bookmark/insert", async (req, res) => {
     const { userId, userEmail, userName, schoolName, schoolCode, bookmarkArray } = req.body;
     const bookmarkArrayString = bookmarkArray.map(bookmark => `${bookmark.bookmarkName}::${bookmark.bookmarkAddress}`).join(',');
 
@@ -346,7 +346,7 @@ app.post("/bookmark/insert", async (req, res) => {
     });
 });
 
-app.post("/bookmark/update", async (req, res) => {
+app.post("/api/bookmark/update", async (req, res) => {
     const { userId, userEmail, schoolCode, bookmarkArray } = req.body;
     const bookmarkArrayString = bookmarkArray.map(bookmark => `${bookmark.bookmarkName}::${bookmark.bookmarkAddress}`).join(',');
 
@@ -360,7 +360,7 @@ app.post("/bookmark/update", async (req, res) => {
     });
 });
 
-app.get("/bookmark/getBookmark", async (req, res) => {
+app.get("/api/bookmark/getBookmark", async (req, res) => {
     const { userId, userEmail } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.bookmark WHERE userId = ? AND email = ?";
@@ -378,7 +378,7 @@ app.get("/bookmark/getBookmark", async (req, res) => {
     });
 });
 
-app.post("/studentsTable/insert", async (req, res) => {
+app.post("/api/studentsTable/insert", async (req, res) => {
     const studentsArray = req.body.studentsArray;
     const values = studentsArray.map(student => {
         return [
@@ -403,7 +403,7 @@ app.post("/studentsTable/insert", async (req, res) => {
     });
 });
 
-app.get("/studentsTable/getStudentInfo", async (req, res) => {
+app.get("/api/studentsTable/getStudentInfo", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
@@ -417,7 +417,7 @@ app.get("/studentsTable/getStudentInfo", async (req, res) => {
     });
 });
 
-app.get("/studentsTable/getStudentInfoByGrade", async (req, res) => {
+app.get("/api/studentsTable/getStudentInfoByGrade", async (req, res) => {
     const { userId, schoolCode, sGrade } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND sGrade = ?";
@@ -431,7 +431,7 @@ app.get("/studentsTable/getStudentInfoByGrade", async (req, res) => {
     });
 });
 
-app.get("/studentsTable/getStudentInfoBySearch", async (req, res) => {
+app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sName } = req.query;
     
     let sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
@@ -469,7 +469,7 @@ app.get("/studentsTable/getStudentInfoBySearch", async (req, res) => {
     });
 });
 
-app.get("/studentsTable/getStudentInfoBySearchInRequest", async (req, res) => {
+app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) => {
     const { schoolCode, sGrade, sClass, sNumber, sName } = req.query;
     
     let sqlQuery = "SELECT * FROM teaform_db.students WHERE schoolCode = ?";
@@ -506,7 +506,7 @@ app.get("/studentsTable/getStudentInfoBySearchInRequest", async (req, res) => {
     });
 });
 
-app.post("/symptom/insert", async (req, res) => {
+app.post("/api/symptom/insert", async (req, res) => {
     const { userId, schoolCode, symptomString } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.symptom (userId, schoolCode, symptom) VALUES (?,?,?)";
@@ -520,7 +520,7 @@ app.post("/symptom/insert", async (req, res) => {
     });
 });
 
-app.post("/symptom/update", async (req, res) => {
+app.post("/api/symptom/update", async (req, res) => {
     const { userId, schoolCode, symptomString } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.symptom SET symptom = ? WHERE userId = ? AND schoolCode = ?";
@@ -533,7 +533,7 @@ app.post("/symptom/update", async (req, res) => {
     });
 });
 
-app.post("/symptom/getSymptom", async (req, res) => {
+app.post("/api/symptom/getSymptom", async (req, res) => {
     const { userId, schoolCode } = req.body;
 
     const sqlQuery = "SELECT * FROM teaform_db.symptom WHERE userId = ? AND schoolCode = ?";
@@ -549,7 +549,7 @@ app.post("/symptom/getSymptom", async (req, res) => {
     });
 });
 
-app.post("/actionMatter/insert", async (req, res) => {
+app.post("/api/actionMatter/insert", async (req, res) => {
     const { userId, schoolCode, actionMatterString } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.actionMatter (userId, schoolCode, actionMatter) VALUES (?,?,?)";
@@ -563,7 +563,7 @@ app.post("/actionMatter/insert", async (req, res) => {
     });
 });
 
-app.post("/actionMatter/update", async (req, res) => {
+app.post("/api/actionMatter/update", async (req, res) => {
     const { userId, schoolCode, actionMatterString } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.actionMatter SET actionMatter = ? WHERE userId = ? AND schoolCode = ?";
@@ -576,7 +576,7 @@ app.post("/actionMatter/update", async (req, res) => {
     });
 });
 
-app.post("/actionMatter/getActionMatter", async (req, res) => {
+app.post("/api/actionMatter/getActionMatter", async (req, res) => {
     const { userId, schoolCode } = req.body;
 
     const sqlQuery = "SELECT * FROM teaform_db.actionMatter WHERE userId = ? AND schoolCode = ?";
@@ -592,7 +592,7 @@ app.post("/actionMatter/getActionMatter", async (req, res) => {
     });
 });
 
-app.post("/treatmentMatter/insert", async (req, res) => {
+app.post("/api/treatmentMatter/insert", async (req, res) => {
     const { userId, schoolCode, treatmentMatterString } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.treatmentMatter (userId, schoolCode, treatmentMatter) VALUES (?,?,?)";
@@ -606,7 +606,7 @@ app.post("/treatmentMatter/insert", async (req, res) => {
     });
 });
 
-app.post("/treatmentMatter/update", async (req, res) => {
+app.post("/api/treatmentMatter/update", async (req, res) => {
     const { userId, schoolCode, treatmentMatterString } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.treatmentMatter SET treatmentMatter = ? WHERE userId = ? AND schoolCode = ?";
@@ -619,7 +619,7 @@ app.post("/treatmentMatter/update", async (req, res) => {
     });
 });
 
-app.post("/treatmentMatter/getTreatmentMatter", async (req, res) => {
+app.post("/api/treatmentMatter/getTreatmentMatter", async (req, res) => {
     const { userId, schoolCode } = req.body;
 
     const sqlQuery = "SELECT * FROM teaform_db.treatmentMatter WHERE userId = ? AND schoolCode = ?";
@@ -635,7 +635,7 @@ app.post("/treatmentMatter/getTreatmentMatter", async (req, res) => {
     });
 });
 
-app.post("/medication/insert", async (req, res) => {
+app.post("/api/medication/insert", async (req, res) => {
     const { userId, schoolCode, medicationString } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.medication (userId, schoolCode, medication) VALUES (?,?,?)";
@@ -649,7 +649,7 @@ app.post("/medication/insert", async (req, res) => {
     });
 });
 
-app.post("/medication/update", async (req, res) => {
+app.post("/api/medication/update", async (req, res) => {
     const { userId, schoolCode, medicationString } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.medication SET medication = ? WHERE userId = ? AND schoolCode = ?";
@@ -662,7 +662,7 @@ app.post("/medication/update", async (req, res) => {
     });
 });
 
-app.post("/medication/getMedication", async (req, res) => {
+app.post("/api/medication/getMedication", async (req, res) => {
     const { userId, schoolCode } = req.body;
 
     const sqlQuery = "SELECT * FROM teaform_db.medication WHERE userId = ? AND schoolCode = ?";
@@ -675,7 +675,7 @@ app.post("/medication/getMedication", async (req, res) => {
     });
 });
 
-app.post("/stockMedicine/insert", async (req, res) => {
+app.post("/api/stockMedicine/insert", async (req, res) => {
     const { userId, schoolCode, medicineName, coporateName, unit, stockAmount, extinctAmount, latestPurchaseDate } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.stockMedicine (userId, schoolCode, medicineName, coporateName, unit, stockAmount, extinctAmount, purchaseDate) VALUES (?,?,?,?,?,?,?,?)";
@@ -688,7 +688,7 @@ app.post("/stockMedicine/insert", async (req, res) => {
     });
 });
 
-app.get("/stockMedicine/getStockMedicine", async (req, res) => {
+app.get("/api/stockMedicine/getStockMedicine", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ?";
@@ -701,7 +701,7 @@ app.get("/stockMedicine/getStockMedicine", async (req, res) => {
     });
 });
 
-app.post("/stockMedicine/updateStockMedicine", async (req, res) => {
+app.post("/api/stockMedicine/updateStockMedicine", async (req, res) => {
     const { userId, schoolCode, rowId, medicineName, coporateName, latestPurchaseDate, unit, stockAmount, extinctAmount, registrationUnitAmount } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.stockMedicine SET medicineName = ?, coporateName = ?, latestPurchaseDate = ?, unit = ?, stockAmount = ?, extinctAmount = ?, registrationUnitAmount = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
@@ -714,7 +714,7 @@ app.post("/stockMedicine/updateStockMedicine", async (req, res) => {
     });
 });
 
-app.post("/stockMedicine/deleteStockMedicine", async (req, res) => {
+app.post("/api/stockMedicine/deleteStockMedicine", async (req, res) => {
     const { userId, schoolCode, rowId } = req.body;
 
     const sqlQuery = "DELETE FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ? AND id = ?";
@@ -727,7 +727,7 @@ app.post("/stockMedicine/deleteStockMedicine", async (req, res) => {
     });
 });
 
-app.post("/stockFixt/saveStockFixt", async (req, res) => {
+app.post("/api/stockFixt/saveStockFixt", async (req, res) => {
     const { userId, schoolCode, fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.stockFixt (userId, schoolCode, fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount) VALUES (?,?,?,?,?,?,?,?,?)";
@@ -740,7 +740,7 @@ app.post("/stockFixt/saveStockFixt", async (req, res) => {
     });
 });
 
-app.get('/stockFixt/getStockFixt', async (req, res) => {
+app.get('/api/stockFixt/getStockFixt', async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.stockFixt WHERE userID = ? AND schoolCode = ?";
@@ -753,7 +753,7 @@ app.get('/stockFixt/getStockFixt', async (req, res) => {
     });
 });
 
-app.post('/stockFixt/updateStockFixt', async (req, res) => {
+app.post('/api/stockFixt/updateStockFixt', async (req, res) => {
     const { userId, schoolCode, rowId, fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.stockFixt SET fixtName = ?, fixtCoporate = ?, fixtLatestPurchaseDate = ?, fixtUnit = ?, fixtStockAmount = ?, fixtExtinctAmount = ?, fixtRegistrationUnitAmount = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
@@ -784,7 +784,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.post("/upload/image", upload.single('file'), (req, res) => {
+app.post("api//upload/image", upload.single('file'), (req, res) => {
     res.json({
         message: 'Image가 업로드 성공',
         filename: req.file.filename
@@ -793,7 +793,7 @@ app.post("/upload/image", upload.single('file'), (req, res) => {
 
 app.use(express.static(path.join(__dirname, '/public')));
 
-app.post("/upload/insert", async (req, res) => {
+app.post("/api/upload/insert", async (req, res) => {
     const { userId, schoolCode, category, fileName } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.uploadFile (userId, schoolCode, category, fileName) VALUES (?,?,?,?)";
@@ -807,7 +807,7 @@ app.post("/upload/insert", async (req, res) => {
     })
 });
 
-app.get("/upload/getFileName", async (req, res) => {
+app.get("/api/upload/getFileName", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.uploadFile WHERE userId = ? AND schoolCode = ?";
@@ -820,7 +820,7 @@ app.get("/upload/getFileName", async (req, res) => {
     })
 });
 
-app.get("/user/getCommonPassword", async (req, res) => {
+app.get("/api/user/getCommonPassword", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT commonPassword FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
@@ -833,7 +833,7 @@ app.get("/user/getCommonPassword", async (req, res) => {
     })
 })
 
-app.post("/user/updateCommonPassword", async (req, res) => {
+app.post("/api/user/updateCommonPassword", async (req, res) => {
     const { userId, schoolCode, updatedCommonPassword } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET commonPassword = ? WHERE userId = ? AND schoolCode = ?";
@@ -846,7 +846,7 @@ app.post("/user/updateCommonPassword", async (req, res) => {
     });
 });
 
-app.get("/user/getWorkStatus", async (req, res) => {
+app.get("/api/user/getWorkStatus", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT workStatus FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
@@ -872,7 +872,7 @@ app.post("/user/updateWorkStatus", async (req, res) => {
     });
 });
 
-app.get("/workNote/getStockMedication", async (req, res) => {
+app.get("/api/workNote/getStockMedication", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.stockMedicine WHERE userId = ? AND schoolCode = ?";
@@ -899,7 +899,7 @@ app.get("/workNote/getStockMedication", async (req, res) => {
     });
 });
 
-app.post("/workNote/saveWorkNote", async (req, res) => {
+app.post("/api/workNote/saveWorkNote", async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -912,7 +912,7 @@ app.post("/workNote/saveWorkNote", async (req, res) => {
     });
 });
 
-app.post("/workSchedule/insert", async (req, res) => {
+app.post("/api/workSchedule/insert", async (req, res) => {
     const { userId, schoolCode, eventTitle, eventColor, eventStartDate, eventEndDate } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.workSchedule (userId, schoolCode, eventTitle, eventColor, eventStartDate, eventEndDate) VALUES (?,?,?,?,?,?)";
@@ -925,7 +925,7 @@ app.post("/workSchedule/insert", async (req, res) => {
     });
 });
 
-app.get("/workSchedule/getWorkSchedule", async (req, res) => {
+app.get("/api/workSchedule/getWorkSchedule", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.workSchedule WHERE userId = ? AND schoolCode = ?";
@@ -938,7 +938,7 @@ app.get("/workSchedule/getWorkSchedule", async (req, res) => {
     })
 });
 
-app.post("/workSchedule/update", async (req, res) => {
+app.post("/api/workSchedule/update", async (req, res) => {
     const { userId, schoolCode, eventId, eventTitle, eventColor, eventStartDate, eventEndDate } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.workSchedule SET eventTitle = ?, eventColor = ?, eventStartDate = ?, eventEndDate = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
@@ -964,7 +964,7 @@ app.post("/workSchedule/reSchedule", async (req, res) => {
     });
 });
 
-app.get("/workSchedule/getTodaySchedule", async (req, res) => {
+app.get("/api/workSchedule/getTodaySchedule", async (req, res) => {
     const { userId, schoolCode, today } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.workSchedule WHERE userId = ? AND schoolCode = ? AND ? >= eventStartDate AND ? <= eventEndDate";
@@ -977,7 +977,7 @@ app.get("/workSchedule/getTodaySchedule", async (req, res) => {
     });
 });
 
-app.get("/workSchedule/getEntireSchedule", async (req, res) => {
+app.get("/api/workSchedule/getEntireSchedule", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.workSchedule WHERE userId = ? AND schoolCode = ?";
@@ -990,7 +990,7 @@ app.get("/workSchedule/getEntireSchedule", async (req, res) => {
     });
 });
 
-app.get('/request/getCommonPassword', async (req, res) => {
+app.get('/api/request/getCommonPassword', async (req, res) => {
     const { schoolCode, schoolName } = req.query;
 
     const sqlQuery = "SELECT commonPassword FROM teaform_db.users WHERE schoolCode = ? AND schoolName = ?";
@@ -1003,7 +1003,7 @@ app.get('/request/getCommonPassword', async (req, res) => {
     });
 });
 
-app.get('/workNote/getSelectedStudentData', async (req, res) => {
+app.get('/api/workNote/getSelectedStudentData', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
@@ -1017,7 +1017,7 @@ app.get('/workNote/getSelectedStudentData', async (req, res) => {
 });
 
 // 추후 기간 등 조건 추가하여 조회 필요
-app.get('/workNote/getEntireWorkNote', async (req, res) => {
+app.get('/api/workNote/getEntireWorkNote', async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE userId = ? AND schoolCode = ?";
@@ -1030,7 +1030,7 @@ app.get('/workNote/getEntireWorkNote', async (req, res) => {
     });
 });
 
-app.post('/workNote/updateOnBedEndTime', async (req, res) => {
+app.post('/api/workNote/updateOnBedEndTime', async (req, res) => {
     const { onBedEndTime, userId, schoolCode, rowId, targetStudentGrade, targetStudentClass, targetStudentNumber, targetStudentGender, targetStudentName } = req.body;
 
     // 침상안정 종료시간 update 처리 필요
@@ -1044,7 +1044,7 @@ app.post('/workNote/updateOnBedEndTime', async (req, res) => {
     });
 });
 
-app.get('/request/getCurrentInfo', async (req, res) => {
+app.get('/api/request/getCurrentInfo', async (req, res) => {
     const schoolCode = req.query.schoolCode;
 
     const sqlQuery = "SELECT workStatus FROM teaform_db.users WHERE schoolCode = ?";
@@ -1057,7 +1057,7 @@ app.get('/request/getCurrentInfo', async (req, res) => {
     });
 });
 
-app.get('/request/getOnBedRestInfo', async (req, res) => {
+app.get('/api/request/getOnBedRestInfo', async (req, res) => {
     const { schoolCode, today } = req.query;
     const currentDateTime = new Date();
     const currentTime = currentDateTime.getHours() + ":" + currentDateTime.getMinutes();
@@ -1079,7 +1079,7 @@ app.get('/request/getOnBedRestInfo', async (req, res) => {
     })
 });
 
-app.post('/request/saveVisitRequest', async (req, res) => {
+app.post('/api/request/saveVisitRequest', async (req, res) => {
     const { schoolCode, targetGrade, targetClass, targetNumber, targetName, requestContent, teacherClassification, teacherName, requestTime } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.visitRequest (schoolCode, teacherClassification, teacherName, sGrade, sClass, sNumber, sName, requestContent, requestTime) VALUES (?,?,?,?,?,?,?,?,?)";
@@ -1093,7 +1093,7 @@ app.post('/request/saveVisitRequest', async (req, res) => {
 });
 
 // DB에서 조회할때 오늘날짜로 등록된 목록만 조회하도록 수정 필요
-app.get('/workNote/getVisitRequest', async (req, res) => {
+app.get('/api/workNote/getVisitRequest', async (req, res) => {
     const { schoolCode, isRead } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.visitRequest WHERE schoolCode = ? AND isRead = ?";
@@ -1106,7 +1106,7 @@ app.get('/workNote/getVisitRequest', async (req, res) => {
     });
 });
 
-app.post('/workNote/updateRequestReadStatus', async (req, res) => {
+app.post('/api/workNote/updateRequestReadStatus', async (req, res) => {
     const { id, schoolCode, isRead } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.visitRequest SET isRead = ? WHERE id = ? AND schoolCode = ?";
@@ -1119,7 +1119,7 @@ app.post('/workNote/updateRequestReadStatus', async (req, res) => {
     });
 });
 
-app.post('/workNote/updateEntireRequestReadStatus', async (req, res) => {
+app.post('/api/workNote/updateEntireRequestReadStatus', async (req, res) => {
     const { requestIds, isRead } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.visitRequest SET isRead = ? WHERE id IN (?)";
@@ -1132,7 +1132,7 @@ app.post('/workNote/updateEntireRequestReadStatus', async (req, res) => {
     });
 });
 
-app.post('/workNote/updateDiabetesStudent', async (req, res) => {
+app.post('/api/workNote/updateDiabetesStudent', async (req, res) => {
     const { userId, schoolCode, targetGrade, targetClass, targetNumber, targetName, isDiabetes } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.students SET isDiabetes = ? WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sName = ?";
@@ -1145,7 +1145,7 @@ app.post('/workNote/updateDiabetesStudent', async (req, res) => {
     });
 });
 
-app.get('/medicineInfo/getMedicineData', async (req, res) => {
+app.get('/api/medicineInfo/getMedicineData', async (req, res) => {
     const sqlQuery = "SELECT * FROM teaform_db.medicineApiData";
     db.query(sqlQuery, [], (err, result) => {
         if(err) {
@@ -1156,7 +1156,7 @@ app.get('/medicineInfo/getMedicineData', async (req, res) => {
     })
 });
 
-app.get('/medicineInfo/getGrainMedicineData', async (req, res) => {
+app.get('/api/medicineInfo/getGrainMedicineData', async (req, res) => {
     const sqlQuery = "SELECT * FROM teaform_db.grainMedicineApiData";
     db.query(sqlQuery, [], (err, result) => {
         if(err) {
@@ -1167,7 +1167,7 @@ app.get('/medicineInfo/getGrainMedicineData', async (req, res) => {
     })
 });
 
-app.post('/medicineInfo/saveBookmarkMedicine', async (req, res) => {
+app.post('/api/medicineInfo/saveBookmarkMedicine', async (req, res) => {
     const { userId, schoolCode, itemSeq } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.bookmarkMedicine (userId, schoolCode, itemSeq) VALUES(?,?,?)";
@@ -1180,7 +1180,7 @@ app.post('/medicineInfo/saveBookmarkMedicine', async (req, res) => {
     });
 });
 
-app.post('/medicineInfo/deleteBookmarkMedicine', async (req, res) => {
+app.post('/api/medicineInfo/deleteBookmarkMedicine', async (req, res) => {
     const { userId, schoolCode, itemSeq } = req.body;
 
     const sqlQuery = "DELETE FROM teaform_db.bookmarkMedicine WHERE userId = ? AND schoolCode = ? AND itemSeq = ?";
@@ -1193,7 +1193,7 @@ app.post('/medicineInfo/deleteBookmarkMedicine', async (req, res) => {
     });
 });
 
-app.get('/medicineInfo/getBookmarkMedicine', async (req, res) => {
+app.get('/api/medicineInfo/getBookmarkMedicine', async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.bookmarkMedicine WHERE userId = ? AND schoolCode = ?";
@@ -1206,7 +1206,7 @@ app.get('/medicineInfo/getBookmarkMedicine', async (req, res) => {
     });
 });
 
-app.post('/manageEmergency/saveEmergencyManagement', async (req, res) => {
+app.post('/api/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -1232,7 +1232,7 @@ app.post('/manageEmergency/updateEmergencyManagement', async (req, res) => {
      });
 });
 
-app.get('/manageEmergency/getManageEmergencyData', async (req, res) => {
+app.get('/api/manageEmergency/getManageEmergencyData', async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.manageEmergency WHERE userId = ? AND schoolCode = ?";
@@ -1245,7 +1245,7 @@ app.get('/manageEmergency/getManageEmergencyData', async (req, res) => {
     });
 });
 
-app.post('/dashboard/saveMemo', async (req, res) => {
+app.post('/api/dashboard/saveMemo', async (req, res) => {
     const { userId, schoolCode, memo } = req.body
 
     const checkQuery = "SELECT * FROM teaform_db.memo WHERE userId = ? AND schoolCode = ?";
@@ -1276,7 +1276,7 @@ app.post('/dashboard/saveMemo', async (req, res) => {
     })
 });
 
-app.get('/dashboard/getMemo', async (req, res) => {
+app.get('/api/dashboard/getMemo', async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.memo WHERE userId = ? AND schoolCode = ?";
@@ -1289,7 +1289,7 @@ app.get('/dashboard/getMemo', async (req, res) => {
     });
 });
 
-app.post('/qnaRequest/saveQnaRequest', async (req, res) => {
+app.post('/api/qnaRequest/saveQnaRequest', async (req, res) => {
     const { userId, userName, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.qnaRequest (userId, userName, schoolCode, qrCategory, qrTitle, qrContent, isSecret) VALUES (?,?,?,?,?,?,?)";
@@ -1302,7 +1302,7 @@ app.post('/qnaRequest/saveQnaRequest', async (req, res) => {
     });
 });
 
-app.get('/qnaRequest/getQnaRequest', async (req, res) => {
+app.get('/api/qnaRequest/getQnaRequest', async (req, res) => {
     const sqlQuery = "SELECT * FROM teaform_db.qnaRequest";
     db.query(sqlQuery, [], (err, result) => {
         if(err) {
@@ -1313,7 +1313,7 @@ app.get('/qnaRequest/getQnaRequest', async (req, res) => {
     });
 });
 
-app.post('/qnaRequest/updateQnaRequest', async (req, res) => {
+app.post('/api/qnaRequest/updateQnaRequest', async (req, res) => {
     const { rowId, userId, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.qnaRequest SET qrCategory = ?, qrTitle = ?, qrContent = ?, isSecret = ? WHERE id = ? AND userId = ? AND schoolCode = ?";
@@ -1326,7 +1326,7 @@ app.post('/qnaRequest/updateQnaRequest', async (req, res) => {
     });
 });
 
-app.post('/qnaRequest/incrementViewCount', async (req, res) => {
+app.post('/api/qnaRequest/incrementViewCount', async (req, res) => {
     const { rowId } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.qnaRequest SET views = views + 1 WHERE id = ?";
@@ -1339,7 +1339,7 @@ app.post('/qnaRequest/incrementViewCount', async (req, res) => {
     });
 });
 
-app.post('/qnaRequest/replyQnaRequest', async (req, res) => {
+app.post('/api/qnaRequest/replyQnaRequest', async (req, res) => {
     const { rowId, userId, reply } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.qnaRequest SET reply = ? WHERE id = ?";
@@ -1354,7 +1354,7 @@ app.post('/qnaRequest/replyQnaRequest', async (req, res) => {
     }
 });
 
-app.post('/community/saveOpinionSharing', async (req, res) => {
+app.post('/api/community/saveOpinionSharing', async (req, res) => {
     const { userId, userName, schoolCode, osCategory, osTitle, osContent } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.opinionSharing (userId, userName, schoolCode, osCategory, osTitle, osContent) VALUES (?,?,?,?,?,?)";
@@ -1367,7 +1367,7 @@ app.post('/community/saveOpinionSharing', async (req, res) => {
     });
 });
 
-app.get('/community/getOpinionSharing', async (req, res) => {
+app.get('/api/community/getOpinionSharing', async (req, res) => {
     // const sqlQuery = "SELECT * FROM teaform_db.opinionSharing";
     const sqlQuery = "SELECT os.*, COUNT(rec.postId) AS recommendationCount FROM teaform_db.opinionSharing AS os LEFT JOIN teaform_db.recommendations AS rec ON os.id = rec.postId GROUP BY os.id ORDER BY os.createdAt DESC";
     
@@ -1380,7 +1380,7 @@ app.get('/community/getOpinionSharing', async (req, res) => {
     });
 });
 
-app.post('/community/updateOpinionSharing', async (req, res) => {
+app.post('/api/community/updateOpinionSharing', async (req, res) => {
     const { userId, schoolCode, rowId, osCategory, osTitle, osContent } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.opinionSharing SET osCategory = ?, osTitle = ?, osContent = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
@@ -1393,7 +1393,7 @@ app.post('/community/updateOpinionSharing', async (req, res) => {
     });
 });
 
-app.post('/community/opinionSharingIncrementViewCount', async (req, res) => {
+app.post('/api/community/opinionSharingIncrementViewCount', async (req, res) => {
     const { rowId } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.opinionSharing SET views = views + 1 WHERE id = ?";
@@ -1406,7 +1406,7 @@ app.post('/community/opinionSharingIncrementViewCount', async (req, res) => {
     });
 });
 
-app.post('/community/thumbsUp', async (req, res) => {
+app.post('/api/community/thumbsUp', async (req, res) => {
     const { viewType, userId, postId } = req.body;
 
     const sqlQuery = "INSERT INTO teaform_db.recommendations (viewType, userId, postId) VALUES (?,?,?)";
@@ -1422,7 +1422,7 @@ app.post('/community/thumbsUp', async (req, res) => {
     });
 });
 
-app.post('/community/thumbsDown', async (req, res) => {
+app.post('/api/community/thumbsDown', async (req, res) => {
     const { viewType, userId, postId } = req.body;
 
     const sqlQuery = "DELETE FROM teaform_db.recommendations WHERE viewType = ? AND userId = ? AND postId = ?";
@@ -1435,7 +1435,7 @@ app.post('/community/thumbsDown', async (req, res) => {
     });
 });
 
-app.get('/community/opinionCheckThumbsUp', async (req, res) => {
+app.get('/api/community/opinionCheckThumbsUp', async (req, res) => {
     const { viewType, userId, postId } = req.query;
 
     const sqlQuery = "SELECT EXISTS (SELECT 1 FROM teaform_db.recommendations WHERE viewType = ? AND userId = ? AND postId = ?) AS hasThumbedUp";
