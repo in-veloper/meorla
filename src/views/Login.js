@@ -123,12 +123,7 @@ function Login() {
                 params: {
                     userId: userId,
                     schoolName: schoolName
-                },
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                withCredentials: true
+                }
             });
             const userData = selectResponse.data.user;
             debugger
