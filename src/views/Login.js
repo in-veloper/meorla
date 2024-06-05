@@ -16,7 +16,6 @@ import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
 import { Loading } from 'notiflix/build/notiflix-loading-aio';
 import '../assets/css/login.css';
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 

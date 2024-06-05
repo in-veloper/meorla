@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import io from "socket.io-client";
 import routes from "routes.js";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Header(props) {
@@ -211,7 +210,7 @@ function Header(props) {
   }, [fetchWorkStatusData]);
 
   const handleWorkStatus = async (e) => {
-    const serverUrl = `http://${BASE_URL}:${BASE_PORT}`;
+    const serverUrl = `http://${BASE_URL}`;
     const socket = io(serverUrl);
     
     const selectedWorkStatus = e.target.id;

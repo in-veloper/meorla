@@ -12,7 +12,6 @@ import '../assets/css/managemedifixt.css';
 import NotiflixInfo from "components/Notiflix/NotiflixInfo.js";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn.js";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function ManageMediFixt() {

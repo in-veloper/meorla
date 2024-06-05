@@ -11,9 +11,8 @@ import AdminLayout from "layouts/Admin.js";
 import Login from "views/Login";
 import io from 'socket.io-client';
 
-// const serverUrl = `http://localhost:8000`;
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
-const serverUrl = `http://223.130.130.53:${BASE_PORT}`;
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+const serverUrl = `http://${BASE_URL}`;
 
 const socket = io(serverUrl);
 

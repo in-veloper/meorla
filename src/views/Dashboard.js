@@ -12,7 +12,6 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Dashboard() {

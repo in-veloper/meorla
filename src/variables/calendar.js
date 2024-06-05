@@ -13,7 +13,6 @@ import axios from "axios";
 import { useUser } from "contexts/UserContext";
 import "../assets/css/mycalendar.css";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const WorkCalendar = forwardRef((props, ref) => {

@@ -13,7 +13,6 @@ import { LiaCrownSolid } from "react-icons/lia";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import { useDropzone } from "react-dropzone";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Community() {

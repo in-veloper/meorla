@@ -8,7 +8,6 @@ import { useUser } from "contexts/UserContext";
 import moment from 'moment';
 import axios from "axios";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function WorkSchedule() {

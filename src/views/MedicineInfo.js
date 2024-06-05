@@ -32,7 +32,6 @@ import Plus from "../assets/img/medicine/plus.png";
 import Etc from "../assets/img/medicine/etc.png";
 import '../assets/css/medicalInfo.css';
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function MedicalInfo() {

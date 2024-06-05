@@ -18,7 +18,6 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import { RiSearchLine } from "react-icons/ri";
 import "../assets/css/request.css";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
 
@@ -337,7 +336,7 @@ function Request({onLogOut}) {
 
     useEffect(() => {
         // const serverUrl = `http://localhost:8000`;
-        const serverUrl = `http://223.130.130.53:${BASE_PORT}`;
+        const serverUrl = `http://${BASE_URL}`;
         const socket = io(serverUrl);
 
         const connectedSockets = new Set();
@@ -584,8 +583,7 @@ function Request({onLogOut}) {
     const sendVisitRequest = async (e) => {
         e.preventDefault();
 
-        // const serverUrl = `http://localhost:8000`;
-        const serverUrl = `http://223.130.130.53:${BASE_PORT}`;
+        const serverUrl = `http://${BASE_URL}`;
         const socket = io(serverUrl);
         const currentTime = moment().format('HH:mm');
         

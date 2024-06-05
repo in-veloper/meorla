@@ -19,7 +19,6 @@ import NanumGothic from '../../assets/fonts/NanumGothic.ttf';
 import NanumGothicBold from '../../assets/fonts/NanumGothicBold.ttf';
 import { Block } from 'notiflix/build/notiflix-block-aio';
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, searchStudentColumnDefs, notEditDefaultColDef, fetchSelectedStudentData, fetchStudentData }) => {
