@@ -79,7 +79,7 @@ function Login() {
         try {
             // ID와 비밀번호 모두 공란 없이 입력했을 때 로그인 Logic 수행
             if(confirmUserId && confirmPassword) {
-                const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/user/login`, { userId: confirmUserId, password: confirmPassword });
+                const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/api/user/login`, { userId: confirmUserId, password: confirmPassword });
                 const accessToken = response.data.accessToken;
                 const userData = response.data.user;
                 
