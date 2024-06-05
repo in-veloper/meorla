@@ -745,10 +745,9 @@ function WorkNote(args) {
         });
         
         if (response.data && response.data.symptom) {
+          if(response.data.symptom === 'N') return;
+
           const symptomString = response.data.symptom.symptom;
-
-          if(symptomString === 'N') return;
-
           const symptomArray = symptomString.split('::').map(item => {
             return { symptom: item };
           });
@@ -780,10 +779,9 @@ function WorkNote(args) {
         });
         
         if (response.data && response.data.actionMatter) {
+          if(response.data.actionMatter === 'N') return;
+
           const actionMatterString = response.data.actionMatter.actionMatter;
-
-          if(actionMatterString === 'N') return;
-
           const actionMatterArray = actionMatterString.split('::').map(item => {
             return { actionMatter: item };
           });
@@ -815,10 +813,9 @@ function WorkNote(args) {
         });
         
         if (response.data && response.data.treatmentMatter) {
+          if(response.data.treatmentMatter === 'N') return;
+
           const treatmentMatterString = response.data.treatmentMatter.treatmentMatter;
-
-          if(treatmentMatterString === 'N') return;
-
           const treatmentMatterArray = treatmentMatterString.split('::').map(item => {
             return { treatmentMatter: item };
           });
