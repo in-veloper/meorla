@@ -544,6 +544,8 @@ app.get("/api/symptom/getSymptom", async (req, res) => {
             if(result.length > 0) {
                 const symptom = result[0];
                 res.json({ symptom });
+            }else{
+                res.json({ symptom: 'N' });
             }
         }
     });
@@ -587,6 +589,8 @@ app.get("/api/actionMatter/getActionMatter", async (req, res) => {
             if(result.length > 0) {
                 const actionMatter = result[0];
                 res.json({ actionMatter });
+            }else{
+                res.json({ actionMatter: 'N' });
             }
         }
     });
@@ -630,6 +634,8 @@ app.get("/api/treatmentMatter/getTreatmentMatter", async (req, res) => {
             if(result.length > 0) {
                 const treatmentMatter = result[0];
                 res.json({ treatmentMatter });
+            }else{
+                res.json({ treatmentMatter: 'N' });
             }
         }
     });

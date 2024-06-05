@@ -736,7 +736,7 @@ function WorkNote(args) {
   // 증상 데이터 획득 부분 Function 분리
   const fetchSymptomData = useCallback(async() => {
     try {
-      if(user?.userId && user?.schoolCode) {
+      if(user) {
         const response = await axios.get(`http://${BASE_URL}/api/symptom/getSymptom`, {
           params: {
             userId: user.userId,
@@ -744,8 +744,11 @@ function WorkNote(args) {
           }
         });
         
-        if (response.data) {
+        if (response.data && response.data.symptom) {
           const symptomString = response.data.symptom.symptom;
+
+          if(symptomString === 'N') return;
+
           const symptomArray = symptomString.split('::').map(item => {
             return { symptom: item };
           });
@@ -764,11 +767,11 @@ function WorkNote(args) {
     } catch (error) {
       console.error('증상 조회 중 ERROR', error);
     }
-  }, [user?.userId, user?.schoolCode]);
+  }, [user]);
 
   const fetchActionMatterData = useCallback(async() => {
     try {
-      if(user?.userId && user?.schoolCode) {
+      if(user) {
         const response = await axios.get(`http://${BASE_URL}/api/actionMatter/getActionMatter`, {
           params: {
             userId: user.userId,
@@ -776,8 +779,11 @@ function WorkNote(args) {
           }
         });
         
-        if (response.data) {
+        if (response.data && response.data.actionMatter) {
           const actionMatterString = response.data.actionMatter.actionMatter;
+
+          if(actionMatterString === 'N') return;
+
           const actionMatterArray = actionMatterString.split('::').map(item => {
             return { actionMatter: item };
           });
@@ -796,11 +802,11 @@ function WorkNote(args) {
     } catch (error) {
       console.error('조치 및 교육사항 조회 중 ERROR', error);
     }
-  }, [user?.userId, user?.schoolCode]);
+  }, [user]);
 
   const fetchTreatmentMatterData = useCallback(async() => {
     try {
-      if(user?.userId && user?.schoolCode) {
+      if(user) {
         const response = await axios.get(`http://${BASE_URL}/api/treatmentMatter/getTreatmentMatter`, {
           params: {
             userId: user.userId,
@@ -808,8 +814,11 @@ function WorkNote(args) {
           }
         });
         
-        if (response.data) {
+        if (response.data && response.data.treatmentMatter) {
           const treatmentMatterString = response.data.treatmentMatter.treatmentMatter;
+
+          if(treatmentMatterString === 'N') return;
+
           const treatmentMatterArray = treatmentMatterString.split('::').map(item => {
             return { treatmentMatter: item };
           });
@@ -828,7 +837,7 @@ function WorkNote(args) {
     } catch (error) {
       console.error('처치사항 조회 중 ERROR', error);
     }
-  }, [user?.userId, user?.schoolCode]);
+  }, [user]);
 
   useEffect(() => {
     fetchSymptomData();
