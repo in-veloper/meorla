@@ -319,7 +319,7 @@ app.post("/api/user/updateNotifyPmInfo", (req, res) => {
     });
 });
 
-app.get("/user/getNotifyPmInfo", (req, res) => {
+app.get("/api/user/getNotifyPmInfo", (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT notifyPm FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
