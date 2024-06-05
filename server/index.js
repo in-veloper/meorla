@@ -533,8 +533,8 @@ app.post("/api/symptom/update", async (req, res) => {
     });
 });
 
-app.post("/api/symptom/getSymptom", async (req, res) => {
-    const { userId, schoolCode } = req.body;
+app.get("/api/symptom/getSymptom", async (req, res) => {
+    const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.symptom WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
@@ -576,8 +576,8 @@ app.post("/api/actionMatter/update", async (req, res) => {
     });
 });
 
-app.post("/api/actionMatter/getActionMatter", async (req, res) => {
-    const { userId, schoolCode } = req.body;
+app.get("/api/actionMatter/getActionMatter", async (req, res) => {
+    const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.actionMatter WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
@@ -619,8 +619,8 @@ app.post("/api/treatmentMatter/update", async (req, res) => {
     });
 });
 
-app.post("/api/treatmentMatter/getTreatmentMatter", async (req, res) => {
-    const { userId, schoolCode } = req.body;
+app.get("/api/treatmentMatter/getTreatmentMatter", async (req, res) => {
+    const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT * FROM teaform_db.treatmentMatter WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {

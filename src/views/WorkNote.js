@@ -737,9 +737,11 @@ function WorkNote(args) {
   const fetchSymptomData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post(`http://${BASE_URL}/api/symptom/getSymptom`, {
-          userId: user.userId,
-          schoolCode: user.schoolCode
+        const response = await axios.get(`http://${BASE_URL}/api/symptom/getSymptom`, {
+          params: {
+            userId: user.userId,
+            schoolCode: user.schoolCode
+          }
         });
         
         if (response.data) {
@@ -767,9 +769,11 @@ function WorkNote(args) {
   const fetchActionMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post(`http://${BASE_URL}/api/actionMatter/getActionMatter`, {
-          userId: user.userId,
-          schoolCode: user.schoolCode
+        const response = await axios.get(`http://${BASE_URL}/api/actionMatter/getActionMatter`, {
+          params: {
+            userId: user.userId,
+            schoolCode: user.schoolCode
+          }
         });
         
         if (response.data) {
@@ -797,9 +801,11 @@ function WorkNote(args) {
   const fetchTreatmentMatterData = useCallback(async() => {
     try {
       if(user?.userId && user?.schoolCode) {
-        const response = await axios.post(`http://${BASE_URL}/api/treatmentMatter/getTreatmentMatter`, {
-          userId: user.userId,
-          schoolCode: user.schoolCode
+        const response = await axios.get(`http://${BASE_URL}/api/treatmentMatter/getTreatmentMatter`, {
+          params: {
+            userId: user.userId,
+            schoolCode: user.schoolCode
+          }
         });
         
         if (response.data) {
