@@ -23,7 +23,8 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*",
+        // origin: "*",
+        origin: "http://223.130.130.53",
         methods: ["GET", "POST"],
         credentials: true
         // origin: "http://localhost:3000"
@@ -1446,7 +1447,8 @@ app.get('/community/opinionCheckThumbsUp', async (req, res) => {
     });
 });
 
-server.listen(PORT, () => {
+// server.listen(PORT, () => {
+server.listen(8002, '0.0.0.0', () => {
     console.log(`running on port ${PORT}`);
 });
 
