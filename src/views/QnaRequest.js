@@ -106,7 +106,7 @@ function QnaRequest() {
 
     const saveQnaRequest = async () => {
         if(user) {
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/saveQnaRequest`, {
+            const response = await axios.post(`http://${BASE_URL}/api/qnaRequest/saveQnaRequest`, {
                 userId: user.userId,
                 userName: user.name,
                 schoolCode: user.schoolCode,
@@ -127,7 +127,7 @@ function QnaRequest() {
 
     const fetchQnaRequestData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/getQnaRequest`, {});
+            const response = await axios.get(`http://${BASE_URL}/api/qnaRequest/getQnaRequest`, {});
             
             if(response.data) {
                 const convertedData = response.data.map(item => {
@@ -143,7 +143,7 @@ function QnaRequest() {
 
     const updateQnaRequest = async () => {
         if(user) {
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/updateQnaRequest`, {
+            const response = await axios.post(`http://${BASE_URL}/api/qnaRequest/updateQnaRequest`, {
                 rowId: selectedRowData.id,
                 userId: user.userId,
                 schoolCode: user.schoolCode,
@@ -199,7 +199,7 @@ function QnaRequest() {
     };
 
     const incrementViewCount = async (rowId) => {
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/incrementViewCount`, {
+        const response = await axios.post(`http://${BASE_URL}/api/qnaRequest/incrementViewCount`, {
             rowId: rowId
         });
 
@@ -207,7 +207,7 @@ function QnaRequest() {
     };
 
     const handleReply = async () => {
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/qnaRequest/replyQnaRequest`, {
+        const response = await axios.post(`http://${BASE_URL}/api/qnaRequest/replyQnaRequest`, {
             rowId: selectedRowData.id,
             userId: user.userId,
             reply: qnaRequestReplyValue

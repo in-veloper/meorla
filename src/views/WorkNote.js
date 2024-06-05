@@ -1421,7 +1421,7 @@ function WorkNote(args) {
       }
 
       const yesCallback = async () => {
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workNote/saveWorkNote`, {
+        const response = await axios.post(`http://${BASE_URL}/api/workNote/saveWorkNote`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           sGrade: selectedStudent.sGrade,
@@ -1467,7 +1467,7 @@ function WorkNote(args) {
 
   const fetchSelectedStudentData = useCallback(async () => {
     if(user && selectedStudent) {
-      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workNote/getSelectedStudentData`, {
+      const response = await axios.get(`http://${BASE_URL}/api/workNote/getSelectedStudentData`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode,
@@ -1649,7 +1649,7 @@ function WorkNote(args) {
       const confirmMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생을<br/>당뇨질환 학생으로 등록하시겠습니까?";
       
       const yesCallback = async () => {
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/workNote/updateDiabetesStudent`, {
+        const response = await axios.post(`http://${BASE_URL}/api/workNote/updateDiabetesStudent`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           targetGrade: targetGrade,

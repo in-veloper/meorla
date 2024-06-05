@@ -161,7 +161,7 @@ function Community() {
     const saveOpinionWrite = async () => {
         const payload = { content: contentData };
 
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/community/saveOpinionSharing`, {
+        const response = await axios.post(`http://${BASE_URL}/api/community/saveOpinionSharing`, {
             userId: user.userId,
             userName: user.name,
             schoolCode: user.schoolCode,
@@ -180,7 +180,7 @@ function Community() {
 
     const fetchOpinionSharingData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/community/getOpinionSharing`, {});
+            const response = await axios.get(`http://${BASE_URL}/api/community/getOpinionSharing`, {});
 
             if(response.data) {
                 const responseData = response.data;
@@ -226,7 +226,7 @@ function Community() {
     };
 
     const opinionSharingIncrementViewCount = async (rowId) => {
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/community/opinionSharingIncrementViewCount`, {
+        const response = await axios.post(`http://${BASE_URL}/api/community/opinionSharingIncrementViewCount`, {
             rowId: rowId
         });
 
@@ -236,7 +236,7 @@ function Community() {
     const updateOpinionSharing = async () => {
         const payload = { content: opinionContentDetailValue };
 
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/community/updateOpinionSharing`, {
+        const response = await axios.post(`http://${BASE_URL}/api/community/updateOpinionSharing`, {
             userId: user.userId,
             schoolCode: user.schoolCode,
             rowId: opinionSharingSelectedRow.id,
@@ -255,7 +255,7 @@ function Community() {
 
     const onThumbsUp = async (flag) => {
         if(isThumbedUp) {
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/community/thumbsDown`, {
+            const response = await axios.post(`http://${BASE_URL}/api/community/thumbsDown`, {
                 viewType: flag,
                 userId: user.userId,
                 postId: opinionSharingSelectedRow.id
@@ -267,7 +267,7 @@ function Community() {
                 await opinionCheckThumbsUp(opinionSharingSelectedRow.id);
             }
         }else{
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/community/thumbsUp`, {
+            const response = await axios.post(`http://${BASE_URL}/api/community/thumbsUp`, {
                 viewType: flag,
                 userId: user.userId,
                 postId: opinionSharingSelectedRow.id
@@ -286,7 +286,7 @@ function Community() {
     };
 
     const opinionCheckThumbsUp = async (rowId) => {
-        const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/community/opinionCheckThumbsUp`, {
+        const response = await axios.get(`http://${BASE_URL}/api/community/opinionCheckThumbsUp`, {
             params: {
                 viewType: 'os',
                 userId: user.userId,

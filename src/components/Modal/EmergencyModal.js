@@ -194,7 +194,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
             const sGender = selectedStudentInEmergencyManagement.sGender;
             const sName = selectedStudentInEmergencyManagement.sName;
             
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/manageEmergency/saveEmergencyManagement`, {
+            const response = await axios.post(`http://${BASE_URL}/api/manageEmergency/saveEmergencyManagement`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 sGrade: sGrade,
@@ -269,7 +269,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
             if(transferCheckedItems.etcTransfer) selectedTransfer = selectedTransfer + "::" + etcTransferDetail;
 
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/manageEmergency/updateEmergencyManagement`, {
+            const response = await axios.post(`http://${BASE_URL}/api/manageEmergency/updateEmergencyManagement`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 rowId: rowId,
@@ -373,7 +373,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     const fetchEntireManageEmergencyData = useCallback( async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/manageEmergency/getManageEmergencyData`, {
+            const response = await axios.get(`http://${BASE_URL}/api/manageEmergency/getManageEmergencyData`, {
                 params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode

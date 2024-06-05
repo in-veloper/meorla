@@ -50,7 +50,7 @@ function WorkSchedule() {
     const today = moment().format('YYYY-MM-DD');
 
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workSchedule/getTodaySchedule`, {
+      const response = await axios.get(`http://${BASE_URL}/api/workSchedule/getTodaySchedule`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode,
@@ -64,7 +64,7 @@ function WorkSchedule() {
 
   const fetchEntireSchedule = async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workSchedule/getEntireSchedule`, {
+      const response = await axios.get(`http://${BASE_URL}/api/workSchedule/getEntireSchedule`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode

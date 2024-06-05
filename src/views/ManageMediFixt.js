@@ -143,7 +143,7 @@ function ManageMediFixt() {
 
     const fetchMedicineData = useCallback(async () => {
         Block.dots('.search-medicine');
-        const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/medicineInfo/getMedicineData`, {});
+        const response = await axios.get(`http://${BASE_URL}/api/medicineInfo/getMedicineData`, {});
 
         if(response.data) {
             setMedicineData(response.data);
@@ -190,7 +190,7 @@ function ManageMediFixt() {
         const registrationUnitAmount = document.getElementById('registrationUnitAmount').value;
         const latestPurchaseDate = document.getElementById('latestPurchaseDate').value;
 
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/insert`, {
+        const response = await axios.post(`http://${BASE_URL}/api/stockMedicine/insert`, {
             userId: user.userId,
             schoolCode: user.schoolCode,
             medicineName: medicineName,
@@ -213,7 +213,7 @@ function ManageMediFixt() {
 
     const fetchStockMedicineData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/getStockMedicine`, {
+            const response = await axios.get(`http://${BASE_URL}/api/stockMedicine/getStockMedicine`, {
                 params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode
@@ -291,7 +291,7 @@ function ManageMediFixt() {
 
     const saveFixt = async () => {
         if(user) {
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockFixt/saveStockFixt`, {
+            const response = await axios.post(`http://${BASE_URL}/api/stockFixt/saveStockFixt`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
                 fixtName: fixtNameValue,
@@ -315,7 +315,7 @@ function ManageMediFixt() {
 
     const fetchStockFixtData = useCallback(async () => {
         if(user) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/stockFixt/getStockFixt`, {
+            const response = await axios.get(`http://${BASE_URL}/api/stockFixt/getStockFixt`, {
                 params: {
                     userId: user.userId,
                     schoolCode: user.schoolCode
@@ -361,7 +361,7 @@ function ManageMediFixt() {
     const deleteMedicineFixt = async () => {
         if(selectedMenu === "medicine") {
             if(selectedMedicineRowData && user) { 
-                const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/deleteStockMedicine`, {
+                const response = await axios.post(`http://${BASE_URL}/api/stockMedicine/deleteStockMedicine`, {
                     userId: user.userId,
                     schoolCode: user.schoolCode,
                     rowId: selectedMedicineRowData.id
@@ -417,7 +417,7 @@ function ManageMediFixt() {
     };
 
     const updateMedicine = async () => {
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockMedicine/updateStockMedicine`,{
+        const response = await axios.post(`http://${BASE_URL}/api/stockMedicine/updateStockMedicine`,{
             userId: user.userId,
             schoolCode: user.schoolCode,
             rowId: selectedMedicineRowData.id,
@@ -460,7 +460,7 @@ function ManageMediFixt() {
     };
 
     const updateFixt = async () => {
-        const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/stockFixt/updateStockFixt`, {
+        const response = await axios.post(`http://${BASE_URL}/api/stockFixt/updateStockFixt`, {
             userId: user.userId,
             schoolCode: user.schoolCode,
             rowId: selectedFixtRowData.id,

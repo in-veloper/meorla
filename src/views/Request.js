@@ -147,7 +147,7 @@ function RequesterLogin({onLogin}) {
         let commonPassword = "";
 
         if(schoolName && schoolCode) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/request/getCommonPassword`, {
+            const response = await axios.get(`http://${BASE_URL}/api/request/getCommonPassword`, {
                 params: {
                     schoolCode: schoolCode,
                     schoolName: schoolName
@@ -421,7 +421,7 @@ function Request({onLogOut}) {
 
     const fetchCurrentInfo = useCallback(async () => {
         if(schoolCode) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/request/getCurrentInfo`, {
+            const response = await axios.get(`http://${BASE_URL}/api/request/getCurrentInfo`, {
                 params: {
                     schoolCode: schoolCode
                 }
@@ -441,7 +441,7 @@ function Request({onLogOut}) {
         const today = moment().format('YYYY-MM-DD');
 
         if(schoolCode) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/request/getOnBedRestInfo`, {
+            const response = await axios.get(`http://${BASE_URL}/api/request/getOnBedRestInfo`, {
                 params: {
                     schoolCode: schoolCode,
                     today: today
@@ -523,7 +523,7 @@ function Request({onLogOut}) {
           const { iGrade, iClass, iNumber, iName } = criteria;
           
           if(schoolCode) {
-            const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/studentsTable/getStudentInfoBySearchInRequest`, {
+            const response = await axios.get(`http://${BASE_URL}/api/studentsTable/getStudentInfoBySearchInRequest`, {
               params: {
                 schoolCode: schoolCode,
                 sGrade:  iGrade,
@@ -550,7 +550,7 @@ function Request({onLogOut}) {
 
     const fetchSelectedStudentData = useCallback(async () => {
         if(schoolCode && selectedStudent) {
-          const response = await axios.get(`http://${BASE_URL}:${BASE_PORT}/workNote/getSelectedStudentData`, {
+          const response = await axios.get(`http://${BASE_URL}/api/workNote/getSelectedStudentData`, {
             params: {
               schoolCode: schoolCode,
               sGrade: selectedStudent.sGrade,
@@ -598,7 +598,7 @@ function Request({onLogOut}) {
             const requestContent = document.getElementById('requestContent').value;
             const teacherName = document.getElementById('teacherName').value;
 
-            const response = await axios.post(`http://${BASE_URL}:${BASE_PORT}/request/saveVisitRequest`, {
+            const response = await axios.post(`http://${BASE_URL}/api/request/saveVisitRequest`, {
                 schoolCode: schoolCode,
                 targetGrade: targetGrade,
                 targetClass: targetClass,
