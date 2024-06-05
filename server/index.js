@@ -25,20 +25,22 @@ const io = socketIo(server, {
     cors: {
         // origin: "*",
         origin: "http://223.130.130.53",
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        optionsSuccessStatus: 200,
         credentials: true
         // origin: "http://localhost:3000"
     }
 });
 
-// app.use(cors({
-//      origin: ['http://223.130.130.53'],
-//      methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//      allowedHeaders: ['Content-Type', 'Authorization'],
-//      credentials: true,
-//      optionsSuccessStatus: 200
-// }));
-app.use(cors({ origin: "*", credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
+app.use(cors({
+     origin: ['http://223.130.130.53'],
+     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+     allowedHeaders: ['Content-Type', 'Authorization'],
+     credentials: true,
+     optionsSuccessStatus: 200
+}));
+// app.use(cors({ origin: "*", credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -1447,8 +1449,8 @@ app.get('/community/opinionCheckThumbsUp', async (req, res) => {
     });
 });
 
-// server.listen(PORT, () => {
-server.listen(8002, '0.0.0.0', () => {
+server.listen(PORT, () => {
+// server.listen(8002, '0.0.0.0', () => {
     console.log(`running on port ${PORT}`);
 });
 
