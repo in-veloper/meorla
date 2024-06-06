@@ -783,7 +783,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.post("api//upload/image", upload.single('file'), (req, res) => {
+app.post("/upload/image", upload.single('file'), (req, res) => {
     res.json({
         message: 'Image가 업로드 성공',
         filename: req.file.filename
