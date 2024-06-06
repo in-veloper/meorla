@@ -1,5 +1,4 @@
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const express = require('express');
@@ -8,39 +7,37 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-// const PORT = process.env.PORT || 8000;
-const PORT = 8002;
 const { Cookies } = require('react-cookie');
 const cookies = new Cookies();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { startMedicineScheduler } = require('./scheduler/medicineScheduler')
-
-const http = require('http');
+const { startMedicineScheduler } = require('./scheduler/medicineScheduler');
 const socketIo = require('socket.io');
+const http = require('http');
+
+const BASE_ORIGIN = process.env.REACT_APP_BASE_ORIGIN;
+const PORT = process.env.REACT_APP_BASE_PORT || 8002;
 
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        // origin: "*",
-        origin: "http://223.130.130.53",
+        origin: BASE_ORIGIN,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
         optionsSuccessStatus: 200,
         credentials: true
-        // origin: "http://localhost:3000"
     }
 });
 
 app.use(cors({
-     origin: ['http://223.130.130.53'],
+     origin: BASE_ORIGIN,
      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
      credentials: true,
      optionsSuccessStatus: 200
 }));
-// app.use(cors({ origin: "*", credentials: true, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD']}));
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -59,15 +56,11 @@ const removeCookie = (name) => {
 };
 
 const db = mysql.createPool({
-    // host: "localhost",
-    host: "223.130.130.53",
-    user: "root",
-    // password: "yeeh01250412!@",
-    password: "Yeeh01250412!@",
-    database: "teaform_db"
+    host: process.env.REACT_APP_MYSQL_HOST,
+    user: process.env.REACT_APP_MYSQL_USER,
+    password: process.env.REACT_APP_MYSQL_PASSWORD,
+    database: process.env.REACT_APP_MYSQL_DB
 });
-
-dotenv.config();
 
 app.get("/api/token", async (req, res) => {
     try {

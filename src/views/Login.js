@@ -125,7 +125,7 @@ function Login() {
                 }
             });
             const userData = selectResponse.data.user;
-            debugger
+            
             if(userData.schoolName === schoolName) {
                 warnMessage = "이미 가입된 학교입니다.<br/>학교당 하나의 계정만 가입 가능합니다.";
                 NotiflixWarn(warnMessage);
