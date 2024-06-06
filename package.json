@@ -70,8 +70,11 @@
   "scripts": {
     "start": "react-scripts start",
     "server": "nodemon server/index.js",
+    "server:prod": "env-cmd -f .env.production node server/index.js",
     "dev": "concurrently \"npm run start\" \"npm run server\"",
     "build": "react-scripts build",
+    "build:prod": "env-cmd -f .env.production react-scripts build",
+    "start:prod": "env-cmd -f .env.production react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start",
