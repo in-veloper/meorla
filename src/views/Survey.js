@@ -59,14 +59,14 @@ function Survey() {
                         </Row>
                     </CardBody>
                 </Card>
-                <Card style={{ width: '60%', height: '75.8vh', overflow: 'scroll', float: 'left' }}>
+                <Card style={{ width: '50%', height: '75.8vh', overflow: 'scroll', float: 'left' }}>
                     <div className="p-3">
                         <div ref={surveyFormRef} style={{ border: '1px solid orange' }}>
                             <HealthExaminationSurveyForm/>
                         </div>
                     </div>
                 </Card>
-                <Card style={{ width: '39%', height: '75.8vh', overflow: 'scroll', float: 'right' }}>
+                <Card style={{ width: '49%', height: '75.8vh', overflow: 'scroll', float: 'right' }}>
 
                 </Card>
             </div>

@@ -21,7 +21,7 @@ import { Menu, Item, Separator, Submenu, useContextMenu } from 'react-contexify'
 import EmergencyModal from "components/Modal/EmergencyModal";
 import axios from "axios";
 import moment from "moment";
-import io from "socket.io-client";
+import { getSocket } from "components/Socket/socket";
 import '../assets/css/worknote.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -463,6 +463,10 @@ function WorkNote(args) {
     }
   };
 
+  useEffect(() => {
+    onSearchStudent(searchCriteria);
+  }, []);
+
   const onResetSearch = () => {
     const api = searchStudentGridRef.current.api;
     setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
@@ -472,6 +476,8 @@ function WorkNote(args) {
   };
 
   const onSearchStudent = async (criteria) => {
+    Block.dots('.search-student-grid');
+    
     try {
       const studentData = await fetchStudentData(criteria);
 
@@ -488,6 +494,8 @@ function WorkNote(args) {
       }
     } catch (error) {
       console.error("학생 조회 중 ERROR", error);
+    }finally{
+      Block.remove('.search-student-grid');
     }
   };
 
@@ -944,9 +952,7 @@ function WorkNote(args) {
   const handleExitOnBed = useCallback(async (e, item) => {
     e.preventDefault();
 
-    const serverUrl = `http://${BASE_URL}`;
-    const socket = io(serverUrl);
-
+    const socket = getSocket();
     const currentTime = moment().format('HH:mm');
     const askTitle = "침상안정 종료";
     const askMessage = item.sName + " 학생의 침상안정 종료 시간을 입력해주세요.<br/>기본적으로 현재 시간이 입력되어 있습니다.";
@@ -972,7 +978,7 @@ function WorkNote(args) {
         NotiflixInfo(infoMessage);
         fetchEntireWorkNoteGrid();
 
-        socket.emit('sendBedStatus', { message: "endBed::" + item.sGrade + "," + item.sClass + "," + item.sNumber + "," + item.sName });
+        if(socket) socket.emit('sendBedStatus', { message: "endBed::" + item.sGrade + "," + item.sClass + "," + item.sNumber + "," + item.sName });
       }
     };
 
@@ -984,61 +990,99 @@ function WorkNote(args) {
   }, [user, fetchEntireWorkNoteGrid]);
 
   const generateOnBedBox = useCallback(() => {
-
     if(user) {
       const bedCount = user.bedCount;
-
-      if(entireWorkNoteRowData.length > 0) {
-        const currentDay = moment();
-        const currentTime = moment().format('HH:mm');
-        let displayResultBox = [];
-        let remainingBox = [];
-        let displayOnBedStudentArray = [];
-
-        entireWorkNoteRowData.forEach(item => {
-          const isSameDay = currentDay.isSame(moment(item.updatedAt), 'day');
-          const isBetweenTime = moment(currentTime, 'HH:mm').isBetween(moment(item.onBedStartTime, 'HH:mm'), moment(item.onBedEndTime, 'HH:mm'));
-          const isSameOrAfter = moment(currentTime, 'HH:mm').isSameOrAfter(moment(item.onBedStartTime, 'HH:mm'));
-          const isBefore = item.onBedEndTime ? moment(currentTime, 'HH:mm').isBefore(moment(item.onBedEndTime, 'HH:mm')) : true;
-
-          if(isSameDay && (isBetweenTime || isSameOrAfter) && isBefore) {
-            displayOnBedStudentArray.push(item);
+      if(bedCount === 0) {
+        setBedBoxContent(
+          <Row className="d-flex justify-content-center no-gutters w-100 pl-3 pr-3">
+            <Col>
+              <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
+                <CardBody>
+                  <Row className="justify-content-center text-center text-muted font-weight-bold">
+                    <span>설정된 침상 수가 없습니다<br/>사용자 정보 메뉴에서 침상 수를 설정해 주시기 바랍니다</span>
+                  </Row>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        );
+      }else {
+        if(entireWorkNoteRowData.length > 0) {
+          const currentDay = moment();
+          const currentTime = moment().format('HH:mm');
+          let displayResultBox = [];
+          let remainingBox = [];
+          let displayOnBedStudentArray = [];
+  
+          entireWorkNoteRowData.forEach(item => {
+            const isSameDay = currentDay.isSame(moment(item.updatedAt), 'day');
+            const isBetweenTime = moment(currentTime, 'HH:mm').isBetween(moment(item.onBedStartTime, 'HH:mm'), moment(item.onBedEndTime, 'HH:mm'));
+            const isSameOrAfter = moment(currentTime, 'HH:mm').isSameOrAfter(moment(item.onBedStartTime, 'HH:mm'));
+            const isBefore = item.onBedEndTime ? moment(currentTime, 'HH:mm').isBefore(moment(item.onBedEndTime, 'HH:mm')) : true;
+  
+            if(isSameDay && (isBetweenTime || isSameOrAfter) && isBefore) {
+              displayOnBedStudentArray.push(item);
+            }
+          });
+  
+          if(displayOnBedStudentArray.length > 0) {
+            displayResultBox = displayOnBedStudentArray.map(item => (
+                <Col lg="2" md="6" sm="6" key={item.id}>
+                  <Card className="card-stats" style={{ borderRadius: 15 }} targetitem={item} onMouseOver={handleMouseOverOnBedCard} onMouseOut={handleMouseOutOnBedCard}>
+                    <CardBody>
+                      <Row>
+                        <Col md="4" xs="5">
+                          <GiBed className="bed-icons-use"/>
+                        </Col>
+                        <Col md="8" xs="7">
+                          <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >
+                            <span>{item.sName}</span>
+                            <br/>
+                            {!item.onBedEndTime ? 
+                                <span style={{ fontSize: '12px' }}>{item.onBedStartTime} 부터 사용</span>
+                              :
+                                <span style={{ fontSize: '12px' }}>{item.onBedStartTime} ~ {item.onBedEndTime}</span>
+                            }
+                          </p>
+                        </Col>
+                      </Row>
+                      <Button className="btn-round exit-use-bed" hidden onClick={(e) => handleExitOnBed(e, item)}>사용 종료</Button>
+                    </CardBody>
+                  </Card>
+                </Col>
+            ));
           }
-        });
-
-        if(displayOnBedStudentArray.length > 0) {
-          displayResultBox = displayOnBedStudentArray.map(item => (
-              <Col lg="2" md="6" sm="6" key={item.id}>
-                <Card className="card-stats" style={{ borderRadius: 15 }} targetitem={item} onMouseOver={handleMouseOverOnBedCard} onMouseOut={handleMouseOutOnBedCard}>
-                  <CardBody>
-                    <Row>
-                      <Col md="4" xs="5">
-                        <GiBed className="bed-icons-use"/>
-                      </Col>
-                      <Col md="8" xs="7">
-                        <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >
-                          <span>{item.sName}</span>
-                          <br/>
-                          {!item.onBedEndTime ? 
-                              <span style={{ fontSize: '12px' }}>{item.onBedStartTime} 부터 사용</span>
-                            :
-                              <span style={{ fontSize: '12px' }}>{item.onBedStartTime} ~ {item.onBedEndTime}</span>
-                          }
-                        </p>
-                      </Col>
-                    </Row>
-                    <Button className="btn-round exit-use-bed" hidden onClick={(e) => handleExitOnBed(e, item)}>사용 종료</Button>
-                  </CardBody>
-                </Card>
-              </Col>
-          ));
-        }
-
-        if(displayOnBedStudentArray.length < bedCount) {
-          remainingBox = Array.from({ length: (bedCount - displayOnBedStudentArray.length) }, (_, index) => {
+  
+          if(displayOnBedStudentArray.length < bedCount) {
+            remainingBox = Array.from({ length: (bedCount - displayOnBedStudentArray.length) }, (_, index) => {
+              const i = index + 1;
+              return (
+                <Col className="" lg="2" md="6" sm="6" key={i}>
+                  <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
+                    <CardBody>
+                      <Row>
+                        <Col md="4" xs="5">
+                          <GiBed className="bed-icons-not-use"/>
+                        </Col>
+                        <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
+                          <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                        </Col>
+                      </Row>
+                    </CardBody>
+                  </Card>
+                </Col>
+              );
+            });
+          }
+  
+          setDisplayedOnBedStudents(displayOnBedStudentArray);
+          setBedBoxContent([...displayResultBox, ...remainingBox]);
+        }else{
+          const defaultBedBox = Array.from({ length: bedCount }, (_, index) => {
             const i = index + 1;
+    
             return (
-              <Col className="" lg="2" md="6" sm="6" key={i}>
+              <Col lg="2" md="6" sm="6" key={i}>
                 <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
                   <CardBody>
                     <Row>
@@ -1046,7 +1090,7 @@ function WorkNote(args) {
                         <GiBed className="bed-icons-not-use"/>
                       </Col>
                       <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
-                        <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
+                        <p className="text-muted text-center pt-1" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
                       </Col>
                     </Row>
                   </CardBody>
@@ -1054,33 +1098,9 @@ function WorkNote(args) {
               </Col>
             );
           });
-        }
-
-        setDisplayedOnBedStudents(displayOnBedStudentArray);
-        setBedBoxContent([...displayResultBox, ...remainingBox]);
-      }else{
-        const defaultBedBox = Array.from({ length: bedCount }, (_, index) => {
-          const i = index + 1;
   
-          return (
-            <Col lg="2" md="6" sm="6" key={i}>
-              <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
-                <CardBody>
-                  <Row>
-                    <Col md="4" xs="5">
-                      <GiBed className="bed-icons-not-use"/>
-                    </Col>
-                    <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
-                      <p className="text-muted text-center pt-1" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
-                    </Col>
-                  </Row>
-                </CardBody>
-              </Card>
-            </Col>
-          );
-        });
-
-        setBedBoxContent(defaultBedBox);
+          setBedBoxContent(defaultBedBox);
+        }
       }
     }
   }, [user, entireWorkNoteRowData, handleExitOnBed]);
@@ -1103,7 +1123,7 @@ function WorkNote(args) {
 
   const fetchVisitRequest = useCallback(async () => {
     Block.dots('.request-alert-box');
-
+    
     if(user) {
       const response = await axios.get(`http://${BASE_URL}/api/workNote/getVisitRequest`, {
         params: {
@@ -1113,7 +1133,7 @@ function WorkNote(args) {
       });
 
       if(response.data) setVisitRequestList(response.data);
-      if(document.querySelector('.notiflix-block')) Block.remove('.request-alert-box');
+      if(document.querySelector('.request-alert-box').querySelector('.notiflix-block')) Block.remove('.request-alert-box');
     }
   }, [user]);
 
@@ -1355,8 +1375,7 @@ function WorkNote(args) {
   const saveWorkNote = (e) => {
     e.preventDefault();
     
-    const serverUrl = `http://${BASE_URL}`;
-    const socket = io(serverUrl);
+    const socket = getSocket();
 
     let symptomString = "";
     let medicationString = "";
@@ -1391,8 +1410,6 @@ function WorkNote(args) {
 
     const onBedRestStartTime = document.getElementById('onBedRestStartTime').value;
     const onBedRestEndTime = document.getElementById('onBedRestEndTime').value;
-    // const notes = document.getElementById('notes').value;
-    // 활력징후 처리 필요 (비고 제거)
 
     const confirmTitle = "보건일지 등록";
     const confirmMessage = "작성하신 보건일지를 등록하시겠습니까?";
@@ -1459,7 +1476,7 @@ function WorkNote(args) {
           handleClearAllWorkNote();
           fetchEntireWorkNoteGrid();
 
-          socket.emit('sendBedStatus', { message: "registBed::" + selectedStudent.sGrade + "," + selectedStudent.sClass + "," + selectedStudent.sNumber + "," + selectedStudent.sName });
+          if(socket) socket.emit('sendBedStatus', { message: "registBed::" + selectedStudent.sGrade + "," + selectedStudent.sClass + "," + selectedStudent.sNumber + "," + selectedStudent.sName });
         }
       };
 
@@ -1580,9 +1597,7 @@ function WorkNote(args) {
   };
 
   useEffect(() => {
-    const serverUrl = `http://${BASE_URL}`;
-    const socket = io(serverUrl);
-
+    const socket = getSocket();
     const connectedSockets = new Set();
 
     if(!connectedSockets.has(socket.id)) {
@@ -1619,20 +1634,11 @@ function WorkNote(args) {
       };
 
       socket.on('broadcastVisitRequest', handleBroadcastVisitRequest);
-        
-      socket.on('disconnect', (reason) => {
-        console.log("소켓 연결 해제:", reason);
-        connectedSockets.delete(socket.id);
-      });
-
-      socket.on('connect_error', (error) => {
-          console.error("소켓 연결 오류:", error);
-      });
+     
+      return () => {
+        socket.off('broadcastVisitRequest', handleBroadcastVisitRequest);
+      };
     }
-
-    return () => {
-      socket.off('broadcastVisitRequest');
-    };
   }, []);
 
   const validateAndHighlight = () => {
@@ -1901,22 +1907,24 @@ function WorkNote(args) {
                 </Row>
                 <Row className="pt-1">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '19.7vh' }} onContextMenu={handleContextMenu}>
-                      <AgGridReact
-                        rowHeight={30}
-                        ref={searchStudentGridRef}
-                        rowData={searchStudentRowData} 
-                        columnDefs={searchStudentColumnDefs}
-                        defaultColDef={notEditDefaultColDef}
-                        paginationPageSize={4}
-                        overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                        rowSelection="single"
-                        onSelectionChanged={onGridSelectionChanged}
-                        suppressCellFocus={true}
-                        overlayLoadingTemplate={
-                          '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                        }
-                      />
+                    <div className="search-student-grid">
+                      <div className="ag-theme-alpine" style={{ height: '19.7vh' }} onContextMenu={handleContextMenu}>
+                        <AgGridReact
+                          rowHeight={30}
+                          ref={searchStudentGridRef}
+                          rowData={searchStudentRowData} 
+                          columnDefs={searchStudentColumnDefs}
+                          defaultColDef={notEditDefaultColDef}
+                          paginationPageSize={4}
+                          overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                          rowSelection="single"
+                          onSelectionChanged={onGridSelectionChanged}
+                          suppressCellFocus={true}
+                          overlayLoadingTemplate={
+                            '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                          }
+                        />
+                      </div>
                     </div>
                     <div>
                       <Menu id={MENU_ID} animation="fade">
@@ -2019,7 +2027,7 @@ function WorkNote(args) {
                             columnDefs={symptomColumnDefs}
                             headerHeight={0}
                             suppressHorizontalScroll={true}
-                            overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleSymptomRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
                           />
@@ -2050,7 +2058,7 @@ function WorkNote(args) {
                             columnDefs={medicationColumnDefs}
                             headerHeight={0}
                             suppressHorizontalScroll={true}
-                            overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleMedicationRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
                           />
@@ -2081,7 +2089,7 @@ function WorkNote(args) {
                             columnDefs={actionMatterColumnDefs}
                             headerHeight={0}
                             suppressHorizontalScroll={true}
-                            overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleActionMatterRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
                           />
@@ -2114,7 +2122,7 @@ function WorkNote(args) {
                             columnDefs={treatmentMatterColumnDefs}
                             headerHeight={0}
                             suppressHorizontalScroll={true}
-                            overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleTreatmentMatterRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
                           />

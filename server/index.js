@@ -27,7 +27,9 @@ const io = socketIo(server, {
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
         optionsSuccessStatus: 200,
         credentials: true
-    }
+    },
+    pingInterval: 25000,    // ping을 보낼 간격
+    pingTimeout: 60000      // pong 응답을 기다리는 시간
 });
 
 app.use(cors({
@@ -858,7 +860,7 @@ app.get("/api/user/getWorkStatus", async (req, res) => {
     })
 });
 
-app.post("/user/updateWorkStatus", async (req, res) => {
+app.post("/api/user/updateWorkStatus", async (req, res) => {
     const { userId, schoolCode, workStatus } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET workStatus = ? WHERE userId = ? AND schoolCode = ?";

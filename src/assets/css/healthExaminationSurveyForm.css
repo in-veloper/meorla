@@ -1,0 +1,17 @@
+.radio-group {
+    display: inline-block;
+    margin-right: 25px;
+}
+  
+.radio-group input {
+    margin-right: 5px;
+}
+
+.radio-group-2 {
+    display: inline-block;
+    margin-right: 35px;
+}
+  
+.radio-group-2 input {
+    margin-right: 20px;
+}

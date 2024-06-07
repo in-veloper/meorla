@@ -7,9 +7,9 @@ import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 import { BrowserView, MobileView, isBrowser } from "react-device-detect";
 import { FaCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { getSocket } from "components/Socket/socket";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import moment from "moment";
-import io from 'socket.io-client';
 import axios from "axios";
 import Neis from "@my-school.info/neis-api";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
@@ -335,9 +335,7 @@ function Request({onLogOut}) {
     }, []);
 
     useEffect(() => {
-        // const serverUrl = `http://localhost:8000`;
-        const serverUrl = `http://${BASE_URL}`;
-        const socket = io(serverUrl);
+        const socket = getSocket();
 
         const connectedSockets = new Set();
 
@@ -382,21 +380,12 @@ function Request({onLogOut}) {
             socket.on('broadcastBedStatus', handleBroadcastBedStatus);
             socket.on('broadcastWorkStatus', handleBroadcastWorkStatus);
             
-            socket.on('disconnect', (reason) => {
-                console.log("소켓 연결 해제:", reason);
-                connectedSockets.delete(socket.id);
-            });
-
-            socket.on('connect_error', (error) => {
-                console.error("소켓 연결 오류:", error);
-            });
+            // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
+            return () => {
+                socket.off('broadcastBedStatus', handleBroadcastBedStatus);
+                socket.off('broadcastWorkStatus', handleBroadcastWorkStatus);
+            };
         }
-
-        // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
-        return () => {
-            socket.off('broadcastBedStatus');
-            socket.off('broadcastWorkStatus');
-        };
     }, []);
 
     const [contentHeight, setContentHeight] = useState("auto");
@@ -582,9 +571,7 @@ function Request({onLogOut}) {
 
     const sendVisitRequest = async (e) => {
         e.preventDefault();
-
-        const serverUrl = `http://${BASE_URL}`;
-        const socket = io(serverUrl);
+        const socket = getSocket();
         const currentTime = moment().format('HH:mm');
         
         if(selectedStudent) {
@@ -609,7 +596,7 @@ function Request({onLogOut}) {
             });
 
             if(response.data === "success") {
-                socket.emit('sendVisitRequest', { message : "visitRequest::" + targetGrade + "," + targetClass + "," + targetNumber + "," + targetName });
+                if(socket) socket.emit('sendVisitRequest', { message : "visitRequest::" + targetGrade + "," + targetClass + "," + targetNumber + "," + targetName });
                 resetVisitRequestForm();
 
                 const infoMessage = "보건실 방문 요청이 정상적으로 처리되었습니다";

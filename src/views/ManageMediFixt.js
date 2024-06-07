@@ -141,8 +141,8 @@ function ManageMediFixt() {
     };
 
     const fetchMedicineData = useCallback(async () => {
-        if(document.querySelector('.search-medicine')) Block.dots('.search-medicine');
-        
+        if(!document.querySelector('.notiflix-block')) Block.dots('.ag-theme-alpine');
+
         const response = await axios.get(`http://${BASE_URL}/api/medicineInfo/getMedicineData`, {});
 
         if(response.data) {
@@ -150,7 +150,7 @@ function ManageMediFixt() {
             setSearchResult(response.data);
         }
 
-        if(document.querySelector('.notiflix-block')) Block.remove('.search-medicine');
+        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
     }, [user]);
 
     useEffect(() => {
@@ -256,7 +256,7 @@ function ManageMediFixt() {
 
     // 검색 Event
     const handleSearch = async (e) => {
-        Block.dots('.search-medicine');
+        if(!document.querySelector('.notiflix-block')) Block.dots('.ag-theme-alpine');
         
         if(medicineData.length > 0) {
             let filteredResults = medicineData;
@@ -275,7 +275,7 @@ function ManageMediFixt() {
             setSearchResult(filteredResults);
         }
 
-        if(document.querySelector('.notiflix-block')) Block.remove('.search-medicine');
+        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
     };
 
     // 검색어 입력 후 Enter 입력 시 검색 Event
