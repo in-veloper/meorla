@@ -13,7 +13,6 @@ import '../assets/css/users.css';
 import QRCode from "qrcode-generator";
 import { useReactToPrint } from "react-to-print";
 
-const BASE_PORT = process.env.REACT_APP_BASE_PORT;
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function User() {
@@ -63,7 +62,7 @@ function User() {
   };
   const toggleRequestURLModal = () => {
     setRequestURLModal(!requestURLModal);
-    const requestURL = `http://${BASE_URL}:${BASE_PORT}/request/` + user.schoolCode;
+    const requestURL = `http://${BASE_URL}/request/` + user.schoolCode;
     setRequestURLValue(requestURL);
   };
 
@@ -511,7 +510,7 @@ function User() {
   };
 
   const generateQRCode = () => {
-    const url = `http://${BASE_URL}:${BASE_PORT}/request/` + user.schoolCode;
+    const url = `http://${BASE_URL}/request/` + user.schoolCode;
     const typeNumber = 10;
     const errorCorrectionLevel = 'L';
 
