@@ -422,7 +422,7 @@ function User() {
   const fetchBackgroundImage = useCallback(async (registeredBackgroundImageFileName) => {
     if(registeredBackgroundImageFileName) setBackgroundImageFileName(registeredBackgroundImageFileName);
     if(backgroundImageFileName && currentUser) {
-      setSelectedBackgroundImage(`/uploads/${currentUser.userId}/backgroundImage/${backgroundImageFileName}`);
+      setSelectedBackgroundImage(`${process.env.PUBLIC_URL}/uploads/${currentUser.userId}/backgroundImage/${backgroundImageFileName}`);
     }else{
       setSelectedBackgroundImage(null);
     }
