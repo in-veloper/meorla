@@ -141,7 +141,8 @@ function ManageMediFixt() {
     };
 
     const fetchMedicineData = useCallback(async () => {
-        Block.dots('.search-medicine');
+        if(document.querySelector('.search-medicine')) Block.dots('.search-medicine');
+        
         const response = await axios.get(`http://${BASE_URL}/api/medicineInfo/getMedicineData`, {});
 
         if(response.data) {
