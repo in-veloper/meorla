@@ -62,7 +62,7 @@ function User() {
   };
   const toggleRequestURLModal = () => {
     setRequestURLModal(!requestURLModal);
-    const requestURL = `http://${BASE_URL}/request/` + user.schoolCode;
+    const requestURL = `http://${BASE_URL}/meorla/request/` + user.schoolCode;
     setRequestURLValue(requestURL);
   };
 
@@ -315,7 +315,7 @@ function User() {
         formData.append("uploadPath", currentUser.userId + "/backgroundImage");
         formData.append("file", file);
 
-        axios.post(`http://${BASE_URL}/upload/image`, formData, config).then((response) => {
+        axios.post(`http:ƒwr//${BASE_URL}/upload/image`, formData, config).then((response) => {
           if(response.status === 200) {
             const fileName = response.data.filename;
             const callbackResponse = axios.post(`http://${BASE_URL}/api/upload/insert`, {
@@ -510,7 +510,7 @@ function User() {
   };
 
   const generateQRCode = () => {
-    const url = `http://${BASE_URL}/request/` + user.schoolCode;
+    const url = `http://${BASE_URL}/meorla/request/` + user.schoolCode;
     const typeNumber = 10;
     const errorCorrectionLevel = 'L';
 
