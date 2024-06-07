@@ -413,8 +413,7 @@ function User() {
   const fetchProfileImage = useCallback(async (registeredProfileImageFileName) => {
     if(registeredProfileImageFileName) setProfileImageFileName(registeredProfileImageFileName);
     if(profileImageFileName && currentUser) {
-      setSelectedProfileImage(`${process.env.PUBLIC_URL}/uploads/${currentUser.userId}/profileImage/${profileImageFileName}`);
-      // setSelectedProfileImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/profileImage/' + profileImageFileName);
+      setSelectedProfileImage(`/uploads/${currentUser.userId}/profileImage/${profileImageFileName}`);
     }else{
       setSelectedProfileImage(null);
     }
@@ -423,8 +422,7 @@ function User() {
   const fetchBackgroundImage = useCallback(async (registeredBackgroundImageFileName) => {
     if(registeredBackgroundImageFileName) setBackgroundImageFileName(registeredBackgroundImageFileName);
     if(backgroundImageFileName && currentUser) {
-      setSelectedBackgroundImage(`${process.env.PUBLIC_URL}/uploads/${currentUser.userId}/backgroundImage/${backgroundImageFileName}`);
-      // setSelectedBackgroundImage(`${process.env.PUBLIC_URL}` + '/uploads/' + currentUser.userId + '/backgroundImage/' + backgroundImageFileName);
+      setSelectedBackgroundImage(`/uploads/${currentUser.userId}/backgroundImage/${backgroundImageFileName}`);
     }else{
       setSelectedBackgroundImage(null);
     }
