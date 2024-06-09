@@ -27,6 +27,7 @@ function Community() {
     const [titleValue, setTitleValue] = useState("");
     const [selectedOpinionCategoryOption, setSelectedOpinionCategoryOption] = useState("healthClass");
     const [opinionSharingData, setOpinionSharingData] = useState([]);
+    const [resourceSharingData, setResourceSharingData] = useState([]);
     const [opinionDetailModal, setOpinionDetailModal] = useState(false);
     const [opinionSharingSelectedRow, setOpinionSharingSelectedRow] = useState(null);
     const [opinionDetailContentData, setOpinionDetailContentData]  = useState("");
@@ -36,6 +37,7 @@ function Community() {
     const [opinionContentDetailValue, setOpinionContentDetailValue] = useState("");
     const [isThumbedUp, setIsThumbedUp] = useState(false);
     const [opinionPinnedRows, setOpinionPinnedRows] = useState([]);
+    const [resourcePinnedRows, setResourcePinnedRows] = useState([]);
     const [myOpinionSharingModal, setMyOpinionSharingModal] = useState(false);
     const [myOpinionSharingData, setMyOpinionSharingData] = useState(null);
     const [resourceWriteModal, setResourceWriteModal] = useState(false);
@@ -44,6 +46,7 @@ function Community() {
     const [selectedFile, setSelectedFile] = useState(null);
 
     const opinionSharingGridRef = useRef(null);
+    const resourceSharingGridRef = useRef(null);
     const quillRef = useRef(null);
     const myOpinionSharingGridRef = useRef(null);
 
@@ -80,6 +83,15 @@ function Community() {
     const [opinionSharingColDef] = useState([
         { field: "osCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: opinionSharingCategoryFormatter },
         { field: "osTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+        { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "recommendationCount", headerName: "추천수", flex: 1, cellStyle: { textAlign: "center" } }
+    ]);
+
+    const [resourceSharingColDef] = useState([
+        { field: "rsCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: opinionSharingCategoryFormatter },
+        { field: "rsTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
         { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
         { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
         { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
@@ -339,7 +351,7 @@ function Community() {
         formData.append("uploadPath", user.userId + "/resourceFiles");
         formData.append("file", selectedFile);
 
-        const config = { headers: { "Context-Type": "multipart/form-data" }};
+        const config = { headers: { "Content-Type": "multipart/form-data" }};
 
         try{
             const fileUploadResponse = await axios.post(`http://${BASE_URL}/upload/image`, formData, config);
@@ -371,6 +383,24 @@ function Community() {
         }
 
     };
+
+    const fetchResourceSharingData = useCallback(async () => {
+        if(user) {
+            const response = await axios.get(`http://${BASE_URL}/api/community/getResourceSharing`, {});
+
+            if(response.data) {
+                const responseData = response.data;
+                setResourceSharingData(responseData);
+
+                const sortedData = responseData.sort((a, b) => b.recommendationCount - a.recommendationCount);
+                setResourcePinnedRows(sortedData.slice(0, 3));
+            }
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchResourceSharingData();
+    }, [fetchResourceSharingData]);
 
     const handleSelectResourceCategoryOption = (e) => {
         setSelectedResourceCategoryOption(e.target.value);
@@ -452,11 +482,12 @@ function Community() {
                             )}
                             {selectedMenu === 'resourceSharing' && (
                                 <AgGridReact
-                                    ref={gridRef}
-                                    rowData={rowData} 
-                                    columnDefs={columnDefs} 
+                                    ref={resourceSharingGridRef}
+                                    rowData={resourceSharingData} 
+                                    columnDefs={resourceSharingColDef} 
                                     defaultColDef={defaultColDef}
                                     overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 자료공유 글이 없습니다</span>' }
+                                    pinnedTopRowData={resourcePinnedRows}
                                 />
                             )}
                             {selectedMenu === 'interact' && (

@@ -1402,14 +1402,13 @@ app.post('/api/community/saveOpinionSharing', async (req, res) => {
 });
 
 app.get('/api/community/getOpinionSharing', async (req, res) => {
-    // const sqlQuery = "SELECT * FROM teaform_db.opinionSharing";
     const sqlQuery = "SELECT os.*, COUNT(rec.postId) AS recommendationCount FROM teaform_db.opinionSharing AS os LEFT JOIN teaform_db.recommendations AS rec ON os.id = rec.postId GROUP BY os.id ORDER BY os.createdAt DESC";
     
     db.query(sqlQuery, [], (err, result) => {
         if(err) {
             console.log("커뮤니티 의견공유 글 조회 중 ERROR", err);
         }else{
-            res.json(result)
+            res.json(result);
         }
     });
 });
@@ -1491,7 +1490,7 @@ app.post("/api/community/saveResourceSharing", async (req, res) => {
         if(err) {
             console.log("자료공유 업로드 파일 정보 INSERT 처리 중 ERROR", err);
         }else{
-            const sqlQuery2 = "INSERT INTO teaform_db.resourceSharing (userId, userName, schoolCode, reCategory, rsTitle, rsContent, fileName) VALUES (?,?,?,?,?,?,?)"
+            const sqlQuery2 = "INSERT INTO teaform_db.resourceSharing (userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName) VALUES (?,?,?,?,?,?,?)"
             db.query(sqlQuery2, [userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName], (err, result) => {
                 if(err) {
                     console.log("자료공유 글 INSERT 처리 중 ERROR", err);
@@ -1499,6 +1498,18 @@ app.post("/api/community/saveResourceSharing", async (req, res) => {
                     res.send('success');
                 }
             });
+        }
+    });
+});
+
+app.get('/api/community/getResourceSharing', async (req, res) => {
+    const sqlQuery = "SELECT rs.*, COUNT(rec.postId) AS recommendationCount FROM teaform_db.resourceSharing AS rs LEFT JOIN teaform_db.recommendations AS rec ON rs.id = rec.postId GROUP BY rs.id ORDER BY rs.createdAt DESC";
+    
+    db.query(sqlQuery, [], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 자료공유 글 조회 중 ERROR", err);
+        }else{
+            res.json(result);
         }
     });
 });
