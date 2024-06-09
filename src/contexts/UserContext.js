@@ -11,15 +11,6 @@ export const UserProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
-    // useEffect(() => {
-    //     const isLoggedIn = !!user;
-    //     const isRequestPath = window.location.pathname.startsWith('/meorla/request/');
-    //     debugger
-    //     if(!isLoggedIn && window.location.pathname !== '/' && !isRequestPath) {
-    //         navigate('/');
-    //     }
-    // }, [user, navigate]);
-    
     const getUser = useCallback(async () => {
         try {
             const accessToken = sessionStorage.getItem("accessToken");
@@ -58,15 +49,7 @@ export const UserProvider = ({ children }) => {
 
     const updateUser = (newUserInfo) => {
         setUser(newUserInfo);
-    }
-        
-    useEffect(() => {
-        const fetchUser = async () => {
-            await getUser();
-        };
-
-        fetchUser();
-    }, [getUser]);
+    };
 
     const login = async (userData, accessToken) => {
         try {
@@ -91,7 +74,7 @@ export const UserProvider = ({ children }) => {
         }
     };
 
-    const logout = async(userId) => {
+    const logout = useCallback(async(userId) => {
         try {
             const accessToken = sessionStorage.getItem("accessToken");
             if(accessToken) {   // accessToken이 존재할 경우 로그아웃 수행
@@ -106,7 +89,31 @@ export const UserProvider = ({ children }) => {
         }catch(error) {
             console.log("로그아웃 요청 중 ERROR", error);
         }
-    };
+    }, [navigate]);
+        
+    useEffect(() => {
+        getUser();
+
+        const interceptor = axios.interceptors.response.use(
+            response => response,
+            error => {
+                if(error.response && (error.response.status === 401 || error.response.status === 403)) {
+                    logout();
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
+
+        // const fetchUser = async () => {
+        //     await getUser();
+        // };
+
+        // fetchUser();
+    }, [getUser, logout]);
 
     return (
         <UserContext.Provider value={{ user, login, logout, getUser, updateUser }}>

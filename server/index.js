@@ -208,9 +208,42 @@ app.post("/api/user/login", async (req, res) => {
     })
 });
 
+app.post("/api/user/changePassword", (req, res) => {
+    const { userId, schoolCode, oldPassword, newPassword } = req.body;
+
+    const sqlQuery = "SELECT * FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("비밀번호 변경 처리 로직 내 일치 ID 조회 중 ERROR", err);
+        }else{
+            if(result.length > 0) {
+                const user = result[0];
+                const match = verifyPassword(user.password, oldPassword);
+
+                if(!match) {
+                    res.send("NMCP");   // 현재 비밀번호와 일치하지 않음 (Not Match Current Password)
+                }else{
+                    const hashedPassword = hashPassword(newPassword);
+                    const updateQuery = "UPDATE teaform_db.users SET password = ? WHERE userId = ? AND schoolCode = ?";
+                    db.query(updateQuery, [hashedPassword, userId, schoolCode], (updateErr) => {
+                        if(updateErr) {
+                            console.log("비밀번호 변경 UPDATE 처리 중 ERROR", err);
+                        }else{
+                            res.send('success');
+                        }
+                    });
+                }
+            }else{
+                res.send("NFU");        // 일치하는 사용자를 찾을 수 없음 (Not Found User)
+            }
+        }
+    });
+});
+
 app.post("/api/user/logout", (req, res) => {
     const userId = req.body.userId;
     const refreshToken = null;
+    
     const sqlQuery = "UPDATE teaform_db.users SET refresh_token = ? WHERE userId = ?";
     db.query(sqlQuery, [refreshToken, userId], (err, result) => {
         if(err) {

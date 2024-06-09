@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Row, Input, Label, FormGroup, Col } from 'reactstrap';
+import { Table, Row, Input, Label, Col } from 'reactstrap';
 import '../../assets/css/healthExaminationSurveyForm.css';
 
 function HealthExaminationSurveyForm() {
@@ -63,7 +63,7 @@ function HealthExaminationSurveyForm() {
           <span>)</span>
       </Row>
       <Row className="d-flex justify-content-center no-gutters pl-3 pr-3 pt-2">
-        <Table bordered responsive>
+        <Table className='health-examination-table' responsive>
           <tbody>
             <tr>
               <td colSpan="7" className='text-center'><span className='font-weight-bold'>현재 건강문제로 인한 학교 내 활동에 지장 없음</span> 
@@ -145,14 +145,14 @@ function HealthExaminationSurveyForm() {
                 </div>
               </td>
             </tr>
-            <tr>
+            <tr style={{ backgroundColor: '#edd9c8' }}>
               <td className='text-center font-weight-bold' colSpan="2" rowSpan="2">질환</td>
               <td className='text-center font-weight-bold' rowSpan="2">있음</td>
               <td className='text-center font-weight-bold' rowSpan="2">없음</td>
               <td className='text-center font-weight-bold' colSpan="2">질환있는 경우</td>
               <td className='text-center font-weight-bold' rowSpan="2">질병명, 내용 등</td>
             </tr>
-            <tr>
+            <tr style={{ backgroundColor: '#edd9c8' }}>
               <td className='text-center font-weight-bold'>완치</td>
               <td className='text-center font-weight-bold'>치료중</td>
             </tr>
@@ -387,7 +387,7 @@ function HealthExaminationSurveyForm() {
               <td></td>
             </tr>
             <tr>
-              <td className='font-weight-bold'>9. 소아정신과질환(우울 등)</td>
+              <td className='font-weight-bold'>9. 소아정신과질환<br/>&nbsp;&nbsp;&nbsp;(우울 등)</td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
                 <Input
                   id='y'
@@ -605,6 +605,6 @@ function HealthExaminationSurveyForm() {
       </Row>
     </div>
   );
-}
+};
 
 export default HealthExaminationSurveyForm;

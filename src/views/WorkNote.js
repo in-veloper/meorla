@@ -323,7 +323,7 @@ function WorkNote(args) {
   const removeSymptomRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = symptomGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
-    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
+    const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
     
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
       NotiflixWarn(warnMessage);
@@ -338,7 +338,7 @@ function WorkNote(args) {
   const removeMedicationRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = medicationGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
-    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
+    const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
 
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
       NotiflixWarn(warnMessage);
@@ -353,7 +353,7 @@ function WorkNote(args) {
   const removeActionMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = actionMatterGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
-    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
+    const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
 
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
       NotiflixWarn(warnMessage);
@@ -368,7 +368,7 @@ function WorkNote(args) {
   const removeTreatmentMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
     const api = treatmentMatterGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
-    const warnMessage = "선택된 행이 없습니다.<br/>삭제할 행을 선택해 주세요.";
+    const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
     
     if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
       NotiflixWarn(warnMessage);      
@@ -383,7 +383,7 @@ function WorkNote(args) {
   const allSymptomRemoveRow = () => {
     const api = symptomGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    const warnMessage = "등록된 증상이 없습니다.";
+    const warnMessage = "등록된 증상이 없습니다";
 
     if(displayedRowCount === 0) {                         // 현재 등록된 증상이 없을 경우
       // 등록된 증상 없음 Notify
@@ -398,7 +398,7 @@ function WorkNote(args) {
   const allMedicationRemoveRow = () => {
     const api = medicationGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    const warnMessage = "등록된 투약사항이 없습니다.";
+    const warnMessage = "등록된 투약사항이 없습니다";
 
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
@@ -413,7 +413,7 @@ function WorkNote(args) {
   const allActionMatterRemoveRow = () => {
     const api = actionMatterGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    const warnMessage = "등록된 조치 및 교육사항이 없습니다.";
+    const warnMessage = "등록된 조치 및 교육사항이 없습니다";
 
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
@@ -428,7 +428,7 @@ function WorkNote(args) {
   const allTreatmentMatterRemoveRow = () => {
     const api = treatmentMatterGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    const warnMessage = "등록된 처치사항이 없습니다.";
+    const warnMessage = "등록된 처치사항이 없습니다";
 
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
       // 등록된 투약사항 없음 Notify
@@ -550,7 +550,7 @@ function WorkNote(args) {
 
     const confirmTitle = "증상 설정";
     const confirmMessage = "작성하신 증상을 저장하시겠습니까?";
-    const infoMessage = "증상 설정이 정상적으로 저장되었습니다.";
+    const infoMessage = "증상 설정이 정상적으로 저장되었습니다";
 
     const yesCallback = async () => {
       const api = symptomGridRef.current.api;                      // Grid api 획득
@@ -599,7 +599,7 @@ function WorkNote(args) {
 
     const confirmTitle = "투약사항 설정";
     const confirmMessage = "작성하신 투약사항를 저장하시겠습니까?";
-    const infoMessage = "투약사항 설정이 정상적으로 저장되었습니다.";
+    const infoMessage = "투약사항 설정이 정상적으로 저장되었습니다";
 
     const yesCallback = async () => {
       const api = medicationGridRef.current.api;                  // Grid api 획득
@@ -648,7 +648,7 @@ function WorkNote(args) {
 
     const confirmTitle = "조치 및 교육사항 설정";
     const confirmMessage = "작성하신 조치 및 교육사항을 저장하시겠습니까?";
-    const infoMessage = "조치 및 교육사항 설정이 정상적으로 저장되었습니다.";
+    const infoMessage = "조치 및 교육사항 설정이 정상적으로 저장되었습니다";
 
     const yesCallback = async () => {
       const api = actionMatterGridRef.current.api;                      // Grid api 획득
@@ -697,7 +697,7 @@ function WorkNote(args) {
 
     const confirmTitle = "처치사항 설정";
     const confirmMessage = "작성하신 처치사항을 저장하시겠습니까?";
-    const infoMessage = "처치사항 설정이 정상적으로 저장되었습니다.";
+    const infoMessage = "처치사항 설정이 정상적으로 저장되었습니다";
 
     const yesCallback = async () => {
       const api = treatmentMatterGridRef.current.api;                      // Grid api 획득
@@ -955,7 +955,7 @@ function WorkNote(args) {
     const socket = getSocket();
     const currentTime = moment().format('HH:mm');
     const askTitle = "침상안정 종료";
-    const askMessage = item.sName + " 학생의 침상안정 종료 시간을 입력해주세요.<br/>기본적으로 현재 시간이 입력되어 있습니다.";
+    const askMessage = item.sName + " 학생의 침상안정 종료 시간을 입력해주세요<br/>기본적으로 현재 시간이 입력되어 있습니다";
     const promptMessage = currentTime;
     const yesText = "침상안정 종료";
     const noText = "취소";
@@ -974,7 +974,7 @@ function WorkNote(args) {
       });
 
       if(response.data === "success") {
-        const infoMessage = item.sName + "학생의 침상안정이 종료 처리 되었습니다."
+        const infoMessage = item.sName + "학생의 침상안정이 종료 처리 되었습니다"
         NotiflixInfo(infoMessage);
         fetchEntireWorkNoteGrid();
 
@@ -1331,7 +1331,7 @@ function WorkNote(args) {
   const handleClearWorkNote = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
+    
     const targetId = e.currentTarget.id;
     setPersonalStudentRowData([]);
     
@@ -1413,13 +1413,13 @@ function WorkNote(args) {
 
     const confirmTitle = "보건일지 등록";
     const confirmMessage = "작성하신 보건일지를 등록하시겠습니까?";
-    const infoMessage = "보건일지가 정상적으로 등록되었습니다.";
-    const warnMessage = "선택된 학생이 없습니다.";
+    const infoMessage = "보건일지가 정상적으로 등록되었습니다";
+    const warnMessage = "선택된 학생이 없습니다";
     
     if(selectedStudent) {
       const useBedCount = document.getElementsByClassName('bed-icons-use').length;
       if((onBedRestStartTime || onBedRestEndTime) && (user.bedCount === useBedCount)) {
-        const warnMessage = "모든 침상이 사용중이므로 침상안정 등록을 할 수 없습니다.";
+        const warnMessage = "모든 침상이 사용중이므로 침상안정 등록을 할 수 없습니다";
         NotiflixWarn(warnMessage, '370px');
         
         setOnBedRestStartTime("");
@@ -1439,7 +1439,7 @@ function WorkNote(args) {
         );
         
         if(isDuplicatedOnBedStudent) {
-          const warnMessage = selectedStudent.sName + " 학생은 이미 침상안정 중인 상태입니다.";
+          const warnMessage = selectedStudent.sName + " 학생은 이미 침상안정 중인 상태입니다";
           NotiflixWarn(warnMessage, '310px');
 
           return;
@@ -1555,7 +1555,7 @@ function WorkNote(args) {
 
         filteredData.forEach(item => { 
           const targetStudentName = item.sName; 
-          const infoMessage = targetStudentName + " 학생의 침상안정이 종료되었습니다.";
+          const infoMessage = targetStudentName + " 학생의 침상안정이 종료되었습니다";
           const isAutoHide = false;
           
           NotiflixInfo(infoMessage, isAutoHide, '310px');
@@ -2313,7 +2313,7 @@ function WorkNote(args) {
                   ref={registeredAllGridRef}
                   rowData={entireWorkNoteRowData}
                   columnDefs={entireWorkNoteColumnDefs} 
-                  overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                 />
               </div>
             </CardBody>
@@ -2334,7 +2334,7 @@ function WorkNote(args) {
                   // singleClickEdit={true}
                   paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
                   defaultColDef={defaultColDef}
-                  overlayNoRowsTemplate={ '<span>등록된 증상이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayNoRowsTemplate={ '<span>등록된 증상이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                   overlayLoadingTemplate={
                     '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                   }
@@ -2381,7 +2381,7 @@ function WorkNote(args) {
                   stopEditingWhenCellsLoseFocus={true}
                   paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
                   defaultColDef={defaultColDef}
-                  overlayNoRowsTemplate={ '<span>등록된 투약사항이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayNoRowsTemplate={ '<span>등록된 투약사항이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                   overlayLoadingTemplate={
                     '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                   }
@@ -2429,7 +2429,7 @@ function WorkNote(args) {
                   // singleClickEdit={true}
                   paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
                   defaultColDef={defaultColDef}
-                  overlayNoRowsTemplate={ '<span>등록된 조치 및 교육사항이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayNoRowsTemplate={ '<span>등록된 조치 및 교육사항이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                   overlayLoadingTemplate={
                     '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                   }
@@ -2475,7 +2475,7 @@ function WorkNote(args) {
                   // singleClickEdit={true}
                   paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
                   defaultColDef={defaultColDef}
-                  overlayNoRowsTemplate={ '<span>등록된 처치사항이 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayNoRowsTemplate={ '<span>등록된 처치사항이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                   overlayLoadingTemplate={
                     '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                   }

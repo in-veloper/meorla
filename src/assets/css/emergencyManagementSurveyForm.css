@@ -1,0 +1,21 @@
+.emergency-management-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.emergency-management-table th, .emergency-management-table td {
+    border: 1px solid #e3b798;
+}
+
+.emergency-management-table th {
+    border: 1px solid #e3b798;
+}
+
+.radio-group {
+    display: inline-block;
+    margin-right: 50px;
+}
+  
+.radio-group input {
+    margin-right: 5px;
+}

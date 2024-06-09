@@ -1,3 +1,16 @@
+.health-examination-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.health-examination-table th, .health-examination-table td {
+    border: 1px solid #e3b798;
+}
+
+.health-examination-table th {
+    border: 1px solid #e3b798;
+}
+
 .radio-group {
     display: inline-block;
     margin-right: 25px;

@@ -10,25 +10,30 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import AdminLayout from "layouts/Admin.js";
 import Login from "views/Login";
 import { connectSocket } from "components/Socket/socket";
+import PrivateRoute from "components/Route/PrivateRoute";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const serverUrl = `http://${BASE_URL}`;
 
-const App = () => {
+const AppRoutes = () => {
   useEffect(() => {
     connectSocket(serverUrl);
   }, []);
 
   return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/dashboard" element={<Navigate to="/meorla/dashboard" replace />} />
+      <Route path="/meorla/*" element={<PrivateRoute><AdminLayout /></PrivateRoute>} />
+    </Routes>
+  );
+};
+
+const App = () => {
+  return (
     <BrowserRouter>
       <UserProvider>
-        {/* <MedicineProvider> */}
-          <Routes>
-            <Route path="/" element={<Login/>} />
-            <Route path="/meorla/*" element={<AdminLayout />} />
-            <Route path="/dashboard" element={<Navigate to="/meorla/dashboard" replace />} />
-          </Routes>
-        {/* </MedicineProvider> */}
+        <AppRoutes />
       </UserProvider>
     </BrowserRouter>
   );

@@ -12,6 +12,8 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '../assets/css/users.css';
 import QRCode from "qrcode-generator";
 import { useReactToPrint } from "react-to-print";
+import NotiflixWarn from "components/Notiflix/NotiflixWarn";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -36,7 +38,10 @@ function User() {
   const [QRCodeImage, setQRCodeImage] = useState('');
   const [requestURLModal, setRequestURLModal] = useState(false);
   const [requestURLValue, setRequestURLValue] = useState("");
-  // const [isUserInfoUpdated, setIsUserInfoUpdated] = useState(false);
+  const [passwordSettingModal, setPasswordSettingModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -55,6 +60,7 @@ function User() {
   };
 
   const toggleCommonPasswordSettingModal = () => setCommonPasswordSettingModal(!commonPasswordSettingModal); 
+  const togglePasswordSettingModal = () => setPasswordSettingModal(!passwordSettingModal);
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
   const toggleRequestQRcodeModal = () => {
     setRequestQRcodeModal(!requestQRcodeModal);
@@ -273,6 +279,11 @@ function User() {
     toggleCommonPasswordSettingModal();
   };
 
+  const handlePasswordSettingModal = (e) => {
+    e.preventDefault();
+    togglePasswordSettingModal();
+  };
+
   const saveCommonPassword = async (e) => {
     e.preventDefault();
     
@@ -299,6 +310,35 @@ function User() {
         Notiflix.Notify.failure('공통 비밀번호 변경에 실패하였습니다.<br/>관리자에게 문의해주세요.', {
           position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '300px'
         });
+      }
+    }
+  };
+
+  const savePassword = async () => {
+    if(newPassword !== confirmPassword) {
+      const warnMessage = "새 비밀번호와 확인 비밀번호가 일치하지 않습니다";
+      NotiflixWarn(warnMessage, '350px');
+    }else{
+      const response = await axios.post(`http://${BASE_URL}/api/user/changePassword`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        oldPassword: currentPassword,
+        newPassword: newPassword
+      });
+
+      if(response.data) {
+        if(response.data === 'NMCP') {
+          const warnMessage = "현재 비밀번호가 일치하지 않습니다";
+          NotiflixWarn(warnMessage);
+        }else if(response.data === 'NFU') {
+          const warnMessage = "사용자를 찾을 수 없습니다";
+          NotiflixWarn(warnMessage);
+        } else if(response.data === 'success') {
+          // api 처리하고 메시지 출력하는것부터 처리
+          const infoMessage = "비밀번호가 정상적으로 변경되었습니다";
+          NotiflixInfo(infoMessage);
+          togglePasswordSettingModal();
+        }
       }
     }
   };
@@ -536,11 +576,16 @@ function User() {
 
   const clipboardRequestURL = () => {
     const URLText = document.getElementById("requestURL").value;
+    // clipboard 기능은 보안상의 이유로 https에서만 지원 -> https로 전환 시 에러 사라질 가능성 높음 (현재는 로컬에서 에러 발생하지 않음)
     navigator.clipboard.writeText(URLText);
     Notiflix.Notify.success('보건실 사용 요청 URL이 클립보드에 복사되었습니다.', {
       position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '300px'
     });
-  }
+  };
+
+  const resetPassword = () => {
+
+  };
 
   return (
     <>
@@ -857,6 +902,7 @@ function User() {
                         className="ml-2"
                         color="secondary"
                         type="submit"
+                        onClick={handlePasswordSettingModal}
                       >
                         비밀번호 재설정
                       </Button>
@@ -875,6 +921,61 @@ function User() {
           </Col>
         </Row>
       </div>
+
+      <Modal isOpen={passwordSettingModal} toggle={togglePasswordSettingModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={togglePasswordSettingModal}><b className="text-muted">비밀번호 설정</b></ModalHeader>
+          <ModalBody className="pb-0">
+            <Form className="mt-2 mb-3" onSubmit={savePassword}>
+              <Row className="no-gutters">
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">현재 비밀번호</Label>
+                </Col>
+                <Col md="8">
+                  <Input 
+                    type="password"
+                    value={currentPassword}
+                    style={{ width: '90%' }}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row className="mt-2 no-gutters">
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">새 비밀번호</Label>
+                </Col>
+                <Col md="8">
+                  <Input 
+                    type="password"
+                    value={newPassword}
+                    style={{ width: '90%' }}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row className="mt-2 no-gutters">
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">비밀번호 확인</Label>
+                </Col>
+                <Col md="8">
+                  <Input
+                    type="password"
+                    id="updatedCommonPassword"
+                    style={{ width: '90%' }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </Col>
+              </Row>
+            </Form>
+          </ModalBody>
+          <ModalFooter>
+            <Col className="mt-0 mb-0">
+              <Button onClick={resetPassword}>비밀번호 초기화</Button>
+            </Col>
+            <Button className="mr-1" onClick={savePassword}>저장</Button>
+            <Button onClick={togglePasswordSettingModal}>취소</Button>
+          </ModalFooter>
+      </Modal>
 
       <Modal isOpen={commonPasswordSettingModal} toggle={toggleCommonPasswordSettingModal} centered style={{ minWidth: '20%' }}>
           <ModalHeader toggle={toggleCommonPasswordSettingModal}><b className="text-muted">공통 비밀번호 설정</b></ModalHeader>

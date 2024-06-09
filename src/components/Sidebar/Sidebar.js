@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useState, useEffect} from "react";
 import { useParams } from "react-router-dom";
 import { NavLink, useLocation } from "react-router-dom";
@@ -17,7 +18,6 @@ function Sidebar(props) {
   const location = useLocation();
   const sidebar = React.useRef();
   const navigate = useNavigate();
-  // verifies if routeName is the one active (in browser input)
 
   useEffect(() => {
     const schoolCode = params['*'].split('/')[1];
@@ -58,7 +58,6 @@ function Sidebar(props) {
     >
       <div className="logo">
         <a
-          // href="https://www.creative-tim.com"
           className="simple-text logo-mini"
           onClick={() => { navigate('/meorla/dashboard')}}
         >
@@ -67,7 +66,6 @@ function Sidebar(props) {
           </div>
         </a>
         <a
-          // href="https://www.creative-tim.com"
           onClick={() => { navigate('/meorla/dashboard')}}
           className="simple-text logo-normal text-muted"
         >
@@ -88,7 +86,7 @@ function Sidebar(props) {
                 >
                   <NavLink to={prop.layout + prop.path} className="nav-NavLink">
                     <i className={prop.icon} />
-                    <p>{prop.name}</p>
+                    <p><b>{prop.name}</b></p>
                   </NavLink>
                 </li>
               );

@@ -264,6 +264,7 @@ function Community() {
                 const infoMessage = "추천을 취소하였습니다";
                 NotiflixInfo(infoMessage);
                 await opinionCheckThumbsUp(opinionSharingSelectedRow.id);
+                fetchOpinionSharingData();
             }
         }else{
             const response = await axios.post(`http://${BASE_URL}/api/community/thumbsUp`, {
@@ -276,10 +277,12 @@ function Community() {
                 const infoMessage = "현재 글을 추천하였습니다";
                 NotiflixInfo(infoMessage);
                 await opinionCheckThumbsUp(opinionSharingSelectedRow.id);
+                fetchOpinionSharingData();
             }else if(response.data === 'duplicate') {
                 const warnMessage = "이미 현재 글을 추천하였습니다";
                 NotiflixWarn(warnMessage);
                 await opinionCheckThumbsUp(opinionSharingSelectedRow.id);
+                fetchOpinionSharingData();
             }
         }
     };
