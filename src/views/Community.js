@@ -40,7 +40,8 @@ function Community() {
     const [myOpinionSharingData, setMyOpinionSharingData] = useState(null);
     const [resourceWriteModal, setResourceWriteModal] = useState(false);
     const [selectedResourceCategoryOption, setSelectedResourceCategoryOption] = useState("classResource");
-    const [fileMessage, setFileMessage] = useState(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일을 업로드 해주세요</div>);
+    const [fileMessage, setFileMessage] = useState(<div className='d-flex justify-content-center align-items-center text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일을 업로드 해주세요</div>);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const opinionSharingGridRef = useRef(null);
     const quillRef = useRef(null);
@@ -148,8 +149,12 @@ function Community() {
     };
 
     const writeInCommunity = () => {
-        if(selectedMenu === "opinionSharing") toggleOpinionWriteModal();
-        else if(selectedMenu === "resourceSharing") toggleResourceWriteModal();
+        if(selectedMenu === "opinionSharing") {
+            toggleOpinionWriteModal();
+            resetOpinionWrite();  
+        }else if(selectedMenu === "resourceSharing") {
+            toggleResourceWriteModal();
+        }
     };
 
     const resetOpinionWrite = () => {
@@ -321,19 +326,59 @@ function Community() {
     };
 
     const resetResourceWrite = () => {
+        setTitleValue("");
+        setContentData("");
+        setSelectedFile(null);
+        setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일을 업로드 해주세요</div>);
+    };
+
+    const saveResourceWrite = async () => {
+        const payload = { content: contentData };
+
+        let formData = new FormData();
+        formData.append("uploadPath", user.userId + "/resourceFiles");
+        formData.append("file", selectedFile);
+
+        const config = { headers: { "Context-Type": "multipart/form-data" }};
+
+        try{
+            const fileUploadResponse = await axios.post(`http://${BASE_URL}/upload/image`, formData, config);
+
+            if(fileUploadResponse.status === 200) {
+                const fileName = fileUploadResponse.data.filename;
+
+                const response = await axios.post(`http://${BASE_URL}/api/community/saveResourceSharing`, {
+                    userId: user.userId,
+                    userName: user.name,
+                    schoolCode: user.schoolCode,
+                    rsCategory: selectedResourceCategoryOption,
+                    rsTitle: titleValue,
+                    rsContent: JSON.stringify(payload),
+                    fileName: fileName,
+                    category: "resourceSharing"
+                });
+
+                if(response.data === 'success') {
+                    const infoMessage = "자료공유 글이 정상적으로 등록되었습니다";
+                    NotiflixInfo(infoMessage);
+                    toggleResourceWriteModal();
+                    
+                }
+
+            }
+        } catch (error) {
+            console.log("자료공유 파일 업로드 중 ERROR", error);
+        }
 
     };
 
-    const saveResourceWrite = () => {
-
-    };
-
-    const handleSelectResourceCategoryOption = () => {
-
+    const handleSelectResourceCategoryOption = (e) => {
+        setSelectedResourceCategoryOption(e.target.value);
     };
 
     const onDrop = useCallback((acceptedFiles, fileRejections) => {
-
+        setSelectedFile(acceptedFiles[0]);
+        setFileMessage(<div className='d-flex justify-content-center align-items-center text-muted pt-2'>{acceptedFiles[0].name}</div>);
     }, []);
 
     const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
@@ -693,7 +738,7 @@ function Community() {
                             <Label>파일</Label>
                         </Col>
                         <Col md="11" style={{ border: '1px solid lightgrey'}}>
-                            <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', height: '10vh', paddingTop: '25px', textAlign: 'center' }}>
+                            <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', height: '5vh', paddingTop: '7px', textAlign: 'center' }}>
                                 <input {...getInputProps()}/>
                                 {fileMessage}
                             </div>

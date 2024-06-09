@@ -73,7 +73,6 @@ function HealthExaminationSurveyForm() {
                     type='radio'
                     name='effectSchoolActivitty'
                     value='y'
-                    checked={true}
                   />
                   <Label htmlFor='y'>예</Label>
                 </div>
@@ -83,7 +82,6 @@ function HealthExaminationSurveyForm() {
                     type='radio'
                     name='effectSchoolActivitty'
                     value='n'
-                    checked={false}
                   />
                   <Label htmlFor='y'>아니요</Label>              
                 </div>
@@ -98,7 +96,6 @@ function HealthExaminationSurveyForm() {
                     type='radio'
                     name='vaccine'
                     value='japaneseVirus'
-                    checked={true}
                   />
                   <Label htmlFor='japaneseVirus'>일본뇌염</Label>
                 </div> 
@@ -108,7 +105,6 @@ function HealthExaminationSurveyForm() {
                     type='radio'
                     name='vaccine'
                     value='tdTdap'
-                    checked={false}
                   />
                   <Label htmlFor='tdTdap'>Td/Tdap</Label>
                 </div>
@@ -118,7 +114,6 @@ function HealthExaminationSurveyForm() {
                     type='radio'
                     name='vaccine'
                     value='cervix'
-                    checked={false}
                   />
                   <Label htmlFor='cervix'>자궁경부</Label>
                 </div>
@@ -129,7 +124,6 @@ function HealthExaminationSurveyForm() {
                     type='radio'
                     name='vaccine'
                     value='vaccineEtc'
-                    checked={false}
                   />
                   <Label htmlFor='vaccineEtc'>기타</Label>
                 </div>
@@ -137,9 +131,8 @@ function HealthExaminationSurveyForm() {
                   <Input
                     id='vaccineNone'
                     type='radio'
-                    name='vaccineNone'
+                    name='vaccine'
                     value='vaccineNone'
-                    checked={false}
                   />
                   <Label htmlFor='vaccineNone'>없음</Label>
                 </div>
@@ -167,7 +160,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='allergy'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -176,7 +168,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='allergy'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -228,7 +219,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='atopy'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -237,7 +227,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='atopy'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -251,7 +240,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='asthma'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -260,7 +248,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='asthma'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -274,7 +261,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='Tuberculosis'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -283,7 +269,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='Tuberculosis'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -298,7 +283,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='convulsion'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -307,7 +291,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='convulsion'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -322,7 +305,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='cancer'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -331,7 +313,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='cancer'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -346,7 +327,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='diabetes'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -355,7 +335,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='diabetes'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -370,7 +349,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='dentist'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -379,7 +357,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='dentist'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -394,7 +371,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='childPsy'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -403,7 +379,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='childPsy'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -418,7 +393,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='menstrual'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -427,7 +401,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='menstrual'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -442,7 +415,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='diseaseEtc'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -451,7 +423,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='diseaseEtc'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>
@@ -466,7 +437,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='surgeryAdmission'
                   value='y'
-                  checked={true}
                 />
               </td>
               <td className='text-center' style={{ paddingBottom: 33, paddingLeft: 30 }}>
@@ -475,7 +445,6 @@ function HealthExaminationSurveyForm() {
                   type='radio'
                   name='surgeryAdmission'
                   value='n'
-                  checked={false}
                 />
               </td>
               <td></td>

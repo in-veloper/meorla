@@ -355,7 +355,7 @@ function User() {
         formData.append("uploadPath", currentUser.userId + "/backgroundImage");
         formData.append("file", file);
 
-        axios.post(`http:ƒwr//${BASE_URL}/upload/image`, formData, config).then((response) => {
+        axios.post(`http://${BASE_URL}/upload/image`, formData, config).then((response) => {
           if(response.status === 200) {
             const fileName = response.data.filename;
             const callbackResponse = axios.post(`http://${BASE_URL}/api/upload/insert`, {

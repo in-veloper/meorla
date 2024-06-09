@@ -40,8 +40,8 @@ app.use(cors({
      optionsSuccessStatus: 200
 }));
 
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100mb' }));
+app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 app.use(cookieParser());
 
 const setCookie = (name, value, options) => {
@@ -1479,6 +1479,26 @@ app.get('/api/community/opinionCheckThumbsUp', async (req, res) => {
         }else{
             const hasThumbedUp = result[0].hasThumbedUp;
             res.json({hasThumbedUp: hasThumbedUp}); // 1: 추천 있음, 0: 추천 없음
+        }
+    });
+});
+
+app.post("/api/community/saveResourceSharing", async (req, res) => {
+    const { userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName, category } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.uploadFile (userId, schoolCode, category, fileName) VALUES (?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, category, fileName], (err, result) => {
+        if(err) {
+            console.log("자료공유 업로드 파일 정보 INSERT 처리 중 ERROR", err);
+        }else{
+            const sqlQuery2 = "INSERT INTO teaform_db.resourceSharing (userId, userName, schoolCode, reCategory, rsTitle, rsContent, fileName) VALUES (?,?,?,?,?,?,?)"
+            db.query(sqlQuery2, [userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName], (err, result) => {
+                if(err) {
+                    console.log("자료공유 글 INSERT 처리 중 ERROR", err);
+                }else{
+                    res.send('success');
+                }
+            });
         }
     });
 });

@@ -149,7 +149,6 @@ function EmergencyManagementServeyForm() {
                                         type='radio'
                                         name='evacuation'
                                         value='agree'
-                                        checked={true}
                                     />
                                     <Label htmlFor='y'>동의</Label>
                                 </div>
@@ -159,7 +158,6 @@ function EmergencyManagementServeyForm() {
                                         type='radio'
                                         name='evacuation'
                                         value='disagree'
-                                        checked={false}
                                     />
                                     <Label htmlFor='y'>비동의</Label>              
                                 </div>
@@ -172,7 +170,6 @@ function EmergencyManagementServeyForm() {
                                         type='radio'
                                         name='medicalService'
                                         value='agree'
-                                        checked={true}
                                     />
                                     <Label htmlFor='y'>동의</Label>
                                 </div>
@@ -182,7 +179,6 @@ function EmergencyManagementServeyForm() {
                                         type='radio'
                                         name='medicalService'
                                         value='disagree'
-                                        checked={false}
                                     />
                                     <Label htmlFor='y'>비동의</Label>              
                                 </div>
@@ -195,7 +191,6 @@ function EmergencyManagementServeyForm() {
                                         type='radio'
                                         name='privacy'
                                         value='agree'
-                                        checked={true}
                                     />
                                     <Label htmlFor='y'>동의</Label>
                                 </div>
@@ -205,7 +200,6 @@ function EmergencyManagementServeyForm() {
                                         type='radio'
                                         name='privacy'
                                         value='disagree'
-                                        checked={false}
                                     />
                                     <Label htmlFor='y'>비동의</Label>              
                                 </div>
