@@ -208,7 +208,7 @@ function MedicalInfo() {
     const isBookmarked = bookmarkMedicineData?.some(bookmark => bookmark.itemSeq === selectedRowData.itemSeq);
 
     if(!isBookmarked) {
-      const response = await axios.post(`http://${BASE_URL}/api/medicineInfo/saveBookmarkMedicine`, {
+      const response = await axios.post(`${BASE_URL}/api/medicineInfo/saveBookmarkMedicine`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         itemSeq: selectedRowData.itemSeq
@@ -216,7 +216,7 @@ function MedicalInfo() {
       
       if(response.data === "success") fetchBookmarkMedicineData();
     }else{
-      const response = await axios.post(`http://${BASE_URL}/api/medicineInfo/deleteBookmarkMedicine`, {
+      const response = await axios.post(`${BASE_URL}/api/medicineInfo/deleteBookmarkMedicine`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         itemSeq: selectedRowData.itemSeq
@@ -332,7 +332,7 @@ function MedicalInfo() {
   };
 
   const fetchMedicineData = async () => {
-    const response = await axios.get(`http://${BASE_URL}/api/medicineInfo/getMedicineData`, {});
+    const response = await axios.get(`${BASE_URL}/api/medicineInfo/getMedicineData`, {});
 
     if(response.data) {
       setMedicineData(response.data);
@@ -341,7 +341,7 @@ function MedicalInfo() {
   };
 
   const fetchGrainMedicineData = async () => {
-    const response = await axios.get(`http://${BASE_URL}/api/medicineInfo/getGrainMedicineData`, {});
+    const response = await axios.get(`${BASE_URL}/api/medicineInfo/getGrainMedicineData`, {});
 
     if(response.data) setGrainMedicineData(response.data);
   };
@@ -353,7 +353,7 @@ function MedicalInfo() {
 
   const fetchBookmarkMedicineData = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}/api/medicineInfo/getBookmarkMedicine`, {
+      const response = await axios.get(`${BASE_URL}/api/medicineInfo/getBookmarkMedicine`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode

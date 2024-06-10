@@ -13,7 +13,7 @@ import { connectSocket } from "components/Socket/socket";
 import PrivateRoute from "components/Route/PrivateRoute";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const serverUrl = `http://${BASE_URL}`;
+const serverUrl = `${BASE_URL}`;
 
 const AppRoutes = () => {
   useEffect(() => {

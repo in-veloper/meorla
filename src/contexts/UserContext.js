@@ -17,7 +17,7 @@ export const UserProvider = ({ children }) => {
 
             if(!accessToken) return;
             
-            const response = await axios.get(`http://${BASE_URL}/api/token`, {
+            const response = await axios.get(`${BASE_URL}/api/token`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -78,7 +78,7 @@ export const UserProvider = ({ children }) => {
         try {
             const accessToken = sessionStorage.getItem("accessToken");
             if(accessToken) {   // accessToken이 존재할 경우 로그아웃 수행
-                const response = await axios.post(`http://${BASE_URL}/api/user/logout`, {userId: userId});
+                const response = await axios.post(`${BASE_URL}/api/user/logout`, {userId: userId});
                 if(response.status === 200) {
                     sessionStorage.removeItem("accessToken");
                     sessionStorage.removeItem("schoolCode");

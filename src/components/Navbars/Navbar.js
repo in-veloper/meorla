@@ -9,11 +9,9 @@ import '../../assets/css/navbar.css';
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
-import { Block } from 'notiflix/build/notiflix-block-aio';
 import { PiFaceMask } from "react-icons/pi";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from 'react-router-dom';
-import io from "socket.io-client";
 import routes from "routes.js";
 import { getSocket } from "components/Socket/socket";
 
@@ -51,7 +49,6 @@ function Header(props) {
   const [selectedStation, setSelectedStation] = useState("");
 
   const gridRef = useRef();
-
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -143,7 +140,7 @@ function Header(props) {
   const fetchBookmarkData = useCallback(async () => {
     try {
       if(user?.userId && user?.email) {
-        const response = await axios.get(`http://${BASE_URL}/api/bookmark/getBookmark`, {
+        const response = await axios.get(`${BASE_URL}/api/bookmark/getBookmark`, {
           params: {
             userId: user.userId,
             userEmail: user.email
@@ -192,7 +189,7 @@ function Header(props) {
 
   const fetchWorkStatusData = useCallback(async () => {
     if(user?.userId && user?.schoolCode) {
-      const response = await axios.get(`http://${BASE_URL}/api/user/getWorkStatus`, {
+      const response = await axios.get(`${BASE_URL}/api/user/getWorkStatus`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -216,7 +213,7 @@ function Header(props) {
     const selectedWorkStatus = e.target.id;
 
     if(user?.userId && user?.schoolCode) {
-      const response = await axios.post(`http://${BASE_URL}/api/user/updateWorkStatus`, {
+      const response = await axios.post(`${BASE_URL}/api/user/updateWorkStatus`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         workStatus: selectedWorkStatus
@@ -370,14 +367,14 @@ function Header(props) {
         
         let response = null;              // response 데이터 담을 변수
         if(!isEmptyBookmarkData) {       // 등록된 북마크가 있는 경우 - Update
-          response = await axios.post(`http://${BASE_URL}/api/bookmark/update`, {
+          response = await axios.post(`${BASE_URL}/api/bookmark/update`, {
             userId: user.userId,
             userEmail: user.email,
             schoolCode: user.schoolCode,
             bookmarkArray: bookmarkArray
           });
         }else{                            // 등록된 북마크가 없는 경우 - Insert
-          response = await axios.post(`http://${BASE_URL}/api/bookmark/insert`, {
+          response = await axios.post(`${BASE_URL}/api/bookmark/insert`, {
             userId: user.userId,
             userEmail: user.email,
             userName: user.name,
@@ -420,7 +417,7 @@ function Header(props) {
     const selectedStation = e.target.text;
 
     if(user && selectedStation) {
-      const response = await axios.post(`http://${BASE_URL}/api/user/updatePmStation`, {
+      const response = await axios.post(`${BASE_URL}/api/user/updatePmStation`, {
         userId: user.userId,
         schoolCode: user.schoolCode,
         pmStation: selectedStation
@@ -527,7 +524,7 @@ function Header(props) {
 
   const fetchNotifyPmStatus = useCallback(async () => {
     if(user) {
-      const response = await axios.get(`http://${BASE_URL}/api/user/getNotifyPmInfo`, {
+      const response = await axios.get(`${BASE_URL}/api/user/getNotifyPmInfo`, {
         params: {
           userId: user.userId,
           schoolCode: user.schoolCode
@@ -553,7 +550,7 @@ function Header(props) {
 
     const yesCallback = async () => {
       if(user) {
-        const response = await axios.post(`http://${BASE_URL}/api/user/updateNotifyPmInfo`, {
+        const response = await axios.post(`${BASE_URL}/api/user/updateNotifyPmInfo`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           notifyPm: !notifyPmChecked
