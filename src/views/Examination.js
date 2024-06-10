@@ -35,7 +35,7 @@ function Examination() {
         const searchKeyword = input.trim();
         setHospitalName(searchKeyword);
 
-        const endPoint = 'http://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire';
+        const endPoint = 'https://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire';
         const serviceKey = 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==';
 
         if(searchKeyword) {

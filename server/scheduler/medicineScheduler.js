@@ -12,8 +12,8 @@ const dbConfig = {
     database: 'teaform_db'
 };
 
-const medicineApiUrl = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
-const grainMedicineApiUrl = 'http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01';
+const medicineApiUrl = 'https://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
+const grainMedicineApiUrl = 'https://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01';
 
 async function getMedicineUpdateDeFromDB() {
     const connection = await mysqlPromise.createConnection(dbConfig);

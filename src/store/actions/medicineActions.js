@@ -3,8 +3,8 @@ import axios from "axios";
 export const FETCH_MEDICINE_DATA_SUCCESS = 'FETCH_MEDICINE_DATA_SUCCESS';
 export const FETCH_GRAIN_MEDICINE_DATA_SUCCESS = 'FETCH_GRAIN_MEDICINE_DATA_SUCCESS';
 
-const medicine_URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
-const grain_medicine_URL = 'http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01';
+const medicine_URL = 'https://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
+const grain_medicine_URL = 'https://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01';
 
 export const fetchMedicineData = () => {
     return async (dispatch) => {

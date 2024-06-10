@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const MedicineContext = createContext();
-const URL = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
+const URL = 'https://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
 
 export const MedicineProvider = ({ children }) => {
     const [medicineData, setMedicineData] = useState(null);
@@ -55,7 +55,7 @@ export const MedicineProvider = ({ children }) => {
     const fetchGrainMedicineData = async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await axios.get("http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
+                const response = await axios.get("https://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
                     params: {
                         serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
                         type: "json"
@@ -69,7 +69,7 @@ export const MedicineProvider = ({ children }) => {
                     const requests = [];
 
                     for(let page = 1; page <= totalPages; page++) {                 // 페이지에 따른 결과 출력
-                        requests.push(axios.get("http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
+                        requests.push(axios.get("https://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01", {
                             params: {
                                 serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
                                 pageNo: page,                                                 // 페이지 수

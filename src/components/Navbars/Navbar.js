@@ -434,7 +434,7 @@ function Header(props) {
 
     if(user && user.pmStation) {
       try {
-        const url = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty";
+        const url = "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty";
         const response = await axios.get(url, {
           params: {
             serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
@@ -475,7 +475,7 @@ function Header(props) {
   const fetchPmStationInfo = useCallback(async () => {
     if(targetSido && stationInfo.length === 0) {
       try {
-        const url = 'http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty';
+        const url = 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty';
         const response = await axios.get(url, {
           params: {
             serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
@@ -584,7 +584,7 @@ function Header(props) {
       
       if(currentHour >= 8 && currentHour < 16 && currentMinute >= 30) {
         const currentYear = currentDate.getFullYear();
-        const url = 'http://apis.data.go.kr/B552584/UlfptcaAlarmInqireSvc/getUlfptcaAlarmInfo';
+        const url = 'https://apis.data.go.kr/B552584/UlfptcaAlarmInqireSvc/getUlfptcaAlarmInfo';
         const response = await axios.get(url, {
           params: {
             serviceKey: 'keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==',
