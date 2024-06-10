@@ -136,12 +136,12 @@ function EmergencyManagementServeyForm() {
                         </Table>
                         <Row className='pt-3 no-gutters'>
                             <span className='text-muted font-weight-bold' style={{ fontSize: 20 }}>▣ 학생 건강상태 확인 및 학교 내 응급환자 관리 동의서</span>
-                            <Form className='mt-3 p-2' style={{ border: '1px solid #e3b798' }}>
+                            <Form className='mt-3 p-2 w-100' style={{ border: '1px solid #e3b798' }}>
                                 <p>
                                     1. 학생의 건강상태가 위와 같음을 확인합니다.
                                 </p>
                                 <p>
-                                    2. 학생 응급상황 발생 시에 학부모(또는 권한대행자)의 위의 연락처로 연락이 안 될 경우, 학교 내 응급환자관리 절차에 따라 학교<br/>&nbsp;&nbsp;&nbsp;&nbsp;인근 병원 또는 학생이 주로 이용하는 병원으로 후송하는데 동의합니다.
+                                    2. 학생 응급상황 발생 시에 학부모(또는 권한대행자)의 위의 연락처로 연락이 안 될 경우, 학교 내 응급환자관리 절차에 따라 학교 인근 병원 또는 학생이 주로 이용하<br/>&nbsp;&nbsp;&nbsp;&nbsp;는 병원으로 후송하는데 동의합니다.
                                 </p>
                                 <div className='radio-group' style={{ marginLeft: 35 }}>
                                     <Input
