@@ -1430,19 +1430,21 @@ function WorkNote(args) {
       }
 
       if(onBedRestStartTime || onBedRestEndTime) {
-        const isDuplicatedOnBedStudent = displayedOnBedStudents.some(item =>
-          item.sGrade === selectedStudent.sGrade &&
-          item.sClass === selectedStudent.sClass &&
-          item.sNumber === selectedStudent.sNumber &&
-          item.sGender === selectedStudent.sGender &&
-          item.sName === selectedStudent.sName
-        );
-        
-        if(isDuplicatedOnBedStudent) {
-          const warnMessage = selectedStudent.sName + " 학생은 이미 침상안정 중인 상태입니다";
-          NotiflixWarn(warnMessage, '310px');
-
-          return;
+        if(displayedOnBedStudents && Array.isArray(displayedOnBedStudents)) {
+          const isDuplicatedOnBedStudent = displayedOnBedStudents.some(item =>
+            item.sGrade === selectedStudent.sGrade &&
+            item.sClass === selectedStudent.sClass &&
+            item.sNumber === selectedStudent.sNumber &&
+            item.sGender === selectedStudent.sGender &&
+            item.sName === selectedStudent.sName
+          );
+          
+          if(isDuplicatedOnBedStudent) {
+            const warnMessage = selectedStudent.sName + " 학생은 이미 침상안정 중인 상태입니다";
+            NotiflixWarn(warnMessage, '310px');
+  
+            return;
+          }
         }
       }
 
