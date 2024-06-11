@@ -11,11 +11,16 @@ export const UserProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
+    const [loading, setLoading] = useState(true);
+
     const getUser = useCallback(async () => {
         try {
             const accessToken = sessionStorage.getItem("accessToken");
 
-            if(!accessToken) return;
+            if(!accessToken) {
+                setLoading(false);
+                return;
+            }
             
             const response = await axios.get(`${BASE_URL}/api/token`, {
                 headers: {
@@ -44,6 +49,8 @@ export const UserProvider = ({ children }) => {
             sessionStorage.removeItem("accessToken");
             navigate("/");
             console.error("사용자 정보 획득 중 ERROR", error);
+        }finally{
+            setLoading(false);
         }
     }, [navigate]);
 
@@ -107,16 +114,10 @@ export const UserProvider = ({ children }) => {
         return () => {
             axios.interceptors.response.eject(interceptor);
         };
-
-        // const fetchUser = async () => {
-        //     await getUser();
-        // };
-
-        // fetchUser();
     }, [getUser, logout]);
 
     return (
-        <UserContext.Provider value={{ user, login, logout, getUser, updateUser }}>
+        <UserContext.Provider value={{ user, login, logout, getUser, updateUser, loading }}>
             {children}
         </UserContext.Provider>
     );

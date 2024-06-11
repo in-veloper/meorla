@@ -17,6 +17,7 @@ import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import { RiSearchLine } from "react-icons/ri";
 import "../assets/css/request.css";
+import mainLogoWhite from "../assets/img/main_header_logo_white.png";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
@@ -39,7 +40,6 @@ const removeLoginInfoFromSessionStorage = () => {
     sessionStorage.removeItem("authenticated");
 };
 
-
 // 보건교사가 가입되지 않은 학교일 경우 에러 -> 처리 필요
 function RequesterLogin({onLogin}) {
     const navigate = useNavigate();
@@ -54,18 +54,7 @@ function RequesterLogin({onLogin}) {
     const params = useParams();
 
     useEffect(() => {
-        document.getElementsByClassName('fixed-plugin')[0].setAttribute('hidden', true);
-        document.getElementsByClassName('navbar-toggler')[0].setAttribute('hidden', true);
-        document.getElementsByClassName('navbar-toggler')[1].setAttribute('hidden', true);
-        document.getElementsByClassName('navbar-brand')[0].setAttribute('href', '#');
-        document.getElementsByClassName('navbar-nav')[0].setAttribute('hidden', true);
-
-        const navbarBrand = document.querySelector('.navbar-brand');
-        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 방문 요청';
-    }, []);
-
-    useEffect(() => {
-        const schoolCode = params['*'].split('/')[1];
+        const schoolCode = params['*'];
         setSchoolCodeByParams(schoolCode);
     }, [params]);
 
@@ -83,7 +72,7 @@ function RequesterLogin({onLogin}) {
                 setSchoolInfoByParams(response[0]);
             }
         } catch (error) {
-            // 로그인 페이지가 아니라 404 띄워줘야 할듯... (일치하는 학교명으로 조회할 수 없다는)
+            // 로그인 페이지가 아니라 404 처리 필요 (일치하는 학교명으로 조회할 수 없다는 메시지 필요)
             navigate('/');
             console.log("Parameter 유입 학교 코드로 학교명 검색중 ERROR", error);
         }
@@ -142,7 +131,7 @@ function RequesterLogin({onLogin}) {
     };
 
     const handleLogin = async () => {
-        const schoolCode = params.thirdPartyUserCode;
+        const schoolCode = params['*'];
         let commonPassword = "";
 
         if(schoolName && schoolCode) {
@@ -169,10 +158,8 @@ function RequesterLogin({onLogin}) {
     useEffect(() => {
         function handleResize() {
             if(window.innerWidth <= 768) {
-                const height = window.innerHeight - 163;
+                const height = window.innerHeight;
                 setContentHeight(height);
-                
-                document.getElementsByClassName('footer')[0].style.paddingTop = 0;
             }else{
                 setContentHeight("auto");
             }
@@ -185,7 +172,7 @@ function RequesterLogin({onLogin}) {
 
     return (
         <>
-            <div className="content d-flex justify-content-center align-items-center" style={{ height: isBrowser ? '83.3vh' : contentHeight }}>
+            <div className="content d-flex justify-content-center align-items-center" style={{ height: isBrowser ? '83.3vh' : contentHeight, backgroundColor: '#f6f5f7' }}>
                 <BrowserView>
                     <Card style={{ width: '400px', height: 'auto' }}>
                         <CardBody className="mt-2">
@@ -234,6 +221,12 @@ function RequesterLogin({onLogin}) {
                 </BrowserView>
 
                 <MobileView>
+                    <Card className="p-2">
+                        <Row className="d-flex align-items-center justify-content-center">
+                            <img className="mr-2" src={mainLogoWhite} alt="logo" style={{ width: 50, height: 50}}/>
+                            <b style={{ color: '#66615B', fontSize: 20 }}>MEORLA</b>
+                        </Row>
+                    </Card>
                     <Card style={{ width: '350px', height: 'auto' }}>
                         <CardBody className="mt-2">
                             <Row className="mt-2 align-items-center">    
@@ -314,23 +307,6 @@ function Request({onLogOut}) {
     const params = useParams();
     
     useEffect(() => {
-        document.getElementsByClassName('fixed-plugin')[0].setAttribute('hidden', true);
-        document.getElementsByClassName('navbar-toggler')[0].setAttribute('hidden', true);
-        document.getElementsByClassName('navbar-toggler')[1].setAttribute('hidden', true);
-        document.getElementsByClassName('navbar-brand')[0].setAttribute('href', '#');
-        document.getElementsByClassName('navbar-nav')[0].setAttribute('hidden', true);
-
-        const navbarBrand = document.querySelector('.navbar-brand');
-        if(navbarBrand) navbarBrand.getElementsByTagName('b')[0].textContent = '보건실 방문 요청';
-
-        const logoutButton = document.createElement('button');
-        logoutButton.className = 'btn btn-secondary mobile-logout-btn btn-sm';
-        logoutButton.textContent = "로그아웃";
-        logoutButton.onclick = onLogOut;
-        logoutButton.style.display = 'block';
-        
-        if(!document.getElementsByClassName('mobile-logout-btn')[0]) document.getElementsByClassName('container-fluid')[0].appendChild(logoutButton);
-
         if(params) setSchoolCode(params.thirdPartyUserCode);
     }, []);
 
@@ -393,10 +369,8 @@ function Request({onLogOut}) {
     useEffect(() => {
         function handleResize() {
             if(window.innerWidth <= 768) {
-                const height = window.innerHeight - 163;
+                const height = window.innerHeight;
                 setContentHeight(height);
-                
-                document.getElementsByClassName('footer')[0].style.paddingTop = 0;
             }else{
                 setContentHeight("auto");
             }
@@ -621,7 +595,7 @@ function Request({onLogOut}) {
 
     return(
         <>
-            <div className="content" style={{ height: isBrowser ? '83.4vh' : contentHeight }}>
+            <div className="content" style={{ height: isBrowser ? '100vh' : contentHeight, backgroundColor: '#f6f5f7' }}>
                 <BrowserView>
                     <Row>
                         <p>PC View</p>
@@ -630,6 +604,17 @@ function Request({onLogOut}) {
                 </BrowserView>
 
                 <MobileView>
+                    <Card className="mb-3">
+                        <Row>
+                            <Col className="d-flex align-items-center justify-content-start no-gutters ml-2">
+                                <img className="mr-2" src={mainLogoWhite} alt="logo" style={{ width: 35, height: 35}}/>
+                                <b style={{ color: '#66615B', fontSize: 15 }}>MEORLA</b>
+                            </Col>
+                            <Col className="d-flex justify-content-end no-gutters mr-2">
+                                <Button size="sm" onClick={onLogOut}>로그아웃</Button>
+                            </Col>
+                        </Row>
+                    </Card>
                     <Card className="mb-2" style={{ width: '100%', height: '19vh', border: '1px dashed lightgrey' }}>
                         <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
                             <b>보건실 현황</b>
@@ -643,7 +628,7 @@ function Request({onLogOut}) {
                             {generateBedBox()}
                         </Row>
                     </Card>
-                    <Card style={{ width: '100%', height: '58vh', border: '1px dashed lightgrey' }}>
+                    <Card className="mb-3" style={{ width: '100%', height: '58vh', border: '1px dashed lightgrey' }}>
                         <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
                             <b>보건실 방문 요청</b>
                         </CardHeader>
@@ -769,8 +754,9 @@ function Request({onLogOut}) {
                             </Form>
                         </CardBody>
                     </Card>
-                    <Row className="justify-content-end no-gutters">
-                    </Row>
+                    <Card style={{ height: '12.5vh' }}>
+                        Footer 영역
+                    </Card>
                 </MobileView>
             </div>
         </>
