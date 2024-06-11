@@ -409,7 +409,7 @@ function Dashboard() {
               <div style={{ height: '20.6vh'}}>
                 <ReactQuill
                   ref={quillRef}
-                  style={{ height: "16.6vh" }}
+                  style={{ height: "17.1vh" }}
                   theme="snow"
                   modules={modules}
                   formats={formats}

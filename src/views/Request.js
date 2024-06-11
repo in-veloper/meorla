@@ -307,7 +307,7 @@ function Request({onLogOut}) {
     const params = useParams();
     
     useEffect(() => {
-        if(params) setSchoolCode(params.thirdPartyUserCode);
+        if(params) setSchoolCode(params['*']);
     }, []);
 
     useEffect(() => {

@@ -401,11 +401,10 @@ function MedicalInfo() {
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Col md="7">
-            <Table bordered className="text-center text-muted search-shape mb-1" style={{ width: 'auto' }}>
+            <Table bordered className="text-center search-shape mb-1" style={{ width: 'auto' }}>
               <tbody>
                 <tr>
-                  {/* <td className={`align-items-center justify-content-center text-muted fixed-width-cell ${selectedCells.shape === '전체' ? 'selected-cell' : ''}`}> */}
-                  <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'shape')}>
+                  <td className="align-items-center justify-content-center fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'shape')}>
                     <span style={{ fontSize: 12 }}>모양<br/>전체</span>
                   </td>
                   {shapes.map((shape, index) => (
@@ -417,10 +416,10 @@ function MedicalInfo() {
                 </tr>
               </tbody>
             </Table>
-            <Table bordered className="text-center text-muted search-color mb-1" style={{ width: 'auto' }}>
+            <Table bordered className="text-center search-color mb-1" style={{ width: 'auto' }}>
               <tbody>
                 <tr>
-                  <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell"  onClick={(e) => handleEntireCellClick(e, 'color')}>
+                  <td className="align-items-center justify-content-center fixed-width-cell selected-cell"  onClick={(e) => handleEntireCellClick(e, 'color')}>
                     <span style={{ fontSize: 12 }}>색상<br/>전체</span>
                   </td>
                   {colors.map((color, index) => (
@@ -437,10 +436,10 @@ function MedicalInfo() {
               </tbody>
             </Table>
             <Row className="d-flex no-gutters">
-              <Table bordered className="text-center text-muted search-formulation" style={{ width: 'auto', }}>
+              <Table bordered className="text-center search-formulation" style={{ width: 'auto', }}>
                 <tbody>
                   <tr>
-                    <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'formulation')}>
+                    <td className="align-items-center justify-content-center fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'formulation')}>
                       <span style={{ fontSize: 12 }}>제형<br/>전체</span>
                     </td>
                     {formulation.map((formulation, index) => (
@@ -452,10 +451,10 @@ function MedicalInfo() {
                   </tr>
                 </tbody>
               </Table>
-              <Table bordered className="text-center text-muted search-dividing ml-5" style={{ width: 'auto' }}>
+              <Table bordered className="text-center search-dividing ml-5" style={{ width: 'auto' }}>
                 <tbody>
                   <tr>
-                    <td className="align-items-center justify-content-center text-muted fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'dividing')}>
+                    <td className="align-items-center justify-content-center fixed-width-cell selected-cell" onClick={(e) => handleEntireCellClick(e, 'dividing')}>
                       <span style={{ fontSize: 12 }}>분할선<br/>전체</span>
                     </td>
                     {dividing.map((dividing, index) => (
@@ -494,17 +493,17 @@ function MedicalInfo() {
                 placeholder="검색 키워드를 입력하세요"
                 onKeyDown={handleKeyDown}
                 autoFocus={true}
-                style={{ width: '250px', height: '40px'}}
+                style={{ width: '39.2%', height: '40px'}}
                 onChange={handleSearchText}
               />
-              <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>&nbsp;약 정보로 검색&nbsp;&nbsp;</Button>
+              <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>약 정보로 검색</Button>
               <Button className="ml-1" style={{ height: '38px', marginTop: 1 }} onClick={resetSearch}>초기화</Button>
             </Row>
             <Row className="d-flex align-items-center justify-content-end no-gutters" style={{ marginTop: -7}}>
               <Input 
                 type="text"
                 placeholder="식별문자 (약의 앞면이나 뒷면에 표기된 문자)로 검색"
-                style={{ width: '377px', height: '40px' }}
+                style={{ width: '60.8%', height: '40px' }}
                 value={discriminationText}
                 onChange={handleDiscriminationText}
                 onKeyDown={handleSearchShapeKeyDown}
@@ -533,11 +532,11 @@ function MedicalInfo() {
         </Row>
 
         <Modal isOpen={modal} toggle={toggleModal} centered style={{ minWidth: '55%' }}>
-          <ModalHeader toggle={toggleModal}><b className="text-muted">상세 정보</b></ModalHeader>
+          <ModalHeader toggle={toggleModal}><b>상세 정보</b></ModalHeader>
           <ModalBody>
             {selectedRowData && (
               <div>
-                <ListGroup className="text-muted">
+                <ListGroup>
                   <ListGroupItem>
                     <span className="mr-1 row-detail-span" >제품명</span> 
                     <div className="row-detail-div">{selectedRowData.itemName}
@@ -567,7 +566,7 @@ function MedicalInfo() {
         </Modal>
 
         <Modal isOpen={bookmarkMedicineModal} toggle={toggleBookmarkMedicineModal} centered style={{ minWidth: '25%' }}>
-          <ModalHeader toggle={toggleBookmarkMedicineModal}><b className="text-muted">북마크 약품 목록</b></ModalHeader>
+          <ModalHeader toggle={toggleBookmarkMedicineModal}><b>북마크 약품 목록</b></ModalHeader>
           <ModalBody>
             <div className="ag-theme-alpine" style={{ height: '30vh', minHeight: '30vh', maxHeight: '30vh' }}>
               <AgGridReact

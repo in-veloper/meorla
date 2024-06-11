@@ -1474,9 +1474,24 @@ function WorkNote(args) {
 
         if(response.data === "success") {
           NotiflixInfo(infoMessage);
-          onResetSearch();
-          handleClearAllWorkNote();
+          // onResetSearch();
+          // handleClearAllWorkNote();
           fetchEntireWorkNoteGrid();
+          fetchSelectedStudentData();
+          setSearchSymptomText({clearTargetField: "all"});
+          setSearchMedicationText({clearTargetField: "all"});
+          setSearchActionMatterText({clearTargetField: "all"});
+          setSearchTreatmentMatterText({clearTargetField: "all"});
+      
+          setOnBedRestStartTime("");
+          const onBedEndTime = document.getElementById('onBedRestEndTime');
+          onBedEndTime.value = "";
+          
+          setTempuratureValue(0);
+          setBloodPressureValue(0);
+          setpulseValue(0);
+          setOxygenSaturationValue(0);
+          setBloodSugarValue(0);
 
           if(socket) socket.emit('sendBedStatus', { message: "registBed::" + selectedStudent.sGrade + "," + selectedStudent.sClass + "," + selectedStudent.sNumber + "," + selectedStudent.sName });
         }
@@ -1765,7 +1780,7 @@ function WorkNote(args) {
     <>
       <div className="content" style={{ height: '84.8vh' }}>
         <NotificationAlert ref={notificationAlert} />
-        <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
+        {/* <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
           <Table bordered className="stats-table text-center text-muted">
             <thead>
               <tr>
@@ -1798,14 +1813,14 @@ function WorkNote(args) {
               </tr>
             </tbody>
           </Table>
-        </Row>
+        </Row> */}
         <Row style={{ marginBottom: '-6px' }}>
           {bedBoxContent}
         </Row>
         <Row>
           <Col className="pr-2" md="4">
             <Card className="studentInfo" style={{ minHeight: '420px', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
-              <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
+              <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
               <CardBody className="pb-1">
@@ -1815,7 +1830,7 @@ function WorkNote(args) {
                       <Col md="3">
                         <Row className="align-items-center mr-0">
                           <Col md="8" className="text-left">
-                            <label>학년</label>
+                            <label style={{ color: 'black' }}>학년</label>
                           </Col>
                           <Col md="4" className="p-0" style={{ marginLeft: '-12px' }}>
                             <Input
@@ -1831,7 +1846,7 @@ function WorkNote(args) {
                       <Col md="2">
                         <Row className="align-items-center">
                           <Col md="6" className="text-left" style={{ marginLeft: '-20px' }}>
-                            <label>반</label>
+                            <label style={{ color: 'black' }}>반</label>
                           </Col>
                           <Col md="6" className="p-0">
                             <Input
@@ -1847,7 +1862,7 @@ function WorkNote(args) {
                       <Col md="3">
                         <Row className="align-items-center">
                           <Col md="7" className="text-left" style={{ marginLeft: '-20px' }}>
-                            <label>번호</label>
+                            <label style={{ color: 'black' }}>번호</label>
                           </Col>
                           <Col md="5" className="p-0" style={{ marginLeft: '-13px'}}>
                             <Input
@@ -1863,7 +1878,7 @@ function WorkNote(args) {
                       <Col md="4">
                         <Row className="align-items-center pr-0">
                           <Col md="5" className="text-right" style={{ marginLeft: '-40px'}}>
-                            <label>이름</label>
+                            <label style={{ color: 'black' }}>이름</label>
                           </Col>
                           <Col md="7" className="p-0" style={{ marginLeft: '-5px'}}>
                             <Input
@@ -1897,7 +1912,7 @@ function WorkNote(args) {
                   </Col>
                 </Row>
                 <Row className="mt-2">
-                  <Col className="text-right pr-4" md="12">
+                  <Col className="text-right pr-3" md="12">
                     <CustomInput 
                        type="switch"
                        id="maskingName"
@@ -1955,10 +1970,10 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '252px', border: '1px solid lightgrey' }}>
-              <CardHeader className="text-muted" style={{ fontSize: '17px' }}>
+            <Card style={{ height: '31.1vh', border: '1px solid lightgrey' }}>
+              <CardHeader style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-items-center">
-                  <Col className="text-left pl-4" md="3">
+                  <Col className="text-left pl-3" md="3">
                     <CustomInput 
                        type="switch"
                        id="hidePrivacyInfo"
@@ -1970,7 +1985,7 @@ function WorkNote(args) {
                   <Col className="text-center" md="6">
                     <b>보건실 방문 요청 내역</b>
                   </Col>
-                  <Col className="text-right pr-4" md="3" style={{ marginTop: -8 }}>
+                  <Col className="text-right pr-3" md="3" style={{ marginTop: -8 }}>
                     <b style={{ fontSize: '13px', color: '#9A9A9A' }} onClick={handleEntireVisitRequestClose}>전체읽음</b>
                   </Col>
                 </Row>
@@ -1983,8 +1998,8 @@ function WorkNote(args) {
             </Card>
           </Col>
           <Col className="pl-2" md="8">
-            <Card className="workNoteForm" style={{ border: '1px solid lightgrey' }}>
-              <CardHeader className="text-muted text-center" style={{ fontSize: '17px' }}>
+            <Card className="workNoteForm" style={{ minHeight: '71.7vh', border: '1px solid lightgrey' }}>
+              <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
                 <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>
                   {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
@@ -1993,7 +2008,7 @@ function WorkNote(args) {
               <CardBody className="pt-2 pb-1">
                 <Row className="pt-1">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '13.8vh' }}>
+                    <div className="ag-theme-alpine" style={{ height: '20vh' }}>
                       <AgGridReact
                         rowHeight={30}
                         ref={personalStudentGridRef}
@@ -2008,14 +2023,14 @@ function WorkNote(args) {
                 <Row>
                   <Col md="3" className="pt-3 pr-2">
                     <Card style={{ border: '1px solid lightgrey'}}>
-                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
                             <b className="action-title" style={{ marginRight: '-5px' }}>증상</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="symptomTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote}/>
-                            <BiMenu style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
+                            <IoMdRefresh id="symptomTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote}/>
+                            <BiMenu className="text-muted" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleSymptom}/>
                           </Col>
                         </Row>
                       </CardHeader>
@@ -2039,14 +2054,14 @@ function WorkNote(args) {
                   </Col>
                   <Col md="4" className="pt-3 pl-0 pr-2">
                     <Card style={{ border: '1px solid lightgrey'}}>
-                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
                             <b className="action-title" style={{ marginRight: '-9px' }}>투약사항</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="medicationTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
-                            <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
+                            <IoMdRefresh id="medicationTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
+                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
                           </Col>
                         </Row>
                       </CardHeader>
@@ -2070,14 +2085,14 @@ function WorkNote(args) {
                   </Col>
                   <Col md="5" className="pt-3 pl-0">
                     <Card style={{ border: '1px solid lightgrey'}}>
-                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
                             <b className="action-title" style={{ marginRight: '-17px' }}>조치 및 교육사항</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="actionMatterTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
-                            <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
+                            <IoMdRefresh id="actionMatterTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
+                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
                           </Col>
                         </Row>
                       </CardHeader>
@@ -2101,22 +2116,22 @@ function WorkNote(args) {
                   </Col>
                 </Row>
                 <Row style={{ marginTop: '-13px', marginBottom: '-15px' }}>
-                  <Col md="6" className="pr-0">
+                  <Col md="5" className="pr-0">
                     <Card style={{ border: '1px solid lightgrey'}}>
-                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
                             <b className="action-title" style={{ marginRight: 5}}>처치사항</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="treatmentMatterTagField" className="mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
-                            <BiMenu style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
+                            <IoMdRefresh id="treatmentMatterTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
+                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleTreatmentMatter}/>
                           </Col>
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
                         <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" clearField="treatmentMatterTagField" />
-                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
+                        <div className="ag-theme-alpine" style={{ height: '9.4vh' }}>
                           <AgGridReact
                             rowHeight={30}
                             ref={treatmentMatterGridRef}
@@ -2132,103 +2147,97 @@ function WorkNote(args) {
                       </CardBody>
                     </Card>
                   </Col>
-                  <Col md="6" className="pl-2">
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey' }}>
-                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                  <Col md="7" className="pl-2">
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', minHeight: '10.1vh' }}>
+                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
                             <b className="action-title">활력징후</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="vitalSign" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
+                            <IoMdRefresh className="text-muted" id="vitalSign" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-5px'}}>
-                        <Row className="d-flex justify-content-center">
-                          <Col md="2">
-                            <Row className="align-items-center">
-                              <label>체온</label>
-                              <Input
-                                className="ml-2"
-                                id="temperature"
-                                type="number"
-                                max={45}
-                                min={30}
-                                onChange={handleVitalSignChange}
-                                value={temperatureValue}
-                                style={{ width: '45px' }}
-                              />
-                            </Row>
+                      <CardBody className="pt-2 pb-2">
+                        <Row>
+                          <Col className="d-flex align-items-center justify-content-start">
+                            <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>체온</label>
+                            <Input
+                              id="temperature"
+                              type="number"
+                              max={45}
+                              min={30}
+                              onChange={handleVitalSignChange}
+                              value={temperatureValue}
+                              style={{ width: '50px' }}
+                            />
+                            <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(°C)</label>
                           </Col>
-                          <Col md="2" className="ml-1">
-                            <Row className="align-items-center">
-                              <label>혈압</label>
-                              <Input
-                                className="ml-2"
-                                id="bloodPressure"
-                                type="number"
-                                onChange={handleVitalSignChange}
-                                value={bloodPressureValue}
-                                style={{ width: '50px' }}
-                              />
-                            </Row>
+                          <Col className="d-flex align-items-center justify-content-center">
+                            <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>혈압</label>
+                            <Input
+                              id="bloodPressure"
+                              type="number"
+                              onChange={handleVitalSignChange}
+                              value={bloodPressureValue}
+                              style={{ width: '50px' }}
+                            />
+                            <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(mm Hg)</label>
                           </Col>
-                          <Col md="2" className="ml-2">
-                            <Row className="align-items-center">
-                              <label>맥박</label>
-                              <Input
-                                className="ml-2"
-                                id="pulse"
-                                type="number"
-                                onChange={handleVitalSignChange}
-                                value={pulseValue}
-                                style={{ width: '45px' }}
-                              />
-                            </Row>
+                          <Col className="d-flex align-items-center justify-content-end">
+                            <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>맥박</label>
+                            <Input
+                              id="pulse"
+                              type="number"
+                              onChange={handleVitalSignChange}
+                              value={pulseValue}
+                              style={{ width: '50px' }}
+                            />
+                            <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(bpm)</label>
                           </Col>
-                          <Col md="3" className="ml-1">
-                            <Row className="align-items-center">
-                              <label>산소포화도</label>
-                              <Input
-                                className="ml-2"
-                                id="oxygenSaturation"
-                                type="number"
-                                onChange={handleVitalSignChange}
-                                value={oxygenSaturationValue}
-                                style={{ width: '45px' }}
-                              />
-                            </Row>
+                        </Row>
+                        <Row className="pt-1">
+                          <Col className="d-flex align-items-center justify-content-start">
+                            <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>산소포화도</label>
+                            <Input
+                              id="oxygenSaturation"
+                              type="number"
+                              onChange={handleVitalSignChange}
+                              value={oxygenSaturationValue}
+                              style={{ width: '50px' }}
+                            />
+                            <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(%)</label>
                           </Col>
-                          <Col md="2" className="ml-1">
-                            <Row className="align-items-center">
-                              <label>혈당</label>
-                              <Input
-                                className="ml-2"
-                                id="bloodSugar"
-                                type="number"
-                                onChange={handleVitalSignChange}
-                                value={bloodSugarValue}
-                                style={{ width: '45px' }}
-                              />
-                            </Row>
+                          <Col className="d-flex align-items-center justify-content-center">
+                            <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>혈당</label>
+                            <Input
+                              id="bloodSugar"
+                              type="number"
+                              onChange={handleVitalSignChange}
+                              value={bloodSugarValue}
+                              style={{ width: '50px' }}
+                            />
+                            <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(mg/dl)</label>
+                          </Col>
+                          <Col className="d-flex align-items-center justify-content-end">
                           </Col>
                         </Row>
                       </CardBody>
                     </Card>
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-9px' }}>
-                      <CardHeader className="card-work-note-header text-muted text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-9px', minHeight: '7.6vh' }}>
+                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
                             <b className="action-title">침상안정</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="onBedRest" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
+                            <IoMdRefresh className="text-muted" id="onBedRest" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="pt-3 pb-3" style={{ marginTop: '-3px' }}>
-                        <Row className="mt-1">
+                      <CardBody className="pt-1 pb-1" style={{ marginTop: '-3px' }}>
+                        <Row className="d-flex justify-content-center mt-1">
                           <h6><Badge color="secondary" className="ml-2" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>시작시간</Badge></h6>
                           <Input
                             id="onBedRestStartTime"
@@ -2419,7 +2428,7 @@ function WorkNote(args) {
        </Modal>
 
        <Modal isOpen={actionMatterModal} toggle={toggleActionMatterModal} centered style={{ minWidth: '20%' }}>
-          <ModalHeader toggle={toggleActionMatterModal}><b className="text-muted">조치 및 교육사항 설정</b></ModalHeader>
+          <ModalHeader toggle={toggleActionMatterModal}><b>조치 및 교육사항 설정</b></ModalHeader>
           <ModalBody className="pb-0">
             <Form onSubmit={saveActionMatter}>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
@@ -2465,7 +2474,7 @@ function WorkNote(args) {
        </Modal>
 
        <Modal isOpen={treatmentMatterModal} toggle={toggleTreatmentMatterModal} centered style={{ minWidth: '20%' }}>
-          <ModalHeader toggle={toggleTreatmentMatterModal}><b className="text-muted">처치사항 설정</b></ModalHeader>
+          <ModalHeader toggle={toggleTreatmentMatterModal}><b>처치사항 설정</b></ModalHeader>
           <ModalBody className="pb-0">
             <Form onSubmit={saveTreatmentMatter}>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>

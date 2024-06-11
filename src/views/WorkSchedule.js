@@ -112,7 +112,7 @@ function WorkSchedule() {
 
   const ColorPicker = ({ colors, selectedColor, handleColorPickerClick }) => {
     return (
-      <div style={{ display: 'flex', justifyContent: 'start', width: 300 }}>
+      <div style={{ display: 'flex', justifyContent: 'start', width: '83%' }}>
         {colors.map((color, index) => (
           <div
             key={index}
@@ -219,7 +219,7 @@ function WorkSchedule() {
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Col md="4">
-            <label className="text-muted text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>오늘의 일정</label>
+            <label className="text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>오늘의 일정</label>
             <div className="ag-theme-alpine" style={{ height: '13vh' }}>
               <AgGridReact
                 headerHeight={40}
@@ -235,7 +235,7 @@ function WorkSchedule() {
             </div>
           </Col>
           <Col md="4">
-            <label className="text-muted text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>일정 목록</label>
+            <label className="text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>일정 목록</label>
             <div className="ag-theme-alpine" style={{ height: '13vh' }}>
               <AgGridReact 
                 headerHeight={40}
@@ -251,20 +251,20 @@ function WorkSchedule() {
             </div>
           </Col>
           <Col md="4">
-            <label className="text-muted text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>상세 검색</label>
+            <label className="text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>상세 검색</label>
             <div style={{ border: '1px dashed lightgrey', height: '13vh', backgroundColor: '#FFFFFF', display: 'grid'}}>
               <Row className="no-gutters pl-3 pt-2 pb-2">
                 <Col md="9">
                     <div className="d-flex flex-column justify-content-between pt-1 pb-1" style={{ height: '100%' }}>
                       <Row className="d-flex align-items-center no-gutters">
-                        <label className="text-muted" style={{ width: 50 }}>기간</label>
+                        <label style={{ width: 50 }}>기간</label>
                         <Input
                           type="date"
                           style={{ width: 140 }}
                           value={searchEventStartDate}
                           onChange={handleSearchEventStartDate}
                         />
-                        <span className="text-center" style={{ width: 20 }}>~</span>
+                        {/* <span className="text-center" style={{ width: 20 }}>~</span> */}
                         <Input
                           type="date"
                           style={{ width: 140 }}
@@ -273,16 +273,16 @@ function WorkSchedule() {
                         />
                       </Row>
                       <Row className="d-flex align-items-center no-gutters">
-                        <label className="text-muted" style={{ width: 50 }}>일정명</label>
+                        <label style={{ width: 50 }}>일정명</label>
                         <Input 
                           type="text"
-                          style={{ width: 300 }}
+                          style={{ width: '82.3%' }}
                           value={searchEventTitle}
                           onChange={handleSearchEventTitle}
                         />
                       </Row>
                       <Row className="d-flex align-items-center no-gutters">
-                        <label className="text-muted" style={{ width: 50 }}>범주</label>
+                        <label style={{ width: 50 }}>범주</label>
                         {generateColorPickerCategory()}
                       </Row>
                     </div>

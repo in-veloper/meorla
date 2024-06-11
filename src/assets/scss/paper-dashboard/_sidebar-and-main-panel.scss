@@ -15,7 +15,8 @@
     top: 0;
     height: 100%;
     bottom: 0;
-    width: 260px;
+    // width: 260px;
+    width: 200px;
     left: 0;
     z-index: 1030;
     border-right: 1px solid #ddd;
@@ -24,7 +25,7 @@
         position: relative;
         height: calc(100vh - 74px);
         overflow: auto;
-        width: 260px;
+        width: 200px;
         z-index: 4;
         padding-bottom: 100px;
 
@@ -302,7 +303,7 @@
 
     > .content{
         padding: 0 30px 0;
-        min-height: calc(100vh - 163px);
+        min-height: calc(100vh - 153px);
         margin-top: 86px;
     }
 
