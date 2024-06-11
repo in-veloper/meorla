@@ -25,8 +25,8 @@ const AppRoutes = () => {
   }, [getUser]);
 
   useEffect(() => {
-    if (loading) Block.dots('.wrapper');
-    else Block.remove('.wrapper');
+    if (loading) Block.dots('#root');
+    else Block.remove('#root');
   }, [loading]);
 
   if(loading) return null;  // 로딩 중일 때는 아무 것도 렌더링하지 않음 (Notiflix가 처리함)
