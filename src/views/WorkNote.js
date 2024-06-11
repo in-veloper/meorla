@@ -2018,7 +2018,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField"/>
+                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" clearField="symptomTagField" />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -2049,7 +2049,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" />
+                        <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" clearField="medicationTagField" />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -2080,7 +2080,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" />
+                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" clearField="actionMatterTagField" />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -2113,7 +2113,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" />
+                        <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" clearField="treatmentMatterTagField" />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}

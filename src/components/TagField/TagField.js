@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from "react";
 import Tags from "@yaireo/tagify/dist/react.tagify";
 import '@yaireo/tagify/dist/tagify.css';
 
-function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category }) {
+function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category, clearField }) {
     const [whitelist, setWhitelist] = useState(suggestions);
+    const [gridRef, setGridRef] = useState(null);
     const symptomTagifyRef = useRef();
     const medicationTagifyRef = useRef();
     const actionMatterTagifyRef = useRef();
     const treatmentMatterTagifyRef = useRef();
-    
     const baseTagifySettings = {
         blacklist: [],
         maxTags: 20,
-        backspace: true,
+        backspace: true,                  // true: 마지막 Tag 삭제, edit: 마지막 태그 Edit, false: 아무 동작 하지 않음
         placeholder: category === "symptomTagField" ? "증상을 입력하세요" : 
                      category === "medicationTagField" ? "투약사항을 입력하세요" :
                      category === "actionMatterTagField" ? "조치 및 교육사항을 입력하세요" :
@@ -27,119 +27,117 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category 
 
     useEffect(() => {
         if(suggestions) {
-            switch (category) {
-                case "symptomTagField":
-                    symptomTagifyRef.current.settings.whitelist = suggestions;
-                    break;
-                case "medicationTagField":
-                    medicationTagifyRef.current.settings.whitelist = suggestions;
-                    break;
-                case "actionMatterTagField":
-                    actionMatterTagifyRef.current.settings.whitelist = suggestions;
-                    break;
-                case "treatmentMatterTagField":
-                    treatmentMatterTagifyRef.current.settings.whitelist = suggestions;
-                    break;
-                default:
-                    break;
-            }
+            if(category === "symptomTagField") symptomTagifyRef.current.settings.whitelist = suggestions;
+            if(category === "medicationTagField") medicationTagifyRef.current.settings.whitelist = suggestions;
+            if(category === "actionMatterTagField") actionMatterTagifyRef.current.settings.whitelist = suggestions;
+            if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.settings.whitelist = suggestions;
         }
     }, [suggestions, category]);
 
     useEffect(() => {
-        if (selectedRowValue) {
+        if(tagifyGridRef) {
+            setGridRef(tagifyGridRef);
+        }
+    }, [tagifyGridRef]);
+
+    const handleChange = (e, category) => {
+        const type = e.type;
+        let selectedRowValue = e.detail.tagify.value[0].value;
+        // if(type === "add" && selectedRowValue) {
+        if(selectedRowValue.type === "add" && selectedRowValue.text) {
+            if(category === "symptomTagField") symptomTagifyRef.current.addTags(selectedRowValue.text);
+            if(category === "medicationTagField") medicationTagifyRef.current.addTags(selectedRowValue.text);
+            if(category === "actionMatterTagField") actionMatterTagifyRef.current.addTags(selectedRowValue.text);
+            if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.addTags(selectedRowValue.text);
+
+            // gridRef.current.api.deselectAll();
+            // gridRef.current.api.clearFocusedCell();
+        }
+        // else{
+        //     if(whitelist.length === 0) {
+        //         const newWhitelist = e.detail.tagify.value.map(item => item.value);
+        //         setWhitelist(newWhitelist);
+        //     }
+        // }
+
+        if(whitelist.length === 0) {
+            const newWhitelist = e.detail.tagify.value.map(item => item.value);
+            setWhitelist(newWhitelist);
+        }
+
+        if(gridRef.current) {
+            gridRef.current.api.deselectAll();
+            gridRef.current.api.clearFocusedCell();
+        }
+    };
+
+    useEffect(() => {
+        if(selectedRowValue) {
             clearTagsHandler();
         }
     }, [selectedRowValue]);
 
     const clearTagsHandler = () => {
-        if (selectedRowValue.clearTargetField === 'all') {
-            symptomTagifyRef.current.removeAllTags();
-            medicationTagifyRef.current.removeAllTags();
-            actionMatterTagifyRef.current.removeAllTags();
-            treatmentMatterTagifyRef.current.removeAllTags();
-        } else if (selectedRowValue.clearTargetField === category) {
-            switch (category) {
-                case "symptomTagField":
-                    symptomTagifyRef.current.removeAllTags();
-                    break;
-                case "medicationTagField":
-                    medicationTagifyRef.current.removeAllTags();
-                    break;
-                case "actionMatterTagField":
-                    actionMatterTagifyRef.current.removeAllTags();
-                    break;
-                case "treatmentMatterTagField":
-                    treatmentMatterTagifyRef.current.removeAllTags();
-                    break;
-                default:
-                    break;
-            }
+        if(selectedRowValue.clearTargetField === 'all') {
+            if(symptomTagifyRef.current) symptomTagifyRef.current.removeAllTags();
+            if(medicationTagifyRef.current) medicationTagifyRef.current.removeAllTags();
+            if(actionMatterTagifyRef.current) actionMatterTagifyRef.current.removeAllTags();
+            if(treatmentMatterTagifyRef.current) treatmentMatterTagifyRef.current.removeAllTags();
+        }else if(selectedRowValue.clearTargetField === category){
+            if(clearField === "symptomTagField") symptomTagifyRef.current.removeAllTags();
+            if(clearField === "medicationTagField") medicationTagifyRef.current.removeAllTags();
+            if(clearField === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
+            if(clearField === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
         }
     };
 
     useEffect(() => {
-        if (selectedRowValue && selectedRowValue.clearField === "N") {
+        if(selectedRowValue && selectedRowValue.clearField === "N") {
             handleChange({ detail: { tagify: { value: [{ value: selectedRowValue }] } }, type: "add" }, category);
         }
     }, [selectedRowValue]);
 
-    const handleChange = (e, category) => {
-        let selectedRowValue = e.detail.tagify.value[0].value;
-        if (selectedRowValue.type === "add" && selectedRowValue.text) {
-            switch (category) {
-                case "symptomTagField":
-                    symptomTagifyRef.current.addTags(selectedRowValue.text);
-                    break;
-                case "medicationTagField":
-                    medicationTagifyRef.current.addTags(selectedRowValue.text);
-                    break;
-                case "actionMatterTagField":
-                    actionMatterTagifyRef.current.addTags(selectedRowValue.text);
-                    break;
-                case "treatmentMatterTagField":
-                    treatmentMatterTagifyRef.current.addTags(selectedRowValue.text);
-                    break;
-                default:
-                    break;
-            }
-            if (tagifyGridRef.current) {
-                tagifyGridRef.current.api.deselectAll();
-                tagifyGridRef.current.api.clearFocusedCell();
-            }
-        }
-        if (whitelist.length === 0) {
-            const newWhitelist = e.detail.tagify.value.map(item => item.value);
-            setWhitelist(newWhitelist);
-        }
-    };
-
     const settings = {
         ...baseTagifySettings,
         whitelist: whitelist,
-        callbacks: {}
-    };
-
-    const renderTagField = () => {
-        switch (category) {
-            case "symptomTagField":
-                return <Tags tagifyRef={symptomTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />;
-            case "medicationTagField":
-                return <Tags tagifyRef={medicationTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />;
-            case "actionMatterTagField":
-                return <Tags tagifyRef={actionMatterTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />;
-            case "treatmentMatterTagField":
-                return <Tags tagifyRef={treatmentMatterTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />;
-            default:
-                return null;
+        callbacks: {
+          // add: handleChange,
+          // remove: handleChange,
+          // blur: handleChange,
+          // edit: handleChange,
+          // invalid: handleChange,
+          // click: handleChange,
+          // focus: handleChange,
+          // "edit:updated": handleChange,
+          // "edit:start": handleChange
         }
     };
 
-    return (
-        <div className="form-group" style={{ marginBottom: 0 }}>
-            {renderTagField()}
-        </div>
-    );
+    if(category === "symptomTagField") {
+        return (
+            <div className="form-group" style={{ marginBottom: 0 }}>
+                <Tags tagifyRef={symptomTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />
+            </div>
+        );    
+    }else if(category === "medicationTagField") {
+        return (
+            <div className="form-group" style={{ marginBottom: 0 }}>
+                <Tags tagifyRef={medicationTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />
+            </div>
+        );
+    }else if(category === "actionMatterTagField") {
+        return (
+            <div className="form-group" style={{ marginBottom: 0 }}>
+                <Tags tagifyRef={actionMatterTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />
+            </div>
+        );
+    }else if(category === "treatmentMatterTagField") {
+        return (
+            <div className="form-group" style={{ marginBottom: 0 }}>
+                <Tags tagifyRef={treatmentMatterTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />
+            </div>
+        );
+    }
 }
 
 export default TagField;
