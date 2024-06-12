@@ -2007,14 +2007,14 @@ function WorkNote(args) {
 
   return (
     <>
-      <div className="content" style={{ height: '84.8vh' }}>
+      <div className="content" style={{ height: '84.1vh' }}>
         <NotificationAlert ref={notificationAlert} />
         <Row>
           {bedBoxContent}
         </Row>
-        <Row>
-          <Col className="pr-2" md="4">
-            <Card className="studentInfo" style={{ minHeight: '39.2vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
+        <Row style={{ flex: '1 1 auto'}}>
+          <Col className="pr-2" md="4" style={{ height: '78vh', display: 'flex', flexDirection: 'column' }}>
+            <Card className="studentInfo" style={{ flex: '1 1 auto', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
@@ -2119,7 +2119,7 @@ function WorkNote(args) {
                 </Row>
                 <Row className="pt-1">
                   <Col md="12">
-                    <div className="search-student-grid">
+                    <div className="search-student-grid" style={{ flex: '1 1 auto'}}>
                       <div className="ag-theme-alpine" style={{ height: '20.1vh' }} onContextMenu={handleLeftGridContextMenu}>
                         <AgGridReact
                           rowHeight={30}
@@ -2168,7 +2168,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ minHeight: '31.1vh', border: '1px solid lightgrey' }}>
+            <Card style={{ flex: '1 1 290px', border: '1px solid lightgrey' }}>
               <CardHeader style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-items-center">
                   <Col className="text-left pl-3" md="3">
@@ -2195,18 +2195,18 @@ function WorkNote(args) {
               </CardBody>
             </Card>
           </Col>
-          <Col className="pl-2" md="8">
-            <Card className="workNoteForm" style={{ minHeight: '71.9vh', border: '1px solid lightgrey' }}>
+          <Col className="pl-2" md="8" style={{ height: '78vh', display: 'flex', flexDirection: 'column' }}>
+            <Card className="workNoteForm" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
                 <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>
                   {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
                 </b>
               </CardHeader>
-              <CardBody className="pt-2 pb-1">
+              <CardBody className="pt-2 pb-1" style={{ display: 'flex', flexDirection: 'column', flex: '1 1 auto' }}>
                 <Row className="pt-2">
                   <Col md="12">
-                    <div className="personal-worknote-grid">
+                    <div className="personal-worknote-grid" style={{ flex: '1 1 auto' }}>
                       <div className="ag-theme-alpine" style={{ height: '20vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedToUpdateHighlight ? '0px 0px 12px 2px #fccf71' : 'none' }} onContextMenu={handleRightGridContextMenu}>
                         <AgGridReact
                           rowHeight={30}
@@ -2222,9 +2222,9 @@ function WorkNote(args) {
                     </div>
                   </Col>
                 </Row>
-                <Row className="pt-1">
-                  <Col md="3" className="pt-3 pr-2">
-                    <Card style={{ border: '1px solid lightgrey'}}>
+                <Row className="pt-1" style={{ flex: '1 1 auto'}}>
+                  <Col md="3" className="pt-3 pr-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -2236,7 +2236,7 @@ function WorkNote(args) {
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="p-0">
+                      <CardBody className="p-0" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                         <TagField 
                           name="symptom" 
                           suggestions={tagifySymptomSuggestion} 
@@ -2247,7 +2247,7 @@ function WorkNote(args) {
                           onClearSelectedRowValue={clearSelectedRowValues}
                           isGridRowSelect={isGridRowSelect}
                         />
-                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
+                        <div className="ag-theme-alpine" style={{ flex: '1 1 auto' }}>
                           <AgGridReact
                             rowHeight={30}
                             ref={symptomGridRef}
@@ -2263,8 +2263,8 @@ function WorkNote(args) {
                       </CardBody>
                     </Card>
                   </Col>
-                  <Col md="4" className="pt-3 pl-0 pr-2">
-                    <Card style={{ border: '1px solid lightgrey'}}>
+                  <Col md="4" className="pt-3 pl-0 pr-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -2276,9 +2276,9 @@ function WorkNote(args) {
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="p-0">
+                      <CardBody className="p-0" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                         <TagField name="medication" suggestions={tagifyMedicationSuggestion} selectedRowValue={searchMedicationText} tagifyGridRef={medicationGridRef} category="medicationTagField" clearField="medicationTagField" />
-                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
+                        <div className="ag-theme-alpine" style={{ flex: '1 1 auto' }}>
                           <AgGridReact
                             rowHeight={30}
                             ref={medicationGridRef}
@@ -2294,8 +2294,8 @@ function WorkNote(args) {
                       </CardBody>
                     </Card>
                   </Col>
-                  <Col md="5" className="pt-3 pl-0">
-                    <Card style={{ border: '1px solid lightgrey'}}>
+                  <Col md="5" className="pt-3 pl-0" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -2307,9 +2307,9 @@ function WorkNote(args) {
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="p-0">
+                      <CardBody className="p-0" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                         <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" clearField="actionMatterTagField" />
-                        <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
+                        <div className="ag-theme-alpine" style={{ flex: '1 1 auto' }}>
                           <AgGridReact
                             rowHeight={30}
                             ref={actionMatterGridRef}
@@ -2326,9 +2326,9 @@ function WorkNote(args) {
                     </Card>
                   </Col>
                 </Row>
-                <Row className="pt-1" style={{ marginTop: '-13px', marginBottom: '-15px' }}>
-                  <Col md="5" className="pr-0">
-                    <Card style={{ border: '1px solid lightgrey'}}>
+                <Row className="pt-1" style={{ marginTop: '-17px', marginBottom: '-15px', flex: '1 1 12vh' }}>
+                  <Col md="5" className="pr-0" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -2340,9 +2340,9 @@ function WorkNote(args) {
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="p-0">
+                      <CardBody className="p-0" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                         <TagField name="treatmentMatter" suggestions={tagifyTreatmentMatterSuggestion} selectedRowValue={searchTreatmentMatterText} tagifyGridRef={treatmentMatterGridRef} category="treatmentMatterTagField" clearField="treatmentMatterTagField" />
-                        <div className="ag-theme-alpine" style={{ height: '9.4vh' }}>
+                        <div className="ag-theme-alpine" style={{ flex: '1 1 auto' }}>
                           <AgGridReact
                             rowHeight={30}
                             ref={treatmentMatterGridRef}
@@ -2358,8 +2358,8 @@ function WorkNote(args) {
                       </CardBody>
                     </Card>
                   </Col>
-                  <Col md="7" className="pl-2">
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', minHeight: '9.5vh' }}>
+                  <Col md="7" className="pl-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', flex: '1 1 auto' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -2370,7 +2370,7 @@ function WorkNote(args) {
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="pt-2 pb-2">
+                      <CardBody className="pt-2 pb-2 align-content-center" style={{ flex: '1 1 auto' }}>
                         <Row>
                           <Col className="d-flex align-items-center justify-content-start">
                             <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>체온</label>
@@ -2408,7 +2408,7 @@ function WorkNote(args) {
                             <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(bpm)</label>
                           </Col>
                         </Row>
-                        <Row className="pt-1">
+                        <Row className="pt-2">
                           <Col className="d-flex align-items-center justify-content-start">
                             <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>산소포화도</label>
                             <Input
@@ -2436,7 +2436,7 @@ function WorkNote(args) {
                         </Row>
                       </CardBody>
                     </Card>
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-9px', minHeight: '7.6vh' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', marginTop: '-9px', flex: '1 1 auto' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -2447,7 +2447,7 @@ function WorkNote(args) {
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="pb-1 pt-1">
+                      <CardBody className="pb-1 pt-1 align-content-center" style={{ flex: '1 1 auto' }}>
                         <Row className="d-flex align-items-center justify-content-center">
                           <h6><Badge color="secondary" className="ml-2" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>시작시간</Badge></h6>
                           <Input
@@ -2474,18 +2474,18 @@ function WorkNote(args) {
                   </Col>
                 </Row>
               </CardBody>
-              <CardFooter>
+              <CardFooter className="pt-2 pb-2">
                 <Row className="d-flex justify-content-center">
-                  <Col md="4">
+                  <Col md="3">
                     <Button className="" onClick={toggleEntireWorkNoteGrid}>전체 보건일지</Button>
                   </Col>
-                  <Col md="4" className="d-flex justify-content-center">
+                  <Col md="6" className="d-flex justify-content-center">
                     <Button className="mr-2"  onClick={handleClearAllWorkNote}>초기화</Button>
                     <Button className="mr-1" onClick={saveWorkNote}>등록</Button>
                     <Button className="mr-1" onClick={updateWorkNote}>수정</Button>
                     <Button className="mr-1" onClick={deleteWorkNote}>삭제</Button>
                   </Col>
-                  <Col className="d-flex justify-content-end" md="4">
+                  <Col className="d-flex justify-content-end" md="3">
                   </Col>
                 </Row>
               </CardFooter>
