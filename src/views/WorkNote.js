@@ -1814,12 +1814,12 @@ function WorkNote(args) {
             </tbody>
           </Table>
         </Row> */}
-        <Row style={{ marginBottom: '-6px' }}>
+        <Row>
           {bedBoxContent}
         </Row>
         <Row>
           <Col className="pr-2" md="4">
-            <Card className="studentInfo" style={{ minHeight: '420px', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
+            <Card className="studentInfo" style={{ minHeight: '39.1vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
@@ -1904,14 +1904,14 @@ function WorkNote(args) {
                     </Row>
                   </Col>
                 </Row>
-                <Row>
+                <Row className="pt-1">
                   <Col md="12">
                     <Alert className="d-flex justify-content-center align-items-center text-center text-muted mb-0" style={{ backgroundColor: '#f8f8f8', borderRadius: 10, height: 20 }}>
                       <FaInfoCircle className="mr-2" style={{ marginTop: '-2px', fontSize: 17}}/> 일부 항목 입력으로도 조회 가능합니다
                     </Alert>
                   </Col>
                 </Row>
-                <Row className="mt-2">
+                <Row className="pt-3">
                   <Col className="text-right pr-3" md="12">
                     <CustomInput 
                        type="switch"
@@ -1970,7 +1970,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ height: '31.1vh', border: '1px solid lightgrey' }}>
+            <Card style={{ minHeight: '31.1vh', border: '1px solid lightgrey' }}>
               <CardHeader style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-items-center">
                   <Col className="text-left pl-3" md="3">
@@ -1998,7 +1998,7 @@ function WorkNote(args) {
             </Card>
           </Col>
           <Col className="pl-2" md="8">
-            <Card className="workNoteForm" style={{ minHeight: '71.7vh', border: '1px solid lightgrey' }}>
+            <Card className="workNoteForm" style={{ minHeight: '71.9vh', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
                 <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>
