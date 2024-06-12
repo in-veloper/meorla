@@ -1,5 +1,5 @@
 import React from "react";
-import { Col, Row } from "reactstrap";
+import { Col, Row, Table } from "reactstrap";
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, PieChart, Pie, Cell, ScatterChart, Scatter, LineChart, Line } from "recharts";
 
 function Statistics() {
@@ -140,6 +140,40 @@ const lineData = [
     return (
         <>
             <div className="content">
+                <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
+                    <Table bordered className="stats-table text-center text-muted">
+                        <thead>
+                        <tr>
+                            <th>감염병</th>
+                            <th>구강치아계</th>
+                            <th>근골격계</th>
+                            <th>비뇨생식기계</th>
+                            <th>소화기계</th>
+                            <th>순환기계</th>
+                            <th>안과계</th>
+                            <th>이비인후과계</th>
+                            <th>정신신경계</th>
+                            <th>호흡기계</th>
+                            <th>기타</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>3</td>
+                            <td>23</td>
+                            <td>12</td>
+                            <td>3</td>
+                            <td>5</td>
+                            <td>7</td>
+                            <td>5</td>
+                            <td>10</td>
+                            <td>17</td>
+                        </tr>
+                        </tbody>
+                    </Table>
+                </Row>
                 <Row className="d-flex w-100">
                     <Col md="6">
                         <ResponsiveContainer width={500} height={400}>

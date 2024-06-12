@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Tags from "@yaireo/tagify/dist/react.tagify";
 import '@yaireo/tagify/dist/tagify.css';
 
-function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category, clearField }) {
+function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category, clearField, onClearSelectedRowValue, isGridRowSelect }) {
     const [whitelist, setWhitelist] = useState(suggestions);
     const [gridRef, setGridRef] = useState(null);
     const symptomTagifyRef = useRef();
@@ -43,22 +43,13 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
     const handleChange = (e, category) => {
         const type = e.type;
         let selectedRowValue = e.detail.tagify.value[0].value;
-        // if(type === "add" && selectedRowValue) {
+
         if(selectedRowValue.type === "add" && selectedRowValue.text) {
             if(category === "symptomTagField") symptomTagifyRef.current.addTags(selectedRowValue.text);
             if(category === "medicationTagField") medicationTagifyRef.current.addTags(selectedRowValue.text);
             if(category === "actionMatterTagField") actionMatterTagifyRef.current.addTags(selectedRowValue.text);
             if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.addTags(selectedRowValue.text);
-
-            // gridRef.current.api.deselectAll();
-            // gridRef.current.api.clearFocusedCell();
         }
-        // else{
-        //     if(whitelist.length === 0) {
-        //         const newWhitelist = e.detail.tagify.value.map(item => item.value);
-        //         setWhitelist(newWhitelist);
-        //     }
-        // }
 
         if(whitelist.length === 0) {
             const newWhitelist = e.detail.tagify.value.map(item => item.value);
@@ -72,10 +63,32 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
     };
 
     useEffect(() => {
-        if(selectedRowValue) {
+        if(selectedRowValue && selectedRowValue.clearField !== "N") {
             clearTagsHandler();
         }
     }, [selectedRowValue]);
+
+    useEffect(() => {
+        if (selectedRowValue && selectedRowValue.clearField === "N") {
+
+            if(selectedRowValue.type === "update" && whitelist.length > 0) {
+                if (category === "symptomTagField") symptomTagifyRef.current.removeAllTags();
+                if (category === "medicationTagField") medicationTagifyRef.current.removeAllTags();
+                if (category === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
+                if (category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
+
+                if (category === "symptomTagField") symptomTagifyRef.current.addTags(selectedRowValue.text);
+                if (category === "medicationTagField") medicationTagifyRef.current.addTags(selectedRowValue.text);
+                if (category === "actionMatterTagField") actionMatterTagifyRef.current.addTags(selectedRowValue.text);
+                if (category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.addTags(selectedRowValue.text);
+            }
+
+            if (onClearSelectedRowValue) {
+                onClearSelectedRowValue(); // 새로운 값을 추가할 때 부모 컴포넌트에서 상태 초기화
+            }
+        }
+    }, [selectedRowValue, category, onClearSelectedRowValue]);
+
 
     const clearTagsHandler = () => {
         if(selectedRowValue.clearTargetField === 'all') {

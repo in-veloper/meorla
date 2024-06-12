@@ -1,5 +1,5 @@
 import React, {useState, useRef, useCallback, useEffect} from "react";
-import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput, Tooltip } from "reactstrap";
+import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput, Tooltip, CardFooter } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -25,7 +25,8 @@ import { getSocket } from "components/Socket/socket";
 import '../assets/css/worknote.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const MENU_ID = 'students_context_menu';
+const MENU_ID_LEFT_GRID = 'students_context_menu';
+const MENU_ID_RIGHT_GRID = 'delete_context_menu';
 
 function WorkNote(args) {
   const { user } = useUser();                              // 사용자 정보
@@ -58,6 +59,7 @@ function WorkNote(args) {
   const [masked, setMasked] = useState(false);
   const [alertHidden, setAlertHidden] = useState(false);
   const [onBedRestStartTime, setOnBedRestStartTime] = useState("");
+  const [onBedRestEndTime, setOnBedRestEndTime] = useState("");
   const [bedBoxContent, setBedBoxContent] = useState(null);
   const [displayedOnBedStudents, setDisplayedOnBedStudents] = useState(null);
   const [temperatureValue, setTempuratureValue] = useState(0);
@@ -66,11 +68,14 @@ function WorkNote(args) {
   const [oxygenSaturationValue, setOxygenSaturationValue] = useState(0);
   const [bloodSugarValue, setBloodSugarValue] = useState(0);
   const [nonSelectedHighlight, setNonSelectedHighlight] = useState(false);
+  const [nonSelectedToUpdateHighlight, setNonSelectedToUpdateHighlight] = useState(false);
   const [visitRequestList, setVisitRequestList] = useState([]);
   const [visitRequestTooltipOpen, setVisitRequestTooltipOpen] = useState(false);
   const [searchStartDate, setSearchStartDate] = useState("");
   const [searchEndDate, setSearchEndDate] = useState("");
   const [searchSname, setSearchSname] = useState("");
+  const [selectedWorkNote, setSelectedWorkNote] = useState(null);
+  const [isGridRowSelect, setIsGridRowSelect] = useState(false);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -81,8 +86,12 @@ function WorkNote(args) {
   const treatmentMatterGridRef = useRef();
   const notificationAlert = useRef();
 
-  const { show } = useContextMenu({
-    id: MENU_ID,
+  const { show: showLeftMenu } = useContextMenu({
+    id: MENU_ID_LEFT_GRID,
+  });
+
+  const { show: showRightMenu } = useContextMenu({
+    id: MENU_ID_RIGHT_GRID
   });
 
   // 최초 Grid Render Event
@@ -856,9 +865,17 @@ function WorkNote(args) {
     fetchTreatmentMatterData();
   }, [fetchTreatmentMatterData]);
 
+  const clearSelectedRowValues = () => {
+    setSearchSymptomText({});
+    setSearchMedicationText({});
+    setSearchActionMatterText({});
+    setSearchTreatmentMatterText({});
+  };
+
   // 증상 Grid의 Row 선택 Event
   const handleSymptomRowSelect = (selectedRow) => {
     if (selectedRow && selectedRow.length > 0) {
+      clearSelectedRowValues();
       const selectedSymptom = selectedRow[0].symptom;
       const param = {type: "add", text: selectedSymptom, clearField: 'N'};
       setSearchSymptomText(param);
@@ -868,6 +885,7 @@ function WorkNote(args) {
   // 증상 Grid의 Row 선택 Event
   const handleMedicationRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
+      clearSelectedRowValues();
       const selectedMedication = selectedRow[0].medication;   // 선택한 투약사항 Text 값
       const param = {type: "add", text: selectedMedication, clearField: 'N'};
       setSearchMedicationText(param);            // input에 선택한 투약사항 값 할당하기 위해 전역변수에 값 할당
@@ -877,6 +895,7 @@ function WorkNote(args) {
   // 조치사항 Grid의 Row 선택 Event
   const handleActionMatterRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
+      clearSelectedRowValues();
       const selectedActionMatter = selectedRow[0].actionMatter;   // 선택한 조치사항 Text 값
       const param = {type: "add", text: selectedActionMatter, clearField: 'N'};
       setSearchActionMatterText(param);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
@@ -886,6 +905,7 @@ function WorkNote(args) {
   // 조치사항 Grid의 Row 선택 Event
   const handleTreatmentMatterRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
+      clearSelectedRowValues();
       const selectedTreatmentMatter = selectedRow[0].treatmentMatter;   // 선택한 조치사항 Text 값
       const param = {type: "add", text: selectedTreatmentMatter, clearField: 'N'};
       setSearchTreatmentMatterText(param);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
@@ -1333,7 +1353,6 @@ function WorkNote(args) {
     e.stopPropagation();
     
     const targetId = e.currentTarget.id;
-    setPersonalStudentRowData([]);
     
     if(targetId.includes('TagField')) {
       const param = {clearTargetField: targetId};
@@ -1360,6 +1379,8 @@ function WorkNote(args) {
     setSearchActionMatterText({clearTargetField: "all"});
     setSearchTreatmentMatterText({clearTargetField: "all"});
     setPersonalStudentRowData([]);
+    setSelectedStudent("");
+    if(searchStudentGridRef) searchStudentGridRef.current.api.deselectAll()
 
     setOnBedRestStartTime("");
     const onBedEndTime = document.getElementById('onBedRestEndTime');
@@ -1474,8 +1495,7 @@ function WorkNote(args) {
 
         if(response.data === "success") {
           NotiflixInfo(infoMessage);
-          // onResetSearch();
-          // handleClearAllWorkNote();
+
           fetchEntireWorkNoteGrid();
           fetchSelectedStudentData();
           setSearchSymptomText({clearTargetField: "all"});
@@ -1546,7 +1566,7 @@ function WorkNote(args) {
     fetchEntireWorkNoteGrid();
     setIsEntireWorkNoteOpen(!isEntireWorkNoteOpen);
 
-    if(!isEntireWorkNoteOpen) document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh + 410px)';
+    if(!isEntireWorkNoteOpen) document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh + 450px)';
     else document.getElementsByClassName('content')[0].style.minHeight = 'calc(100vh - 163px)';
   };
 
@@ -1665,6 +1685,13 @@ function WorkNote(args) {
     }, 2000);
   };
 
+  const validateAndHighlightToUpdate = () => {
+    setNonSelectedToUpdateHighlight(true);
+    setTimeout(() => {
+      setNonSelectedToUpdateHighlight(false);
+    }, 2000);
+  };
+
   // Custom Interval 사용 -> 기존 interval 사용 시 안에서 갇혀버리는 closure 현상으로 message 반복 출력 현상 발생
   useInterval(() => {
     autoUpdateBedBox();
@@ -1712,7 +1739,7 @@ function WorkNote(args) {
 
   const [contextStudentInfo, setContextStudentInfo] = useState("");
 
-  function handleContextMenu(event){
+  function handleLeftGridContextMenu(event) {
     if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
       return;
     }else{
@@ -1724,12 +1751,43 @@ function WorkNote(args) {
 
       setContextStudentInfo(selectedStudentInfo);
 
-      show({
+      showLeftMenu({
         event,
         props: {
             key: 'value'
         }
-      })
+      });
+    }
+  };
+
+  function handleRightGridContextMenu(event) {
+    if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
+      return;
+    }else{
+      const api = personalStudentGridRef.current.api;
+      const rowIndex = event.target.parentNode.getAttribute('row-index');
+
+      if (rowIndex !== null) {
+        api.ensureIndexVisible(rowIndex);
+        api.forEachNode((node) => {
+          if (node.rowIndex == rowIndex) {
+            node.setSelected(true, true);
+          }
+        });
+        
+        const selectedRow = api.getSelectedRows()[0];
+        if (selectedRow) {
+          setSelectedWorkNote(selectedRow);
+          setIsGridRowSelect(true);
+        }
+  
+        showRightMenu({
+          event,
+          props: {
+            key: 'value'
+          }
+        });
+      }
     }
   };
 
@@ -1745,6 +1803,7 @@ function WorkNote(args) {
   };
 
   const resetSearchEntireWorkNote = () => {
+    setSelectedStudent("");
     setSearchStartDate("");
     setSearchEndDate("");
     setSearchSname("");
@@ -1776,50 +1835,184 @@ function WorkNote(args) {
     }
   };
 
+  const updateWorkNote = () => {
+    if(selectedWorkNote) {
+      let symptomString = "";
+      let medicationString = "";
+      let actionMatterString = "";
+      let treatmentMatterString = "";
+      
+      const tagFields = document.getElementsByTagName('tags');
+      
+      const symptomTagValues = tagFields[0].getElementsByTagName('tag');
+      for(let i = 0; i < symptomTagValues.length; i++) {
+        symptomString += symptomTagValues[i].textContent + "::";
+      }
+      symptomString = symptomString.slice(0, -2);
+
+      const medicationTagValues = tagFields[1].getElementsByTagName('tag');
+      for(let i = 0; i < medicationTagValues.length; i++) {
+        medicationString += medicationTagValues[i].textContent + "::";
+      }
+      medicationString = medicationString.slice(0, -2);
+
+      const actionMatterTagValues = tagFields[2].getElementsByTagName('tag');
+      for(let i = 0; i < actionMatterTagValues.length; i++) {
+        actionMatterString += actionMatterTagValues[i].textContent + "::";
+      }
+      actionMatterString = actionMatterString.slice(0, -2);
+
+      const treatmentMatterTagValues = tagFields[3].getElementsByTagName('tag');
+      for(let i = 0; i < treatmentMatterTagValues.length; i++) {
+        treatmentMatterString += treatmentMatterTagValues[i].textContent + "::";
+      }
+      treatmentMatterString = treatmentMatterString.slice(0, -2);
+
+      const onBedRestStartTime = document.getElementById('onBedRestStartTime').value;
+      const onBedRestEndTime = document.getElementById('onBedRestEndTime').value;
+
+      const confirmTitle = "보건일지 수정";
+      const confirmMessage = "작성하신 보건일지를 수정하시겠습니까?";
+      const infoMessage = "보건일지가 정상적으로 수정되었습니다";
+
+      const yesCallback = async () => {
+        const response = await axios.post(`${BASE_URL}/api/workNote/updateWorkNote`, {
+          rowId: selectedWorkNote.id,
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          sGrade: selectedWorkNote.sGrade,
+          sClass: selectedWorkNote.sClass,
+          sNumber: selectedWorkNote.sNumber,
+          sGender: selectedWorkNote.sGender,
+          sName: selectedWorkNote.sName,
+          symptom: symptomString,
+          medication: medicationString,
+          actionMatter: actionMatterString,
+          treatmentMatter: treatmentMatterString,
+          onBedStartTime: onBedRestStartTime,
+          onBedEndTime: onBedRestEndTime,
+          temperature: temperatureValue,
+          bloodPressure: bloodPressureValue,
+          pulse: pulseValue,
+          oxygenSaturation: oxygenSaturationValue,
+          bloodSugar: bloodSugarValue
+        });
+
+        if(response.data === "success") {
+          NotiflixInfo(infoMessage);
+
+          fetchEntireWorkNoteGrid();
+          fetchSelectedStudentData();
+          setSearchSymptomText({clearTargetField: "all"});
+          setSearchMedicationText({clearTargetField: "all"});
+          setSearchActionMatterText({clearTargetField: "all"});
+          setSearchTreatmentMatterText({clearTargetField: "all"});
+      
+          setOnBedRestStartTime("");
+          const onBedEndTime = document.getElementById('onBedRestEndTime');
+          onBedEndTime.value = "";
+          
+          setTempuratureValue(0);
+          setBloodPressureValue(0);
+          setpulseValue(0);
+          setOxygenSaturationValue(0);
+          setBloodSugarValue(0);
+        }
+      };
+
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
+    }else{
+      const warnMessage = "선택된 보건일지 내역이 없습니다<br/>수정할 보건일지 내역을 선택해 주세요";
+      NotiflixWarn(warnMessage);
+      validateAndHighlightToUpdate();
+    }
+  };
+
+  const deleteWorkNote = async () => {
+    if(selectedWorkNote) {
+      const confirmTitle = "보건일지 삭제";
+      const confirmMessage = "선택하신 보건일지 내역을 삭제하시겠습니까?";
+      const infoMessage = "보건일지 내역이 정상적으로 삭제되었습니다";
+      debugger
+      const yesCallback = async () => {
+        const response = await axios.post(`${BASE_URL}/api/workNote/deleteWorkNote`, {
+          rowId: selectedWorkNote.id,
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          sGrade: selectedWorkNote.sGrade,
+          sClass: selectedWorkNote.sClass,
+          sNumber: selectedWorkNote.sNumber,
+          sGender: selectedWorkNote.sGender,
+          sName: selectedWorkNote.sName
+        });
+
+        if(response.data === "success") {
+          NotiflixInfo(infoMessage, true, '325px');
+
+          fetchEntireWorkNoteGrid();
+          fetchSelectedStudentData();
+          setSearchSymptomText({clearTargetField: "all"});
+          setSearchMedicationText({clearTargetField: "all"});
+          setSearchActionMatterText({clearTargetField: "all"});
+          setSearchTreatmentMatterText({clearTargetField: "all"});
+      
+          setOnBedRestStartTime("");
+          setOnBedRestEndTime("");
+          
+          setTempuratureValue(0);
+          setBloodPressureValue(0);
+          setpulseValue(0);
+          setOxygenSaturationValue(0);
+          setBloodSugarValue(0);
+        }
+      };
+
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+    }else{
+      const warnMessage = "선택된 보건일지 내역이 없습니다<br/>삭제할 보건일지 내역을 선택해 주세요";
+      NotiflixWarn(warnMessage);
+      validateAndHighlightToUpdate();
+    }
+  };
+
+  const personalStudentRowClicked = (event) => {
+    const selectedRow = event.api.getSelectedRows()[0];
+    if(selectedRow) {
+      setSelectedWorkNote(selectedRow);
+      setIsGridRowSelect(true);
+      setSearchSymptomText({type: 'update', text: selectedRow.symptom, clearField: 'N'});
+      setSearchMedicationText({type: 'update', text: selectedRow.medication, clearField: 'N'});
+      setSearchActionMatterText({type: 'update', text: selectedRow.actionMatter, clearField: 'N'});
+      setSearchTreatmentMatterText({type: 'update', text: selectedRow.treatmentMatter, clearField: 'N'});
+      setTempuratureValue(selectedRow.temperature);
+      setBloodPressureValue(selectedRow.bloodPressure);
+      setpulseValue(selectedRow.pulse);
+      setOxygenSaturationValue(selectedRow.oxygenSaturation);
+      setBloodSugarValue(selectedRow.bloodSugar);
+      //!! 단 수정에서는 침상안정 내역이 상단 침상안정 현황에 뜨지 않도록 처리 필요
+      setOnBedRestStartTime(selectedRow.onBedStartTime);
+      setOnBedRestEndTime(selectedRow.onBedEndTime);
+    }
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
         <NotificationAlert ref={notificationAlert} />
-        {/* <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
-          <Table bordered className="stats-table text-center text-muted">
-            <thead>
-              <tr>
-                <th>감염병</th>
-                <th>구강치아계</th>
-                <th>근골격계</th>
-                <th>비뇨생식기계</th>
-                <th>소화기계</th>
-                <th>순환기계</th>
-                <th>안과계</th>
-                <th>이비인후과계</th>
-                <th>정신신경계</th>
-                <th>호흡기계</th>
-                <th>기타</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>2</td>
-                <td>3</td>
-                <td>3</td>
-                <td>23</td>
-                <td>12</td>
-                <td>3</td>
-                <td>5</td>
-                <td>7</td>
-                <td>5</td>
-                <td>10</td>
-                <td>17</td>
-              </tr>
-            </tbody>
-          </Table>
-        </Row> */}
         <Row>
           {bedBoxContent}
         </Row>
         <Row>
           <Col className="pr-2" md="4">
-            <Card className="studentInfo" style={{ minHeight: '39.1vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
+            <Card className="studentInfo" style={{ minHeight: '39.2vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
@@ -1925,7 +2118,7 @@ function WorkNote(args) {
                 <Row className="pt-1">
                   <Col md="12">
                     <div className="search-student-grid">
-                      <div className="ag-theme-alpine" style={{ height: '19.7vh' }} onContextMenu={handleContextMenu}>
+                      <div className="ag-theme-alpine" style={{ height: '20.1vh' }} onContextMenu={handleLeftGridContextMenu}>
                         <AgGridReact
                           rowHeight={30}
                           ref={searchStudentGridRef}
@@ -1944,7 +2137,7 @@ function WorkNote(args) {
                       </div>
                     </div>
                     <div>
-                      <Menu id={MENU_ID} animation="fade">
+                      <Menu id={MENU_ID_LEFT_GRID} animation="fade">
                         <Item id="registDiagetes" onClick={handleItemClick}>당뇨질환학생 등록</Item>
                         <Item id="protectedsStdentd" onClick={handleItemClick}>보호학생 등록</Item>
                         {/* <Item id="cut" onClick={handleItemClick}>Cut</Item>
@@ -1955,6 +2148,9 @@ function WorkNote(args) {
                           <Item id="reload" onClick={handleItemClick}>Reload</Item>
                           <Item id="something" onClick={handleItemClick}>Do something else</Item>
                         </Submenu> */}
+                      </Menu>
+                      <Menu id={MENU_ID_RIGHT_GRID} animation="fade">
+                          <Item id="deleteWorkNote" onClick={deleteWorkNote}>보건일지 내역 삭제</Item>
                       </Menu>
                     </div>
                   </Col>
@@ -2006,21 +2202,25 @@ function WorkNote(args) {
                 </b>
               </CardHeader>
               <CardBody className="pt-2 pb-1">
-                <Row className="pt-1">
+                <Row className="pt-2">
                   <Col md="12">
-                    <div className="ag-theme-alpine" style={{ height: '20vh' }}>
-                      <AgGridReact
-                        rowHeight={30}
-                        ref={personalStudentGridRef}
-                        rowData={personalStudentRowData} 
-                        columnDefs={personalStudentColumnDefs}
-                        defaultColDef={notEditDefaultColDef}
-                        overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                      />
+                    <div className="personal-worknote-grid">
+                      <div className="ag-theme-alpine" style={{ height: '20vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedToUpdateHighlight ? '0px 0px 12px 2px #fccf71' : 'none' }} onContextMenu={handleRightGridContextMenu}>
+                        <AgGridReact
+                          rowHeight={30}
+                          ref={personalStudentGridRef}
+                          rowData={personalStudentRowData} 
+                          columnDefs={personalStudentColumnDefs}
+                          defaultColDef={notEditDefaultColDef}
+                          overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                          rowSelection="single"
+                          onRowClicked={personalStudentRowClicked}
+                        />
+                      </div>
                     </div>
                   </Col>
                 </Row>
-                <Row>
+                <Row className="pt-1">
                   <Col md="3" className="pt-3 pr-2">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
@@ -2035,7 +2235,16 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0">
-                        <TagField name="symptom" suggestions={tagifySymptomSuggestion} selectedRowValue={searchSymptomText} tagifyGridRef={symptomGridRef} category="symptomTagField" clearField="symptomTagField" />
+                        <TagField 
+                          name="symptom" 
+                          suggestions={tagifySymptomSuggestion} 
+                          selectedRowValue={searchSymptomText} 
+                          tagifyGridRef={symptomGridRef} 
+                          category="symptomTagField" 
+                          clearField="symptomTagField" 
+                          onClearSelectedRowValue={clearSelectedRowValues}
+                          isGridRowSelect={isGridRowSelect}
+                        />
                         <div className="ag-theme-alpine" style={{ height: '9.1vh' }}>
                           <AgGridReact
                             rowHeight={30}
@@ -2115,7 +2324,7 @@ function WorkNote(args) {
                     </Card>
                   </Col>
                 </Row>
-                <Row style={{ marginTop: '-13px', marginBottom: '-15px' }}>
+                <Row className="pt-1" style={{ marginTop: '-13px', marginBottom: '-15px' }}>
                   <Col md="5" className="pr-0">
                     <Card style={{ border: '1px solid lightgrey'}}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
@@ -2148,7 +2357,7 @@ function WorkNote(args) {
                     </Card>
                   </Col>
                   <Col md="7" className="pl-2">
-                    <Card className="pb-0" style={{ border: '1px solid lightgrey', minHeight: '10.1vh' }}>
+                    <Card className="pb-0" style={{ border: '1px solid lightgrey', minHeight: '9.5vh' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
@@ -2236,8 +2445,8 @@ function WorkNote(args) {
                           </Col>
                         </Row>
                       </CardHeader>
-                      <CardBody className="pt-1 pb-1" style={{ marginTop: '-3px' }}>
-                        <Row className="d-flex justify-content-center mt-1">
+                      <CardBody className="pb-1 pt-1">
+                        <Row className="d-flex align-items-center justify-content-center">
                           <h6><Badge color="secondary" className="ml-2" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>시작시간</Badge></h6>
                           <Input
                             id="onBedRestStartTime"
@@ -2254,24 +2463,30 @@ function WorkNote(args) {
                             className="ml-2"
                             type="time"
                             style={{ width: '130px', height: '30px' }}
+                            onChange={(e) => setOnBedRestEndTime(e.target.value)}
+                            value={onBedRestEndTime}
                           />
                         </Row>
                       </CardBody>
                     </Card>
                   </Col>
                 </Row>
+              </CardBody>
+              <CardFooter>
                 <Row className="d-flex justify-content-center">
                   <Col md="4">
                     <Button className="" onClick={toggleEntireWorkNoteGrid}>전체 보건일지</Button>
                   </Col>
                   <Col md="4" className="d-flex justify-content-center">
+                    <Button className="mr-2"  onClick={handleClearAllWorkNote}>초기화</Button>
                     <Button className="mr-1" onClick={saveWorkNote}>등록</Button>
-                    <Button onClick={handleClearAllWorkNote}>초기화</Button>
+                    <Button className="mr-1" onClick={updateWorkNote}>수정</Button>
+                    <Button className="mr-1" onClick={deleteWorkNote}>삭제</Button>
                   </Col>
                   <Col className="d-flex justify-content-end" md="4">
                   </Col>
                 </Row>
-              </CardBody>
+              </CardFooter>
             </Card>
           </Col>
         </Row>

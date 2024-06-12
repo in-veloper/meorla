@@ -939,7 +939,33 @@ app.post("/api/workNote/saveWorkNote", async (req, res) => {
     const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
         if(err) {
-            console.log("보건일지 Insert 처리 중 ERROR", err);
+            console.log("보건일지 INSERT 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/api/workNote/updateWorkNote", async (req, res) => {
+    const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.workNote SET symptom = ?, medication = ?, actionMatter = ?, treatmentMatter = ?, onBedStartTime = ?, onBedEndTime = ?, temperature = ?, bloodPressure = ?, pulse = ?, oxygenSaturation = ?, bloodSugar = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+        if(err) {
+            console.log("보건일지 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/api/workNote/deleteWorkNote", async (req, res) => {
+    const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.workNote WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+        if(err) {
+            console.log("보건일지 DELETE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }

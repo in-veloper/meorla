@@ -546,7 +546,7 @@ function Header(props) {
     e.preventDefault();
     
     const confirmTitle = "미세먼지 경보 알림 설정";
-    const confirmMessage = (user ? user.notifyPm : false) ? "미세먼지 경보 알림을 해제하시겠습니까?" : "미세먼지 경보 알림으로 설정하시겠습니까?";
+    const confirmMessage = notifyPmChecked ? "미세먼지 경보 알림을 해제하시겠습니까?" : "미세먼지 경보 알림으로 설정하시겠습니까?";
 
     const yesCallback = async () => {
       if(user) {
@@ -558,6 +558,7 @@ function Header(props) {
 
         if(response.data === "success") {
           setNotifyPmChecked(!notifyPmChecked);
+          fetchNotifyPmStatus();
         }
       }
     };
