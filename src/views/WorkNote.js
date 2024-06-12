@@ -1083,6 +1083,7 @@ function WorkNote(args) {
                       <Row>
                         <Col md="4" xs="5">
                           <GiBed className="bed-icons-not-use"/>
+                          <div className="bed-number-badge">{displayOnBedStudentArray.length + i}</div>
                         </Col>
                         <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
                           <p className="text-muted text-center" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
@@ -1108,6 +1109,7 @@ function WorkNote(args) {
                     <Row>
                       <Col md="4" xs="5">
                         <GiBed className="bed-icons-not-use"/>
+                        <div className="bed-number-badge">{i}</div>
                       </Col>
                       <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
                         <p className="text-muted text-center pt-1" style={{ fontSize: '15px', fontWeight: 'bold' }} >미사용중</p>
