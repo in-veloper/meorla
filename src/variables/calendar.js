@@ -12,6 +12,7 @@ import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import axios from "axios";
 import { useUser } from "contexts/UserContext";
 import "../assets/css/mycalendar.css";
+import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -76,6 +77,22 @@ const WorkCalendar = forwardRef((props, ref) => {
     // 행사 등록 event
     const handleAddEvent = async (e) => {
         e.preventDefault();
+
+        const startDate = new Date(eventStartDate);
+        const endDate = new Date(eventEndDate);
+
+        if(startDate > endDate) {
+            const warnMessage = "종료일은 시작일 이후로 설정하세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+
+        if (!eventTitle || !eventStartDate || !eventEndDate) {
+            const warnMessage = "모든 항목을 입력하세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+
         if(displayColorPicker) setDisplayColorPicker(!displayColorPicker);
         if(displayEmojiPicker) setDisplayEmojiPicker(!displayEmojiPicker);
 
@@ -84,6 +101,10 @@ const WorkCalendar = forwardRef((props, ref) => {
         const infoMessage = "보건일정이 정상적으로 등록되었습니다.";
         
         const yesCallback = async () => {
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                throw new Error("Invalid date format");
+            }
+
             const response = await axios.post(`${BASE_URL}/api/workSchedule/insert`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
@@ -95,7 +116,6 @@ const WorkCalendar = forwardRef((props, ref) => {
 
             if(response.data === 'success') {
                 NotiflixInfo(infoMessage);
-
                 setIsRegisteredEvent(true);
                 resetRegistEventForm();
             }
@@ -120,14 +140,20 @@ const WorkCalendar = forwardRef((props, ref) => {
     
             if(response.data) {
                 const resultData = response.data.map(item => {
-                    return ({
-                        id: item.id,
-                        title: item.eventTitle,
-                        color: item.eventColor ? item.eventColor : '#FF6900',
-                        start: item.eventStartDate,
-                        end: convertEndDate(item.eventEndDate)
-                    });
-                });
+                    try {
+                        const endDate = convertEndDate(item.eventEndDate);
+                        return ({
+                            id: item.id,
+                            title: item.eventTitle,
+                            color: item.eventColor ? item.eventColor : '#FF6900',
+                            start: item.eventStartDate,
+                            end: endDate
+                        });
+                    } catch (error) {
+                        console.log("일정 데이터 Mapping 처리 중 ERROR");
+                        return null;
+                    }
+                }).filter(item => item !== null);
                 setOriginalEventData(response.data);
                 setEventData(resultData);
             }
@@ -141,7 +167,21 @@ const WorkCalendar = forwardRef((props, ref) => {
 
     // 행사 종료일 그대로 출력 시 등록된 날짜보다 하루 차감되어 오표시 -> converting(+1일) 하여 정상 출력 처리 function
     const convertEndDate = (endDate) => {
-        return new Date(new Date(endDate).getTime() + (24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+        try {
+            const date = new Date(endDate);
+            if(isNaN(date.getTime())) {
+                throw new Error("Invalid date");
+            }
+
+            const adjustedDate = new Date(date);
+            adjustedDate.setDate(date.getDate() + 1);
+            return adjustedDate.toISOString().split('T')[0];
+        } catch (error) {
+            console.log("일정 종료일 Converting 처리 중 ERROR");
+            return endDate;
+        }
+
+        // return new Date(new Date(endDate).getTime() + (24 * 60 * 60 * 1000)).toISOString().split('T')[0];
     };
 
     const handleEventClick = (e) => {
@@ -177,11 +217,30 @@ const WorkCalendar = forwardRef((props, ref) => {
     const handleUpdateEvent = (e) => {
         e.preventDefault();
 
+        const startDate = new Date(registeredEventStartDate);
+        const endDate = new Date(registeredEvendEndDate);
+
+        if(startDate > endDate) {
+            const warnMessage = "종료일은 시작일 이후로 설정하세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+
+        if (!eventTitle || !eventStartDate || !eventEndDate) {
+            const warnMessage = "모든 항목을 입력하세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+
         const confirmTitle = "보건일정 수정";
         const confirmMessage = "작성하신 보건일정으로 수정하시겠습니까?";
         const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
 
         const yesCallback = async () => {
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                throw new Error("Invalid date format");
+            }
+
             const response = await axios.post(`${BASE_URL}/api/workSchedule/update`, {
                 userId: user.userId,
                 schoolCode: user.schoolCode,
@@ -273,9 +332,18 @@ const WorkCalendar = forwardRef((props, ref) => {
     };
 
     const subtractOneDayFromDate = (dateString) => {
-        const date = new Date(dateString);
-        date.setDate(date.getDate() - 1);
-        return date.toISOString().slice(0, 10);
+        try {
+            const date = new Date(dateString);
+            if(isNaN(date.getTime())) {
+                throw new Error("Invalid date Format");
+            }
+
+            date.setDate(date.getDate() - 1);
+            return date.toISOString().slice(0, 10);
+        } catch (error) {
+            console.log("날짜 정보에서 1일 차감 함수에서 처리 중 ERROR");
+            return dateString;
+        }
     };
 
     const handleEventResize = (eventInfo) => {
@@ -407,7 +475,7 @@ const WorkCalendar = forwardRef((props, ref) => {
                                                 <div style={{ position: 'absolute', zIndex: 999, marginLeft: '-11px', marginTop: '10px' }}>
                                                     <TwitterPicker
                                                         color={selectedEventColor}
-                                                        width="210px"
+                                                        width="auto"
                                                         onChange={handleColorPickerChange}
                                                     />
                                                 </div> : null

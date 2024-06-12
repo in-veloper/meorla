@@ -469,7 +469,7 @@ function MedicalInfo() {
             </Row>
           </Col>
           <Col md="5">
-            <Row className="justify-content-end no-gutters" style={{ height: '4.7vh', marginTop: '-7px', marginBottom: 12 }}>
+            <Row className="justify-content-end no-gutters mb-0" style={{ height: '4.7vh', marginTop: '-7px', marginBottom: 12 }}>
               <Button onClick={handleBookmarkMedicineList}>북마크 약품 목록</Button>
             </Row>
             <Row className="justify-content-end no-gutters">

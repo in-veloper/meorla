@@ -1011,7 +1011,7 @@ app.post("/api/workSchedule/update", async (req, res) => {
     });
 });
 
-app.post("/workSchedule/reSchedule", async (req, res) => {
+app.post("/api/workSchedule/reSchedule", async (req, res) => {
     const { userId, schoolCode, eventId, eventStartDate, eventEndDate } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.workSchedule SET eventStartDate = ?, eventEndDate = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
