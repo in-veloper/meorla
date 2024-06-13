@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Navbar, Nav, Card } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css'; 
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
@@ -14,6 +14,12 @@ import { useDropzone } from 'react-dropzone';
 import NotiflixWarn from 'components/Notiflix/NotiflixWarn';
 import NotiflixInfo from 'components/Notiflix/NotiflixInfo';
 import { Loading } from 'notiflix/build/notiflix-loading-aio';
+import { Carousel } from 'react-responsive-carousel';
+import "react-responsive-carousel/lib/styles/carousel.min.css";
+import logoImage from '../assets/img/main_header_logo_white.png';
+import carouselImage1 from '../assets/img/carousel/carousel_test_1.jpg';
+import carouselImage2 from '../assets/img/carousel/carousel_test_2.jpg';
+import carouselImage3 from '../assets/img/carousel/carousel_test_3.jpg';
 import '../assets/css/login.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -21,8 +27,6 @@ const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" 
 
 function Login() {
     const { login } = useUser();
-
-    // useNavigate를 사용하여 routing 사용하기 위한 함수 생성
     const navigate = useNavigate();
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
     const [schoolList, setSchoolList] = useState([]);           // 검색 결과 학교 리스트
@@ -293,46 +297,76 @@ function Login() {
 
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
+            <Navbar className='pb-0 pt-0' bg="white" expand="lg" fixed="top" style={{ borderBottom: '1.5px dotted lightgray' }}>
+                <Navbar.Brand className='mr-5' href="/">
+                    <img className='mr-2' src={logoImage} style={{ width: 40, height: 40 }}/>
+                    <b>MEORLA</b>
+                </Navbar.Brand>
+                <Navbar.Brand className='mr-4' href="/">MEORLA?</Navbar.Brand>
+                <Navbar.Brand className='mr-4' href="/">플랫폼 메뉴얼 교육 신청</Navbar.Brand>
+                <Navbar.Brand href="/">구독관련 문의사항</Navbar.Brand>
+                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="ml-auto" style={{ fontSize: 20 }}>
+                        <Nav.Link href="#home">BLOG</Nav.Link>
+                        <Nav.Link href="#link">INSTAGRAM</Nav.Link>
+                        <Nav.Link href="#link">EMAIL</Nav.Link>
+                    </Nav>
+                </Navbar.Collapse>
+            </Navbar>
+            <Card className='mt-4' style={{ width: '900px', display: 'flex', flexDirection: 'column' }}>
+                <Carousel showThumbs={false} showStatus={false} infiniteLoop useKeyboardArrows autoPlay>
+                    <div>
+                        <img src={carouselImage1} alt="First Slide" style={{ height: '200px', objectFit: 'cover' }} />
+                    </div>
+                    <div>
+                        <img src={carouselImage2} alt="Second Slide" style={{ height: '200px', objectFit: 'cover' }} />
+                    </div>
+                    <div>
+                        <img src={carouselImage3} alt="Third Slide" style={{ height: '200px', objectFit: 'cover' }} />
+                    </div>
+                </Carousel>
+            </Card>
             <Container id="container">
                 <Row>
-                <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
-                    <Form action="registUser">
-                        {/* <h5>회원가입</h5> */}
-                        <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', border: '2px dashed grey', padding: '10px', marginBottom: '10px', textAlign: 'center' }}>
-                            <input {...getInputProps()}/>
-                            {fileMessage}
-                        </div>
-                        <div style={{ width: '100%'}}>
-                            <Typeahead
-                                id="basic-typeahead-single"
-                                labelKey="name"
-                                onChange={handleSchoolSelect}
-                                options={dynamicOptions}
-                                placeholder="소속학교"
-                                onInputChange={(input) => {
-                                    searchSchool(input);
-                                }}
-                                emptyLabel="검색 결과가 없습니다."
-                            />
-                        </div>
-                        <input type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
-                        <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <input type="email" placeholder="아이디" value={userId} onChange={(e) => setUserId(e.target.value)} />
-                        <input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
-                        <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={(e) => setConfPassword(e.target.value)} />
-                        <Button onClick={registUser}>회원가입</Button>
-                    </Form>
-                </Col>
-                <Col className={`form-container sign-in-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
-                    <Form action="#">
-                    <h1>로그인</h1>
-                    <input type="email" placeholder="아이디" value={confirmUserId} onChange={(e) => setConfirmUserId(e.target.value)} />
-                    <input type="password" placeholder="비밀번호" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={handleKeyDown}/>
-                    {/* <input type='file' accept='.cer' onChange={handleCertChange} /> */}
-                    <a href="/forgot-password">비밀번호를 잊으셨나요?</a>
-                    <Button onClick={handleLogin}>로그인</Button>
-                    </Form>
-                </Col>
+                    <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
+                        <Form action="registUser">
+                            {/* <h5>회원가입</h5> */}
+                            <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', border: '2px dashed grey', padding: '10px', marginBottom: '10px', textAlign: 'center' }}>
+                                <input {...getInputProps()}/>
+                                {fileMessage}
+                            </div>
+                            <div style={{ width: '100%'}}>
+                                <Typeahead
+                                    id="basic-typeahead-single"
+                                    labelKey="name"
+                                    onChange={handleSchoolSelect}
+                                    options={dynamicOptions}
+                                    placeholder="소속학교"
+                                    onInputChange={(input) => {
+                                        searchSchool(input);
+                                    }}
+                                    emptyLabel="검색 결과가 없습니다."
+                                />
+                            </div>
+                            <input type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
+                            <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <input type="email" placeholder="아이디" value={userId} onChange={(e) => setUserId(e.target.value)} />
+                            <input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
+                            <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={(e) => setConfPassword(e.target.value)} />
+                            <Button onClick={registUser}>회원가입</Button>
+                        </Form>
+                    </Col>
+                    <Col className={`form-container sign-in-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
+                        <Form action="#">
+                        <h1>로그인</h1>
+                        <input type="email" placeholder="아이디" value={confirmUserId} onChange={(e) => setConfirmUserId(e.target.value)} />
+                        <input type="password" placeholder="비밀번호" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={handleKeyDown}/>
+                        {/* <input type='file' accept='.cer' onChange={handleCertChange} /> */}
+                        <a href="/forgot-password">비밀번호를 잊으셨나요?</a>
+                        <Button onClick={handleLogin}>로그인</Button>
+                        </Form>
+                    </Col>
                 </Row>
                 <div className={`overlay-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
                 <div className="overlay">
@@ -349,6 +383,29 @@ function Login() {
                 </div>
                 </div>
             </Container>
+            <footer className="footer mt-auto py-3 bg-white" style={{ borderTop: '1.5px dotted lightgray' }}>
+                <Row>
+                    <Col className='d-flex justify-content-start ml-4'>
+                        <ul>
+                            <li className='text-muted mr-3'>이용약관</li>
+                            <li className='text-muted mr-3'>개인정보처리방침</li>
+                            <li className='text-muted mr-3'>법적고지</li>
+                            <li className='text-muted'>이메일무단수집거부</li>
+                        </ul>
+                    </Col>
+                    <Col className="text-center">
+                        <div className="credits ml-auto text-muted">
+                            <div className="copyright">
+                                <span className="pr-2">이해컴퍼니 [사업자번호 : 473-43-01316]</span>
+                                <span className="pr-3">대표 : 정영인</span>
+                                &copy; {1900 + new Date().getYear()} {" "}
+                                {/* <i className="fa fa-heart heart" />  */}
+                                Copyright 이해 컴퍼니. All right reserved
+                            </div>
+                        </div>
+                    </Col>
+                </Row>
+            </footer>
         </div>
     );
 }

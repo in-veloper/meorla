@@ -4,6 +4,7 @@
 
 .bed-card-stats {
     height: 75px;
+    border: 1.5px dashed lightgray;
 }
 
 .bed-card-stats p {
@@ -109,7 +110,7 @@
 .bed-number-badge {
     position: absolute;
     top: -10px;
-    right: 12px;
+    right: 5px;
     background-color: white;
     color: black;
     border-radius: 50%;
@@ -120,4 +121,5 @@
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    z-index: 999;
 }

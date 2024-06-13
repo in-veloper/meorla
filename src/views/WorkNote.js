@@ -1108,7 +1108,7 @@ function WorkNote(args) {
                   <CardBody>
                     <Row>
                       <Col md="4" xs="5">
-                        <GiBed className="bed-icons-not-use"/>
+                        <GiBed className="bed-icons-not-use" />
                         <div className="bed-number-badge">{i}</div>
                       </Col>
                       <Col className="d-flex justify-content-center align-items-center" md="8" xs="7">
