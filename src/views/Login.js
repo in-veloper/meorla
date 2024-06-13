@@ -42,6 +42,10 @@ function Login() {
     const [confirmUserId, setConfirmUserId] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [fileMessage, setFileMessage] = useState(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일(.cer)을 업로드 해주세요</div>);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [inputVerificationCode, setInputVerificationCode] = useState('');
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [isCodeSent, setIsCodeSent] = useState(false);
 
     const clearRegisterInput = () => {
         setSchoolName("");
@@ -73,9 +77,32 @@ function Login() {
 
     // 좌우 패널 전환 함수 (Sign In <-> Sign Up)
     const togglePanel = () => {
-      setIsRightPanelActive(!isRightPanelActive);
-      clearRegisterInput();
+        setIsRightPanelActive(!isRightPanelActive);
+        clearRegisterInput();
     };
+
+    const sendVerificationCode = async () => {
+        try {
+            const response = await axios.post(`${BASE_URL}/api/user/sendVerificationCode`, { email });
+            if (response.data.success) {
+                setVerificationCode(response.data.code);
+                setTimeLeft(180); // 3분
+                setIsCodeSent(true);
+            } else {
+                const warnMessage = "인증 코드 전송에 실패했습니다<br/>다시 시도해주세요";
+                NotiflixWarn(warnMessage);
+            }
+        } catch (error) {
+            console.log("인증코드 전송 중 ERROR", error);
+        }
+    };
+
+    useEffect(() => {
+        if (timeLeft > 0) {
+            const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+            return () => clearTimeout(timerId);
+        }
+    }, [timeLeft]);
 
     // 계정 확인 후 로그인하는 함수 (계정 확인 및 Token 확인 로직 필요 -> 추가)
     const handleLogin = async (e) => {
@@ -113,8 +140,32 @@ function Login() {
         }
     };
 
+    // 인증 코드 확인 및 회원가입으로 이동
+    const verifyCodeAndRegister = () => {
+        if (inputVerificationCode === verificationCode) {
+            // 타이머가 유효한지 확인
+            if (timeLeft > 0) {
+                const infoMessage = "인증이 완료되었습니다";
+                NotiflixInfo(infoMessage);
+                setIsCodeSent(false);   // 인증 성공 시, 인증 코드 입력 필드 숨김
+            } else {
+                const warnMessage = "인증 시간이 만료되었습니다<br/>다시 시도해주세요";
+                NotiflixWarn(warnMessage);
+            }
+        } else {
+            const warnMessage = "인증 코드가 일치하지 않습니다<br/>다시 시도해주세요";
+            NotiflixWarn(warnMessage);
+        }
+    };
+
     // 회원가입 Form 전송
     const registUser = async () => {
+        if (!verificationCode || timeLeft <= 0) {
+            const warnMessage = "이메일 인증이 완료되지 않았습니다";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+
         let warnMessage = "";
         let infoMessage = "";
 
@@ -351,6 +402,14 @@ function Login() {
                             </div>
                             <input type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
                             <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <Button onClick={sendVerificationCode}>인증 코드 전송</Button>
+                            {isCodeSent && (
+                                <>
+                                    <input type="text" placeholder="인증 코드" value={inputVerificationCode} onChange={(e) => setInputVerificationCode(e.target.value)} />
+                                    <Button onClick={verifyCodeAndRegister}>인증 코드 확인</Button>
+                                    <p>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</p>
+                                </>
+                            )}
                             <input type="email" placeholder="아이디" value={userId} onChange={(e) => setUserId(e.target.value)} />
                             <input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
                             <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={(e) => setConfPassword(e.target.value)} />
