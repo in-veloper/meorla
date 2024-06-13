@@ -2013,7 +2013,7 @@ function WorkNote(args) {
           {bedBoxContent}
         </Row>
         <Row style={{ flex: '1 1 auto'}}>
-          <Col className="pr-2" md="4" style={{ height: '78vh', display: 'flex', flexDirection: 'column' }}>
+          <Col className="pr-2" md="4" style={{ height: '76vh', display: 'flex', flexDirection: 'column' }}>
             <Card className="studentInfo" style={{ flex: '1 1 auto', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedHighlight ? '0px 0px 12px 2px #fccf71' : 'none', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
@@ -2195,7 +2195,7 @@ function WorkNote(args) {
               </CardBody>
             </Card>
           </Col>
-          <Col className="pl-2" md="8" style={{ height: '78vh', display: 'flex', flexDirection: 'column' }}>
+          <Col className="pl-2" md="8" style={{ height: '76vh', display: 'flex', flexDirection: 'column' }}>
             <Card className="workNoteForm" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
@@ -2207,7 +2207,7 @@ function WorkNote(args) {
                 <Row className="pt-2">
                   <Col md="12">
                     <div className="personal-worknote-grid" style={{ flex: '1 1 auto' }}>
-                      <div className="ag-theme-alpine" style={{ height: '20vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedToUpdateHighlight ? '0px 0px 12px 2px #fccf71' : 'none' }} onContextMenu={handleRightGridContextMenu}>
+                      <div className="ag-theme-alpine" style={{ height: '17vh', transition: 'box-shadow 0.5s ease', boxShadow: nonSelectedToUpdateHighlight ? '0px 0px 12px 2px #fccf71' : 'none' }} onContextMenu={handleRightGridContextMenu}>
                         <AgGridReact
                           rowHeight={30}
                           ref={personalStudentGridRef}

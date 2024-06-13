@@ -1,29 +1,23 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Dashboard from "views/Dashboard.js";
 import WorkNote from "views/WorkNote";
 import MedicalInfo from "views/MedicineInfo";
 import Notifications from "views/Notifications.js";
-import Icons from "views/Icons.js";
 import WorkSchedule from "views/WorkSchedule";
 import Community from "views/Community";
 import UserPage from "views/User.js";
 import QnaRequest from "views/QnaRequest";
 import Request from "views/Request";
-import Examination from "views/Examination";
 import ManageMediFixt from "views/ManageMediFixt";
 import Statistics from "views/Statistics";
 import Survey from "views/Survey";
+import Examination from "views/Examination";
+import Icons from "views/Icons.js";
 
 
 const GetRoutes = () => {
-  const accessToken = sessionStorage.getItem('accessToken');
-  const thirdPartyUserCode = sessionStorage.getItem('thirdPartyUserCode');
-  // const isUser = accessToken ? true : false;                // 보건교사 / 일반교사 구분 Flag (Flag에 따라 메뉴 숨김)
   var routes = [];
-  // debugger
-  // if(isUser) {                        // Login한 User가 보건교사인 경우
-  // if(accessToken) {
     routes = [
       {
         path: "/dashboard",
@@ -60,13 +54,13 @@ const GetRoutes = () => {
         component: <ManageMediFixt />,
         layout: "/meorla",
       },
-      {
-        path: "/healthCheck",
-        name: "건강검진",
-        icon: "nc-icon nc-ambulance",
-        component: <Examination />,
-        layout: "/meorla",
-      },
+      // {
+      //   path: "/healthCheck",
+      //   name: "건강검진",
+      //   icon: "nc-icon nc-ambulance",
+      //   component: <Examination />,
+      //   layout: "/meorla",
+      // },
       {
         path: "/certificate",
         name: "증명서 발급",
@@ -88,13 +82,6 @@ const GetRoutes = () => {
         component: <Statistics />,
         layout: "/meorla",
       },
-      // {
-      //   path: "/notifications",
-      //   name: "알림",
-      //   icon: "nc-icon nc-bell-55",
-      //   component: <Notifications />,
-      //   layout: "/meorla",
-      // },
       {
         path: "/survey",
         name: "설문조사",

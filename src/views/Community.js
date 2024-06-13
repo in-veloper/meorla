@@ -418,8 +418,8 @@ function Community() {
 
     return (
         <>
-            <div className="content" style={{ height: '84.8vh' }}>
-                <Row className="align-items-center pb-2">
+            <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
+                <Row className="align-items-center pb-2" style={{ flex: '1 1 auto' }}>
                     <Col md="7" className="align-items-left no-gutters">
                         <Nav className="community-nav" pills>
                             <NavItem>
@@ -465,7 +465,7 @@ function Community() {
                         </Row>
                     </Col>
                 </Row>
-                <Row>
+                <Row style={{ flex: '1 1 auto' }}>
                     <Col md="12">
                         <div className="ag-theme-alpine" style={{ height: '72vh' }}>
                             {selectedMenu === 'opinionSharing' && (
@@ -511,7 +511,7 @@ function Community() {
                         </div>
                     </Col>
                 </Row>
-                <Row className="justify-content-end no-gutters">
+                <Row className="justify-content-end no-gutters" style={{ flex: '1 1 auto' }}>
                     <Button onClick={writeInCommunity}>글쓰기</Button>
                     {selectedMenu === 'opinionSharing' && (
                         <Button className="ml-1" onClick={handleMyOpinionSharingView}>내가 쓴 의견공유 글</Button>

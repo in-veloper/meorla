@@ -243,7 +243,7 @@ function Dashboard() {
 
   return (
     <>
-      <div className="content">
+      <div className="content" style={{ height: '84.1vh' ,display: 'flex', flexDirection: 'column' }}>
         <UncontrolledAlert color="info" fade={false}>
           <span>
             <b>알림 &nbsp; </b>
@@ -251,7 +251,7 @@ function Dashboard() {
             color="info"
           </span>
         </UncontrolledAlert>
-        <Row>
+        <Row style={{ flex: '1 1 auto'}}>
           <Col md="7">
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">
@@ -299,7 +299,7 @@ function Dashboard() {
             </Card>
           </Col>
         </Row>
-        <Row>
+        <Row style={{ flex: '1 1 auto' }}>
           <Col md="6">
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">
@@ -346,7 +346,7 @@ function Dashboard() {
             </Card>
           </Col>
         </Row>
-        <Row>
+        <Row style={{ flex: '1 1 auto' }}>
           <Col md="4">
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">

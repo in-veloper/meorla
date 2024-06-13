@@ -493,8 +493,8 @@ function ManageMediFixt() {
 
     return (
         <>
-            <div className="content">
-                <Row className="align-items-center pb-2">
+            <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
+                <Row className="align-items-center pb-2" style={{ flex: '1 1 auto' }}>
                     <Col md="7" className="align-items-left no-gutters">
                         <Nav className="medifixt-nav" pills>
                             <NavItem>
@@ -534,7 +534,7 @@ function ManageMediFixt() {
                         </Row>
                     </Col>
                 </Row>
-                <Row>
+                <Row style={{ flex: '1 1 auto' }}>
                     <Col md="12">
                         <div className="ag-theme-alpine" style={{ height: '72.7vh' }}>
                             {selectedMenu === 'medicine' && (
@@ -564,7 +564,7 @@ function ManageMediFixt() {
                         </div>
                     </Col>
                 </Row>
-                <Row className="justify-content-end no-gutters">
+                <Row className="justify-content-end no-gutters" style={{ flex: '1 1 auto' }}>
                     <Button id="addMedicineButton" onClick={addMedicineFixt}>추가</Button>
                     <Button id="updateMedicineButton" className="ml-1" onClick={updateMedicineFixt}>수정</Button>
                     <Button id="removeMedicineButton" className="ml-1" onClick={deleteMedicineFixt}>삭제</Button>

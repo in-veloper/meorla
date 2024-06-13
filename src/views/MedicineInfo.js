@@ -398,8 +398,8 @@ function MedicalInfo() {
 
   return (
     <>
-      <div className="content" style={{ height: '84.8vh' }}>
-        <Row>
+      <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
+        <Row style={{ flex: '1 1 auto' }}>
           <Col md="7">
             <Table bordered className="text-center search-shape mb-1" style={{ width: 'auto' }}>
               <tbody>
@@ -472,7 +472,7 @@ function MedicalInfo() {
             <Row className="justify-content-end no-gutters mb-0" style={{ height: '4.7vh', marginTop: '-7px', marginBottom: 12 }}>
               <Button onClick={handleBookmarkMedicineList}>북마크 약품 목록</Button>
             </Row>
-            <Row className="justify-content-end no-gutters">
+            <Row className="justify-content-end no-gutters mt-3">
               <Input
                 className="ml-3 mr-2"
                 id="searchCategory"
@@ -513,7 +513,7 @@ function MedicalInfo() {
             </Row>
           </Col>
         </Row>
-        <Row>
+        <Row style={{ flex: '1 1 auto' }}>
          <Col md="12">
             <div className="ag-theme-alpine" style={{ height: '100vh', minHeight: '67.9vh', maxHeight: '67.9vh' }}>
               <AgGridReact

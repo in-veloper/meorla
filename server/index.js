@@ -15,6 +15,7 @@ const fs = require('fs');
 const { startMedicineScheduler } = require('./scheduler/medicineScheduler');
 const socketIo = require('socket.io');
 const http = require('http');
+const nodemailer = require('nodemailer');
 
 const BASE_ORIGIN = process.env.REACT_APP_BASE_ORIGIN;
 const PORT = process.env.REACT_APP_BASE_PORT || 8002;
@@ -56,6 +57,7 @@ const getCookie = (name) => {
 const removeCookie = (name) => {
     return cookies.remove(name);
 };
+
 
 const db = mysql.createPool({
     host: process.env.REACT_APP_MYSQL_HOST,
@@ -1538,6 +1540,10 @@ app.get('/api/community/getResourceSharing', async (req, res) => {
             res.json(result);
         }
     });
+});
+
+app.post("/api/send-email-verification", async (req, res) => {
+
 });
 
 server.listen(PORT, () => {

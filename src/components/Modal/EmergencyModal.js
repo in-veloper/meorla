@@ -834,7 +834,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     return (
         <>
-            <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '54%' }}>
+            <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '65%', height: '70vh' }}>
                 <ModalHeader toggle={toggleManageEmergencyModal}>
                     <b className="text-muted">응급학생관리</b>
                 </ModalHeader>
@@ -998,7 +998,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                         id='firstWitness'
                                         className='ml-2'
                                         type='text'
-                                        style={{ width: '57%' }}
+                                        style={{ width: '61.5%' }}
                                         value={firstWitnessValue}
                                         onChange={(e) => setFirstWitnessValue(e.target.value)}
                                     />
@@ -1010,7 +1010,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                     id='emergencyVitalSign'
                                     className='ml-2'
                                     type='text'
-                                    style={{ width: '86%' }}
+                                    style={{ width: '87.5%' }}
                                     value={vitalSignValue}
                                     onChange={(e) => setVitalSignValue(e.target.value)}
                                 />
@@ -1021,7 +1021,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                     id='mainSymptom'
                                     className='p-1'
                                     type='textarea'
-                                    style={{ width: '86%', marginLeft: 14 }}
+                                    style={{ width: '87.5%', marginLeft: 14 }}
                                     value={mainSymptomValue}
                                     onChange={(e) => setMainSymptomValue(e.target.value)}
                                 />
@@ -1032,7 +1032,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                     id='accidentOverview'
                                     className='p-1'
                                     type='textarea'
-                                    style={{ width: '86%', marginLeft: 19 }}
+                                    style={{ width: '87.5%', marginLeft: 19 }}
                                     value={accidentOverviewValue}
                                     onChange={(e) => setAccidentOverviewValue(e.target.value)}
                                 />
@@ -1043,7 +1043,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                     id='emergencyTreatmentDetail'
                                     className='p-1'
                                     type='textarea'
-                                    style={{ width: '86%', marginLeft: 8 }}
+                                    style={{ width: '87.5%', marginLeft: 8 }}
                                     value={emergencyTreatmentDetailValue}
                                     onChange={(e) => setEmergencyTreatmentDetailValue(e.target.value)}
                                 />

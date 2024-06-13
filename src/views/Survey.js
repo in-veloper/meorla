@@ -32,8 +32,8 @@ function Survey() {
 
     return (
         <>
-            <div className="content" style={{ height: '84.8vh' }}>
-                <Card style={{ width: '100%', height: '7vh' }}>
+            <div className="content" style={{ height: '84.1vh' }}>
+                <Card style={{ width: '100%', height: '7vh', border: '1px dotted lightgray'  }}>
                     <CardBody className="d-flex align-items-center pt-2">
                         <Row className="d-flex align-items-center w-100">
                             <Col md="8" className="d-flex align-items-center text-center pl-4">
@@ -69,14 +69,14 @@ function Survey() {
                         </Row>
                     </CardBody>
                 </Card>
-                <Card style={{ width: '50%', height: '75.8vh', overflow: 'scroll', float: 'left' }}>
+                <Card style={{ width: '50%', height: '75.1vh', overflowY: 'scroll', float: 'left' }}>
                     <div className="p-3">
                         <div ref={surveyFormRef} style={{ border: '1px solid orange' }}>
                             <HealthExaminationSurveyForm/>
                         </div>
                     </div>
                 </Card>
-                <Card style={{ width: '49%', height: '75.8vh', overflow: 'scroll', float: 'right' }}>
+                <Card style={{ width: '49%', height: '75.1vh', overflowY: 'scroll', float: 'right' }}>
                     <div className="p-3">
                         <div style={{ border: '1px solid orange' }}>
                             <EmergencyManagementServeyForm />

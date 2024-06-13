@@ -348,12 +348,12 @@ function Login() {
 
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
-            <Navbar className='pb-0 pt-0' bg="white" expand="lg" fixed="top" style={{ borderBottom: '1.5px dotted lightgray' }}>
+            <Navbar className='pb-0 pt-0' bg="white" expand="lg" fixed="top" style={{ borderBottom: '1.5px dotted lightgray', height: 60 }}>
                 <Navbar.Brand className='mr-5' href="/">
-                    <img className='mr-2' src={logoImage} style={{ width: 40, height: 40 }}/>
+                    <img className='mr-2' src={logoImage} style={{ width: 40, height: 40 }} alt='logo'/>
                     <b>MEORLA</b>
                 </Navbar.Brand>
-                <Navbar.Brand className='mr-4' href="/">MEORLA?</Navbar.Brand>
+                <Navbar.Brand className='mr-4' href="/">MEORLA</Navbar.Brand>
                 <Navbar.Brand className='mr-4' href="/">플랫폼 메뉴얼 교육 신청</Navbar.Brand>
                 <Navbar.Brand href="/">구독관련 문의사항</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -365,16 +365,16 @@ function Login() {
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
-            <Card className='mt-4' style={{ width: '900px', display: 'flex', flexDirection: 'column' }}>
+            <Card className='carousel-card' style={{ width: '800px', display: 'flex', flexDirection: 'column' }}>
                 <Carousel showThumbs={false} showStatus={false} infiniteLoop useKeyboardArrows autoPlay>
                     <div>
-                        <img src={carouselImage1} alt="First Slide" style={{ height: '200px', objectFit: 'cover' }} />
+                        <img src={carouselImage1} alt="First Slide" style={{ height: '180px', objectFit: 'cover' }} />
                     </div>
                     <div>
-                        <img src={carouselImage2} alt="Second Slide" style={{ height: '200px', objectFit: 'cover' }} />
+                        <img src={carouselImage2} alt="Second Slide" style={{ height: '180px', objectFit: 'cover' }} />
                     </div>
                     <div>
-                        <img src={carouselImage3} alt="Third Slide" style={{ height: '200px', objectFit: 'cover' }} />
+                        <img src={carouselImage3} alt="Third Slide" style={{ height: '180px', objectFit: 'cover' }} />
                     </div>
                 </Carousel>
             </Card>
