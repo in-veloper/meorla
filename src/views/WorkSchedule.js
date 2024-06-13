@@ -216,8 +216,8 @@ function WorkSchedule() {
 
   return (
     <>
-      <div className="content" style={{ height: '84.8vh' }}>
-        <Row>
+      <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
+        <Row style={{ flex: '1 1 auto' }}>
           <Col md="4">
             <label className="text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>오늘의 일정</label>
             <div className="ag-theme-alpine" style={{ height: '13vh' }}>
