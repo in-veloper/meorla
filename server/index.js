@@ -33,6 +33,14 @@ const io = socketIo(server, {
     pingTimeout: 60000      // pong 응답을 기다리는 시간
 });
 
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
 app.use(cors({
      origin: BASE_ORIGIN,
      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -361,6 +369,78 @@ app.get("/api/user/getNotifyPmInfo", (req, res) => {
         }
     });
 });
+
+const verificationCodes = {};    // 간단한 메모리 저장소
+
+app.post("/api/send-email-verification", async (req, res) => {
+    const { email } = req.body;
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();    // 6자리 인증코드 생성
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'MEORLA 회원가입 인증코드',
+        html: `<p style="font-size:17px;">MEORLA플랫폼에서 회원가입 인증코드를 입력해주세요</p><p style="font-size:17px;">인증 코드: <b>${verificationCode}</b></p>`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if(error) {
+            console.log("Email 인증 발송 중 ERROR", error);
+            res.json({ success: false });
+        }else{
+            verificationCodes[email] = verificationCode;     // 메모리에 인증코드 저장
+            res.json({ success: true });
+        }
+    })
+});
+
+app.post("/api/verify-email-code", (req, res) => {
+    const { email, code } = req.body;
+
+    if(verificationCodes[email] && verificationCodes[email] === code) {
+        res.send('Email Verified');
+    }else{
+        res.send('Invalid verification code');
+    }
+});
+
+app.post("/api/send-password-reset-code", async (req, res) => {
+    const { email } = req.body;
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();    // 6자리 인증코드 생성
+  
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'MEORLA 비밀번호 초기화 인증코드',
+      html: `<p style="font-size:17px;">MEORLA 플랫폼에서 비밀번호 초기화 인증코드를 입력해주세요</p><p style="font-size:17px;">인증 코드: <b>${verificationCode}</b></p>`
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if(error) {
+        console.log("Email 인증 발송 중 ERROR", error);
+        res.json({ success: false });
+      }else{
+        verificationCodes[email] = verificationCode;     // 메모리에 인증코드 저장
+        res.json({ success: true, verificationCode });   // 인증 코드 반환
+      }
+    })
+  });
+  
+  app.post("/api/reset-password", (req, res) => {
+    const { userId } = req.body;
+    const newPassword = userId + "12!@"; // 임시 비밀번호 생성
+    const hashedPassword = hashPassword(newPassword);
+  
+    const sqlQuery = "UPDATE teaform_db.users SET password = ? WHERE userId = ?";
+    db.query(sqlQuery, [hashedPassword, userId], (err, result) => {
+      if(err) {
+        console.log("비밀번호 초기화 중 ERROR", err);
+        res.status(500).json({ error: "내부 Server ERROR" });
+      }else{
+        res.send('success');
+      }
+    });
+  });
 
 app.post("/api/bookmark/insert", async (req, res) => {
     const { userId, userEmail, userName, schoolName, schoolCode, bookmarkArray } = req.body;
@@ -1540,10 +1620,6 @@ app.get('/api/community/getResourceSharing', async (req, res) => {
             res.json(result);
         }
     });
-});
-
-app.post("/api/send-email-verification", async (req, res) => {
-
 });
 
 server.listen(PORT, () => {

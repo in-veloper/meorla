@@ -46,6 +46,8 @@ function Login() {
     const [inputVerificationCode, setInputVerificationCode] = useState('');
     const [timeLeft, setTimeLeft] = useState(0);
     const [isCodeSent, setIsCodeSent] = useState(false);
+    const [isEmailVerificated, setIsEmailVerificated] = useState(false);
+    const [certificateNameValue, setCertificateNameValue] = useState(null);
 
     const clearRegisterInput = () => {
         setSchoolName("");
@@ -83,7 +85,7 @@ function Login() {
 
     const sendVerificationCode = async () => {
         try {
-            const response = await axios.post(`${BASE_URL}/api/user/sendVerificationCode`, { email });
+            const response = await axios.post(`${BASE_URL}/api/send-email-verification`, { email });
             if (response.data.success) {
                 setVerificationCode(response.data.code);
                 setTimeLeft(180); // 3분
@@ -141,28 +143,53 @@ function Login() {
     };
 
     // 인증 코드 확인 및 회원가입으로 이동
-    const verifyCodeAndRegister = () => {
-        if (inputVerificationCode === verificationCode) {
-            // 타이머가 유효한지 확인
-            if (timeLeft > 0) {
-                const infoMessage = "인증이 완료되었습니다";
-                NotiflixInfo(infoMessage);
-                setIsCodeSent(false);   // 인증 성공 시, 인증 코드 입력 필드 숨김
-            } else {
-                const warnMessage = "인증 시간이 만료되었습니다<br/>다시 시도해주세요";
+    const verifyCodeAndRegister = async () => {
+        try {
+            const response = await axios.post(`${BASE_URL}/api/verify-email-code`, { email, code: inputVerificationCode });
+            if(response.data === 'Email Verified') {
+                // 타이머가 유효한지 확인
+                if (timeLeft > 0) {
+                    const infoMessage = "인증이 완료되었습니다";
+                    NotiflixInfo(infoMessage);
+                    setIsCodeSent(false);   // 인증 성공 시, 인증 코드 입력 필드 숨김
+                    setIsEmailVerificated(true);
+                    
+                    const emailSendButton = document.getElementById('sendVerificationButton');
+                    emailSendButton.textContent = '인증 완료';
+                }else{
+                    const warnMessage = "인증 시간이 만료되었습니다<br/>다시 시도해주세요";
+                    NotiflixWarn(warnMessage);
+                    setIsCodeSent(false);
+                    setInputVerificationCode("");
+                }
+            }else{
+                const warnMessage = "인증 코드가 일치하지 않습니다<br/>다시 시도해주세요";
                 NotiflixWarn(warnMessage);
+                setIsCodeSent(false);
+                setInputVerificationCode("");
             }
-        } else {
-            const warnMessage = "인증 코드가 일치하지 않습니다<br/>다시 시도해주세요";
-            NotiflixWarn(warnMessage);
+        } catch (error) {
+            console.log("인증코드 검증 처리 중 ERROR", error);
         }
     };
 
     // 회원가입 Form 전송
     const registUser = async () => {
-        if (!verificationCode || timeLeft <= 0) {
+        if (!inputVerificationCode || timeLeft <= 0) {
             const warnMessage = "이메일 인증이 완료되지 않았습니다";
             NotiflixWarn(warnMessage);
+            return;
+        }
+
+        if(!certificateNameValue) {
+            const warnMessage = "인증서 파일이 업로드되지 않았습니다<br/>인증서 파일을 업로드해 주세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+
+        if(certificateNameValue !== name) {
+            const warnMessage = "인증서와 가입하려는 이름이 일치하지 않습니다";
+            NotiflixWarn(warnMessage, '320px');
             return;
         }
 
@@ -290,7 +317,7 @@ function Login() {
                 const reader = new FileReader();
                 reader.onload = async () => {
                     const arrayBuffer = reader.result;
-
+                    debugger
                     const asn1 = asn1js.fromBER(arrayBuffer);
                     const certificate = new Certificate({ schema: asn1.result });
 
@@ -322,9 +349,14 @@ function Login() {
                     const isValid = currentDate.isBetween(notBeforeDate, notAfterDate);
                     
                     if(isValid) {
-                        const infoMessage = "정상적으로 인증되었습니다.";
+                        const infoMessage = "정상적으로 인증되었습니다";
                         NotiflixInfo(infoMessage, true, '250px');
                         setFileMessage(<div className='text-muted'>{belongOOC} 소속 {certificateName} 보건교사님<br/>정상적으로 인증되었습니다</div>)
+                        setCertificateNameValue(certificateName);
+                    }else{
+                        const warnMessage = "유효하지 않은 인증서입니다<br/>확인 후 다시 업로드해 주세요";
+                        NotiflixWarn(warnMessage);
+                        return;
                     }
                 };
 
@@ -344,6 +376,10 @@ function Login() {
 
     const handleKeyDown = (e) => {
         if(e.key === "Enter") handleLogin();
+    };
+
+    const resetForm = () => {
+
     };
 
     return (
@@ -380,7 +416,7 @@ function Login() {
             </Card>
             <Container id="container">
                 <Row>
-                    <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
+                    <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`} style={{ overflowY: 'auto' }}>
                         <Form action="registUser">
                             {/* <h5>회원가입</h5> */}
                             <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', border: '2px dashed grey', padding: '10px', marginBottom: '10px', textAlign: 'center' }}>
@@ -401,19 +437,28 @@ function Login() {
                                 />
                             </div>
                             <input type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
-                            <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                            <Button onClick={sendVerificationCode}>인증 코드 전송</Button>
+                            <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                                <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ flex: '3', marginRight: '10px' }} disabled={isEmailVerificated} />
+                                <Button id='sendVerificationButton' className='verificationButton' onClick={sendVerificationCode} style={{ flex: '1' }} disabled={isEmailVerificated}>인증 코드</Button>
+                            </div>
                             {isCodeSent && (
                                 <>
-                                    <input type="text" placeholder="인증 코드" value={inputVerificationCode} onChange={(e) => setInputVerificationCode(e.target.value)} />
-                                    <Button onClick={verifyCodeAndRegister}>인증 코드 확인</Button>
-                                    <p>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</p>
+                                    <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                                        <input type="text" placeholder="인증 코드" value={inputVerificationCode} onChange={(e) => setInputVerificationCode(e.target.value)} style={{ flex: '1', marginRight: '10px' }} />
+                                        <b style={{ flex: '1', marginRight: '10px' }}>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</b>
+                                        <Button className='verificationButton' onClick={verifyCodeAndRegister} style={{ flex: '1' }}>인증 코드 확인</Button>
+                                    </div>
                                 </>
                             )}
                             <input type="email" placeholder="아이디" value={userId} onChange={(e) => setUserId(e.target.value)} />
-                            <input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
-                            <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={(e) => setConfPassword(e.target.value)} />
-                            <Button onClick={registUser}>회원가입</Button>
+                            <div style={{ display: 'flex', width: '100%' }}>
+                                <input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} style={{ flex: '1', marginRight: '10px' }}/>
+                                <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={(e) => setConfPassword(e.target.value)} style={{ flex: '1' }} />
+                            </div>
+                            <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
+                                <Button onClick={resetForm} style={{ marginRight: '5px' }}>초기화</Button>
+                                <Button onClick={registUser}>회원가입</Button>
+                            </div>
                         </Form>
                     </Col>
                     <Col className={`form-container sign-in-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>

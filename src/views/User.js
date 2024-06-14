@@ -14,6 +14,8 @@ import QRCode from "qrcode-generator";
 import { useReactToPrint } from "react-to-print";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
+import { Block } from 'notiflix/build/notiflix-block-aio';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -42,6 +44,10 @@ function User() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showVerification, setShowVerification] = useState(false);
+  const [emailCode, setEmailCode] = useState('');
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [verificationCode, setVerificationCode] = useState('');
 
   const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -282,6 +288,11 @@ function User() {
   const handlePasswordSettingModal = (e) => {
     e.preventDefault();
     togglePasswordSettingModal();
+    setShowVerification(false);
+    setVerificationCode("");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
   };
 
   const saveCommonPassword = async (e) => {
@@ -583,8 +594,82 @@ function User() {
     });
   };
 
-  const resetPassword = () => {
+  const sendVerificationCode = async () => {
+    Block.dots('.passwordSettingModal');
 
+    try {
+      const response = await axios.post(`${BASE_URL}/api/send-password-reset-code`, { 
+        email: currentUser.email 
+      });
+  
+      if (response.data.success) {
+        setEmailCode(response.data.verificationCode);
+        setTimeLeft(180);
+        setShowVerification(true);
+        startTimer();
+
+        Block.remove('.passwordSettingModal');
+      } else {
+        const warnMessage = "인증코드 전송에 실패했습니다<br/>다시 시도해 주세요";
+        NotiflixWarn(warnMessage);
+      }
+    } catch (error) {
+      console.log("비밀번호 초기화 인증코드 전송 중 ERROR", error);
+    }finally{
+      Block.remove('.passwordSettingModal');
+    }
+  };
+  
+  const startTimer = () => {
+    const timerInterval = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timerInterval);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+  };
+  
+  const handleVerifyCode = () => {
+    debugger
+    if (verificationCode === emailCode) {
+      axios.post(`${BASE_URL}/api/reset-password`, { userId: user.userId })
+        .then((response) => {
+          if (response.data === 'success') {
+            const infoMessage = "비밀번호가 초기화 되었습니다";
+            NotiflixInfo(infoMessage);
+            togglePasswordSettingModal();
+          } else {
+            const warnMessage = "비밀번호 초기화에 실패하였습니다";
+            NotiflixWarn(warnMessage);
+          }
+        })
+        .catch((error) => {
+          console.log("비밀번호 초기화 중 ERROR", error);
+          const warnMessage = "비밀번호 초기화 중 문제가 발생하였습니다<br/>관리자에게 문의해 주세요";
+          NotiflixWarn(warnMessage);
+        });
+    } else {
+      const warnMessage = "인증코드가 일치하지 않습니다";
+      NotiflixWarn(warnMessage);
+    }
+  };
+
+  const resetPassword = async () => {
+    const confirmTitle = "비밀번호 초기화";
+    const confirmMessage = "초기화된 비밀번호는 가입하신 아이디 뒤에 12!@ 가 더해진 형식입니다<br/>확인을 누르신 후 인증코드를 입력하세요<br/>인증코드는 가입하신 이메일을 확인하세요";
+
+    const yesCallback = async () => {
+      await sendVerificationCode();
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '430px');
   };
 
   return (
@@ -924,9 +1009,9 @@ function User() {
 
       <Modal isOpen={passwordSettingModal} toggle={togglePasswordSettingModal} centered style={{ minWidth: '20%' }}>
           <ModalHeader toggle={togglePasswordSettingModal}><b className="text-muted">비밀번호 설정</b></ModalHeader>
-          <ModalBody className="pb-0">
+          <ModalBody className="pb-0 passwordSettingModal">
             <Form className="mt-2 mb-3" onSubmit={savePassword}>
-              <Row className="no-gutters">
+              <Row className="no-gutters" style={{ display: showVerification ? 'none' : '' }}>
                 <Col md="4" className="text-center align-tiems-center">
                   <Label className="text-muted">현재 비밀번호</Label>
                 </Col>
@@ -936,10 +1021,11 @@ function User() {
                     value={currentPassword}
                     style={{ width: '90%' }}
                     onChange={(e) => setCurrentPassword(e.target.value)}
+                    hidden={showVerification}
                   />
                 </Col>
               </Row>
-              <Row className="mt-2 no-gutters">
+              <Row className="mt-2 no-gutters" style={{ display: showVerification ? 'none' : '' }}>
                 <Col md="4" className="text-center align-tiems-center">
                   <Label className="text-muted">새 비밀번호</Label>
                 </Col>
@@ -949,10 +1035,11 @@ function User() {
                     value={newPassword}
                     style={{ width: '90%' }}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    hidden={showVerification}
                   />
                 </Col>
               </Row>
-              <Row className="mt-2 no-gutters">
+              <Row className="mt-2 no-gutters" style={{ display: showVerification ? 'none' : '' }}>
                 <Col md="4" className="text-center align-tiems-center">
                   <Label className="text-muted">비밀번호 확인</Label>
                 </Col>
@@ -966,6 +1053,32 @@ function User() {
                   />
                 </Col>
               </Row>
+              {showVerification && (
+                <Row className="d-flex align-items-center mt-2 no-gutters">
+                  <Col md="4" className="text-center align-tiems-center">
+                    <Label className="text-muted">비밀번호 초기화</Label>
+                  </Col>
+                  <Col md="8">
+                    <Row className="d-flex align-items-center">
+                      <Col md="4">
+                        <Input 
+                          type="text"
+                          placeholder="인증코드"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value)}
+                          style={{ width: '100%', marginRight: '10px' }}
+                        />
+                      </Col>
+                      <Col md="2">
+                        <span>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</span>
+                      </Col>
+                      <Col md="6">
+                        <Button size="sm" onClick={handleVerifyCode}>인증 코드 확인</Button>
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              )}
             </Form>
           </ModalBody>
           <ModalFooter>
