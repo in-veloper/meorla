@@ -2222,7 +2222,7 @@ function WorkNote(args) {
                   </Col>
                 </Row>
                 <Row className="pt-1" style={{ flex: '1 1 auto'}}>
-                  <Col md="3" className="pt-3 pr-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Col md="4" className="pt-3 pr-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
@@ -2293,12 +2293,12 @@ function WorkNote(args) {
                       </CardBody>
                     </Card>
                   </Col>
-                  <Col md="5" className="pt-3 pl-0" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Col md="4" className="pt-3 pl-0" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '-17px' }}>조치 및 교육사항</b>
+                            <b className="action-title" style={{ marginRight: '-3px' }}>인체부위</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="actionMatterTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
@@ -2331,7 +2331,7 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: 5}}>처치사항</b>
+                            <b className="action-title" style={{ marginRight: -27}}>처치 및 교육사항</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="treatmentMatterTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
@@ -2372,10 +2372,10 @@ function WorkNote(args) {
                       <CardBody className="pt-2 pb-2 align-content-center" style={{ flex: '1 1 auto' }}>
                         <Row>
                           <Col className="d-flex align-items-center justify-content-start">
-                            <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>체온</label>
+                            <label style={{ color: 'black', fontSize: 13, paddingRight: 41 }}>체온</label>
                             <Input
                               id="temperature"
-                              type="number"
+                              type="text"
                               max={45}
                               min={30}
                               onChange={handleVitalSignChange}
@@ -2384,16 +2384,16 @@ function WorkNote(args) {
                             />
                             <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(°C)</label>
                           </Col>
-                          <Col className="d-flex align-items-center justify-content-center">
+                          <Col className="d-flex align-items-center justify-content-center" style={{ marginLeft: 11 }}>
                             <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>혈압</label>
                             <Input
                               id="bloodPressure"
-                              type="number"
+                              type="text"
                               onChange={handleVitalSignChange}
                               value={bloodPressureValue}
                               style={{ width: '50px' }}
                             />
-                            <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(mm Hg)</label>
+                            <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(mm/Hg)</label>
                           </Col>
                           <Col className="d-flex align-items-center justify-content-end">
                             <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>맥박</label>
@@ -2447,7 +2447,7 @@ function WorkNote(args) {
                         </Row>
                       </CardHeader>
                       <CardBody className="pb-1 pt-1 align-content-center" style={{ flex: '1 1 auto' }}>
-                        <Row className="d-flex align-items-center justify-content-center">
+                        <Row className="d-flex align-content-center justify-content-center">
                           <h6><Badge color="secondary" className="ml-2" style={{ height: '25px', lineHeight: '19px', marginTop: '2px', fontSize: 13 }}>시작시간</Badge></h6>
                           <Input
                             id="onBedRestStartTime"

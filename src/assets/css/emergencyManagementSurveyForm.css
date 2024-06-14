@@ -4,11 +4,11 @@
 }
 
 .emergency-management-table th, .emergency-management-table td {
-    border: 1px solid #e3b798;
+    border: 1px solid gray;
 }
 
 .emergency-management-table th {
-    border: 1px solid #e3b798;
+    border: 1px solid gray;
 }
 
 .radio-group {

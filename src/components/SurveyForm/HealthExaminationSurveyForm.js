@@ -138,14 +138,14 @@ function HealthExaminationSurveyForm() {
                 </div>
               </td>
             </tr>
-            <tr style={{ backgroundColor: '#edd9c8' }}>
+            <tr style={{ backgroundColor: '#f8f9fa' }}>
               <td className='text-center font-weight-bold' colSpan="2" rowSpan="2">질환</td>
               <td className='text-center font-weight-bold' rowSpan="2">있음</td>
               <td className='text-center font-weight-bold' rowSpan="2">없음</td>
               <td className='text-center font-weight-bold' colSpan="2">질환있는 경우</td>
               <td className='text-center font-weight-bold' rowSpan="2">질병명, 내용 등</td>
             </tr>
-            <tr style={{ backgroundColor: '#edd9c8' }}>
+            <tr style={{ backgroundColor: '#f8f9fa' }}>
               <td className='text-center font-weight-bold'>완치</td>
               <td className='text-center font-weight-bold'>치료중</td>
             </tr>

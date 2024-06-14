@@ -4,11 +4,11 @@
 }
 
 .health-examination-table th, .health-examination-table td {
-    border: 1px solid #e3b798;
+    border: 1px solid gray;
 }
 
 .health-examination-table th {
-    border: 1px solid #e3b798;
+    border: 1px solid gray;
 }
 
 .radio-group {

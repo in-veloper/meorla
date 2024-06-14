@@ -27,7 +27,7 @@ function EmergencyManagementServeyForm() {
                     <Col>
                         <span className='text-muted font-weight-bold' style={{ fontSize: 20 }}>▣ 응급상황 시 연락처</span>
                         <Table className='emergency-management-table mt-3'>
-                            <tr className='font-weight-bold text-center' style={{ backgroundColor: '#edd9c8' }}>
+                            <tr className='font-weight-bold text-center' style={{ backgroundColor: '#f8f9fa' }}>
                                 <td colSpan="3" style={{ verticalAlign: 'middle', width: '13%' }}>구분</td>
                                 <td colSpan="3" style={{ verticalAlign: 'middle', width: '16%' }}>성명<br/>(학생과의 관계)</td>
                                 <td colSpan="3" style={{ verticalAlign: 'middle', width: '21%' }}>연락처</td>
@@ -136,7 +136,7 @@ function EmergencyManagementServeyForm() {
                         </Table>
                         <Row className='pt-3 no-gutters'>
                             <span className='text-muted font-weight-bold' style={{ fontSize: 20 }}>▣ 학생 건강상태 확인 및 학교 내 응급환자 관리 동의서</span>
-                            <Form className='mt-3 p-2 w-100' style={{ border: '1px solid #e3b798' }}>
+                            <Form className='mt-3 p-2 w-100' style={{ border: '1px solid gray' }}>
                                 <p>
                                     1. 학생의 건강상태가 위와 같음을 확인합니다.
                                 </p>
