@@ -16,7 +16,7 @@ import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-const WorkCalendar = forwardRef((props, ref) => {
+const WorkCalendar = forwardRef(({onEventUpdated}, ref) => {
     const { user } = useUser(); 
     const [showRegistScheduleModal, setRegistScheduleModal] = useState(false);
     const [showUpdateScheduleModal, setUpdateScheduleModal] = useState(false);
@@ -27,7 +27,7 @@ const WorkCalendar = forwardRef((props, ref) => {
     const [registeredEventTitle, setRegisteredEventTitle] = useState("");
     const [registeredEventColor, setRegisteredEventColor] = useState("");
     const [registeredEventStartDate, setRegisteredEventStartDate] = useState("");
-    const [registeredEvendEndDate, setRegisteredEventEndDate] = useState("");
+    const [registeredEventEndDate, setRegisteredEventEndDate] = useState("");
     const [isRegisteredEvent, setIsRegisteredEvent] = useState(false);
     const [originalEventData, setOriginalEventData] = useState(null);
     const [eventData, setEventData] = useState(null);
@@ -118,6 +118,7 @@ const WorkCalendar = forwardRef((props, ref) => {
                 NotiflixInfo(infoMessage);
                 setIsRegisteredEvent(true);
                 resetRegistEventForm();
+                updateScheduleGrid();
             }
         }; 
 
@@ -218,7 +219,7 @@ const WorkCalendar = forwardRef((props, ref) => {
         e.preventDefault();
 
         const startDate = new Date(registeredEventStartDate);
-        const endDate = new Date(registeredEvendEndDate);
+        const endDate = new Date(registeredEventEndDate);
 
         if(startDate > endDate) {
             const warnMessage = "종료일은 시작일 이후로 설정하세요";
@@ -248,13 +249,14 @@ const WorkCalendar = forwardRef((props, ref) => {
                 eventTitle: registeredEventTitle,
                 eventColor: registeredEventColor,
                 eventStartDate: registeredEventStartDate,
-                eventEndDate: registeredEvendEndDate
+                eventEndDate: registeredEventEndDate
             });
 
             if(response.data === 'success') {
                 NotiflixInfo(infoMessage);
                 setIsUpdatedEvent(true);
                 resetUpdateEventForm();
+                updateScheduleGrid();
             }
         };
 
@@ -320,6 +322,7 @@ const WorkCalendar = forwardRef((props, ref) => {
 
             if(response.data === 'success') {
                 NotiflixInfo(infoMessage);
+                updateScheduleGrid();
             }
         };
 
@@ -354,7 +357,7 @@ const WorkCalendar = forwardRef((props, ref) => {
         const newEventEnd = event.endStr;
         const confirmTitle = "보건일정 수정";
         const confirmMessage = "보건일정을<br/>" + oldEventStart + " ~ " + subtractOneDayFromDate(oldEventEnd) + "에서 " + newEventStart + " ~ " + subtractOneDayFromDate(newEventEnd) + "<br/>으로 수정하시겠습니까?";
-        const infoMessage = "보건일정이 정상적으로 수정되었습니다.";
+        const infoMessage = "보건일정이 정상적으로 수정되었습니다";
 
         const yesCallback = async () => {
             const response = await axios.post(`${BASE_URL}/api/workSchedule/reSchedule`, {
@@ -384,13 +387,44 @@ const WorkCalendar = forwardRef((props, ref) => {
                 calendarRef.current.getApi().gotoDate(date);
             }
         },
-
         focusToday: () => {
             if(calendarRef && calendarRef.current) {
                 calendarRef.current.getApi().today();
             }
-        }
+        },
+        refreshEvents: fetchEventData
     }));
+
+    const handleDeleteEvent = () => {
+        const confirmTitle = "보건일정 삭제";
+        const confirmMessage = "선택하신 보건일정을 삭제하시겠습니까?";
+        const infoMessage = "보건일정이 정상적으로 삭제되었습니다";
+
+        const yesCallback = async () => {
+            const response = await axios.post(`${BASE_URL}/api/workSchedule/deleteSchedule`, {
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                eventId: registeredEventId
+            });
+
+            if(response.data === 'success') {
+                NotiflixInfo(infoMessage);
+                toggleUpdateModal();
+                fetchEventData();
+                updateScheduleGrid();
+            }
+        };
+
+        const noCallback = () => {
+            return;
+        };
+
+        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
+    };
+
+    const updateScheduleGrid = async (event) => {
+        if(onEventUpdated) onEventUpdated();
+    };
 
     return (
         <>
@@ -399,7 +433,7 @@ const WorkCalendar = forwardRef((props, ref) => {
                     <FullCalendar
                         ref={calendarRef}
                         locale="kr"
-                        height={'66.5vh'} // calendar 영역 크기
+                        height={'66vh'} // calendar 영역 크기
                         initialView={'dayGridMonth'}
                         headerToolbar={{
                             start: 'prev,next today', 
@@ -599,7 +633,7 @@ const WorkCalendar = forwardRef((props, ref) => {
                                                 name="eventEndDate"
                                                 type="date"
                                                 placeholder="종료 날짜"
-                                                value={registeredEvendEndDate}
+                                                value={registeredEventEndDate}
                                                 onChange={(e) => setRegisteredEventEndDate(e.target.value)}
                                             />
                                         </Col>
@@ -607,7 +641,8 @@ const WorkCalendar = forwardRef((props, ref) => {
                                 </FormGroup>
                             </ModalBody>
                             <ModalFooter>
-                                <Button className="mr-1" color="secondary" onClick={handleUpdateEvent}>수정</Button>
+                                <Button className="mr-1" onClick={handleUpdateEvent}>수정</Button>
+                                <Button className="mr-1" onClick={handleDeleteEvent}>삭제</Button>
                                 <Button color="secondary" onClick={toggleUpdateModal}>취소</Button>
                             </ModalFooter>
                         </Modal>

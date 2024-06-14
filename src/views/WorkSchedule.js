@@ -1,14 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Row, Col, Input, Button } from "reactstrap";
 import WorkCalendar from "../variables/calendar";
 import { AgGridReact } from 'ag-grid-react';
+import { Menu, Item, Separator, Submenu, useContextMenu } from 'react-contexify';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { useUser } from "contexts/UserContext";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import moment from 'moment';
 import axios from "axios";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
+const MENU_ID_LEFT_GRID = 'schedule_delete_today_context_menu';
+const MENU_ID_RIGHT_GRID = 'schedule_delete_entire_context_menu';
 
 function WorkSchedule() {
   const { user } = useUser();
@@ -19,10 +24,21 @@ function WorkSchedule() {
   const [searchEventStartDate, setSearchEventStartDate] = useState("");
   const [searchEventEndDate, setSearchEventEndDate] = useState("");
   const [searchEventTitle, setSearchEventTitle] = useState("");
+  const [selectedWorkSchedule, setSelectedWorkSchedule] = useState(null);
+  const [isGridSelected, setIsGridSelected] = useState(false);
 
   const calendarRef = useRef(null);
   const todayGridRef = useRef(null);
   const entireGridRef = useRef(null);
+
+  const { show: showLeftMenu } = useContextMenu({
+    id: MENU_ID_LEFT_GRID,
+  });
+
+  const { show: showRightMenu } = useContextMenu({
+    id: MENU_ID_RIGHT_GRID
+  });
+
 
   const eventPeriodFormatter = (params) => {
     if(!params.data) return '';
@@ -214,29 +230,125 @@ function WorkSchedule() {
     }
   };
 
+  function handleLeftGridContextMenu(event) {
+    if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
+      return;
+    }else{
+      const api = todayGridRef.current.api;
+      const rowIndex = event.target.parentNode.getAttribute('row-index');
+
+      if(rowIndex !== null) {
+        api.ensureIndexVisible(rowIndex);
+        api.forEachNode((node) => {
+          if(node.rowIndex == rowIndex) node.setSelected(true, true);
+        });
+
+        const selectedRow = api.getSelectedRows()[0];
+        if(selectedRow) setSelectedWorkSchedule(selectedRow);
+
+        showLeftMenu({
+          event,
+          props: {
+            key: 'value'
+          }
+        });
+      }
+    }
+  };
+
+  function handleRightGridContextMenu(event) {
+    if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
+      return;
+    }else{
+      const api = entireGridRef.current.api;
+      const rowIndex = event.target.parentNode.getAttribute('row-index');
+
+      if(rowIndex !== null) {
+        api.ensureIndexVisible(rowIndex);
+        api.forEachNode((node) => {
+          if(node.rowIndex == rowIndex) node.setSelected(true, true);
+        });
+
+        const selectedRow = api.getSelectedRows()[0];
+        if(selectedRow) setSelectedWorkSchedule(selectedRow);
+
+        showLeftMenu({
+          event,
+          props: {
+            key: 'value'
+          }
+        });
+      }
+    }
+  };
+
+  const deleteWorkSchedule = () => {
+    if(selectedWorkSchedule) {
+      const confirmTitle = "보건일정 삭제";
+      const confirmMessage = "선택하신 보건일정을 삭제하시겠습니까?";
+      const infoMessage = "보건일정이 정상적으로 삭제되었습니다";
+
+      const yesCallback = async () => {
+        const response = await axios.post(`${BASE_URL}/api/workSchedule/deleteSchedule`, {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            eventId: selectedWorkSchedule.id
+        });
+
+        if(response.data === 'success') {
+            NotiflixInfo(infoMessage);
+            fetchTodaySchedule();
+            fetchEntireSchedule();
+            calendarRef.current.refreshEvents();
+        }
+      };
+
+      const noCallback = () => {
+          return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
+    }
+  };
+
+  const refreshGrids = useCallback(() => {
+    fetchTodaySchedule();
+    fetchEntireSchedule();
+  }, [user]);
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
         <Row style={{ flex: '1 1 auto' }}>
           <Col md="4">
             <label className="text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>오늘의 일정</label>
-            <div className="ag-theme-alpine" style={{ height: '13vh' }}>
-              <AgGridReact
-                headerHeight={40}
-                rowHeight={30}
-                ref={todayGridRef}
-                columnDefs={gridColumnDefs}
-                defaultColDef={defaultColDef}
-                rowData={todayScheduleRowData}
-                overlayNoRowsTemplate={ '<span style="color: #6c757d;">오늘 등록된 일정이 없습니다</span>' } 
-                rowSelection="single"
-                onRowClicked={onTodayGridRowClicked}
-              />
+            <div className="today-work-schedule">
+              <div className="ag-theme-alpine" style={{ height: '13vh' }} onContextMenu={handleLeftGridContextMenu}>
+                <AgGridReact
+                  headerHeight={40}
+                  rowHeight={30}
+                  ref={todayGridRef}
+                  columnDefs={gridColumnDefs}
+                  defaultColDef={defaultColDef}
+                  rowData={todayScheduleRowData}
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">오늘 등록된 일정이 없습니다</span>' } 
+                  rowSelection="single"
+                  onRowClicked={onTodayGridRowClicked}
+                />
+              </div>
+            </div>
+            <div>
+              <Menu id={MENU_ID_LEFT_GRID} animation="fade">
+                <Item id="deleteWorkSchedule" onClick={deleteWorkSchedule}>보건일정 삭제</Item>
+              </Menu>
+              <Menu id={MENU_ID_RIGHT_GRID} animation="fade">
+                <Item id="deleteWorkSchedule" onClick={deleteWorkSchedule}>보건일정 삭제</Item>
+              </Menu>
             </div>
           </Col>
           <Col md="4">
             <label className="text-left pl-2 w-100" style={{ fontSize: 16, fontWeight: 'bold'}}>일정 목록</label>
-            <div className="ag-theme-alpine" style={{ height: '13vh' }}>
+            <div className="ag-theme-alpine" style={{ height: '13vh' }} onContextMenu={handleRightGridContextMenu}>
               <AgGridReact 
                 headerHeight={40}
                 rowHeight={30}
@@ -260,14 +372,14 @@ function WorkSchedule() {
                         <label style={{ width: 50 }}>기간</label>
                         <Input
                           type="date"
-                          style={{ width: 140 }}
+                          style={{ width: '36.1%' }}
                           value={searchEventStartDate}
                           onChange={handleSearchEventStartDate}
                         />
-                        {/* <span className="text-center" style={{ width: 20 }}>~</span> */}
+                        <span className="text-center" style={{ width: '10%' }}>~</span>
                         <Input
                           type="date"
-                          style={{ width: 140 }}
+                          style={{ width: '36.1%' }}
                           value={searchEventEndDate}
                           onChange={handleSearchEventEndDate}
                         />
@@ -303,7 +415,7 @@ function WorkSchedule() {
             </div>
           </Col>
         </Row>
-        <WorkCalendar ref={calendarRef} />
+        <WorkCalendar ref={calendarRef} onEventUpdated={refreshGrids} />
       </div>
     </>
   );

@@ -76,6 +76,7 @@ function WorkNote(args) {
   const [searchSname, setSearchSname] = useState("");
   const [selectedWorkNote, setSelectedWorkNote] = useState(null);
   const [isGridRowSelect, setIsGridRowSelect] = useState(false);
+  const [contextStudentInfo, setContextStudentInfo] = useState("");
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -1739,8 +1740,6 @@ function WorkNote(args) {
 
   };
 
-  const [contextStudentInfo, setContextStudentInfo] = useState("");
-
   function handleLeftGridContextMenu(event) {
     if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
       return;
@@ -1939,7 +1938,7 @@ function WorkNote(args) {
       const confirmTitle = "보건일지 삭제";
       const confirmMessage = "선택하신 보건일지 내역을 삭제하시겠습니까?";
       const infoMessage = "보건일지 내역이 정상적으로 삭제되었습니다";
-      debugger
+      
       const yesCallback = async () => {
         const response = await axios.post(`${BASE_URL}/api/workNote/deleteWorkNote`, {
           rowId: selectedWorkNote.id,

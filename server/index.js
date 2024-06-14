@@ -1086,7 +1086,20 @@ app.post("/api/workSchedule/update", async (req, res) => {
     const sqlQuery = "UPDATE teaform_db.workSchedule SET eventTitle = ?, eventColor = ?, eventStartDate = ?, eventEndDate = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
     db.query(sqlQuery, [eventTitle, eventColor, eventStartDate, eventEndDate, userId, schoolCode, eventId], (err, result) => {
         if(err) {
-            console.log("보건일정 Update 처리 중 ERROR", err);
+            console.log("보건일정 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/api/workSchedule/deleteSchedule", async (req, res) => {
+    const { userId, schoolCode, eventId } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.workSchedule WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [userId, schoolCode, eventId], (err, result) => {
+        if(err) {
+            console.log("보건일정 DELETE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }
