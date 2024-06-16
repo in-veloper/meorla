@@ -7,7 +7,7 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
     const [gridRef, setGridRef] = useState(null);
     const symptomTagifyRef = useRef();
     const medicationTagifyRef = useRef();
-    const actionMatterTagifyRef = useRef();
+    const bodyPartsTagifyRef = useRef();
     const treatmentMatterTagifyRef = useRef();
     const baseTagifySettings = {
         blacklist: [],
@@ -15,7 +15,7 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
         backspace: true,                  // true: 마지막 Tag 삭제, edit: 마지막 태그 Edit, false: 아무 동작 하지 않음
         placeholder: category === "symptomTagField" ? "증상을 입력하세요" : 
                      category === "medicationTagField" ? "투약사항을 입력하세요" :
-                     category === "actionMatterTagField" ? "조치 및 교육사항을 입력하세요" :
+                     category === "bodyPartsTagField" ? "인체 부위를 입력하세요" :
                      category === "treatmentMatterTagField" ? "처치사항을 입력하세요" : "",
         editTags: 1,
         dropdown: {
@@ -29,7 +29,7 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
         if(suggestions) {
             if(category === "symptomTagField") symptomTagifyRef.current.settings.whitelist = suggestions;
             if(category === "medicationTagField") medicationTagifyRef.current.settings.whitelist = suggestions;
-            if(category === "actionMatterTagField") actionMatterTagifyRef.current.settings.whitelist = suggestions;
+            if(category === "bodyPartsTagField") bodyPartsTagifyRef.current.settings.whitelist = suggestions;
             if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.settings.whitelist = suggestions;
         }
     }, [suggestions, category]);
@@ -47,7 +47,7 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
         if(selectedRowValue.type === "add" && selectedRowValue.text) {
             if(category === "symptomTagField") symptomTagifyRef.current.addTags(selectedRowValue.text);
             if(category === "medicationTagField") medicationTagifyRef.current.addTags(selectedRowValue.text);
-            if(category === "actionMatterTagField") actionMatterTagifyRef.current.addTags(selectedRowValue.text);
+            if(category === "bodyPartsTagField") bodyPartsTagifyRef.current.addTags(selectedRowValue.text);
             if(category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.addTags(selectedRowValue.text);
         }
 
@@ -74,12 +74,12 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
             if(selectedRowValue.type === "update" && whitelist.length > 0) {
                 if (category === "symptomTagField") symptomTagifyRef.current.removeAllTags();
                 if (category === "medicationTagField") medicationTagifyRef.current.removeAllTags();
-                if (category === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
+                if (category === "bodyPartsTagField") bodyPartsTagifyRef.current.removeAllTags();
                 if (category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
 
                 if (category === "symptomTagField") symptomTagifyRef.current.addTags(selectedRowValue.text);
                 if (category === "medicationTagField") medicationTagifyRef.current.addTags(selectedRowValue.text);
-                if (category === "actionMatterTagField") actionMatterTagifyRef.current.addTags(selectedRowValue.text);
+                if (category === "bodyPartsTagField") bodyPartsTagifyRef.current.addTags(selectedRowValue.text);
                 if (category === "treatmentMatterTagField") treatmentMatterTagifyRef.current.addTags(selectedRowValue.text);
             }
 
@@ -94,12 +94,12 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
         if(selectedRowValue.clearTargetField === 'all') {
             if(symptomTagifyRef.current) symptomTagifyRef.current.removeAllTags();
             if(medicationTagifyRef.current) medicationTagifyRef.current.removeAllTags();
-            if(actionMatterTagifyRef.current) actionMatterTagifyRef.current.removeAllTags();
+            if(bodyPartsTagifyRef.current) bodyPartsTagifyRef.current.removeAllTags();
             if(treatmentMatterTagifyRef.current) treatmentMatterTagifyRef.current.removeAllTags();
         }else if(selectedRowValue.clearTargetField === category){
             if(clearField === "symptomTagField") symptomTagifyRef.current.removeAllTags();
             if(clearField === "medicationTagField") medicationTagifyRef.current.removeAllTags();
-            if(clearField === "actionMatterTagField") actionMatterTagifyRef.current.removeAllTags();
+            if(clearField === "bodyPartsTagField") bodyPartsTagifyRef.current.removeAllTags();
             if(clearField === "treatmentMatterTagField") treatmentMatterTagifyRef.current.removeAllTags();
         }
     };
@@ -138,10 +138,10 @@ function TagField({ suggestions = [], selectedRowValue, tagifyGridRef, category,
                 <Tags tagifyRef={medicationTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />
             </div>
         );
-    }else if(category === "actionMatterTagField") {
+    }else if(category === "bodyPartsTagField") {
         return (
             <div className="form-group" style={{ marginBottom: 0 }}>
-                <Tags tagifyRef={actionMatterTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />
+                <Tags tagifyRef={bodyPartsTagifyRef} settings={settings} tagifyGridRef={tagifyGridRef} />
             </div>
         );
     }else if(category === "treatmentMatterTagField") {

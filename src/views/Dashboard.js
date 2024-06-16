@@ -168,13 +168,13 @@ function Dashboard() {
   const modules = {
     toolbar: [
       [{ header: [1, 2, false] }],
+      [{ align: [] }, { color: [] }, { background: [] }], // dropdown with defaults from theme
       ["bold", "italic", "underline", "strike"],
       [
         { list: "ordered" },
         { list: "bullet" }
       ],
-      ["link", "image"],
-      [{ align: [] }, { color: [] }, { background: [] }], // dropdown with defaults from theme
+      ["image"],
     ],
   };
 
@@ -304,7 +304,7 @@ function Dashboard() {
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">
                 <Col md="6">
-                  <b className="text-muted" style={{ fontSize: '17px' }}>침상안정 신청내역</b>
+                  <b className="text-muted" style={{ fontSize: '17px' }}>보건실 방문 요청 내역</b>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end text-muted">
                   <b onClick={() => navigate('/meorla/workNote')} style={{ cursor: 'pointer' }}>MORE</b>
@@ -318,7 +318,7 @@ function Dashboard() {
                   ref={visitRequestGridRef}
                   rowData={visitRequestList}
                   columnDefs={visitRequestColumnDefs}
-                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">침상안정 신청내역이 없습니다</span>' } 
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">보건실 방문 요청 내역이 없습니다</span>' } 
                 />
               </div>
             </Card>
@@ -393,7 +393,7 @@ function Dashboard() {
               </div>
             </Card>
           </Col>
-          <Col md="4">
+          <Col md="4" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
             <CardTitle style={{ marginBottom: 10 }}>
               <Row className="no-gutters">
                 <Col md="6">
@@ -405,11 +405,11 @@ function Dashboard() {
                 </Col>
               </Row>
             </CardTitle>
-            <Card>
-              <div style={{ height: '20.6vh'}}>
+            <Card style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ flex: '1 1 auto' }}>
                 <ReactQuill
                   ref={quillRef}
-                  style={{ height: "17.1vh" }}
+                  style={{ height: "100%", flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}
                   theme="snow"
                   modules={modules}
                   formats={formats}

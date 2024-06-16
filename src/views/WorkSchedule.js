@@ -25,7 +25,6 @@ function WorkSchedule() {
   const [searchEventEndDate, setSearchEventEndDate] = useState("");
   const [searchEventTitle, setSearchEventTitle] = useState("");
   const [selectedWorkSchedule, setSelectedWorkSchedule] = useState(null);
-  const [isGridSelected, setIsGridSelected] = useState(false);
 
   const calendarRef = useRef(null);
   const todayGridRef = useRef(null);
@@ -272,7 +271,7 @@ function WorkSchedule() {
         const selectedRow = api.getSelectedRows()[0];
         if(selectedRow) setSelectedWorkSchedule(selectedRow);
 
-        showLeftMenu({
+        showRightMenu({
           event,
           props: {
             key: 'value'

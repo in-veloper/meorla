@@ -49,7 +49,7 @@ function User() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [verificationCode, setVerificationCode] = useState('');
 
-  const gridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
+  const studentTableGridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
 
   // 등록한 명렬표 출력 Grid Column 정의
@@ -165,7 +165,7 @@ function User() {
   };
   
   // 명렬표 Upload 위해 템플릿(Excel 형식) 다운로드 Function
-  const handleDownloadTemplate = async () => {
+  const handleDownloadStudentTemplate = async () => {
     const workbook = new ExcelJS.Workbook();                        // workbook 생성
     const worksheet = workbook.addWorksheet("Sheet1");              // worksheet 생성
 
@@ -193,6 +193,43 @@ function User() {
     const buffer = await workbook.xlsx.writeBuffer();   // buffer 쓰기 처리 (파일로 쓰기)
     const blob = new Blob([buffer], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
     const fileName = "명렬표 템플릿.xlsx";                  // 다운로드할 파일 이름 설정
+
+    const link = document.createElement("a");           // 다울로드할 수 있는 a 요소 획득
+    link.href = window.URL.createObjectURL(blob);       // a 태그의 href 설정
+    link.download = fileName;                           // 선택한 파일의 다운로드는 fileName으로 설정
+    document.body.appendChild(link);                    // 위에서 생성한 link 추가
+    link.click();                                       // link 강제 Click
+    document.body.removeChild(link);                    // 필요없는 link 삭제 
+  };
+
+  const handleDownloadTeacherTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();                        // workbook 생성
+    const worksheet = workbook.addWorksheet("Sheet1");              // worksheet 생성
+
+    const data = [["이름", "학년", "반", "교과목", "연락처"]];            // 위 worksheet에 입력할 데이터 (컬럼)
+
+    worksheet.addRows(data);                                        // 생성한 Row 추가
+
+    const headerRow = worksheet.getRow(1);                          // Header Row 획득
+    headerRow.eachCell((cell) => {                                  // 템플릿 style 설정
+      cell.fill = {
+        type: "pattern",
+        pattern: 'solid',
+        fgColor: { argb: "C0C0C0"}
+      };
+      cell.border = {                                               // Cell Border 적용
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+      
+      cell.alignment = { horizontal: "center", vertical: "middle" };  // 중앙 정렬 적용
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();   // buffer 쓰기 처리 (파일로 쓰기)
+    const blob = new Blob([buffer], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const fileName = "교직원 템플릿.xlsx";                  // 다운로드할 파일 이름 설정
 
     const link = document.createElement("a");           // 다울로드할 수 있는 a 요소 획득
     link.href = window.URL.createObjectURL(blob);       // a 태그의 href 설정
@@ -595,7 +632,7 @@ function User() {
   };
 
   const sendVerificationCode = async () => {
-    Block.dots('.passwordSettingModal');
+    Block.dots('.passwordSettingModal', '인증코드 메일 발송중');
 
     try {
       const response = await axios.post(`${BASE_URL}/api/send-password-reset-code`, { 
@@ -633,7 +670,6 @@ function User() {
   };
   
   const handleVerifyCode = () => {
-    debugger
     if (verificationCode === emailCode) {
       axios.post(`${BASE_URL}/api/reset-password`, { userId: user.userId })
         .then((response) => {
@@ -670,6 +706,37 @@ function User() {
     };
 
     NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '430px');
+  };
+
+  const addStudent = () => {
+
+  };
+
+  const deleteStudent = async () => {
+    const selectedRow = studentTableGridRef.current.api.getSelectedRows()[0];
+
+    if(selectedRow) {
+      const response = await axios.post(`${BASE_URL}/api/studentsTable/deleteStudentInfo`, {
+        rowId: selectedRow.id,
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        sGrade: selectedRow.sGrade,
+        sClass: selectedRow.sClass,
+        sNumber: selectedRow.sNumber,
+        sGender: selectedRow.sGender,
+        sName: selectedRow.sName
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "학생이 명렬표에서 정상적으로 삭제되었습니다";
+        NotiflixInfo(infoMessage, true, '330px');
+        // 명렬표 새로 fetch 받는 로직 필요
+      }
+    }else{
+      const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }
   };
 
   return (
@@ -931,7 +998,7 @@ function User() {
                     <Col md="3">
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
-                          <Button className="user-inner-button" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button className="user-inner-button" onClick={handleDownloadStudentTemplate}>템플릿 다운로드</Button>
                           <Button className="user-inner-button" onClick={onBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
                         </ButtonGroup>
                       </Row>
@@ -948,7 +1015,7 @@ function User() {
                     <Col md="3">
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
-                          <Button className="user-inner-button" onClick={handleDownloadTemplate}>템플릿 다운로드</Button>
+                          <Button className="user-inner-button" onClick={handleDownloadTeacherTemplate}>템플릿 다운로드</Button>
                           <Button className="user-inner-button" onClick={onBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
                         </ButtonGroup>
                       </Row>
@@ -960,14 +1027,21 @@ function User() {
                     <ModalBody>
                       <div className="ag-theme-alpine" style={{ height: '25vh' }}>
                         <AgGridReact
-                          ref={gridRef}
+                          ref={studentTableGridRef}
                           rowData={modalData} 
                           columnDefs={ntColumnDefs} 
+                          rowSelection="single"
                         />
                       </div>
                     </ModalBody>
-                    <ModalFooter>
-                      <Button color="secondary" onClick={toggleModal}>닫기</Button>
+                    <ModalFooter className="pt-0 pb-0">
+                      <Row className="d-flex align-items-center no-gutters w-100">
+                        <Col className="d-flex justify-content-start">
+                          <Button className="mr-1" onClick={addStudent}>추가</Button>
+                          <Button onClick={deleteStudent}>삭제</Button>
+                        </Col>
+                          <Button color="secondary" onClick={toggleModal}>닫기</Button>
+                      </Row>
                     </ModalFooter>
                   </Modal>
                 </Form>

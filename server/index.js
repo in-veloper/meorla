@@ -160,7 +160,25 @@ app.post("/api/user/insert", async (req, res) => {
         if(err) {
             console.log("회원가입 데이터 Insert 중 ERROR" + err);
         }else{
-            res.send('success');
+            const bodyPartSelectQuery = "SELECT bodyPart FROM teaform_db.physicalInfo";
+            db.query(bodyPartSelectQuery, (err, bodyPartsSelectResult) => {
+                if(err) {
+                    console.log("회원 가입 중 인체 부위 INSERT 내 조회 중 ERROR", err);
+                }else{
+                    const bodyPartsArray = bodyPartsSelectResult.map(item => item.bodyPart);
+                    const bodyPartsString = bodyPartsArray.join("::");  // 구분자 :: 로 결합
+
+                    // bodyParts 테이블에 값 저장
+                    const bodyPartsInsertQuery = "INSERT INTO teaform_db.bodyParts (userId, schoolCode, bodyParts) VALUES (?,?,?)";
+                    db.query(bodyPartsInsertQuery, [userId, schoolCode, bodyPartsString], (err, bodyPartsInsertResult) => {
+                        if(err) {
+                            console.log("회원가입 중 인체 부위 INSERT 처리 중 ERROR", err);
+                        }else{
+                            res.send('success');
+                        }
+                    });
+                }
+            });
         }
     });
 });
@@ -616,6 +634,19 @@ app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) =
     });
 });
 
+app.post("/api/studentsTable/deleteStudentInfo", async (req, res) => {
+    const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.students WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+        if(err) {
+            console.log("명렬표 학생 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.post("/api/symptom/insert", async (req, res) => {
     const { userId, schoolCode, symptomString } = req.body;
 
@@ -661,11 +692,11 @@ app.get("/api/symptom/getSymptom", async (req, res) => {
     });
 });
 
-app.post("/api/actionMatter/insert", async (req, res) => {
-    const { userId, schoolCode, actionMatterString } = req.body;
+app.post("/api/bodyParts/insert", async (req, res) => {
+    const { userId, schoolCode, bodyPartsString } = req.body;
 
-    const sqlQuery = "INSERT INTO teaform_db.actionMatter (userId, schoolCode, actionMatter) VALUES (?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, actionMatterString], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.bodyParts (userId, schoolCode, bodyParts) VALUES (?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, bodyPartsString], (err, result) => {
         if(err) {
             console.log("조치사항 데이터 Insert 중 ERROR" + err);
         }else{
@@ -675,11 +706,11 @@ app.post("/api/actionMatter/insert", async (req, res) => {
     });
 });
 
-app.post("/api/actionMatter/update", async (req, res) => {
-    const { userId, schoolCode, actionMatterString } = req.body;
+app.post("/api/bodyParts/update", async (req, res) => {
+    const { userId, schoolCode, bodyPartsString } = req.body;
 
-    const sqlQuery = "UPDATE teaform_db.actionMatter SET actionMatter = ? WHERE userId = ? AND schoolCode = ?";
-    db.query(sqlQuery, [actionMatterString, userId, schoolCode], (err, result) => {
+    const sqlQuery = "UPDATE teaform_db.bodyParts SET bodyParts = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [bodyPartsString, userId, schoolCode], (err, result) => {
         if(err) {
             console.log("조치사항 데이터 Insert 중 ERROR" + err);
         }else{
@@ -688,19 +719,19 @@ app.post("/api/actionMatter/update", async (req, res) => {
     });
 });
 
-app.get("/api/actionMatter/getActionMatter", async (req, res) => {
+app.get("/api/bodyParts/getBodyParts", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
-    const sqlQuery = "SELECT * FROM teaform_db.actionMatter WHERE userId = ? AND schoolCode = ?";
+    const sqlQuery = "SELECT bodyParts FROM teaform_db.bodyParts WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("조치사항 데이터 조회 중 ERROR" + err);
         }else{
             if(result.length > 0) {
-                const actionMatter = result[0];
-                res.json({ actionMatter });
+                const bodyParts = result[0];
+                res.json({ bodyParts });
             }else{
-                res.json({ actionMatter: 'N' });
+                res.json({ bodyParts: 'N' });
             }
         }
     });
@@ -1016,10 +1047,10 @@ app.get("/api/workNote/getStockMedication", async (req, res) => {
 });
 
 app.post("/api/workNote/saveWorkNote", async (req, res) => {
-    const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
+    const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
 
-    const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
+    const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
         if(err) {
             console.log("보건일지 INSERT 처리 중 ERROR", err);
         }else{
@@ -1029,10 +1060,10 @@ app.post("/api/workNote/saveWorkNote", async (req, res) => {
 });
 
 app.post("/api/workNote/updateWorkNote", async (req, res) => {
-    const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
+    const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
 
-    const sqlQuery = "UPDATE teaform_db.workNote SET symptom = ?, medication = ?, actionMatter = ?, treatmentMatter = ?, onBedStartTime = ?, onBedEndTime = ?, temperature = ?, bloodPressure = ?, pulse = ?, oxygenSaturation = ?, bloodSugar = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [symptom, medication, actionMatter, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+    const sqlQuery = "UPDATE teaform_db.workNote SET symptom = ?, medication = ?, bodyParts = ?, treatmentMatter = ?, onBedStartTime = ?, onBedEndTime = ?, temperature = ?, bloodPressure = ?, pulse = ?, oxygenSaturation = ?, bloodSugar = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
         if(err) {
             console.log("보건일지 UPDATE 처리 중 ERROR", err);
         }else{

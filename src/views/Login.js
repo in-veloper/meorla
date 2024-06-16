@@ -21,6 +21,7 @@ import carouselImage1 from '../assets/img/carousel/carousel_test_1.jpg';
 import carouselImage2 from '../assets/img/carousel/carousel_test_2.jpg';
 import carouselImage3 from '../assets/img/carousel/carousel_test_3.jpg';
 import '../assets/css/login.css';
+import { Block } from 'notiflix';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const neis = new Neis({ KEY : "1addcd8b3de24aa5920d79df1bbe2ece", Type : "json" });
@@ -84,18 +85,23 @@ function Login() {
     };
 
     const sendVerificationCode = async () => {
+        Block.dots('#registForm', '인증코드 메일 발송중');
+
         try {
             const response = await axios.post(`${BASE_URL}/api/send-email-verification`, { email });
             if (response.data.success) {
                 setVerificationCode(response.data.code);
                 setTimeLeft(180); // 3분
                 setIsCodeSent(true);
+                Block.remove('#registForm');
             } else {
                 const warnMessage = "인증 코드 전송에 실패했습니다<br/>다시 시도해주세요";
                 NotiflixWarn(warnMessage);
             }
         } catch (error) {
             console.log("인증코드 전송 중 ERROR", error);
+        }finally{
+            Block.remove('#registForm');
         }
     };
 
@@ -317,7 +323,7 @@ function Login() {
                 const reader = new FileReader();
                 reader.onload = async () => {
                     const arrayBuffer = reader.result;
-                    debugger
+                    
                     const asn1 = asn1js.fromBER(arrayBuffer);
                     const certificate = new Certificate({ schema: asn1.result });
 
@@ -417,7 +423,7 @@ function Login() {
             <Container id="container">
                 <Row>
                     <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`} style={{ overflowY: 'auto' }}>
-                        <Form action="registUser">
+                        <Form id="registForm" action="registUser">
                             {/* <h5>회원가입</h5> */}
                             <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', border: '2px dashed grey', padding: '10px', marginBottom: '10px', textAlign: 'center' }}>
                                 <input {...getInputProps()}/>

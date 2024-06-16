@@ -4,7 +4,7 @@ import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { GiBed } from "react-icons/gi";
+import { GiAlligatorClip, GiBed } from "react-icons/gi";
 import { BiMenu } from "react-icons/bi";
 import { RiSearchLine } from "react-icons/ri";
 import { IoMdRefresh } from "react-icons/io";
@@ -22,6 +22,8 @@ import EmergencyModal from "components/Modal/EmergencyModal";
 import axios from "axios";
 import moment from "moment";
 import { getSocket } from "components/Socket/socket";
+import { SiMicrosoftexcel } from "react-icons/si";
+import { TiPrinter } from "react-icons/ti";
 import '../assets/css/worknote.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -34,13 +36,13 @@ function WorkNote(args) {
   const [searchStudentRowData, setSearchStudentRowData] = useState([]); // 검색 결과를 저장할 state
   const [symptomRowData, setSymptomRowData] = useState([]);
   const [medicationRowData, setMedicationRowData] = useState([]);
-  const [actionMatterRowData, setActionMatterRowData] = useState([]);
+  const [bodyPartsRowData, setBodyPartsRowData] = useState([]);
   const [treatmentMatterRowData, setTreatmentMatterRowData] = useState([]);
   const [searchCriteria, setSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [symptomModal, setSymptomModal] = useState(false);
   const [medicationModal, setMedicationModal] = useState(false);
-  const [actionMatterModal, setActionMatterModal] = useState(false);
+  const [bodyPartsModal, setBodyPartsModal] = useState(false);
   const [treatmentMatterModal, setTreatmentMatterModal] = useState(false);
   const [isRemoved, setIsRemoved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -48,12 +50,12 @@ function WorkNote(args) {
   const [filteredSymptom, setFilteredSymptom] = useState(symptomRowData);
   const [tagifySymptomSuggestion, setTagifySymptomSuggestion] = useState([]);
   const [tagifyMedicationSuggestion, setTagifyMedicationSuggestion] = useState([]);
-  const [tagifyActionMatterSuggestion, setTagifyActionMatterSuggestion] = useState([]);
+  const [tagifyBodyPartsSuggestion, setTagifyBodyPartsSuggestion] = useState([]);
   const [tagifyTreatmentMatterSuggestion, setTagifyTreatmentMatterSuggestion] = useState([]);
   const [searchMedicationText, setSearchMedicationText] = useState("");
   const [filteredMedication, setFilteredMedication] = useState(medicationRowData);
-  const [searchActionMatterText, setSearchActionMatterText] = useState("");
-  const [filteredActionMatter, setFilteredActionMatter] = useState(actionMatterRowData);
+  const [searchBodyPartsText, setSearchBodyPartsText] = useState("");
+  const [filteredBodyParts, setFilteredBodyParts] = useState(bodyPartsRowData);
   const [searchTreatmentMatterText, setSearchTreatmentMatterText] = useState("");
   const [filteredTreatmentMatter, setFilteredTreatmentMatter] = useState(treatmentMatterRowData);
   const [masked, setMasked] = useState(false);
@@ -83,7 +85,7 @@ function WorkNote(args) {
   const registeredAllGridRef = useRef();
   const symptomGridRef = useRef();
   const medicationGridRef = useRef();
-  const actionMatterGridRef = useRef();
+  const bodyPartsGridRef = useRef();
   const treatmentMatterGridRef = useRef();
   const notificationAlert = useRef();
 
@@ -101,7 +103,7 @@ function WorkNote(args) {
 
   const toggleSymptomModal = () => setSymptomModal(!symptomModal);
   const toggleMedicationModal = () => setMedicationModal(!medicationModal);
-  const toggleActionMatterModal = () => setActionMatterModal(!actionMatterModal);
+  const toggleBodyPartsModal = () => setBodyPartsModal(!bodyPartsModal);
   const toggleTreatmentMatterModal = () => setTreatmentMatterModal(!treatmentMatterModal);
   const toggleVisitRequestTooltip = () => setVisitRequestTooltipOpen(!visitRequestTooltipOpen);
 
@@ -133,9 +135,9 @@ function WorkNote(args) {
   const [personalStudentColumnDefs] = useState([
     { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "treatmentMatter", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "bodyParts", headerName: "인체 부위", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "note", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
@@ -148,9 +150,9 @@ function WorkNote(args) {
     { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "treatmentMatter", headerName: "처치사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "bodyParts", headerName: "인체 부위", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "medication", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" }},
-    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
@@ -177,8 +179,8 @@ function WorkNote(args) {
     { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "left" } }
   ]);
 
-  const [actionMatterColumnDefs] = useState([
-    { field: "actionMatter", headerName: "조치 및 교육사항", flex: 1, cellStyle: { textAlign: "left" } }
+  const [bodyPartsColumnDefs] = useState([
+    { field: "bodyParts", headerName: "인체 부위", flex: 1, cellStyle: { textAlign: "left" } }
   ]);
 
   const [treatmentMatterColumnDefs] = useState([
@@ -203,9 +205,9 @@ function WorkNote(args) {
     return newData;
   };
 
-  const createNewActionMatterRowData = () => {
+  const createNewbodyPartsRowData = () => {
     const newData = {
-      actionMatter: "",
+      bodyParts: "",
       editable: true
     }
     return newData;
@@ -245,10 +247,10 @@ function WorkNote(args) {
   }, []);
 
     // Grid 행 추가 Function
-  const appendActionMatterRow = useCallback(() => {
-    const api = actionMatterGridRef.current.api;                                          // api 획득
+  const appendBodyPartsRow = useCallback(() => {
+    const api = bodyPartsGridRef.current.api;                                          // api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
-    const newItem = [createNewActionMatterRowData()];                                     // 추가할 행 데이터 획득
+    const newItem = [createNewbodyPartsRowData()];                                     // 추가할 행 데이터 획득
 
     api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
     api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
@@ -296,8 +298,8 @@ function WorkNote(args) {
     if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'medication' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
   }, [isRemoved, isRegistered]);
 
-  const onActionMatterRowDataUpdated = useCallback(() => {
-    const api = actionMatterGridRef.current.api;
+  const onbodyPartsRowDataUpdated = useCallback(() => {
+    const api = bodyPartsGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount();
     const lastRowIndex = displayedRowCount - 1;
 
@@ -306,7 +308,7 @@ function WorkNote(args) {
       return;
     }
 
-    if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'actionMatter' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
+    if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'bodyParts' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
   }, [isRemoved, isRegistered]);
 
   const onTreatmentMatterRowDataUpdated = useCallback(() => {
@@ -360,8 +362,8 @@ function WorkNote(args) {
   };
 
   // Grid 행 삭제 Function
-  const removeActionMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
-    const api = actionMatterGridRef.current.api;                                          // api 획득
+  const removeBodyPartsRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = bodyPartsGridRef.current.api;                                          // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
     const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
 
@@ -420,13 +422,13 @@ function WorkNote(args) {
   };
 
   // Grid 행 전체 삭제 Function
-  const allActionMatterRemoveRow = () => {
-    const api = actionMatterGridRef.current.api;
+  const allBodyPartsRemoveRow = () => {
+    const api = bodyPartsGridRef.current.api;
     const displayedRowCount = api.getDisplayedRowCount(); // 현재 Grid에 출력된 행 수
-    const warnMessage = "등록된 조치 및 교육사항이 없습니다";
+    const warnMessage = "등록된 인체 부위 사항이 없습니다";
 
     if(displayedRowCount === 0) {                         // 현재 등록된 투약사항이 없을 경우
-      // 등록된 투약사항 없음 Notify
+      // 등록된 인체부위 없음 Notify
       NotiflixWarn(warnMessage);
       return;                                             // return
     }else{                                                // 등록된 투약사항이 있을 경우
@@ -545,9 +547,9 @@ function WorkNote(args) {
     fetchStockMedicineData();
   };
 
-  const handleActionMatter = () => {
-    toggleActionMatterModal();
-    fetchActionMatterData();
+  const handleBodyParts = () => {
+    toggleBodyPartsModal();
+    fetchBodyPartsData();
   };
 
   const handleTreatmentMatter = () => {
@@ -573,7 +575,7 @@ function WorkNote(args) {
         if(symptom.length !== 0 && user) symptomString += symptom + "::";
         
       });
-      symptomString = symptomString.slice(0, -2);
+      if(symptomString.endsWith("::")) symptomString = symptomString.slice(0, -2);
       
       let response = null;                  // response 데이터 담을 변수
       if(symptomRowData.length > 0) {       // 등록된 증상이 있는 경우 - Update
@@ -622,7 +624,7 @@ function WorkNote(args) {
         if(medication.length !== 0 && user) medicationString += medication + "::";
         
       });
-      medicationString = medicationString.slice(0, -2);
+      if(medicationString.endsWith("::")) medicationString = medicationString.slice(0, -2);
       
       let response = null;                     // response 데이터 담을 변수
       if(medicationRowData.length > 0) {       // 등록된 투약사항이 있는 경우 - Update
@@ -653,44 +655,45 @@ function WorkNote(args) {
     NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
   };
 
-  const saveActionMatter = async (e) => {
+  const saveBodyParts = async (e) => {
     e.preventDefault();
 
-    const confirmTitle = "조치 및 교육사항 설정";
-    const confirmMessage = "작성하신 조치 및 교육사항을 저장하시겠습니까?";
-    const infoMessage = "조치 및 교육사항 설정이 정상적으로 저장되었습니다";
+    const confirmTitle = "인체 부위 설정";
+    const confirmMessage = "작성하신 인체 부위를 저장하시겠습니까?";
+    const infoMessage = "인체 부위 설정이 정상적으로 저장되었습니다";
 
     const yesCallback = async () => {
-      const api = actionMatterGridRef.current.api;                      // Grid api 획득
-      let actionMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
-
+      const api = bodyPartsGridRef.current.api;                      // Grid api 획득
+      let bodyPartsString = "";                                      // Parameter 전송 위한 인체부위 담을 배열
+      
       api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
-        const actionMatter = rowNode.data.actionMatter;                     // 조치사항 획득
+        const bodyParts = rowNode.data.bodyParts;                     // 인체부위 획득
 
-        // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
-        if(actionMatter.length !== 0 && user) actionMatterString += actionMatter + "::";
+        // 인체부위가 존재  && user 데이터 존재 -> Parameter로 전송할 인체부위 데이터 생성
+        if(bodyParts.length !== 0 && user) bodyPartsString += bodyParts + "::";
         
       });
-      actionMatterString = actionMatterString.slice(0, -2);
+
+      if(bodyPartsString.endsWith("::")) bodyPartsString = bodyPartsString.slice(0, -2);
       
       let response = null;                  // response 데이터 담을 변수
-      if(actionMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
-        response = await axios.post(`${BASE_URL}/api/actionMatter/update`, {
+      if(bodyPartsRowData.length > 0) {       // 등록된 인체부위가 있는 경우 - Update
+        response = await axios.post(`${BASE_URL}/api/bodyParts/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          actionMatter: actionMatterString
+          bodyPartsString: bodyPartsString
         });
-      }else{                            // 등록된 증상이 없는 경우 - Insert
-        response = await axios.post(`${BASE_URL}/api/actionMatter/insert`, {
+      }else{                            // 등록된 인체부위가 없는 경우 - Insert
+        response = await axios.post(`${BASE_URL}/api/bodyParts/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          actionMatter: actionMatterString
+          bodyParts: bodyPartsString
         });
       }
       
       if(response.data === "success") {   // Api 호출 성공한 경우
-        fetchActionMatterData();           
-        // 조치사항 정상 저장 Notify
+        fetchBodyPartsData();           
+        // 인체부위 정상 저장 Notify
         NotiflixInfo(infoMessage);
       }
     };
@@ -711,25 +714,25 @@ function WorkNote(args) {
 
     const yesCallback = async () => {
       const api = treatmentMatterGridRef.current.api;                      // Grid api 획득
-      let treatmentMatterString = "";                                      // Parameter 전송 위한 조치사항 담을 배열
+      let treatmentMatterString = "";                                      // Parameter 전송 위한 처치사항 담을 배열
 
       api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
-        const treatmentMatter = rowNode.data.treatmentMatter;                     // 조치사항 획득
+        const treatmentMatter = rowNode.data.treatmentMatter;                     // 처치사항 획득
 
-        // 조치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 조치사항 데이터 생성
+        // 처치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 처치사항 데이터 생성
         if(treatmentMatter.length !== 0 && user) treatmentMatterString += treatmentMatter + "::";
         
       });
-      treatmentMatterString = treatmentMatterString.slice(0, -2);
+      if(treatmentMatterString.endsWith("::")) treatmentMatterString = treatmentMatterString.slice(0, -2);
       
       let response = null;                  // response 데이터 담을 변수
-      if(treatmentMatterRowData.length > 0) {       // 등록된 조치사항이 있는 경우 - Update
+      if(treatmentMatterRowData.length > 0) {       // 등록된 처치사항이 있는 경우 - Update
         response = await axios.post(`${BASE_URL}/api/treatmentMatter/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
           treatmentMatter: treatmentMatterString
         });
-      }else{                            // 등록된 증상이 없는 경우 - Insert
+      }else{                            // 등록된 처치사항이 없는 경우 - Insert
         response = await axios.post(`${BASE_URL}/api/treatmentMatter/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
@@ -739,7 +742,7 @@ function WorkNote(args) {
       
       if(response.data === "success") {   // Api 호출 성공한 경우
         fetchTreatmentMatterData();           
-        // 조치사항 정상 저장 Notify
+        // 처치사항 정상 저장 Notify
         NotiflixInfo(infoMessage);
       }
     };
@@ -786,37 +789,37 @@ function WorkNote(args) {
     }
   }, [user]);
 
-  const fetchActionMatterData = useCallback(async() => {
+  const fetchBodyPartsData = useCallback(async() => {
     try {
       if(user) {
-        const response = await axios.get(`${BASE_URL}/api/actionMatter/getActionMatter`, {
+        const response = await axios.get(`${BASE_URL}/api/bodyParts/getBodyParts`, {
           params: {
             userId: user.userId,
             schoolCode: user.schoolCode
           }
         });
-        
-        if (response.data && response.data.actionMatter) {
-          if(response.data.actionMatter === 'N') return;
 
-          const actionMatterString = response.data.actionMatter.actionMatter;
-          const actionMatterArray = actionMatterString.split('::').map(item => {
-            return { actionMatter: item };
+        if (response.data && response.data.bodyParts) {
+          if(response.data.bodyParts === 'N') return;
+
+          const bodyPartsString = response.data.bodyParts.bodyParts;
+          const bodyPartsArray = bodyPartsString.split('::').map(item => {
+            return { bodyParts: item };
           });
+          
+          setBodyPartsRowData(bodyPartsArray);
+          setFilteredBodyParts(bodyPartsArray);
 
-          setActionMatterRowData(actionMatterArray);
-          setFilteredActionMatter(actionMatterArray);
-
-          const tagifyActionMatterArray = actionMatterString.split('::').map(item => {
+          const tagifyBodyPartsArray = bodyPartsString.split('::').map(item => {
             return item;
           });
 
-          setTagifyActionMatterSuggestion(tagifyActionMatterArray);
+          setTagifyBodyPartsSuggestion(tagifyBodyPartsArray);
           setIsRegistered(true);
         }
       }
     } catch (error) {
-      console.error('조치 및 교육사항 조회 중 ERROR', error);
+      console.error('인체부위 조회 중 ERROR', error);
     }
   }, [user]);
 
@@ -859,8 +862,8 @@ function WorkNote(args) {
   }, [fetchSymptomData]);
 
   useEffect(() => {
-    fetchActionMatterData();
-  }, [fetchActionMatterData]);
+    fetchBodyPartsData();
+  }, [fetchBodyPartsData]);
 
   useEffect(() => {
     fetchTreatmentMatterData();
@@ -869,7 +872,7 @@ function WorkNote(args) {
   const clearSelectedRowValues = () => {
     setSearchSymptomText({});
     setSearchMedicationText({});
-    setSearchActionMatterText({});
+    setSearchBodyPartsText({});
     setSearchTreatmentMatterText({});
   };
 
@@ -893,23 +896,23 @@ function WorkNote(args) {
     }
   };
 
-  // 조치사항 Grid의 Row 선택 Event
-  const handleActionMatterRowSelect = (selectedRow) => {
+  // 인체부위 Grid의 Row 선택 Event
+  const handleBodyPartsRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
       clearSelectedRowValues();
-      const selectedActionMatter = selectedRow[0].actionMatter;   // 선택한 조치사항 Text 값
-      const param = {type: "add", text: selectedActionMatter, clearField: 'N'};
-      setSearchActionMatterText(param);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
+      const selectedBodyParts = selectedRow[0].bodyParts;   // 선택한 인체부위 Text 값
+      const param = {type: "add", text: selectedBodyParts, clearField: 'N'};
+      setSearchBodyPartsText(param);            // input에 선택한 인체부위 값 할당하기 위해 전역변수에 값 할당
     }
   };
 
-  // 조치사항 Grid의 Row 선택 Event
+  // 처치사항 Grid의 Row 선택 Event
   const handleTreatmentMatterRowSelect = (selectedRow) => {
     if(selectedRow && selectedRow.length > 0) {               // Grid에서 선택한 Row가 있는 경우
       clearSelectedRowValues();
-      const selectedTreatmentMatter = selectedRow[0].treatmentMatter;   // 선택한 조치사항 Text 값
+      const selectedTreatmentMatter = selectedRow[0].treatmentMatter;   // 선택한 처치사항 Text 값
       const param = {type: "add", text: selectedTreatmentMatter, clearField: 'N'};
-      setSearchTreatmentMatterText(param);            // input에 선택한 조치사항 값 할당하기 위해 전역변수에 값 할당
+      setSearchTreatmentMatterText(param);            // input에 선택한 처치사항 값 할당하기 위해 전역변수에 값 할당
     }
   };
 
@@ -960,7 +963,7 @@ function WorkNote(args) {
           createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
           symptom: item.symptom.replace(/::/g, ', '),
           medication: item.medication.replace(/::/g, ', '),
-          actionMatter: item.actionMatter.replace(/::/g, ', '),
+          bodyParts: item.bodyParts.replace(/::/g, ', '),
           treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
           onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
         }));
@@ -1361,7 +1364,7 @@ function WorkNote(args) {
       const param = {clearTargetField: targetId};
       setSearchSymptomText(param);
       setSearchMedicationText(param);
-      setSearchActionMatterText(param);
+      setSearchBodyPartsText(param);
       setSearchTreatmentMatterText(param);
     }else if(targetId === "onBedRest") {
       setOnBedRestStartTime("");
@@ -1379,7 +1382,7 @@ function WorkNote(args) {
   const handleClearAllWorkNote = () => {
     setSearchSymptomText({clearTargetField: "all"});
     setSearchMedicationText({clearTargetField: "all"});
-    setSearchActionMatterText({clearTargetField: "all"});
+    setSearchBodyPartsText({clearTargetField: "all"});
     setSearchTreatmentMatterText({clearTargetField: "all"});
     setPersonalStudentRowData([]);
     setSelectedStudent("");
@@ -1403,7 +1406,7 @@ function WorkNote(args) {
 
     let symptomString = "";
     let medicationString = "";
-    let actionMatterString = "";
+    let bodyPartsString = "";
     let treatmentMatterString = "";
     
     const tagFields = document.getElementsByTagName('tags');
@@ -1420,11 +1423,11 @@ function WorkNote(args) {
     }
     medicationString = medicationString.slice(0, -2);
 
-    const actionMatterTagValues = tagFields[2].getElementsByTagName('tag');
-    for(let i = 0; i < actionMatterTagValues.length; i++) {
-      actionMatterString += actionMatterTagValues[i].textContent + "::";
+    const bodyPartsTagValues = tagFields[2].getElementsByTagName('tag');
+    for(let i = 0; i < bodyPartsTagValues.length; i++) {
+      bodyPartsString += bodyPartsTagValues[i].textContent + "::";
     }
-    actionMatterString = actionMatterString.slice(0, -2);
+    bodyPartsString = bodyPartsString.slice(0, -2);
 
     const treatmentMatterTagValues = tagFields[3].getElementsByTagName('tag');
     for(let i = 0; i < treatmentMatterTagValues.length; i++) {
@@ -1483,7 +1486,7 @@ function WorkNote(args) {
           sName: selectedStudent.sName,
           symptom: symptomString,
           medication: medicationString,
-          actionMatter: actionMatterString,
+          bodyParts: bodyPartsString,
           treatmentMatter: treatmentMatterString,
           onBedStartTime: onBedRestStartTime,
           onBedEndTime: onBedRestEndTime,
@@ -1503,7 +1506,7 @@ function WorkNote(args) {
           fetchSelectedStudentData();
           setSearchSymptomText({clearTargetField: "all"});
           setSearchMedicationText({clearTargetField: "all"});
-          setSearchActionMatterText({clearTargetField: "all"});
+          setSearchBodyPartsText({clearTargetField: "all"});
           setSearchTreatmentMatterText({clearTargetField: "all"});
       
           setOnBedRestStartTime("");
@@ -1551,7 +1554,7 @@ function WorkNote(args) {
           createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
           symptom: item.symptom.replace(/::/g, ', '),
           medication: item.medication.replace(/::/g, ', '),
-          actionMatter: item.actionMatter.replace(/::/g, ', '),
+          bodyParts: item.bodyParts.replace(/::/g, ', '),
           treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
           onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
         }));
@@ -1840,7 +1843,7 @@ function WorkNote(args) {
     if(selectedWorkNote) {
       let symptomString = "";
       let medicationString = "";
-      let actionMatterString = "";
+      let bodyPartsString = "";
       let treatmentMatterString = "";
       
       const tagFields = document.getElementsByTagName('tags');
@@ -1857,11 +1860,11 @@ function WorkNote(args) {
       }
       medicationString = medicationString.slice(0, -2);
 
-      const actionMatterTagValues = tagFields[2].getElementsByTagName('tag');
-      for(let i = 0; i < actionMatterTagValues.length; i++) {
-        actionMatterString += actionMatterTagValues[i].textContent + "::";
+      const bodyPartsTagValues = tagFields[2].getElementsByTagName('tag');
+      for(let i = 0; i < bodyPartsTagValues.length; i++) {
+        bodyPartsString += bodyPartsTagValues[i].textContent + "::";
       }
-      actionMatterString = actionMatterString.slice(0, -2);
+      bodyPartsString = bodyPartsString.slice(0, -2);
 
       const treatmentMatterTagValues = tagFields[3].getElementsByTagName('tag');
       for(let i = 0; i < treatmentMatterTagValues.length; i++) {
@@ -1888,7 +1891,7 @@ function WorkNote(args) {
           sName: selectedWorkNote.sName,
           symptom: symptomString,
           medication: medicationString,
-          actionMatter: actionMatterString,
+          bodyParts: bodyPartsString,
           treatmentMatter: treatmentMatterString,
           onBedStartTime: onBedRestStartTime,
           onBedEndTime: onBedRestEndTime,
@@ -1906,7 +1909,7 @@ function WorkNote(args) {
           fetchSelectedStudentData();
           setSearchSymptomText({clearTargetField: "all"});
           setSearchMedicationText({clearTargetField: "all"});
-          setSearchActionMatterText({clearTargetField: "all"});
+          setSearchBodyPartsText({clearTargetField: "all"});
           setSearchTreatmentMatterText({clearTargetField: "all"});
       
           setOnBedRestStartTime("");
@@ -1958,7 +1961,7 @@ function WorkNote(args) {
           fetchSelectedStudentData();
           setSearchSymptomText({clearTargetField: "all"});
           setSearchMedicationText({clearTargetField: "all"});
-          setSearchActionMatterText({clearTargetField: "all"});
+          setSearchBodyPartsText({clearTargetField: "all"});
           setSearchTreatmentMatterText({clearTargetField: "all"});
       
           setOnBedRestStartTime("");
@@ -1991,7 +1994,7 @@ function WorkNote(args) {
       setIsGridRowSelect(true);
       setSearchSymptomText({type: 'update', text: selectedRow.symptom, clearField: 'N'});
       setSearchMedicationText({type: 'update', text: selectedRow.medication, clearField: 'N'});
-      setSearchActionMatterText({type: 'update', text: selectedRow.actionMatter, clearField: 'N'});
+      setSearchBodyPartsText({type: 'update', text: selectedRow.bodyParts, clearField: 'N'});
       setSearchTreatmentMatterText({type: 'update', text: selectedRow.treatmentMatter, clearField: 'N'});
       setTempuratureValue(selectedRow.temperature);
       setBloodPressureValue(selectedRow.bloodPressure);
@@ -2002,6 +2005,23 @@ function WorkNote(args) {
       setOnBedRestStartTime(selectedRow.onBedStartTime);
       setOnBedRestEndTime(selectedRow.onBedEndTime);
     }
+  };
+
+  const onEntireWorkNoteExportCSV = () => {
+    const params = {
+      fileName: '전체 보건일지 내역',
+      // columnSeparator: ';',  // 열 구분 기호 설정 (기본값 : ',')
+      // includeHeaders: true,  // 헤더 포함 여부 (기본값 : true)
+      // allColumns: true,      // 모든 열 포함 여부 (기본값 : false, 현재 표시된 열만 포함)
+      // onlySelected: true,    // 선택된 행만 내보내기 (기본값 : false)
+      // processCellCallback: (params) => params.value.toUpperCase(),               // 셀 값 처리 콜백
+      // processHeaderCallback: (params) => params.column.getColId().toUpperCase(), // 헤더 값 처리 콜백
+    }
+    registeredAllGridRef.current.api.exportDataAsCsv(params);
+  };
+
+  const onEntireWorkNotePrint = () => {
+
   };
 
   return (
@@ -2197,10 +2217,19 @@ function WorkNote(args) {
           <Col className="pl-2" md="8" style={{ height: '76vh', display: 'flex', flexDirection: 'column' }}>
             <Card className="workNoteForm" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', border: '1px solid lightgrey' }}>
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
-                <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
-                <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>
-                  {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
-                </b>
+                <Row className="d-flex align-item-center">
+                  <Col className="d-flex">
+                    <Button className="mt-0 mb-0" size="sm" style={{ fontSize: 13}}>침상안정 사용 학생 내역</Button>
+                  </Col>
+                  <Col>
+                    <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
+                  </Col>
+                  <Col>
+                    <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>
+                      {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
+                    </b>
+                  </Col>
+                </Row>
               </CardHeader>
               <CardBody className="pt-2 pb-1" style={{ display: 'flex', flexDirection: 'column', flex: '1 1 auto' }}>
                 <Row className="pt-2">
@@ -2298,26 +2327,26 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '-3px' }}>인체부위</b>
+                            <b className="action-title" style={{ marginRight: '-10px' }}>인체 부위</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="actionMatterTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
-                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleActionMatter}/>
+                            <IoMdRefresh id="bodyPartsTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
+                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleBodyParts}/>
                           </Col>
                         </Row>
                       </CardHeader>
                       <CardBody className="p-0" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
-                        <TagField name="actionMatter" suggestions={tagifyActionMatterSuggestion} selectedRowValue={searchActionMatterText} tagifyGridRef={actionMatterGridRef} category="actionMatterTagField" clearField="actionMatterTagField" />
+                        <TagField name="bodyParts" suggestions={tagifyBodyPartsSuggestion} selectedRowValue={searchBodyPartsText} tagifyGridRef={bodyPartsGridRef} category="bodyPartsTagField" clearField="bodyPartsTagField" />
                         <div className="ag-theme-alpine" style={{ flex: '1 1 auto' }}>
                           <AgGridReact
                             rowHeight={30}
-                            ref={actionMatterGridRef}
-                            rowData={filteredActionMatter} 
-                            columnDefs={actionMatterColumnDefs}
+                            ref={bodyPartsGridRef}
+                            rowData={filteredBodyParts} 
+                            columnDefs={bodyPartsColumnDefs}
                             headerHeight={0}
                             suppressHorizontalScroll={true}
                             overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                            onSelectionChanged={(event) => handleActionMatterRowSelect(event.api.getSelectedRows())}
+                            onSelectionChanged={(event) => handleBodyPartsRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
                           />
                         </div>
@@ -2331,7 +2360,7 @@ function WorkNote(args) {
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: -27}}>처치 및 교육사항</b>
+                            <b className="action-title" style={{ marginRight: '-17px' }}>처치 및 교육사항</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="treatmentMatterTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />
@@ -2498,8 +2527,14 @@ function WorkNote(args) {
             <CardHeader>
               <Row className="d-flex align-items-center">
                 <Col md="4">
-                  <Button className="mr-1" size="sm">저장</Button>
-                  <Button size="sm">프린트</Button>
+                  <Button className="mr-1" size="sm" onClick={onEntireWorkNoteExportCSV}>
+                    <SiMicrosoftexcel className="mr-1" style={{ color: 'green', fontSize: 15 }}/>
+                    엑셀 다운로드
+                  </Button>
+                  <Button size="sm" onClick={onEntireWorkNotePrint}>
+                    <TiPrinter className="mr-1" style={{ fontSize: 16, color: 'gray' }}/>
+                    프린트
+                  </Button>
                 </Col>
                 <Col className="d-flex align-items-center justify-content-end" md="8">
                   <label className="mr-1 pt-1">작성일</label>
@@ -2535,7 +2570,7 @@ function WorkNote(args) {
               </Row>
             </CardHeader>
             <CardBody className="pt-0">
-              <div className="ag-theme-alpine" style={{ height: '47.5vh' }}>
+              <div className="ag-theme-alpine" id="entireWorkNoteGrid" style={{ height: '47.5vh' }}>
                 <AgGridReact
                   ref={registeredAllGridRef}
                   rowData={entireWorkNoteRowData}
@@ -2643,20 +2678,20 @@ function WorkNote(args) {
           </ModalFooter>
        </Modal>
 
-       <Modal isOpen={actionMatterModal} toggle={toggleActionMatterModal} centered style={{ minWidth: '20%' }}>
-          <ModalHeader toggle={toggleActionMatterModal}><b>조치 및 교육사항 설정</b></ModalHeader>
+       <Modal isOpen={bodyPartsModal} toggle={toggleBodyPartsModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={toggleBodyPartsModal}><b>인체 부위 설정</b></ModalHeader>
           <ModalBody className="pb-0">
-            <Form onSubmit={saveActionMatter}>
+            <Form onSubmit={saveBodyParts}>
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact
-                  ref={actionMatterGridRef}
-                  rowData={filteredActionMatter}
-                  columnDefs={actionMatterColumnDefs}
+                  ref={bodyPartsGridRef}
+                  rowData={filteredBodyParts}
+                  columnDefs={bodyPartsColumnDefs}
                   stopEditingWhenCellsLoseFocus={true}
                   // singleClickEdit={true}
                   paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
                   defaultColDef={defaultColDef}
-                  overlayNoRowsTemplate={ '<span>등록된 조치 및 교육사항이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  overlayNoRowsTemplate={ '<span>등록된 인체 부위 사항이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                   overlayLoadingTemplate={
                     '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
                   }
@@ -2664,28 +2699,28 @@ function WorkNote(args) {
                   rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
                   enterNavigatesVertically={true}
                   enterNavigatesVerticallyAfterEdit={true}
-                  onRowDataUpdated={onActionMatterRowDataUpdated}
+                  onRowDataUpdated={onbodyPartsRowDataUpdated}
                   onCellValueChanged={onCellValueChanged}
                 />
               </div>
             </Form>
             <Row>
               <Col className="justify-content-start no-gutters">
-                <Button className="btn-plus" size="sm" onClick={appendActionMatterRow}>
+                <Button className="btn-plus" size="sm" onClick={appendBodyPartsRow}>
                   추가
                 </Button>
-                <Button className="btn-minus" size="sm" onClick={removeActionMatterRow}>
+                <Button className="btn-minus" size="sm" onClick={removeBodyPartsRow}>
                   삭제
                 </Button>
               </Col>
               <Col>
-                <Button className="btn-allMinus" size="sm" style={{float:'right'}} onClick={allActionMatterRemoveRow}>전체 삭제</Button>
+                <Button className="btn-allMinus" size="sm" style={{float:'right'}} onClick={allBodyPartsRemoveRow}>전체 삭제</Button>
               </Col>
             </Row>
           </ModalBody>
           <ModalFooter>
-            <Button className="mr-1" color="secondary" onClick={saveActionMatter}>저장</Button>
-            <Button color="secondary" onClick={toggleActionMatterModal}>취소</Button>
+            <Button className="mr-1" color="secondary" onClick={saveBodyParts}>저장</Button>
+            <Button color="secondary" onClick={toggleBodyPartsModal}>취소</Button>
           </ModalFooter>
        </Modal>
 
