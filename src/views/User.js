@@ -55,8 +55,11 @@ function User() {
   const [transferStudentName, setTransferStudentName] = useState("");
   const [isRegisteredTeachersTable, setIsRegisteredTeachersTable] = useState(false);
   const [teacherData, setTeacherData] = useState(null);
+  const [isTeacherTableModalOpen, setIsTeacherTableModalOpen] = useState(false);
 
-  const studentTableGridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
+
+  const studentTableGridRef = useRef(null);     
+  const teacherTableGridRef = useRef(null);                                // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
 
   // 등록한 명렬표 출력 Grid Column 정의
@@ -67,19 +70,24 @@ function User() {
     { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
 
+  const [ttColumnDefs] = useState([
+    { field: "tName", headerName: "이름", flex: 1.5, cellStyle: { textAlign: "center" }},
+    { field: "tGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "tClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "tSubject", headerName: "과목", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "tPhone", headerName: "연락처", flex: 2, cellStyle: { textAlign: "center" }}
+  ]);
+
   // 등록한 명렬표 중 학년 선택 시 명렬표 미리보기 Model Open Handle Event
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
-
-  const toggleAddStudentModal = () => {
-    setIsAddStudentModalOpen(!isAddStudentModalOpen);
-    resetTransferStudent();
-  };
-
+  const toggleModal = () => { setIsModalOpen(!isModalOpen); };
   const toggleCommonPasswordSettingModal = () => setCommonPasswordSettingModal(!commonPasswordSettingModal); 
   const togglePasswordSettingModal = () => setPasswordSettingModal(!passwordSettingModal);
+  const toggleTeacherTableModal = () => setIsTeacherTableModalOpen(!isTeacherTableModalOpen);
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
+    const toggleAddStudentModal = () => {
+      setIsAddStudentModalOpen(!isAddStudentModalOpen);
+      resetTransferStudent();
+    };
   const toggleRequestQRcodeModal = () => {
     setRequestQRcodeModal(!requestQRcodeModal);
     if(!requestQRcodeModal) generateQRCode();
@@ -139,7 +147,9 @@ function User() {
             }
           });
 
-          setTeacherData(response.data.teacherData);
+          if(response.data) {
+            setTeacherData(response.data.teacherData);
+          }
         } catch (error) {
           console.log("교직원 데이터 조회 중 ERROR", error);
         }
@@ -874,12 +884,28 @@ function User() {
     setTransferStudentName("");
   };
 
+  const handleTeacherTable = () => {
+    if(teacherData.length > 0) {    // 교직원 정보 등록되어 있는 경우
+      toggleTeacherTableModal();
+    }else{                          // 교직원 정보 등록되어 있지 않은 경우
+      onTeacherBulkRegist();
+    }
+  };
+
+  const addTeacher = () => {
+
+  };
+
+  const deleteTeacher = () => {
+
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Col md="4">
-            <Card className="card-user" style={{ height: '552px'}}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
+            <Card className="card-user" style={{ height: '552px', border: '1px solid lightgray' }}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <input 
                   type="file"
@@ -947,7 +973,7 @@ function User() {
                 </div>
               </CardFooter>
             </Card>
-            <Card>
+            <Card style={{ border: '1px solid lightgray' }}>
               <CardHeader>
                 <CardTitle className="text-muted" tag="h6">관리자 문의</CardTitle>
               </CardHeader>
@@ -987,7 +1013,7 @@ function User() {
             </Card>
           </Col>
           <Col md="8">
-            <Card className="card-user">
+            <Card className="card-user" style={{ border: '1px solid lightgray' }}>
               <CardHeader>
                 <CardTitle className="text-muted" tag="h5"><b>사용자 정보</b></CardTitle>
               </CardHeader>
@@ -1143,7 +1169,7 @@ function User() {
                         <label>교직원 정보</label>
                         <div style={{ marginTop: '-12px'}}>
                         <span className=""></span>
-                          <Button className="btn-outline-default name-table-default"><b>교직원</b></Button>
+                          <Button className={`${teacherData && teacherData.length > 0 ? 'registered-name-table' : 'btn-outline-default name-table-default'}`} onClick={handleTeacherTable}><b>교직원</b></Button>
                         </div>
                       </FormGroup>
                     </Col>
@@ -1233,6 +1259,29 @@ function User() {
                         </Col>
                         <Button className="mr-1" onClick={saveTransferStudent}>저장</Button>
                         <Button onClick={toggleAddStudentModal}>취소</Button>
+                      </Row>
+                    </ModalFooter>
+                  </Modal>
+
+                  <Modal isOpen={isTeacherTableModalOpen} backdrop={true} toggle={toggleTeacherTableModal} centered={true} autoFocus={false}>
+                    <ModalHeader className="text-muted" toggle={toggleTeacherTableModal} closebutton="true">교직원 등록 정보</ModalHeader>
+                    <ModalBody>
+                      <div className="ag-theme-alpine" style={{ height: '25vh' }}>
+                        <AgGridReact
+                          ref={teacherTableGridRef}
+                          rowData={teacherData} 
+                          columnDefs={ttColumnDefs} 
+                          rowSelection="single"
+                        />
+                      </div>
+                    </ModalBody>
+                    <ModalFooter className="pt-0 pb-0">
+                      <Row className="d-flex align-items-center no-gutters w-100">
+                        <Col className="d-flex justify-content-start">
+                          <Button className="mr-1" onClick={addTeacher}>추가</Button>
+                          <Button onClick={deleteTeacher}>삭제</Button>
+                        </Col>
+                          <Button color="secondary" onClick={toggleTeacherTableModal}>닫기</Button>
                       </Row>
                     </ModalFooter>
                   </Modal>

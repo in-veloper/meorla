@@ -1497,6 +1497,19 @@ app.get('/api/manageEmergency/getManageEmergencyData', async (req, res) => {
     });
 });
 
+app.post('/api/manageEmergency/deleteEmergencyManagement', async (req, res) => {
+    const { rowId, userId, schoolCode, sGrade, sClass, sNumber } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.manageEmergency WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ?";
+    db.query(sqlQuery, [rowId, userId, schoolCode, sGrade, sClass, sNumber], (err, result) => {
+        if(err) {
+            console.log("응급학생 내역 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+})
+
 app.post('/api/dashboard/saveMemo', async (req, res) => {
     const { userId, schoolCode, memo } = req.body
 

@@ -1703,13 +1703,20 @@ function WorkNote(args) {
     autoUpdateBedBox();
   }, 1000);
 
-  const handleItemClick = async ({ id, event, props }) => {
+  const handleDiabetesClick = async ({ id, event, props }) => {
     if(id === "registDiagetes" && contextStudentInfo && user) {
       const targetGrade = contextStudentInfo.split(",")[0];
       const targetClass = contextStudentInfo.split(",")[1];
       const targetNumber = contextStudentInfo.split(",")[2];
-      const targetName = contextStudentInfo.split(",")[3];
+      const targetGender = contextStudentInfo.split(",")[3];
+      const targetName = contextStudentInfo.split(",")[4];
       
+      if(targetName.includes("*")) {
+        const warnMessage = "이미 당뇨질환으로 등록된 학생입니다";
+        NotiflixWarn(warnMessage);
+        return;
+      }
+
       const confirmTitle = "당뇨질환학생 등록";
       const confirmMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생을<br/>당뇨질환 학생으로 등록하시겠습니까?";
       
@@ -1739,6 +1746,10 @@ function WorkNote(args) {
     }
   };
 
+  const handleProtectClick = () => {
+
+  };
+
   const getRowStyle = (params) => {
 
   };
@@ -1747,20 +1758,24 @@ function WorkNote(args) {
     if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
       return;
     }else{
-      const selectedGrade = event.target.parentNode.childNodes[0].textContent;
-      const selectedClass = event.target.parentNode.childNodes[1].textContent;
-      const selectedNumber = event.target.parentNode.childNodes[2].textContent;
-      const selectedName = event.target.parentNode.childNodes[3].textContent;
-      const selectedStudentInfo = selectedGrade + "," + selectedClass + "," + selectedNumber + "," + selectedName;
-
-      setContextStudentInfo(selectedStudentInfo);
-
-      showLeftMenu({
-        event,
-        props: {
-            key: 'value'
-        }
-      });
+      const parentNode = event.target.parentNode;
+      if(parentNode) {
+        const selectedGrade = event.target.parentNode.childNodes[0]?.textContent || '';
+        const selectedClass = event.target.parentNode.childNodes[1]?.textContent || '';
+        const selectedNumber = event.target.parentNode.childNodes[2]?.textContent || '';
+        const selectedGender = event.target.parentNode.childNodes[3]?.textContent || '';
+        const selectedName = event.target.parentNode.childNodes[4]?.textContent || '';
+        const selectedStudentInfo = selectedGrade + "," + selectedClass + "," + selectedNumber + "," + selectedGender + "," + selectedName;
+  
+        setContextStudentInfo(selectedStudentInfo);
+  
+        showLeftMenu({
+          event,
+          props: {
+              key: 'value'
+          }
+        });
+      }
     }
   };
 
@@ -2159,8 +2174,8 @@ function WorkNote(args) {
                     </div>
                     <div>
                       <Menu id={MENU_ID_LEFT_GRID} animation="fade">
-                        <Item id="registDiagetes" onClick={handleItemClick}>당뇨질환학생 등록</Item>
-                        <Item id="protectedsStdentd" onClick={handleItemClick}>보호학생 등록</Item>
+                        <Item id="registDiagetes" onClick={handleDiabetesClick}>당뇨질환학생 등록</Item>
+                        <Item id="protectedsStdentd" onClick={handleProtectClick}>보호학생 등록</Item>
                         {/* <Item id="cut" onClick={handleItemClick}>Cut</Item>
                         <Separator />
                         <Item disabled>Disabled</Item>

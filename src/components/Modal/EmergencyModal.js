@@ -18,8 +18,10 @@ import * as htmlToImage from 'html-to-image';
 import NanumGothic from '../../assets/fonts/NanumGothic.ttf';
 import NanumGothicBold from '../../assets/fonts/NanumGothicBold.ttf';
 import { Block } from 'notiflix/build/notiflix-block-aio';
+import { useContextMenu, Menu, Item } from 'react-contexify';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
+const MENU_ID_GRID = 'grid_context_menu';
 
 const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, searchStudentColumnDefs, notEditDefaultColDef, fetchSelectedStudentData, fetchStudentData }) => {
     const { user } = useUser();  
@@ -65,10 +67,15 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const [searchStartDate, setSearchStartDate] = useState("");
     const [searchEndDate, setSearchEndDate] = useState("");
     const [searchSname, setSearchSname] = useState("");
+    const [selectedEmergencyRow, setSelectedEmergencyRow] = useState(null);
 
     const searchStudentInEmergencyManagementGridRef = useRef(null);
     const entireManageEmergencyGridRef = useRef(null);
     const imageMapperRef = useRef(null);
+
+    const { show } = useContextMenu({
+        id: MENU_ID_GRID
+    });
 
     const [entireManageEmergencyColumnDefs] = useState([
         { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
@@ -302,7 +309,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                 fetchEntireManageEmergencyData();
             }
         }else{
-            const warnMessage = "선택된 보건일지 내역이 없습니다<br/>대상 내역을 선택해 주세요";
+            const warnMessage = "선택된 응급학생 내역이 없습니다<br/>수정할 내역을 선택해 주세요";
             NotiflixWarn(warnMessage);
         }
     };
@@ -832,6 +839,56 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
         if(e.key === "Enter") searchEntireEmergency();
     };
 
+    const deleteManageEmergency = async () => {
+        if(entireSelectedRow) {
+            const response = await axios.post(`${BASE_URL}/api/manageEmergency/deleteEmergencyManagement`, {
+                rowId: entireSelectedRow.id,
+                userId: user.userId,
+                schoolCode: user.schoolCode,
+                sGrade: entireSelectedRow.sGrade,
+                sClass: entireSelectedRow.sClass,
+                sNumber: entireSelectedRow.sNumber
+            });
+
+            if(response.data === 'success') {
+                const infoMessage = "응급학생 내역이 정상적으로 삭제되었습니다";
+                NotiflixInfo(infoMessage, true, '320px');
+                fetchEntireManageEmergencyData();
+                resetManageEmergency();
+            }
+        }else{
+            const warnMessage = "선택된 응급학생 내역이 없습니다<br/>삭제할 내역을 선택해 주세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+    };
+
+    function handleGridContextMenu(event) {
+        if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
+            return;
+        }else{
+            const api = entireManageEmergencyGridRef.current.api;
+            const rowIndex = event.target.parentNode.getAttribute('row-index');
+        
+            if(rowIndex !== null) {
+                api.ensureIndexVisible(rowIndex);
+                api.forEachNode((node) => {
+                    if(node.rowIndex == rowIndex) node.setSelected(true, true);
+                });
+        
+                const selectedRow = api.getSelectedRows()[0];
+                if(selectedRow) setSelectedEmergencyRow(selectedRow);
+        
+                show({
+                    event,
+                    props: {
+                        key: 'value'
+                    }
+                });
+            }   
+        }
+    };
+
     return (
         <>
             <Modal isOpen={manageEmergencyModal} toggle={toggleManageEmergencyModal} centered style={{ minWidth: '65%', height: '70vh' }}>
@@ -875,20 +932,27 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             <Button size='sm' onClick={searchEntireEmergency}>검색</Button>
                         </Col>
                     </Row>
-                    <div className="ag-theme-alpine" style={{ height: '10.5vh' }}>
-                        <AgGridReact
-                            rowHeight={25}
-                            headerHeight={30}
-                            ref={entireManageEmergencyGridRef}
-                            rowData={entireManageEmergencyRowData} 
-                            columnDefs={entireManageEmergencyColumnDefs}
-                            defaultColDef={notEditDefaultColDef}
-                            paginationPageSize={4}
-                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                            rowSelection="single"
-                            onSelectionChanged={onSelectionChangedInEntireEmergencyGrid}
-                            suppressCellFocus={true}
-                        />
+                    <div className='entire-emergency-grid'>
+                        <div className="ag-theme-alpine" style={{ height: '10.5vh' }} onContextMenu={handleGridContextMenu}>
+                            <AgGridReact
+                                rowHeight={25}
+                                headerHeight={30}
+                                ref={entireManageEmergencyGridRef}
+                                rowData={entireManageEmergencyRowData} 
+                                columnDefs={entireManageEmergencyColumnDefs}
+                                defaultColDef={notEditDefaultColDef}
+                                paginationPageSize={4}
+                                overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                rowSelection="single"
+                                onSelectionChanged={onSelectionChangedInEntireEmergencyGrid}
+                                suppressCellFocus={true}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <Menu id={MENU_ID_GRID} animation="fade">
+                            <Item id="deleteEmergencyManage" onClick={deleteManageEmergency}>응급학생 내역 삭제</Item>
+                        </Menu>
                     </div>
                     <hr/>
                     <Row className="d-flex no-gutters">
@@ -1082,7 +1146,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                     <label>보호자연락처</label>
                                     <Input
                                         id='guardianContact'
-                                        className='ml-2'
+                                        className='ml-2 mr-2'
                                         type='tel'
                                         placeholder='010-0000-0000'
                                         pattern='[0-9]{2,3}-[0-9]{3,4}-[0-9]{3,4}'
@@ -1129,7 +1193,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                                 id='etcTransferDetail'
                                                 bsSize='sm'
                                                 type='text'
-                                                style={{ width: 109, marginLeft: '-30px', height: 30 }}
+                                                style={{ width: '95px', marginLeft: '-30px', height: 30 }}
                                                 onChange={handleEtcTransferDetailChange}
                                                 value={etcTransferDetail || ""}
                                             />
@@ -1190,9 +1254,8 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                             <Label style={{ marginLeft: '-29px' }} check>기타</Label>
                                             <Input
                                                 id='etcTranspoterDetail'
-                                                bsSize='sm'
                                                 type='text'
-                                                style={{ width: '93%', marginLeft: 10, height: 30 }}
+                                                style={{ width: '95%', marginLeft: 8, height: 30 }}
                                                 onChange={handleEtcTranspoterDetailChange}
                                                 value={etcTranspoterDetail || ""}
                                             />
@@ -1226,7 +1289,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                 value={homeroomTeacherNameValue || ""}
                                 onChange={(e) => setHomeroomTeacherNameValue(e.target.value)}
                             />
-                            <Button style={{ margin: 0, height: 31, paddingTop: 8, marginLeft: 20}}>교직원 조회</Button>
+                            <Button style={{ margin: 0, height: 31, paddingTop: 6, marginLeft: 20}}>교직원 조회</Button>
                         </Col>
                         <Col className='d-flex align-items-center justify-content-end text-muted' md="6">
                             <label className='mr-3'>작성일</label>
@@ -1239,6 +1302,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             />
                             <label className='ml-5 mr-3'>성명</label>
                             <Input
+                                className='mr-2'
                                 id='registerName'
                                 type='text'
                                 style={{ width: '25%' }}
@@ -1254,13 +1318,11 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                             <Button className='mr-1' onClick={handleDownloadEntirePDF}>전체 PDF 다운로드</Button>
                             <Button onClick={handleDownloadPDF}>선택 PDF 다운로드</Button>
                         </Col>
-                        <Col>
-
-                        </Col>
                         <Col className='d-flex justify-content-end no-gutters'>
                             <Button className='mr-2' onClick={resetManageEmergency}>초기화</Button>
                             <Button className="ml-1" onClick={saveManageEmergency}>등록</Button>
                             <Button className="ml-1" onClick={updateManageEmergency}>수정</Button>
+                            <Button className="ml-1" onClick={deleteManageEmergency}>삭제</Button>
                             <Button className="ml-1" onClick={toggleManageEmergencyModal}>취소</Button>
                         </Col>
                     </Row>
