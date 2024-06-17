@@ -15,8 +15,8 @@ module.exports = {
         REACT_APP_MYSQL_USER: 'root',
         REACT_APP_MYSQL_PASSWORD: 'yeeh01250412!@',
         REACT_APP_MYSQL_DB: 'teaform_db',
-        EMAIL_USER: 'yiniwinidev@gmail.com',
-        EMAIL_PASS: 'akkofpzccbhfelmk'
+        EMAIL_USER: 'meorla@meorla.com',
+        EMAIL_PASS: 'YJjSyAcXveLU'
       },
       env_production: {
         NODE_ENV: 'production',     // 프로덕션 환경에서 적용될 환경 변수
@@ -29,8 +29,8 @@ module.exports = {
         REACT_APP_MYSQL_USER: 'root',
         REACT_APP_MYSQL_PASSWORD: 'Yeeh01250412!@',
         REACT_APP_MYSQL_DB: 'teaform_db',
-        EMAIL_USER: 'yiniwinidev@gmail.com',
-        EMAIL_PASS: 'akkofpzccbhfelmk'
+        EMAIL_USER: 'meorla@meorla.com',
+        EMAIL_PASS: 'YJjSyAcXveLU'
       }
     }]
   };

@@ -34,10 +34,15 @@ const io = socketIo(server, {
 });
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.worksmobile.com',
+    port: 587,
+    secure: false,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        ciphers: 'SSLv3'
     }
 });
 
