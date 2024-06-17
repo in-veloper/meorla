@@ -672,7 +672,46 @@ app.post("/api/studentsTable/addTransferStudent", async (req, res) => {
     });
 
     res.send('success');
-})
+});
+
+app.post("/api/teachersTable/insert", async (req, res) => {
+    const teachersArray = req.body.teachersArray;
+    const values = teachersArray.map(teacher => {
+        return [
+            teacher.userId,
+            teacher.schoolName,
+            teacher.schoolCode,
+            teacher.teacherName,
+            teacher.teacherGrade,
+            teacher.teacherClass,
+            teacher.teacherSubject,
+            teacher.teacherPhone
+        ];
+    });
+
+    const sqlQuery = "INSERT INTO teaform_db.teachers (userId, schoolName, schoolCode, tName, tGrade, tClass, tSubject, tPhone) VALUES ?";
+    db.query(sqlQuery, [values], (err, result) => {
+        if(err) {
+            console.log("교직원 데이터 INSERT 중 ERROR" + err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get("/api/teachersTable/getTeacherInfo", async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.teachers WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("교직원 정보 조회 중 ERROR", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        }else{
+            res.json({ teacherData: result });
+        }
+    });
+});
 
 app.post("/api/symptom/insert", async (req, res) => {
     const { userId, schoolCode, symptomString } = req.body;

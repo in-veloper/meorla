@@ -53,6 +53,8 @@ function User() {
   const [transferStudentClass, setTransferStudentClass] = useState("");
   const [transferStudentGender, setTransferStudentGender] = useState("");
   const [transferStudentName, setTransferStudentName] = useState("");
+  const [isRegisteredTeachersTable, setIsRegisteredTeachersTable] = useState(false);
+  const [teacherData, setTeacherData] = useState(null);
 
   const studentTableGridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -126,6 +128,27 @@ function User() {
     }
   }, [currentUser, user, isRegisteredStudentsTable]);
 
+  useEffect(() => {
+    if(currentUser) {
+      const fetchTeacherData = async () => {
+        try {
+          const response = await axios.get(`${BASE_URL}/api/teachersTable/getTeacherInfo`, {
+            params: {
+              userId: user.userId,
+              schoolCode: user.schoolCode
+            }
+          });
+
+          setTeacherData(response.data.teacherData);
+        } catch (error) {
+          console.log("교직원 데이터 조회 중 ERROR", error);
+        }
+      };
+
+      fetchTeacherData();
+    }
+  }, [currentUser, user, isRegisteredTeachersTable]);
+
   // 소속학교 기준 명렬표 학년별 등록 및 확인 Button 생성
   const generateNameTableButtons = () => {
     const buttonCount = schoolGrade && schoolGrade.includes("초등학교") ? 6 : 3;                                   // 초등학교: 6, 중,고등학교: 3 으로 Button 수 정의
@@ -169,7 +192,7 @@ function User() {
         setModalData(studentData);                        // 등록된 명렬표 미리보기 데이터에 할당
         setIsModalOpen(true);                             // Modal Open
       }else{
-        onBulkRegist();                                   // 등록된 학생 정보 없을 경우 등록 Function 호출
+        onStudentBulkRegist();                                   // 등록된 학생 정보 없을 경우 등록 Function 호출
       }
     } catch (error) {
       console.log("학년별 명렬표 데이터 조회 중 ERROR", error);
@@ -252,39 +275,68 @@ function User() {
   };
   
   // 명렬표 파일 Change Event ([필요] handleBulkRegist Function과 중복으로 존재할 필요 있는지 확인)
-  const handleFileChange = (event) => {
+  const handleStudentFileChange = (event) => {
     const file = event.target.files[0];   // 파일 획득
-    handleBulkRegist(file);                   // 명렬표 등록 Event 호출
+    handleStudentBulkRegist(file);                   // 명렬표 등록 Event 호출
   };
 
   // Default 파일 첨부 버튼 외 Custom 버튼으로 사용하기 위해 별도 태그 처리
-  const onBulkRegist = () => {
+  const onStudentBulkRegist = () => {
     const fileInput = document.createElement("input");        // 파일 Input 생성
     fileInput.type = "file";                                  // Input type 설정
     fileInput.accept = ".xlsx,.xls";                          // 첨부 가능 확장자 설정
-    fileInput.addEventListener("change", handleFileChange);   // change Event 속성 설정
+    fileInput.addEventListener("change", handleStudentFileChange);   // change Event 속성 설정
     fileInput.click();                                        // 파일 첨부 강제 Click
   };
 
   // 명렬표 일괄등록 버튼 Click Event
-  const handleBulkRegist = (selectedFile) => {
+  const handleStudentBulkRegist = (selectedFile) => {
     if(selectedFile) {  // 업로드할 파일 존재할 경우
       Notiflix.Confirm.show('명렬표 일괄 등록', '선택하신 파일로 명렬표를 등록하시겠습니까?', '예', '아니요', () => {
         const reader = new FileReader();        // File Reader 객체 획득
         reader.onload = (e) => {                // 학생 정보 DB Insert 시 async(비동기) 사용할 경우 onload에 사용하기 부적합 (Function으로 분리 호출)
-          handleExcelUpload(e);                 // 명렬표(Excel 파일) Upload Function 호출
+          handleStudentExcelUpload(e);                 // 명렬표(Excel 파일) Upload Function 호출
         };
         reader.readAsArrayBuffer(selectedFile); // 파일 읽음
       },() => {
         return;                                 // return
       },{
-        position: 'center-center', showOnlyTheLastOne: true, plainText: false
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '330px'
+      });
+    }
+  };
+
+  const handleTeacherFileChange = (event) => {
+    const file = event.target.files[0];   // 파일 획득
+    handleTeacherBulkRegist(file);                   // 명렬표 등록 Event 호출
+  };
+
+  const onTeacherBulkRegist = () => {
+    const fileInput = document.createElement("input");        // 파일 Input 생성
+    fileInput.type = "file";                                  // Input type 설정
+    fileInput.accept = ".xlsx,.xls";                          // 첨부 가능 확장자 설정
+    fileInput.addEventListener("change", handleTeacherFileChange);   // change Event 속성 설정
+    fileInput.click();                                        // 파일 첨부 강제 Click
+  };
+
+  const handleTeacherBulkRegist = (selectedFile) => {
+    if(selectedFile) {  // 업로드할 파일 존재할 경우
+      Notiflix.Confirm.show('교직원 일괄 등록', '선택하신 파일로 교직원 목록을 등록하시겠습니까?', '예', '아니요', () => {
+        const reader = new FileReader();        // File Reader 객체 획득
+        reader.onload = (e) => {                // 학생 정보 DB Insert 시 async(비동기) 사용할 경우 onload에 사용하기 부적합 (Function으로 분리 호출)
+          handleTeacherExcelUpload(e);                 // 명렬표(Excel 파일) Upload Function 호출
+        };
+        reader.readAsArrayBuffer(selectedFile); // 파일 읽음
+      },() => {
+        return;                                 // return
+      },{
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '330px'
       });
     }
   };
 
   // 명렬표 파일 선택 시 Upload & DB Insert API 호출
-  const handleExcelUpload = async (e) => {
+  const handleStudentExcelUpload = async (e) => {
     try {
       const data = new Uint8Array(e.target.result);                     // 파일 Data 획득
       const workbook = read(data, { type: "array" });                   // array type으로 workbook 획득
@@ -317,14 +369,52 @@ function User() {
       const response = await axios.post(`${BASE_URL}/api/studentsTable/insert`, { studentsArray });
 
       if(response.data === "success") {
-        setIsRegisteredStudentsTable(true);
+        const infoMessage = "명렬표 정보가 정상적으로 등록되었습니다";
+        NotiflixInfo(infoMessage);
 
-        Notiflix.Notify.info('명렬표 정보가 정상적으로 저장되었습니다.', {
-          position: 'center-center', showOnlyTheLastOne: true, plainText: false
-        });
+        setIsRegisteredStudentsTable(true);
       }
     }catch(error) {
       console.log("Excel 파일 읽기 중 ERROR", error);
+    }
+  };
+
+  const handleTeacherExcelUpload = async (e) => {
+    const data = new Uint8Array(e.target.result);
+    const workbook = read(data, { type: "array" });
+    const sheetName = workbook.SheetNames[0];
+    const workSheet = workbook.Sheets[sheetName];
+    const sheetData = utils.sheet_to_json(workSheet, { header: 1 });
+
+    const teachersArray = [];
+
+    for(let i = 1; i < sheetData.length; i++) {
+      const teacherData = sheetData[i];
+      const teacherName = teacherData[0];
+      const teacherGrade = teacherData[1];
+      const teacherClass = teacherData[2];
+      const teacherSubject = teacherData[3];
+      const teacherPhone = teacherData[4];
+
+      teachersArray.push({
+        userId: user.userId,
+        schoolName: user.schoolName,
+        schoolCode: user.schoolCode,
+        teacherName,
+        teacherGrade,
+        teacherClass,
+        teacherSubject,
+        teacherPhone
+      });
+    }
+
+    const response = await axios.post(`${BASE_URL}/api/teachersTable/insert`, { teachersArray });
+
+    if(response.data === 'success') {
+      const infoMessage = "교직원 정보가 정상적으로 등록되었습니다";
+      NotiflixInfo(infoMessage);
+
+      setIsRegisteredTeachersTable(true);
     }
   };
 
@@ -1044,7 +1134,7 @@ function User() {
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
                           <Button className="user-inner-button" onClick={handleDownloadStudentTemplate}>템플릿 다운로드</Button>
-                          <Button className="user-inner-button" onClick={onBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={onStudentBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
                         </ButtonGroup>
                       </Row>
                     </Col>
@@ -1061,7 +1151,7 @@ function User() {
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
                           <Button className="user-inner-button" onClick={handleDownloadTeacherTemplate}>템플릿 다운로드</Button>
-                          <Button className="user-inner-button" onClick={onBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={onTeacherBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
                         </ButtonGroup>
                       </Row>
                     </Col>
