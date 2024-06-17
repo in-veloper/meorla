@@ -961,10 +961,10 @@ function WorkNote(args) {
         const resultData = response.data.map(item => ({
           ...item,
           createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
-          symptom: item.symptom.replace(/::/g, ', '),
-          medication: item.medication.replace(/::/g, ', '),
-          bodyParts: item.bodyParts.replace(/::/g, ', '),
-          treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
+          symptom: (item.symptom || "").replace(/::/g, ', '),
+          medication: (item.medication || "").replace(/::/g, ', '),
+          bodyParts: (item.bodyParts || "").replace(/::/g, ', '),
+          treatmentMatter: (item.treatmentMatter || "").replace(/::/g, ', '),
           onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
         }));
 
@@ -1552,10 +1552,10 @@ function WorkNote(args) {
         const resultData = response.data.map(item => ({
           ...item,
           createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
-          symptom: item.symptom.replace(/::/g, ', '),
-          medication: item.medication.replace(/::/g, ', '),
-          bodyParts: item.bodyParts.replace(/::/g, ', '),
-          treatmentMatter: item.treatmentMatter.replace(/::/g, ', '),
+          symptom: (item.symptom || "").replace(/::/g, ', '),
+          medication: (item.medication || "").replace(/::/g, ', '),
+          bodyParts: (item.bodyParts || "").replace(/::/g, ', '),
+          treatmentMatter: (item.treatmentMatter || "").replace(/::/g, ', '),
           onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
         }));
 

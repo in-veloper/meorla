@@ -48,6 +48,11 @@ function User() {
   const [emailCode, setEmailCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(0);
   const [verificationCode, setVerificationCode] = useState('');
+  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
+  const [transferStudentGrade, setTransferStudentGrade] = useState("");
+  const [transferStudentClass, setTransferStudentClass] = useState("");
+  const [transferStudentGender, setTransferStudentGender] = useState("");
+  const [transferStudentName, setTransferStudentName] = useState("");
 
   const studentTableGridRef = useRef();                                     // 등록한 명렬표 출력 Grid Reference
   const emailForm = useRef();
@@ -63,6 +68,11 @@ function User() {
   // 등록한 명렬표 중 학년 선택 시 명렬표 미리보기 Model Open Handle Event
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const toggleAddStudentModal = () => {
+    setIsAddStudentModalOpen(!isAddStudentModalOpen);
+    resetTransferStudent();
   };
 
   const toggleCommonPasswordSettingModal = () => setCommonPasswordSettingModal(!commonPasswordSettingModal); 
@@ -139,9 +149,11 @@ function User() {
 
   // 학년별 Button Click Event
   const onClickNameTable = async (e) => {
-    e.preventDefault();                       // Click 시 기본 Event 방지
     const targetGrade = e.target.innerText;   // 현재 선택한 학년
+    fetchStudentInfoByGrade(targetGrade);
+  };
 
+  const fetchStudentInfoByGrade = async (targetGrade) => {
     try {
       // 선택한 학년에 따른 등록한 학생 정보 조회
       const response = await axios.get(`${BASE_URL}/api/studentsTable/getStudentInfoByGrade`, {
@@ -709,7 +721,7 @@ function User() {
   };
 
   const addStudent = () => {
-
+    toggleAddStudentModal();
   };
 
   const deleteStudent = async () => {
@@ -737,6 +749,39 @@ function User() {
       NotiflixWarn(warnMessage);
       return;
     }
+  };
+
+  const saveTransferStudent = async () => {
+    if(transferStudentGrade && transferStudentClass && transferStudentGender && transferStudentName) {
+      const response = await axios.post(`${BASE_URL}/api/studentsTable/addTransferStudent`, {
+        userId: user.userId,
+        schoolName: user.schoolName,
+        schoolCode: user.schoolCode,
+        sGrade: transferStudentGrade,
+        sClass: transferStudentClass,
+        sGender: transferStudentGender,
+        sName: transferStudentName
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "전학학생이 정상적으로 등록되었습니다";
+        NotiflixInfo(infoMessage);
+        fetchStudentInfoByGrade(transferStudentGrade);
+        toggleAddStudentModal();
+        resetTransferStudent();
+      }
+    }else{
+      const warnMessage = "모든 항목을 입력해주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }
+  };
+
+  const resetTransferStudent = () => {
+    setTransferStudentGrade("");
+    setTransferStudentClass("");
+    setTransferStudentGender("");
+    setTransferStudentName("");
   };
 
   return (
@@ -1037,13 +1082,71 @@ function User() {
                     <ModalFooter className="pt-0 pb-0">
                       <Row className="d-flex align-items-center no-gutters w-100">
                         <Col className="d-flex justify-content-start">
-                          <Button className="mr-1" onClick={addStudent}>추가</Button>
-                          <Button onClick={deleteStudent}>삭제</Button>
+                          <Button className="mr-1" onClick={addStudent}>전학학생 등록</Button>
+                          {/* <Button onClick={deleteStudent}>삭제</Button> */}
                         </Col>
                           <Button color="secondary" onClick={toggleModal}>닫기</Button>
                       </Row>
                     </ModalFooter>
                   </Modal>
+
+                  <Modal isOpen={isAddStudentModalOpen} backdrop={true} toggle={toggleAddStudentModal} centered style={{ width: '25%' }}>
+                    <ModalHeader className="text-muted" toggle={toggleAddStudentModal} closebutton="true">전학학생 추가</ModalHeader>
+                    <ModalBody>
+                      <Row className="d-flex justify-content-center no-gutters mb-3">
+                        <div className="w-100 text-center p-2" style={{ border: '1px dotted lightgray', borderRadius: 5 }}>
+                          <span>등록된 전학학생은 해당 학년과 반의 가장 뒷 번호로 등록됩니다</span><br/>
+                          <span>성별은 <b>남</b> 또는 <b>여</b> 로 입력하세요</span>
+                        </div>
+                      </Row>
+                      <Row className="d-flex align-items-center justify-content-center no-gutters">
+                        <label style={{ width: '8%' }}>학년</label>
+                        <Input 
+                          className="mr-3"
+                          type="number"
+                          min={1}
+                          style={{ width: '12%' }}
+                          value={transferStudentGrade}
+                          onChange={(e) => setTransferStudentGrade(e.target.value)}
+                        />
+                        <label style={{ width: '5%' }}>반</label>
+                        <Input 
+                          className="mr-3"
+                          type="number"
+                          min={1}
+                          style={{ width: '12%' }}
+                          value={transferStudentClass}
+                          onChange={(e) => setTransferStudentClass(e.target.value)}
+                        />
+                        <label style={{ width: '7%' }}>성별</label>
+                        <Input 
+                          className="mr-3"
+                          type="text"
+                          min={1}
+                          style={{ width: '12%' }}
+                          value={transferStudentGender}
+                          onChange={(e) => setTransferStudentGender(e.target.value)}
+                        />
+                        <label style={{ width: '10%' }}>이름</label>
+                        <Input 
+                          type="text"
+                          style={{ width: '18%' }}
+                          value={transferStudentName}
+                          onChange={(e) => setTransferStudentName(e.target.value)}
+                        />
+                      </Row>
+                    </ModalBody>
+                    <ModalFooter className="pt-0 pb-0">
+                      <Row className="d-flex align-items-center no-gutters w-100">
+                        <Col>
+                          <Button onClick={resetTransferStudent}>초기화</Button>
+                        </Col>
+                        <Button className="mr-1" onClick={saveTransferStudent}>저장</Button>
+                        <Button onClick={toggleAddStudentModal}>취소</Button>
+                      </Row>
+                    </ModalFooter>
+                  </Modal>
+
                 </Form>
               </CardBody>
               <CardFooter>

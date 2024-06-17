@@ -507,10 +507,11 @@ function Login() {
                         <div className="credits ml-auto text-muted">
                             <div className="copyright">
                                 <span className="pr-2">이해컴퍼니 [사업자번호 : 473-43-01316]</span>
-                                <span className="pr-3">대표 : 정영인</span>
+                                <span className="pr-2">대표 : 정영인</span>
+                                <span className="pr-3">Email : meorla@meorla.com</span>
                                 &copy; {1900 + new Date().getYear()} {" "}
                                 {/* <i className="fa fa-heart heart" />  */}
-                                Copyright 이해 컴퍼니. All right reserved
+                                Copyright 이해 컴퍼니. All right reserved.
                             </div>
                         </div>
                     </Col>

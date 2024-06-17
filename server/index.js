@@ -647,6 +647,33 @@ app.post("/api/studentsTable/deleteStudentInfo", async (req, res) => {
     });
 });
 
+app.post("/api/studentsTable/addTransferStudent", async (req, res) => {
+    const { userId, schoolName, schoolCode, sGrade, sClass, sGender, sName } = req.body;
+
+    const maxNumberResult = await new Promise((resolve, reject) => {
+        const query = 'SELECT MAX(sNumber) as maxNumber FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ?';
+        db.query(query, [userId, schoolCode, sGrade, sClass], (err, results) => {
+            if(err) return reject(err);
+            resolve(results)
+        });
+    });
+    
+    let newNumber = 1;
+    if(maxNumberResult[0].maxNumber !== null) {
+        newNumber = parseInt(maxNumberResult[0].maxNumber) + 1;
+    }
+
+    const insertStudentResult = await new Promise((resolve, reject) => {
+        const query = 'INSERT INTO teaform_db.students (userId, schoolName, schoolCode, sGrade, sClass, sGender, sNumber, sName) VALUES (?,?,?,?,?,?,?,?)';
+        db.query(query, [userId, schoolName, schoolCode, sGrade, sClass, sGender, newNumber, sName], (err, results) => {
+            if(err) return reject(err);
+            resolve(results);
+        });
+    });
+
+    res.send('success');
+})
+
 app.post("/api/symptom/insert", async (req, res) => {
     const { userId, schoolCode, symptomString } = req.body;
 
