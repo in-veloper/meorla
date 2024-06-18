@@ -1390,7 +1390,7 @@ function User() {
                     </ModalBody>
                     <ModalFooter className="pt-0 pb-0">
                       <Button className="mr-1" onClick={saveTeacher}>저장</Button>
-                      <Button onClick={toggleTeacherTableModal}>취소</Button>
+                      <Button onClick={toggleAddTeacherModal}>취소</Button>
                     </ModalFooter>
                   </Modal>
 
