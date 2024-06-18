@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Form, Button, Navbar, Nav, Card } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Navbar, Nav, Card, Modal } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css'; 
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
@@ -20,6 +20,10 @@ import logoImage from '../assets/img/main_header_logo_white.png';
 import carouselImage1 from '../assets/img/carousel/carousel_test_1.jpg';
 import carouselImage2 from '../assets/img/carousel/carousel_test_2.jpg';
 import carouselImage3 from '../assets/img/carousel/carousel_test_3.jpg';
+import TOU from 'components/documents/TOU';
+import PP from 'components/documents/PP';
+import LN from 'components/documents/LN';
+import RCE from 'components/documents/RCE';
 import '../assets/css/login.css';
 import { Block } from 'notiflix';
 
@@ -49,6 +53,15 @@ function Login() {
     const [isCodeSent, setIsCodeSent] = useState(false);
     const [isEmailVerificated, setIsEmailVerificated] = useState(false);
     const [certificateNameValue, setCertificateNameValue] = useState(null);
+    const [touModal, setTouModal] = useState(false);
+    const [ppModal, setPpModal] = useState(false);
+    const [lnModal, setLnModal] = useState(false);
+    const [rceModal, setRceModal] = useState(false);
+
+    const toggleTouModal = () => setTouModal(!touModal);
+    const togglePpModal = () => setPpModal(!ppModal);
+    const toggleLnModal = () => setLnModal(!lnModal);
+    const toggleRceModal = () => setRceModal(!rceModal);
 
     const clearRegisterInput = () => {
         setSchoolName("");
@@ -388,6 +401,22 @@ function Login() {
 
     };
 
+    const showTOU = () => {
+        toggleTouModal();
+    };
+
+    const showPP = () => {
+        togglePpModal();
+    };
+
+    const showLN = () => {
+        toggleLnModal();
+    };
+
+    const showRCE = () => {
+        toggleRceModal();
+    };
+
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
             <Navbar className='pb-0 pt-0' bg="white" expand="lg" fixed="top" style={{ borderBottom: '1.5px dotted lightgray', height: 60 }}>
@@ -497,10 +526,10 @@ function Login() {
                 <Row>
                     <Col className='d-flex justify-content-start ml-4'>
                         <ul>
-                            <li className='text-muted mr-3'>이용약관</li>
-                            <li className='text-muted mr-3'>개인정보처리방침</li>
-                            <li className='text-muted mr-3'>법적고지</li>
-                            <li className='text-muted'>이메일무단수집거부</li>
+                            <li className='text-muted mr-3' onClick={showTOU} style={{ cursor: 'pointer' }}>이용약관</li>
+                            <li className='text-muted mr-3' onClick={showPP} style={{ cursor: 'pointer' }}>개인정보처리방침</li>
+                            <li className='text-muted mr-3' onClick={showLN} style={{ cursor: 'pointer' }}>법적고지</li>
+                            <li className='text-muted' onClick={showRCE} style={{ cursor: 'pointer' }}>이메일무단수집거부</li>
                         </ul>
                     </Col>
                     <Col className="text-center">
@@ -517,6 +546,62 @@ function Login() {
                     </Col>
                 </Row>
             </footer>
+
+            <Modal show={touModal} onHide={toggleTouModal} centered style={{ minWidth: '40%' }}>
+                <Modal.Header className='pt-0 pb-0'>
+                <Modal.Title>이용약관</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ height: '50vh', overflowY: 'scroll' }}>
+                    <TOU />
+                </Modal.Body>
+                <Modal.Footer className='pt-0 pb-0'>
+                    <Button variant="secondary" onClick={toggleTouModal}>
+                        닫기
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={ppModal} onHide={togglePpModal} centered style={{ minWidth: '40%' }}>
+                <Modal.Header className='pt-0 pb-0'>
+                <Modal.Title>개인정보처리방침</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ height: '50vh', overflowY: 'scroll' }}>
+                    <PP />
+                </Modal.Body>
+                <Modal.Footer className='pt-0 pb-0'>
+                    <Button variant="secondary" onClick={togglePpModal}>
+                        닫기
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={lnModal} onHide={toggleLnModal} centered style={{ minWidth: '40%' }}>
+                <Modal.Header className='pt-0 pb-0'>
+                <Modal.Title>법적고지</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ height: '50vh', overflowY: 'scroll' }}>
+                    <LN />
+                </Modal.Body>
+                <Modal.Footer className='pt-0 pb-0'>
+                    <Button variant="secondary" onClick={toggleLnModal}>
+                        닫기
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={rceModal} onHide={toggleRceModal} centered style={{ minWidth: '40%' }}>
+                <Modal.Header className='pt-0 pb-0'>
+                <Modal.Title>이메일무단수집거부</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ height: 'auto', overflowY: 'scroll' }}>
+                    <RCE />
+                </Modal.Body>
+                <Modal.Footer className='pt-0 pb-0'>
+                    <Button variant="secondary" onClick={toggleRceModal}>
+                        닫기
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
