@@ -56,6 +56,12 @@ function User() {
   const [isRegisteredTeachersTable, setIsRegisteredTeachersTable] = useState(false);
   const [teacherData, setTeacherData] = useState(null);
   const [isTeacherTableModalOpen, setIsTeacherTableModalOpen] = useState(false);
+  const [addTeacherModal, setAddTeacherModal] = useState(false);
+  const [addTeacherName, setAddTeacherName] = useState("");
+  const [addTeacherGrade, setAddTeacherGrade] = useState("");
+  const [addTeacherClass, setAddTeacherClass] = useState("");
+  const [addTeacherContact, setAddTeacherContact] = useState("");
+  const [addTeacherSubject, setAddTeacherSubject] = useState("");
 
 
   const studentTableGridRef = useRef(null);     
@@ -84,6 +90,7 @@ function User() {
   const togglePasswordSettingModal = () => setPasswordSettingModal(!passwordSettingModal);
   const toggleTeacherTableModal = () => setIsTeacherTableModalOpen(!isTeacherTableModalOpen);
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
+  const toggleAddTeacherModal = () => setAddTeacherModal(!addTeacherModal);
     const toggleAddStudentModal = () => {
       setIsAddStudentModalOpen(!isAddStudentModalOpen);
       resetTransferStudent();
@@ -136,28 +143,49 @@ function User() {
     }
   }, [currentUser, user, isRegisteredStudentsTable]);
 
-  useEffect(() => {
-    if(currentUser) {
-      const fetchTeacherData = async () => {
-        try {
-          const response = await axios.get(`${BASE_URL}/api/teachersTable/getTeacherInfo`, {
-            params: {
-              userId: user.userId,
-              schoolCode: user.schoolCode
-            }
-          });
+  // useEffect(() => {
+  //   if(currentUser) {
+  //     const fetchTeacherData = async () => {
+  //       try {
+  //         const response = await axios.get(`${BASE_URL}/api/teachersTable/getTeacherInfo`, {
+  //           params: {
+  //             userId: user.userId,
+  //             schoolCode: user.schoolCode
+  //           }
+  //         });
 
-          if(response.data) {
-            setTeacherData(response.data.teacherData);
-          }
-        } catch (error) {
-          console.log("교직원 데이터 조회 중 ERROR", error);
+  //         if(response.data) {
+  //           setTeacherData(response.data.teacherData);
+  //         }
+  //       } catch (error) {
+  //         console.log("교직원 데이터 조회 중 ERROR", error);
+  //       }
+  //     };
+
+  //     fetchTeacherData();
+  //   }
+  // }, [currentUser, user, isRegisteredTeachersTable]);
+
+  const fetchTeacherData = useCallback(async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/teachersTable/getTeacherInfo`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
         }
-      };
+      });
 
-      fetchTeacherData();
+      if(response.data) {
+        setTeacherData(response.data.teacherData);
+      }
+    } catch (error) {
+      console.log("교직원 데이터 조회 중 ERROR", error);
     }
   }, [currentUser, user, isRegisteredTeachersTable]);
+
+  useEffect(() => {
+    fetchTeacherData();
+  }, [fetchUserData])
 
   // 소속학교 기준 명렬표 학년별 등록 및 확인 Button 생성
   const generateNameTableButtons = () => {
@@ -893,6 +921,10 @@ function User() {
   };
 
   const addTeacher = () => {
+    toggleAddTeacherModal();
+  };
+
+  const updateTeacher = () => {
 
   };
 
@@ -900,12 +932,36 @@ function User() {
 
   };
 
+  const saveTeacher = async () => {
+    if(addTeacherName) {
+      const response = await axios.post(`${BASE_URL}/api/teachersTable/addTeacher`, {
+        userId: user.userId,
+        schoolName: user.schoolName,
+        schoolCode: user.schoolCode,
+        tName: addTeacherName,
+        tGrade: addTeacherGrade,
+        tClass: addTeacherClass,
+        tSubject: addTeacherSubject,
+        tPhone:addTeacherContact
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "교직원 정보가 정상적으로 등록되었습니다";
+        NotiflixInfo(infoMessage);
+        fetchTeacherData();
+      }
+    }else{
+      const warnMessage = "교직원 이름은 필수 입력 사항입니다";
+      NotiflixWarn(warnMessage);
+    }
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Col md="4">
-            <Card className="card-user" style={{ height: '552px', border: '1px solid lightgray' }}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
+            <Card className="card-user" style={{ height: '555px', border: '1px solid lightgray' }}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <input 
                   type="file"
@@ -1279,10 +1335,62 @@ function User() {
                       <Row className="d-flex align-items-center no-gutters w-100">
                         <Col className="d-flex justify-content-start">
                           <Button className="mr-1" onClick={addTeacher}>추가</Button>
+                          <Button className="mr-1" onClick={updateTeacher}>수정</Button>
                           <Button onClick={deleteTeacher}>삭제</Button>
                         </Col>
                           <Button color="secondary" onClick={toggleTeacherTableModal}>닫기</Button>
                       </Row>
+                    </ModalFooter>
+                  </Modal>
+
+                  <Modal isOpen={addTeacherModal} backdrop={true} toggle={toggleAddTeacherModal} centered={true} autoFocus={false} style={{ minWidth: '33%' }}>
+                    <ModalHeader className="text-muted" toggle={toggleAddTeacherModal} closebutton="true">교직원 추가</ModalHeader>
+                    <ModalBody>
+                      <Row className="d-flex align-items-center no-gutters justify-content-center">
+                        <label className="mr-1">이름</label>
+                        <Input
+                          className="mr-3"
+                          type="text"
+                          style={{ width: '100px' }}
+                          value={addTeacherName}
+                          onChange={(e) => setAddTeacherName(e.target.value)}
+                        />
+                        <label className="mr-1">학년</label>
+                        <Input 
+                          className="mr-3"
+                          type="number"
+                          style={{ width: '50px' }}
+                          value={addTeacherGrade}
+                          onChange={(e) => setAddTeacherGrade(e.target.value)}
+                        />
+                        <label className="mr-1">반</label>
+                        <Input 
+                          className="mr-3"
+                          type="number"
+                          style={{ width: '50px' }}
+                          value={addTeacherClass}
+                          onChange={(e) => setAddTeacherClass(e.target.value)}
+                        />
+                        <label className="mr-1">과목</label>
+                        <Input 
+                          className="mr-3"
+                          type="number"
+                          style={{ width: '50px' }}
+                          value={addTeacherSubject}
+                          onChange={(e) => setAddTeacherSubject(e.target.value)}
+                        />
+                        <label className="mr-1">연락처</label>
+                        <Input 
+                          type="text"
+                          style={{ width: '130px' }}
+                          value={addTeacherContact}
+                          onChange={(e) => setAddTeacherContact(e.target.value)}
+                        />
+                      </Row>
+                    </ModalBody>
+                    <ModalFooter className="pt-0 pb-0">
+                      <Button className="mr-1" onClick={saveTeacher}>저장</Button>
+                      <Button onClick={toggleTeacherTableModal}>취소</Button>
                     </ModalFooter>
                   </Modal>
 

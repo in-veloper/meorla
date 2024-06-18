@@ -718,6 +718,19 @@ app.get("/api/teachersTable/getTeacherInfo", async (req, res) => {
     });
 });
 
+app.post("/api/teachersTable/addTeacher", async  (req, res) => {
+    const { userId, schoolName, schoolCode, tName, tGrade, tClass, tSubject, tPhone } = req.body;
+    
+    const sqlQuery = "INSERT INTO teaform_db.teachers (userId, schoolName, schoolCode, tName, tGrade, tClass, tSubject, tPhone) VALUES (?,?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolName, schoolCode, tName, tGrade, tClass, tSubject, tPhone], (err, result) => {
+        if(err) {
+            console.log("교직원 정보 INSERT 처리 중 ERROR");
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.post("/api/symptom/insert", async (req, res) => {
     const { userId, schoolCode, symptomString } = req.body;
 
