@@ -63,7 +63,7 @@ function HealthExaminationSurveyForm() {
           <span>)</span>
       </Row>
       <Row className="d-flex justify-content-center no-gutters pl-3 pr-3 pt-2">
-        <Table className='health-examination-table' responsive>
+        <Table className='health-examination-table' >
           <tbody>
             <tr>
               <td colSpan="7" className='text-center'><span className='font-weight-bold'>현재 건강문제로 인한 학교 내 활동에 지장 없음</span> 

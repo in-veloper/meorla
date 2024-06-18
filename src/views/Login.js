@@ -593,7 +593,7 @@ function Login() {
                 <Modal.Header className='pt-0 pb-0'>
                 <Modal.Title>이메일무단수집거부</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{ height: 'auto', overflowY: 'scroll' }}>
+                <Modal.Body style={{ height: 'auto' }}>
                     <RCE />
                 </Modal.Body>
                 <Modal.Footer className='pt-0 pb-0'>

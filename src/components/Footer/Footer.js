@@ -99,7 +99,7 @@ function Footer(props) {
 
       <Modal isOpen={rceModal} toggle={toggleRceModal} centered style={{ minWidth: '40%' }}>
         <ModalHeader><b className="text-muted">이메일무단수집거부</b></ModalHeader>
-        <ModalBody style={{ height: 'auto', overflowY: 'scroll' }}>
+        <ModalBody style={{ height: 'auto' }}>
           <RCE/>
         </ModalBody>
         <ModalFooter>
