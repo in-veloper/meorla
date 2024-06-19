@@ -79,10 +79,15 @@ function WorkNote(args) {
   const [selectedWorkNote, setSelectedWorkNote] = useState(null);
   const [isGridRowSelect, setIsGridRowSelect] = useState(false);
   const [contextStudentInfo, setContextStudentInfo] = useState("");
+  const [onBedStudentListModal, setOnBedStudentListModal] = useState(false);
+  const [onBedStudentListData, setOnBedStudentListData] = useState([]);
+  const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
+  const [entireWorkNoteRowData, setEntireWorkNoteRowData] = useState([]);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
   const registeredAllGridRef = useRef();
+  const onBedStudentListGridRef = useRef();
   const symptomGridRef = useRef();
   const medicationGridRef = useRef();
   const bodyPartsGridRef = useRef();
@@ -106,6 +111,7 @@ function WorkNote(args) {
   const toggleBodyPartsModal = () => setBodyPartsModal(!bodyPartsModal);
   const toggleTreatmentMatterModal = () => setTreatmentMatterModal(!treatmentMatterModal);
   const toggleVisitRequestTooltip = () => setVisitRequestTooltipOpen(!visitRequestTooltipOpen);
+  const toggleOnBedStudentListModal = () => setOnBedStudentListModal(!onBedStudentListModal);
 
   const customCellRenderer = (params) => {
     const { value } = params;
@@ -130,19 +136,14 @@ function WorkNote(args) {
     { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }, cellRenderer: customCellRenderer }
   ]);
 
-  const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
-
   const [personalStudentColumnDefs] = useState([
     { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "bodyParts", headerName: "인체 부위", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "note", headerName: "비고", flex: 1, cellStyle: { textAlign: "center" } }
+    { field: "onBedTime", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" }}
   ]);
-
-  const [entireWorkNoteRowData, setEntireWorkNoteRowData] = useState([]);
 
   const [entireWorkNoteColumnDefs] = useState([
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
@@ -156,6 +157,20 @@ function WorkNote(args) {
     { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
+
+  const [onBedStudentListColumnDefs] = useState([
+    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "bodyParts", headerName: "인체 부위", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "medication", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }}
+  ]);
+
 
   // 기본 컬럼 속성 정의 (공통 부분)
   const defaultColDef = {
@@ -1468,8 +1483,7 @@ function WorkNote(args) {
       setSearchTreatmentMatterText(param);
     }else if(targetId === "onBedRest") {
       setOnBedRestStartTime("");
-      const onBedEndTime = document.getElementById('onBedRestEndTime');
-      onBedEndTime.value = "";
+      setOnBedRestEndTime("");
     }else if(targetId === "vitalSign") {
       setTempuratureValue(0);
       setBloodPressureValue(0);
@@ -1517,17 +1531,17 @@ function WorkNote(args) {
     }
     symptomString = symptomString.slice(0, -2);
 
-    const medicationTagValues = tagFields[1].getElementsByTagName('tag');
-    for(let i = 0; i < medicationTagValues.length; i++) {
-      medicationString += medicationTagValues[i].textContent + "::";
-    }
-    medicationString = medicationString.slice(0, -2);
-
-    const bodyPartsTagValues = tagFields[2].getElementsByTagName('tag');
+    const bodyPartsTagValues = tagFields[1].getElementsByTagName('tag');
     for(let i = 0; i < bodyPartsTagValues.length; i++) {
       bodyPartsString += bodyPartsTagValues[i].textContent + "::";
     }
     bodyPartsString = bodyPartsString.slice(0, -2);
+
+    const medicationTagValues = tagFields[2].getElementsByTagName('tag');
+    for(let i = 0; i < medicationTagValues.length; i++) {
+      medicationString += medicationTagValues[i].textContent + "::";
+    }
+    medicationString = medicationString.slice(0, -2);
 
     const treatmentMatterTagValues = tagFields[3].getElementsByTagName('tag');
     for(let i = 0; i < treatmentMatterTagValues.length; i++) {
@@ -1595,8 +1609,6 @@ function WorkNote(args) {
           pulse: pulseValue,
           oxygenSaturation: oxygenSaturationValue,
           bloodSugar: bloodSugarValue
-          // note: notes
-          // 활력징후 처리 필요 (비고 제거)
         });
 
         if(response.data === "success") {
@@ -1939,11 +1951,11 @@ function WorkNote(args) {
         }
 
         if(searchStartDate && searchEndDate) {
-          const createdAt = new Date(item.createdAt);
-          const convertedSearchStartDate = new Date(searchStartDate);
-          const convertedSearchEndDate = new Date(searchEndDate);
+          const createdAt = moment(item.createdAt, 'YYYY-MM-DD HH:mm:ss');
+          const convertedSearchStartDate = moment(searchStartDate).startOf('day');
+          const convertedSearchEndDate = moment(searchEndDate).endOf('day');
 
-          if(!(createdAt >= convertedSearchStartDate && createdAt <= convertedSearchEndDate)) {
+          if (!createdAt.isBetween(convertedSearchStartDate, convertedSearchEndDate, null, '[]')) {
             meetsAllConditions = false;
           }
         }
@@ -2139,6 +2151,88 @@ function WorkNote(args) {
 
   };
 
+  const handleOnBedStudentList = () => {
+    toggleOnBedStudentListModal();
+  };
+
+  const fetchOnBedStudentListData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/workNote/getOnBedStudentList`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const resultData = response.data.map(item => ({
+          ...item,
+          createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+          symptom: (item.symptom || "").replace(/::/g, ', '),
+          medication: (item.medication || "").replace(/::/g, ', '),
+          bodyParts: (item.bodyParts || "").replace(/::/g, ', '),
+          treatmentMatter: (item.treatmentMatter || "").replace(/::/g, ', '),
+          onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
+        }));
+
+        setOnBedStudentListData(resultData);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchOnBedStudentListData();
+  }, [fetchOnBedStudentListData]);
+ 
+  const onBedStudentListExportCSV = () => {
+    const params = {
+      fileName: '침상안정 사용 학생 내역',
+      // columnSeparator: ';',  // 열 구분 기호 설정 (기본값 : ',')
+      // includeHeaders: true,  // 헤더 포함 여부 (기본값 : true)
+      // allColumns: true,      // 모든 열 포함 여부 (기본값 : false, 현재 표시된 열만 포함)
+      // onlySelected: true,    // 선택된 행만 내보내기 (기본값 : false)
+      // processCellCallback: (params) => params.value.toUpperCase(),               // 셀 값 처리 콜백
+      // processHeaderCallback: (params) => params.column.getColId().toUpperCase(), // 헤더 값 처리 콜백
+    }
+    onBedStudentListGridRef.current.api.exportDataAsCsv(params);
+  };
+
+  const onBedStudentListPrint = () => {
+
+  };
+
+  const resetSearchOnBedStudentList = () => {
+    setSearchStartDate("");
+    setSearchEndDate("");
+    setSearchSname("");
+    fetchOnBedStudentListData();
+  };
+
+  const searchOnBedStudentList = () => {
+    if(searchSname || (searchStartDate && searchEndDate)) {
+      const searchFilteredRowData = entireWorkNoteRowData.filter(item => {
+        let meetsAllConditions = true;
+
+        if(searchSname && !item.sName.includes(searchSname)) {
+          meetsAllConditions = false;
+        }
+
+        if(searchStartDate && searchEndDate) {
+          const createdAt = moment(item.createdAt, 'YYYY-MM-DD HH:mm:ss');
+          const convertedSearchStartDate = moment(searchStartDate).startOf('day');
+          const convertedSearchEndDate = moment(searchEndDate).endOf('day');
+
+          if (!createdAt.isBetween(convertedSearchStartDate, convertedSearchEndDate, null, '[]')) {
+            meetsAllConditions = false;
+          }
+        }
+
+        return meetsAllConditions;
+      });
+      setOnBedStudentListData(searchFilteredRowData);
+    }
+  };
+  
   return (
     <>
       <div className="content" style={{ height: '84.1vh' }}>
@@ -2334,7 +2428,7 @@ function WorkNote(args) {
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-item-center">
                   <Col className="d-flex">
-                    <Button className="mt-0 mb-0" size="sm" style={{ fontSize: 13}}>침상안정 사용 학생 내역</Button>
+                    <Button className="mt-0 mb-0" size="sm" style={{ fontSize: 13}} onClick={handleOnBedStudentList}>침상안정 사용 학생 내역</Button>
                   </Col>
                   <Col>
                     <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>
@@ -2882,6 +2976,70 @@ function WorkNote(args) {
           <ModalFooter>
             <Button className="mr-1" color="secondary" onClick={saveTreatmentMatter}>저장</Button>
             <Button color="secondary" onClick={toggleTreatmentMatterModal}>취소</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={onBedStudentListModal} toggle={toggleOnBedStudentListModal} centered style={{ minWidth: '80%' }}>
+          <ModalHeader toggle={toggleOnBedStudentListModal}><b>침상안정 사용 학생 내역</b></ModalHeader>
+          <ModalBody>
+            <Row className="d-flex align-items-center">
+              <Col md="4">
+                <Button className="mr-1" size="sm" onClick={onBedStudentListExportCSV}>
+                  <SiMicrosoftexcel className="mr-1" style={{ color: 'green', fontSize: 15 }}/>
+                  엑셀 다운로드
+                </Button>
+                <Button size="sm" onClick={onBedStudentListPrint}>
+                  <TiPrinter className="mr-1" style={{ fontSize: 16, color: 'gray' }}/>
+                  프린트
+                </Button>
+              </Col>
+              <Col className="d-flex align-items-center justify-content-end" md="8">
+                <label className="mr-1 pt-1">작성일</label>
+                <Input 
+                  id="searchStartDate"
+                  type="date"
+                  style={{ width: '17%', height: 28 }}
+                  value={searchStartDate}
+                  onChange={(e) => setSearchStartDate(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                />
+                <span className="ml-1 mr-1">~</span>
+                <Input 
+                  id="searchEndDate"
+                  type="date"
+                  style={{ width: '17%', height: 28 }}
+                  value={searchEndDate}
+                  onChange={(e) => setSearchEndDate(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                />
+                <label className="ml-3 mr-1 pt-1">이름</label>
+                <Input 
+                  id="searchSname"
+                  type="text"
+                  style={{ width: '10%', height: 28 }}
+                  value={searchSname}
+                  onChange={(e) => setSearchSname(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                />
+                <Button className="ml-3 mr-1" size="sm" onClick={resetSearchOnBedStudentList}>초기화</Button>
+                <Button size="sm" onClick={searchOnBedStudentList}>검색</Button>
+              </Col>
+            </Row>
+            <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+              <AgGridReact
+                ref={onBedStudentListGridRef}
+                rowData={onBedStudentListData}
+                columnDefs={onBedStudentListColumnDefs}
+                overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                overlayLoadingTemplate={
+                  '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                }
+                rowSelection={'single'} 
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={toggleOnBedStudentListModal}>닫기</Button>
           </ModalFooter>
        </Modal>
 

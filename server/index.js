@@ -1195,6 +1195,19 @@ app.post("/api/workNote/deleteWorkNote", async (req, res) => {
     });
 });
 
+app.get("/api/workNote/getOnBedStudentList", async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE (onBedStartTime IS NOT NULL OR onBedEndTime IS NOT NULL) AND userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보건일지 내 침상안정 내역 학생 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });    
+});
+
 app.post("/api/workSchedule/insert", async (req, res) => {
     const { userId, schoolCode, eventTitle, eventColor, eventStartDate, eventEndDate } = req.body;
 
