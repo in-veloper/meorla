@@ -62,7 +62,13 @@ function User() {
   const [addTeacherClass, setAddTeacherClass] = useState("");
   const [addTeacherContact, setAddTeacherContact] = useState("");
   const [addTeacherSubject, setAddTeacherSubject] = useState("");
-
+  const [updateTeacherModal, setUpdateTeacherModal] = useState(false);
+  const [updateTeacherName, setUpdateTeacherName] = useState("");
+  const [updateTeacherGrade, setUpdateTeacherGrade] = useState("");
+  const [updateTeacherClass, setUpdateTeacherClass] = useState("");
+  const [updateTeacherContact, setUpdateTeacherContact] = useState("");
+  const [updateTeacherSubject, setUpdateTeacherSubject] = useState("");
+  const [selectedUpdateTeacher, setSelectedUpdateTeacher] = useState(null);
 
   const studentTableGridRef = useRef(null);     
   const teacherTableGridRef = useRef(null);                                // 등록한 명렬표 출력 Grid Reference
@@ -91,6 +97,7 @@ function User() {
   const toggleTeacherTableModal = () => setIsTeacherTableModalOpen(!isTeacherTableModalOpen);
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
   const toggleAddTeacherModal = () => setAddTeacherModal(!addTeacherModal);
+  const toggleUpdateTeacherModal = () => setUpdateTeacherModal(!updateTeacherModal);
     const toggleAddStudentModal = () => {
       setIsAddStudentModalOpen(!isAddStudentModalOpen);
       resetTransferStudent();
@@ -925,11 +932,54 @@ function User() {
   };
 
   const updateTeacher = () => {
-
+    const selectedRow = teacherTableGridRef.current.api.getSelectedRows()[0];
+    
+    if(selectedRow) {
+      setSelectedUpdateTeacher(selectedRow);
+      setUpdateTeacherName(selectedRow.tName);
+      setUpdateTeacherGrade(selectedRow.tGrade);
+      setUpdateTeacherClass(selectedRow.tClass);
+      setUpdateTeacherSubject(selectedRow.tSubject);
+      setUpdateTeacherContact(selectedRow.tPhone);
+      toggleUpdateTeacherModal();
+    }else{
+      const warnMessage = "선택된 교직원이 없습니다<br/>수정할 교직원을 선택해 주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }
   };
 
   const deleteTeacher = () => {
+    const selectedRow = teacherTableGridRef.current.api.getSelectedRows()[0];
 
+    if(selectedRow) {
+      const confirmTitle = "교직원 삭제";
+      const confirmMessage = selectedRow.tName + " 교직원을 삭제하시겠습니까?";
+      
+      const yesCallback = async () => {
+        const response = await axios.post(`${BASE_URL}/api/teachersTable/deleteTeacher`, {
+          rowId: selectedRow.id,
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        });
+
+        if(response.data === 'success') {
+          const infoMessage = "교직원이 정상적으로 삭제되었습니다";
+          NotiflixInfo(infoMessage);
+          fetchTeacherData();
+        }
+      };
+      
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '300px');
+    }else{
+      const warnMessage = "선택된 교직원이 없습니다<br/>삭제할 교직원을 선택해 주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }
   };
 
   const saveTeacher = async () => {
@@ -949,10 +999,50 @@ function User() {
         const infoMessage = "교직원 정보가 정상적으로 등록되었습니다";
         NotiflixInfo(infoMessage);
         fetchTeacherData();
+        resetAddTeacher();
       }
     }else{
       const warnMessage = "교직원 이름은 필수 입력 사항입니다";
       NotiflixWarn(warnMessage);
+    }
+  };
+
+  const resetAddTeacher = () => {
+    setAddTeacherName("");
+    setAddTeacherGrade("");
+    setAddTeacherClass("");
+    setAddTeacherSubject("");
+    setAddTeacherContact("");
+  };
+
+  const resetUpdateTeacher = () => {
+    setUpdateTeacherName("");
+    setUpdateTeacherGrade("");
+    setUpdateTeacherClass("");
+    setUpdateTeacherSubject("");
+    setUpdateTeacherContact("");
+  };
+
+  const saveUpdateTeacher = async () => {
+    if(selectedUpdateTeacher) {
+      const response = await axios.post(`${BASE_URL}/api/teachersTable/updateTeacher`, {
+        rowId: selectedUpdateTeacher.id,
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        tName: updateTeacherName,
+        tGrade: updateTeacherGrade,
+        tClass: updateTeacherClass,
+        tSubject: updateTeacherSubject,
+        tPhone: updateTeacherContact
+      });
+  
+      if(response.data === 'success') {
+        const infoMessage = "교직원 정보가 정상적으로 수정되었습니다";
+        NotiflixInfo(infoMessage);
+        toggleUpdateTeacherModal();
+        fetchTeacherData();
+        resetUpdateTeacher();
+      }
     }
   };
 
@@ -1343,7 +1433,7 @@ function User() {
                     </ModalFooter>
                   </Modal>
 
-                  <Modal isOpen={addTeacherModal} backdrop={true} toggle={toggleAddTeacherModal} centered={true} autoFocus={false} style={{ minWidth: '33%' }}>
+                  <Modal isOpen={addTeacherModal} backdrop={true} toggle={toggleAddTeacherModal} centered={true} autoFocus={false} style={{ minWidth: '35%' }}>
                     <ModalHeader className="text-muted" toggle={toggleAddTeacherModal} closebutton="true">교직원 추가</ModalHeader>
                     <ModalBody>
                       <Row className="d-flex align-items-center no-gutters justify-content-center">
@@ -1359,7 +1449,7 @@ function User() {
                         <Input 
                           className="mr-3"
                           type="number"
-                          style={{ width: '50px' }}
+                          style={{ width: '55px' }}
                           value={addTeacherGrade}
                           onChange={(e) => setAddTeacherGrade(e.target.value)}
                         />
@@ -1367,7 +1457,7 @@ function User() {
                         <Input 
                           className="mr-3"
                           type="number"
-                          style={{ width: '50px' }}
+                          style={{ width: '55px' }}
                           value={addTeacherClass}
                           onChange={(e) => setAddTeacherClass(e.target.value)}
                         />
@@ -1389,8 +1479,69 @@ function User() {
                       </Row>
                     </ModalBody>
                     <ModalFooter className="pt-0 pb-0">
-                      <Button className="mr-1" onClick={saveTeacher}>저장</Button>
-                      <Button onClick={toggleAddTeacherModal}>취소</Button>
+                      <Row className="d-flex align-items-center no-gutters w-100">
+                        <Col className="d-flex justify-content-start">
+                          <Button onClick={resetAddTeacher}>초기화</Button>
+                        </Col>
+                        <Button className="mr-1" onClick={saveTeacher}>저장</Button>
+                        <Button onClick={toggleAddTeacherModal}>취소</Button>
+                      </Row>
+                    </ModalFooter>
+                  </Modal>
+
+                  <Modal isOpen={updateTeacherModal} backdrop={true} toggle={toggleUpdateTeacherModal} centered={true} autoFocus={false} style={{ minWidth: '35%' }}>
+                    <ModalHeader className="text-muted" toggle={toggleUpdateTeacherModal} closebutton="true">교직원 수정</ModalHeader>
+                    <ModalBody>
+                      <Row className="d-flex align-items-center no-gutters justify-content-center">
+                        <label className="mr-1">이름</label>
+                        <Input
+                          className="mr-3"
+                          type="text"
+                          style={{ width: '100px' }}
+                          value={updateTeacherName}
+                          onChange={(e) => setUpdateTeacherName(e.target.value)}
+                        />
+                        <label className="mr-1">학년</label>
+                        <Input 
+                          className="mr-3"
+                          type="number"
+                          style={{ width: '55px' }}
+                          value={updateTeacherGrade}
+                          onChange={(e) => setUpdateTeacherGrade(e.target.value)}
+                        />
+                        <label className="mr-1">반</label>
+                        <Input 
+                          className="mr-3"
+                          type="number"
+                          style={{ width: '55px' }}
+                          value={updateTeacherClass}
+                          onChange={(e) => setUpdateTeacherClass(e.target.value)}
+                        />
+                        <label className="mr-1">과목</label>
+                        <Input 
+                          className="mr-3"
+                          type="text"
+                          style={{ width: '50px' }}
+                          value={updateTeacherSubject}
+                          onChange={(e) => setUpdateTeacherSubject(e.target.value)}
+                        />
+                        <label className="mr-1">연락처</label>
+                        <Input 
+                          type="text"
+                          style={{ width: '130px' }}
+                          value={updateTeacherContact}
+                          onChange={(e) => setUpdateTeacherContact(e.target.value)}
+                        />
+                      </Row>
+                    </ModalBody>
+                    <ModalFooter className="pt-0 pb-0">
+                      <Row className="d-flex align-items-center no-gutters w-100">
+                        <Col className="d-flex justify-content-start">
+                          <Button onClick={resetUpdateTeacher}>초기화</Button>
+                        </Col>
+                        <Button className="mr-1" onClick={saveUpdateTeacher}>저장</Button>
+                        <Button onClick={toggleUpdateTeacherModal}>취소</Button>
+                      </Row>
                     </ModalFooter>
                   </Modal>
 

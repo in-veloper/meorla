@@ -718,13 +718,39 @@ app.get("/api/teachersTable/getTeacherInfo", async (req, res) => {
     });
 });
 
-app.post("/api/teachersTable/addTeacher", async  (req, res) => {
+app.post("/api/teachersTable/addTeacher", async (req, res) => {
     const { userId, schoolName, schoolCode, tName, tGrade, tClass, tSubject, tPhone } = req.body;
     
     const sqlQuery = "INSERT INTO teaform_db.teachers (userId, schoolName, schoolCode, tName, tGrade, tClass, tSubject, tPhone) VALUES (?,?,?,?,?,?,?,?)";
     db.query(sqlQuery, [userId, schoolName, schoolCode, tName, tGrade, tClass, tSubject, tPhone], (err, result) => {
         if(err) {
             console.log("교직원 정보 INSERT 처리 중 ERROR");
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/api/teachersTable/updateTeacher", async (req, res) => {
+    const { rowId, userId, schoolCode, tName, tGrade, tClass, tSubject, tPhone } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.teachers SET tName = ?, tGrade = ?, tClass = ?, tSubject = ?, tPhone = ? WHERE id = ? AND userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [tName, tGrade, tClass, tSubject, tPhone, rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("교직원 정보 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/api/teachersTable/deleteTeacher", async (req, res) => {
+    const { rowId, userId, schoolCode } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.teachers WHERE id = ? AND userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("교직원 정보 DELETE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }

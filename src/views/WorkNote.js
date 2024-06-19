@@ -172,6 +172,14 @@ function WorkNote(args) {
   };
 
   const [symptomColumnDefs] = useState([
+    { field: "category", headerName: "분류", flex: 1,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: [
+          "근골격계", "피부피하계", "소화기계", "순환기계", "호흡기계", "이비인후과계", "안과계", "비뇨생식기계", "구강치아계", "정신신경계", "감염증", "기타"
+        ]
+      }
+    },
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "left" } }
   ]);
 
@@ -190,6 +198,7 @@ function WorkNote(args) {
   // 추가할 행 생성
   const createNewSymptomRowData = () => {
     const newData = {
+      category: "",
       symptom: "",
       editable: true
     }
@@ -224,9 +233,9 @@ function WorkNote(args) {
 
   // Grid 행 추가 Function
   const appendSymptomRow = useCallback(() => {
-    const api = symptomGridRef.current.api;                                          // api 획득
+    const api = symptomGridRef.current.api;                                   // api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
-    const newItem = [createNewSymptomRowData()];                                     // 추가할 행 데이터 획득
+    const newItem = [createNewSymptomRowData()];                              // 추가할 행 데이터 획득
 
     api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
     api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
@@ -236,9 +245,9 @@ function WorkNote(args) {
 
   // Grid 행 추가 Function
   const appendMedicationRow = useCallback(() => {
-    const api = medicationGridRef.current.api;                                          // api 획득
+    const api = medicationGridRef.current.api;                                // api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
-    const newItem = [createNewMedicationRowData()];                                     // 추가할 행 데이터 획득
+    const newItem = [createNewMedicationRowData()];                           // 추가할 행 데이터 획득
 
     api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
     api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
@@ -248,9 +257,9 @@ function WorkNote(args) {
 
     // Grid 행 추가 Function
   const appendBodyPartsRow = useCallback(() => {
-    const api = bodyPartsGridRef.current.api;                                          // api 획득
+    const api = bodyPartsGridRef.current.api;                                 // api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
-    const newItem = [createNewbodyPartsRowData()];                                     // 추가할 행 데이터 획득
+    const newItem = [createNewbodyPartsRowData()];                            // 추가할 행 데이터 획득
 
     api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
     api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
@@ -260,9 +269,9 @@ function WorkNote(args) {
   
   // Grid 행 추가 Function
   const appendTreatmentMatterRow = useCallback(() => {
-    const api = treatmentMatterGridRef.current.api;                                          // api 획득
+    const api = treatmentMatterGridRef.current.api;                           // api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
-    const newItem = [createNewTreatmentMatterRowData()];                                     // 추가할 행 데이터 획득
+    const newItem = [createNewTreatmentMatterRowData()];                      // 추가할 행 데이터 획득
 
     api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
     api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
@@ -271,8 +280,8 @@ function WorkNote(args) {
   }, []);
 
   // Row에 데이터 변경 시 Ag-Grid 내장 Event
-  const onSymptomRowDataUpdated = useCallback(() => {                                // 행이 추가되고 난 후 이벤트 (이 지점에서 추가된 행 확인 가능)
-    const api = symptomGridRef.current.api;                                          // Ag-Grid api 획득
+  const onSymptomRowDataUpdated = useCallback(() => {                         // 행이 추가되고 난 후 이벤트 (이 지점에서 추가된 행 확인 가능)
+    const api = symptomGridRef.current.api;                                   // Ag-Grid api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 화면에 보여지는 행의 개수
     const lastRowIndex = displayedRowCount - 1;                               // Edit 속성 부여 위한 마지막 행 Index
     
@@ -281,12 +290,12 @@ function WorkNote(args) {
       return;                                                                 // return
     }
     
-    if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'symptom' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
+    if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'category' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
   }, [isRemoved, isRegistered]);
 
   // Row에 데이터 변경 시 Ag-Grid 내장 Event
-  const onMedicationRowDataUpdated = useCallback(() => {                                // 행이 추가되고 난 후 이벤트 (이 지점에서 추가된 행 확인 가능)
-    const api = medicationGridRef.current.api;                                          // Ag-Grid api 획득
+  const onMedicationRowDataUpdated = useCallback(() => {                      // 행이 추가되고 난 후 이벤트 (이 지점에서 추가된 행 확인 가능)
+    const api = medicationGridRef.current.api;                                // Ag-Grid api 획득
     const displayedRowCount = api.getDisplayedRowCount();                     // 현재 화면에 보여지는 행의 개수
     const lastRowIndex = displayedRowCount - 1;                               // Edit 속성 부여 위한 마지막 행 Index
     
@@ -332,8 +341,8 @@ function WorkNote(args) {
   };
 
   // Grid 행 삭제 Function
-  const removeSymptomRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
-    const api = symptomGridRef.current.api;                                          // api 획득
+  const removeSymptomRow = () => {                                            // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = symptomGridRef.current.api;                                   // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
     const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
     
@@ -347,8 +356,8 @@ function WorkNote(args) {
   };
 
   // Grid 행 삭제 Function
-  const removeMedicationRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
-    const api = medicationGridRef.current.api;                                          // api 획득
+  const removeMedicationRow = () => {                                         // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = medicationGridRef.current.api;                                // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
     const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
 
@@ -362,8 +371,8 @@ function WorkNote(args) {
   };
 
   // Grid 행 삭제 Function
-  const removeBodyPartsRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
-    const api = bodyPartsGridRef.current.api;                                          // api 획득
+  const removeBodyPartsRow = () => {                                          // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = bodyPartsGridRef.current.api;                                 // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
     const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
 
@@ -377,8 +386,8 @@ function WorkNote(args) {
   };
 
   // Grid 행 삭제 Function
-  const removeTreatmentMatterRow = () => {                                                   // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
-    const api = treatmentMatterGridRef.current.api;                                          // api 획득
+  const removeTreatmentMatterRow = () => {                                    // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = treatmentMatterGridRef.current.api;                           // api 획득
     const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
     const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
     
@@ -564,17 +573,41 @@ function WorkNote(args) {
     const confirmMessage = "작성하신 증상을 저장하시겠습니까?";
     const infoMessage = "증상 설정이 정상적으로 저장되었습니다";
 
-    const yesCallback = async () => {
-      const api = symptomGridRef.current.api;                      // Grid api 획득
-      let symptomString = "";                                      // Parameter 전송 위한 증상 담을 배열
+    const validateFields = () => {
+      const api = symptomGridRef.current.api;
+      let allFieldFilled = true;
 
+      api.forEachNode(function(rowNode) {
+        const category = rowNode.data.category;
+        const symptom = rowNode.data.symptom;
+
+        if(!symptom || !category) {
+          allFieldFilled = false;
+          return;
+        }
+      });
+
+      return allFieldFilled;
+    };
+
+    if(!validateFields()) {
+      const warnMessage = "입력되지 않은 항목이 존재합니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }
+
+    const yesCallback = async () => {
+      const api = symptomGridRef.current.api;                     // Grid api 획득
+      let symptomString = "";                                     // Parameter 전송 위한 증상 담을 배열
+      
       api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
+        const category = rowNode.data.category;                   // 분류 획득
         const symptom = rowNode.data.symptom;                     // 증상 획득
 
-        // 증상 명이 존재 && 북마크 주소 존재 && user 데이터 존재 -> Parameter로 전송할 증상 데이터 생성
-        if(symptom.length !== 0 && user) symptomString += symptom + "::";
-        
+        // 증상 명이 존재 && 분류 존재 && user 데이터 존재 -> Parameter로 전송할 증상 데이터 생성
+        if(symptom.length !== 0 && category.length !== 0 && user) symptomString += symptom + ":" + category + "::";
       });
+
       if(symptomString.endsWith("::")) symptomString = symptomString.slice(0, -2);
       
       let response = null;                  // response 데이터 담을 변수
@@ -582,13 +615,13 @@ function WorkNote(args) {
         response = await axios.post(`${BASE_URL}/api/symptom/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          symptom: symptomString
+          symptomString: symptomString
         });
       }else{                            // 등록된 증상이 없는 경우 - Insert
         response = await axios.post(`${BASE_URL}/api/symptom/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          symptom: symptomString
+          symptomString: symptomString
         });
       }
       
@@ -613,6 +646,28 @@ function WorkNote(args) {
     const confirmMessage = "작성하신 투약사항를 저장하시겠습니까?";
     const infoMessage = "투약사항 설정이 정상적으로 저장되었습니다";
 
+    const validateFields = () => {
+      const api = medicationGridRef.current.api;
+      let allFieldFilled = true;
+
+      api.forEachNode(function(rowNode) {
+        const medication = rowNode.data.medication;
+
+        if(!medication) {
+          allFieldFilled = false;
+          return;
+        }
+      });
+
+      return allFieldFilled;
+    };
+
+    if(!validateFields()) {
+      const warnMessage = "입력되지 않은 항목이 존재합니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }
+
     const yesCallback = async () => {
       const api = medicationGridRef.current.api;                  // Grid api 획득
       let medicationString = "";                                  // Parameter 전송 위한 투약사항 담을 배열
@@ -631,13 +686,13 @@ function WorkNote(args) {
         response = await axios.post(`${BASE_URL}/api/medication/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          medication: medicationString
+          medicationString: medicationString
         });
       }else{                                    // 등록된 투약사항이 없는 경우 - Insert
         response = await axios.post(`${BASE_URL}/api/medication/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          medication: medicationString
+          medicationString: medicationString
         });
       }
       
@@ -661,6 +716,28 @@ function WorkNote(args) {
     const confirmTitle = "인체 부위 설정";
     const confirmMessage = "작성하신 인체 부위를 저장하시겠습니까?";
     const infoMessage = "인체 부위 설정이 정상적으로 저장되었습니다";
+
+    const validateFields = () => {
+      const api = bodyPartsGridRef.current.api;
+      let allFieldFilled = true;
+
+      api.forEachNode(function(rowNode) {
+        const bodyParts = rowNode.data.bodyParts;
+
+        if(!bodyParts) {
+          allFieldFilled = false;
+          return;
+        }
+      });
+
+      return allFieldFilled;
+    };
+
+    if(!validateFields()) {
+      const warnMessage = "입력되지 않은 항목이 존재합니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }
 
     const yesCallback = async () => {
       const api = bodyPartsGridRef.current.api;                      // Grid api 획득
@@ -687,7 +764,7 @@ function WorkNote(args) {
         response = await axios.post(`${BASE_URL}/api/bodyParts/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          bodyParts: bodyPartsString
+          bodyPartsString: bodyPartsString
         });
       }
       
@@ -711,6 +788,28 @@ function WorkNote(args) {
     const confirmTitle = "처치사항 설정";
     const confirmMessage = "작성하신 처치사항을 저장하시겠습니까?";
     const infoMessage = "처치사항 설정이 정상적으로 저장되었습니다";
+
+    const validateFields = () => {
+      const api = treatmentMatterGridRef.current.api;
+      let allFieldFilled = true;
+
+      api.forEachNode(function(rowNode) {
+        const treatmentMatter = rowNode.data.treatmentMatter;
+
+        if(!treatmentMatter) {
+          allFieldFilled = false;
+          return;
+        }
+      });
+
+      return allFieldFilled;
+    };
+
+    if(!validateFields()) {
+      const warnMessage = "입력되지 않은 항목이 존재합니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }
 
     const yesCallback = async () => {
       const api = treatmentMatterGridRef.current.api;                      // Grid api 획득
@@ -770,14 +869,15 @@ function WorkNote(args) {
 
           const symptomString = response.data.symptom.symptom;
           const symptomArray = symptomString.split('::').map(item => {
-            return { symptom: item };
+            const [symptom, category] = item.split(':');
+            return { symptom, category };
           });
           
           setSymptomRowData(symptomArray);
           setFilteredSymptom(symptomArray);
 
           const tagifySymptomArray = symptomString.split('::').map(item => {
-            return item;
+            return item.split(':')[0];
           });
           
           setTagifySymptomSuggestion(tagifySymptomArray);
@@ -2266,12 +2366,12 @@ function WorkNote(args) {
                   </Col>
                 </Row>
                 <Row className="pt-1" style={{ flex: '1 1 auto'}}>
-                  <Col md="4" className="pt-3 pr-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Col md="5" className="pt-3 pr-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
                         <Row>
                           <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '-5px' }}>증상</b>
+                            <b className="action-title">증상</b>
                           </Col>
                           <Col className="text-right" md="5">
                             <IoMdRefresh id="symptomTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote}/>
@@ -2306,6 +2406,37 @@ function WorkNote(args) {
                       </CardBody>
                     </Card>
                   </Col>
+                  <Col md="3" className="pt-3 pl-0" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
+                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
+                        <Row>
+                          <Col className="text-right" md="7">
+                            <b className="action-title" style={{ marginRight: '-10px' }}>인체 부위</b>
+                          </Col>
+                          <Col className="text-right" md="5">
+                            <IoMdRefresh id="bodyPartsTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
+                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleBodyParts}/>
+                          </Col>
+                        </Row>
+                      </CardHeader>
+                      <CardBody className="p-0" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
+                        <TagField name="bodyParts" suggestions={tagifyBodyPartsSuggestion} selectedRowValue={searchBodyPartsText} tagifyGridRef={bodyPartsGridRef} category="bodyPartsTagField" clearField="bodyPartsTagField" />
+                        <div className="ag-theme-alpine" style={{ flex: '1 1 auto' }}>
+                          <AgGridReact
+                            rowHeight={30}
+                            ref={bodyPartsGridRef}
+                            rowData={filteredBodyParts} 
+                            columnDefs={bodyPartsColumnDefs}
+                            headerHeight={0}
+                            suppressHorizontalScroll={true}
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                            onSelectionChanged={(event) => handleBodyPartsRowSelect(event.api.getSelectedRows())}
+                            rowSelection="single"
+                          />
+                        </div>
+                      </CardBody>
+                    </Card>
+                  </Col>
                   <Col md="4" className="pt-3 pl-0 pr-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
                       <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
@@ -2331,37 +2462,6 @@ function WorkNote(args) {
                             suppressHorizontalScroll={true}
                             overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleMedicationRowSelect(event.api.getSelectedRows())}
-                            rowSelection="single"
-                          />
-                        </div>
-                      </CardBody>
-                    </Card>
-                  </Col>
-                  <Col md="4" className="pt-3 pl-0" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <Card style={{ border: '1px solid lightgrey', flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
-                      <CardHeader className="card-work-note-header text-center" style={{ fontSize: 17, backgroundColor: '#F8F9FA', borderBottom: '1px solid lightgrey' }}>
-                        <Row>
-                          <Col className="text-right" md="7">
-                            <b className="action-title" style={{ marginRight: '-10px' }}>인체 부위</b>
-                          </Col>
-                          <Col className="text-right" md="5">
-                            <IoMdRefresh id="bodyPartsTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
-                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleBodyParts}/>
-                          </Col>
-                        </Row>
-                      </CardHeader>
-                      <CardBody className="p-0" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
-                        <TagField name="bodyParts" suggestions={tagifyBodyPartsSuggestion} selectedRowValue={searchBodyPartsText} tagifyGridRef={bodyPartsGridRef} category="bodyPartsTagField" clearField="bodyPartsTagField" />
-                        <div className="ag-theme-alpine" style={{ flex: '1 1 auto' }}>
-                          <AgGridReact
-                            rowHeight={30}
-                            ref={bodyPartsGridRef}
-                            rowData={filteredBodyParts} 
-                            columnDefs={bodyPartsColumnDefs}
-                            headerHeight={0}
-                            suppressHorizontalScroll={true}
-                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                            onSelectionChanged={(event) => handleBodyPartsRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
                           />
                         </div>
