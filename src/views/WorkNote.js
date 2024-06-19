@@ -83,6 +83,13 @@ function WorkNote(args) {
   const [onBedStudentListData, setOnBedStudentListData] = useState([]);
   const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
   const [entireWorkNoteRowData, setEntireWorkNoteRowData] = useState([]);
+  const [registProtectStudentModal, setRegistProtectStudentModal] = useState(false);
+  const [protectSgrade, setProtectSgrade] = useState("");
+  const [protectSclass, setProtectSclass] = useState("");
+  const [protectSnumber, setProtectSnumber] = useState("");
+  const [protectSgender, setProtectSgender] = useState("");
+  const [protectSname, setProtectSname] = useState("");
+  const [protectContent, setProtectContent] = useState("");
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -112,6 +119,7 @@ function WorkNote(args) {
   const toggleTreatmentMatterModal = () => setTreatmentMatterModal(!treatmentMatterModal);
   const toggleVisitRequestTooltip = () => setVisitRequestTooltipOpen(!visitRequestTooltipOpen);
   const toggleOnBedStudentListModal = () => setOnBedStudentListModal(!onBedStudentListModal);
+  const toggleRegistProtectStudentModal = () => setRegistProtectStudentModal(!registProtectStudentModal);
 
   const customCellRenderer = (params) => {
     const { value } = params;
@@ -121,6 +129,13 @@ function WorkNote(args) {
         <span style={{ marginLeft: 10 }}>
           {value}&nbsp;
           <span style={{ color: 'red' }}>*</span>
+        </span>
+      )
+    }else if(params.data.isProtected) {
+      return (
+        <span style={{ marginLeft: 10 }}>
+          {value}&nbsp;
+          <span style={{ color: 'blue' }}>*</span>
         </span>
       )
     }else{
@@ -1859,7 +1874,17 @@ function WorkNote(args) {
   };
 
   const handleProtectClick = () => {
+    if(contextStudentInfo) {
+      const [sGrade, sClass, sNumber, sGender, sName] = contextStudentInfo.split(',');
+      
+      setProtectSgrade(sGrade);
+      setProtectSclass(sClass);
+      setProtectSnumber(sNumber);
+      setProtectSgender(sGender);
+      setProtectSname(sName);
+    }
 
+    toggleRegistProtectStudentModal();
   };
 
   const getRowStyle = (params) => {
@@ -2230,6 +2255,33 @@ function WorkNote(args) {
         return meetsAllConditions;
       });
       setOnBedStudentListData(searchFilteredRowData);
+    }
+  };
+
+  const saveProtectStudent = async () => {
+    if(protectSgrade && protectSclass && protectSnumber && protectSgender && protectSname && protectContent) {
+      const response = await axios.post(`${BASE_URL}/api/workNote/saveProtectStudent`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        sGrade: protectSgrade,
+        sClass: protectSclass,
+        sNumber: protectSnumber,
+        sGender: protectSgender,
+        sName: protectSname,
+        isProtected: true,
+        protectContent: protectContent
+      });
+
+      if(response.data === "success") {
+        const infoMessage = "보호학생이 정상적으로 등록되었습니다";
+        NotiflixInfo(infoMessage);
+        toggleRegistProtectStudentModal();
+        // 필요: 학생 조회시 별표 표시 나타나도록 재조회 렌더링 필요
+      }
+    }else{
+      const warnMessage = "보호내용을 작성해주세요";
+      NotiflixWarn(warnMessage);
+      return;
     }
   };
   
@@ -3040,6 +3092,29 @@ function WorkNote(args) {
           </ModalBody>
           <ModalFooter>
             <Button onClick={toggleOnBedStudentListModal}>닫기</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={registProtectStudentModal} toggle={toggleRegistProtectStudentModal} centered style={{ width: '20%' }}>
+          <ModalHeader toggle={toggleRegistProtectStudentModal}><b>보호학생 등록</b></ModalHeader>
+          <ModalBody>
+            <Row className="d-flex justify-content-center align-items-center no-gutters">
+              <b className="p-1 pl-2 pr-2" style={{ float: 'right', fontSize: '13px', backgroundColor: '#F1F3F5', borderRadius: '7px'}}>
+                {protectSgrade ? protectSgrade : ""} 학년 {protectSclass ? protectSclass : ""} 반 {protectSnumber ? protectSnumber : ""} 번 {protectSgender ? protectSgender : ""} {protectSname ? protectSname : ""}
+              </b>
+            </Row>
+            <Row className="d-flex justify-content-center align-items-center no-gutters mt-3">
+              <Input 
+                type="textarea"
+                placeholder="보호내용을 입력하세요"
+                value={protectContent}
+                onChange={(e) => setProtectContent(e.target.value)}
+              />
+            </Row>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={saveProtectStudent}>등록</Button>
+            <Button onClick={toggleRegistProtectStudentModal}>취소</Button>
           </ModalFooter>
        </Modal>
 

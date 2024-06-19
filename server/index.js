@@ -1353,6 +1353,19 @@ app.post('/api/workNote/updateOnBedEndTime', async (req, res) => {
     });
 });
 
+app.post('/api/workNote/saveProtectStudent', async (req, res) => {
+    const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, isProtected, protectContent } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.students SET isProtected = ?, protectContent = ? WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [isProtected, protectContent, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+        if(err) {
+            console.log("보호학생 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
 app.get('/api/request/getCurrentInfo', async (req, res) => {
     const schoolCode = req.query.schoolCode;
 
