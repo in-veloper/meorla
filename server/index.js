@@ -1208,6 +1208,32 @@ app.get("/api/workNote/getOnBedStudentList", async (req, res) => {
     });    
 });
 
+app.get("/api/workNote/getDiabetesStudents", async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND isDiabetes = 1";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("당뇨질환 학생 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.get("/api/workNote/getProtectStudents", async (req, res) => {
+    const {userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND isProtected = 1";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보호학생 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.post("/api/workSchedule/insert", async (req, res) => {
     const { userId, schoolCode, eventTitle, eventColor, eventStartDate, eventEndDate } = req.body;
 

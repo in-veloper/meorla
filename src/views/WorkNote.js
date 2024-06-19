@@ -90,6 +90,10 @@ function WorkNote(args) {
   const [protectSgender, setProtectSgender] = useState("");
   const [protectSname, setProtectSname] = useState("");
   const [protectContent, setProtectContent] = useState("");
+  const [manageProtectStudentModal, setManageProtectStudentModal] = useState(false);
+  const [diabetesStudentsRowData, setDiabetesStudentsRowData] = useState([]);
+  const [protectStudentsRowData, setProtectStudentsRowData] = useState([]);
+  const [isPopUpProtectStudent, setIsPopUpProtectStudent] = useState(false);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -100,6 +104,8 @@ function WorkNote(args) {
   const bodyPartsGridRef = useRef();
   const treatmentMatterGridRef = useRef();
   const notificationAlert = useRef();
+  const diabetesStudentGridRef = useRef();
+  const protectStudentGridRef = useRef();
 
   const { show: showLeftMenu } = useContextMenu({
     id: MENU_ID_LEFT_GRID,
@@ -120,6 +126,7 @@ function WorkNote(args) {
   const toggleVisitRequestTooltip = () => setVisitRequestTooltipOpen(!visitRequestTooltipOpen);
   const toggleOnBedStudentListModal = () => setOnBedStudentListModal(!onBedStudentListModal);
   const toggleRegistProtectStudentModal = () => setRegistProtectStudentModal(!registProtectStudentModal);
+  const toggleManageProtectStudentModal = () => setManageProtectStudentModal(!manageProtectStudentModal);
 
   const customCellRenderer = (params) => {
     const { value } = params;
@@ -184,6 +191,23 @@ function WorkNote(args) {
     { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }}
+  ]);
+
+  const [diabetesStudentColumnDefs] = useState([
+    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sGender", headerName: "성별", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
+  ]);
+
+  const [protectStudentColumnDefs] = useState([
+    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sGender", headerName: "성별", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "protectContent", headerName: "보호내용", flex: 2, cellStyle: { textAlign: "center" }},
   ]);
 
 
@@ -2276,6 +2300,7 @@ function WorkNote(args) {
         const infoMessage = "보호학생이 정상적으로 등록되었습니다";
         NotiflixInfo(infoMessage);
         toggleRegistProtectStudentModal();
+        onSearchStudent(searchCriteria);
         // 필요: 학생 조회시 별표 표시 나타나도록 재조회 렌더링 필요
       }
     }else{
@@ -2283,6 +2308,43 @@ function WorkNote(args) {
       NotiflixWarn(warnMessage);
       return;
     }
+  };
+
+  const handleManageProtectStudent = () => {
+    toggleManageProtectStudentModal();
+  };
+
+  const fetchDiabetesStudentData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/workNote/getDiabetesStudents`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) setDiabetesStudentsRowData(response.data);
+    }
+  }, [user]);
+
+  const fetchProtectStudentData = useCallback(async () => {
+    const response = await axios.get(`${BASE_URL}/api/workNote/getProtectStudents`, {
+      params: {
+        userId: user.userId,
+        schoolCode: user.schoolCode
+      }
+    });
+
+    if(response.data) setProtectStudentsRowData(response.data);    
+  }, [user]);
+
+  useEffect(() => {
+    fetchDiabetesStudentData();
+    fetchProtectStudentData();
+  }, [fetchDiabetesStudentData, fetchProtectStudentData]);
+
+  const handlePopUpProtectStudent = () => {
+    
   };
   
   return (
@@ -2442,7 +2504,7 @@ function WorkNote(args) {
                     <Button size="sm">학생관리</Button>
                   </Col>
                   <Col className="d-flex justify-content-end" md="8">
-                    <Button size="sm">보호학생관리</Button>
+                    <Button size="sm" onClick={handleManageProtectStudent}>보호학생관리</Button>
                     <Button className="ml-1" size="sm" onClick={handleEmergencyStudent}>응급학생관리</Button>
                   </Col>
                 </Row>
@@ -3105,6 +3167,7 @@ function WorkNote(args) {
             </Row>
             <Row className="d-flex justify-content-center align-items-center no-gutters mt-3">
               <Input 
+                className="p-2"
                 type="textarea"
                 placeholder="보호내용을 입력하세요"
                 value={protectContent}
@@ -3115,6 +3178,71 @@ function WorkNote(args) {
           <ModalFooter>
             <Button onClick={saveProtectStudent}>등록</Button>
             <Button onClick={toggleRegistProtectStudentModal}>취소</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={manageProtectStudentModal} toggle={toggleManageProtectStudentModal} centered style={{ minWidth: '50%' }}>
+          <ModalHeader toggle={toggleManageProtectStudentModal}><b>보호학생 관리</b></ModalHeader>
+          <ModalBody>
+            <Card className="p-2" style={{ border: '1px solid lightgray'}}>
+              <Row className="d-flex align-items-center no-gutters">
+                <Col md="10">
+                  <span className="mr-2">보호학생은 개인정보로 인하여 당뇨질환학생은</span>
+                  <span className="mr-2" style={{ color: 'red', fontWeight: 'bold' }}>*</span>
+                  <span className="mr-2">그 외 보호학생은</span>
+                  <span className="mr-2" style={{ color: 'blue', fontWeight: 'bold' }}>*</span>
+                  <span>으로 학생 이름 우측에 표시됩니다</span>
+                </Col>
+                <Col className="d-flex justify-content-end align-items-center mt-1" md="2">
+                  <CustomInput 
+                    type="switch"
+                    id="isPopUpProtectStudent"
+                    label={<span style={{ lineHeight: '24px' }}><b>팝업 표시 여부</b></span>}
+                    checked={isPopUpProtectStudent}
+                    onChange={handlePopUpProtectStudent}
+                  />
+                </Col>
+              </Row>
+            </Card>
+            <Row className="mt-3">
+              <Col md="5">
+                <Row className="d-flex align-items-center no-gutters">
+                  <label className="font-weight-bold" style={{ fontSize: 15 }}>당뇨질환학생 목록</label>
+                </Row>
+                <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+                  <AgGridReact
+                    ref={diabetesStudentGridRef}
+                    rowData={diabetesStudentsRowData}
+                    columnDefs={diabetesStudentColumnDefs}
+                    overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                    overlayLoadingTemplate={
+                      '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                    }
+                    rowSelection={'single'} 
+                  />
+                </div>
+              </Col>
+              <Col md="7">
+                <Row className="d-flex align-items-center no-gutters">
+                  <label className="font-weight-bold" style={{ fontSize: 15 }}>보호학생 목록</label>
+                </Row>
+                <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+                  <AgGridReact
+                    ref={protectStudentGridRef}
+                    rowData={protectStudentsRowData}
+                    columnDefs={protectStudentColumnDefs}
+                    overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                    overlayLoadingTemplate={
+                      '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                    }
+                    rowSelection={'single'} 
+                  />
+                </div>
+              </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={toggleManageProtectStudentModal}>취소</Button>
           </ModalFooter>
        </Modal>
 
