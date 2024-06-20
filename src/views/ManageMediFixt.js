@@ -11,6 +11,7 @@ import { Block } from 'notiflix/build/notiflix-block-aio';
 import '../assets/css/managemedifixt.css';
 import NotiflixInfo from "components/Notiflix/NotiflixInfo.js";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn.js";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm.js";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -360,25 +361,59 @@ function ManageMediFixt() {
 
     const deleteMedicineFixt = async () => {
         if(selectedMenu === "medicine") {
-            if(selectedMedicineRowData && user) { 
-                const response = await axios.post(`${BASE_URL}/api/stockMedicine/deleteStockMedicine`, {
-                    userId: user.userId,
-                    schoolCode: user.schoolCode,
-                    rowId: selectedMedicineRowData.id
-                });
+            const medicineSelectedRow = medicineGridRef.current.api.getSelectedRows()[0];
+            if(medicineSelectedRow) { 
+                const confirmTitle = "약품관리 삭제";
+                const confirmMessage = "선택하신 약품 재고를 삭제하시겠습니까?";
 
-                if(response.data === 'success') {
-                    const infoMessage = "약품 재고가 정상적으로 삭제되었습니다";
-                    NotiflixInfo(infoMessage);
-                    fetchStockMedicineData();
+                const yesCallback = async () => {
+                    const response = await axios.post(`${BASE_URL}/api/stockMedicine/deleteStockMedicine`, {
+                        userId: user.userId,
+                        schoolCode: user.schoolCode,
+                        rowId: medicineSelectedRow.id
+                    });
+                    
+                    if(response.data === 'success') {
+                        const infoMessage = "약품 재고가 정상적으로 삭제되었습니다";
+                        NotiflixInfo(infoMessage);
+                        fetchStockMedicineData();
+                    }
+                };
+
+                const noCallback = () => {
+                    return;
                 }
+
+                NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
             }else{
                 const warnMessage = "삭제할 행을 선택해 주세요";
                 NotiflixWarn(warnMessage);
             }
         }else if(selectedMenu === "fixture") {
-            if(selectedFixtRowData && user) {
+            const fixtureSelectedRow = fixtureGridRef.current.api.getSelectedRows()[0];
+            if(fixtureSelectedRow) {
+                const confirmTitle = "비품관리 삭제";
+                const confirmMessage = "선택하신 비품 재고를 삭제하시겠습니까?";
 
+                const yesCallback = async () => {
+                    const response = await axios.post(`${BASE_URL}/api/stockFixt/deleteStockFixt`, {
+                        userId: user.userId,
+                        schoolCode: user.schoolCode,
+                        rowId: fixtureSelectedRow.id
+                    });
+
+                    if(response.data === 'success') {
+                        const infoMessage = "비품 재고가 정상적으로 삭제되었습니다";
+                        NotiflixInfo(infoMessage);
+                        fetchStockFixtData();
+                    }
+                };
+
+                const noCallback = () => {
+                    return;
+                };
+
+                NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
             }else{
                 const warnMessage = "삭제할 행을 선택해 주세요";
                 NotiflixWarn(warnMessage);

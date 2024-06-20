@@ -2886,13 +2886,13 @@ function WorkNote(args) {
                   <Col md="3">
                     <Button className="" onClick={toggleEntireWorkNoteGrid}>전체 보건일지</Button>
                   </Col>
-                  <Col md="6" className="d-flex justify-content-center">
+                  <Col md="3" className="d-flex justify-content-center">
+                  </Col>
+                  <Col className="d-flex justify-content-end" md="6">
                     <Button className="mr-2"  onClick={handleClearAllWorkNote}>초기화</Button>
                     <Button className="mr-1" onClick={saveWorkNote}>등록</Button>
                     <Button className="mr-1" onClick={updateWorkNote}>수정</Button>
                     <Button className="mr-1" onClick={deleteWorkNote}>삭제</Button>
-                  </Col>
-                  <Col className="d-flex justify-content-end" md="3">
                   </Col>
                 </Row>
               </CardFooter>

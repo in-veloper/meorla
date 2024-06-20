@@ -1027,7 +1027,7 @@ app.post("/api/stockFixt/saveStockFixt", async (req, res) => {
 app.get('/api/stockFixt/getStockFixt', async (req, res) => {
     const { userId, schoolCode } = req.query;
 
-    const sqlQuery = "SELECT * FROM teaform_db.stockFixt WHERE userID = ? AND schoolCode = ?";
+    const sqlQuery = "SELECT * FROM teaform_db.stockFixt WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("비품 재고 조회 중 ERROR", err);
@@ -1044,6 +1044,19 @@ app.post('/api/stockFixt/updateStockFixt', async (req, res) => {
     db.query(sqlQuery, [fixtName, fixtCoporate, fixtLatestPurchaseDate, fixtUnit, fixtStockAmount, fixtExtinctAmount, fixtRegistrationUnitAmount, userId, schoolCode, rowId], (err, result) => {
         if(err) {
             console.log("비품 재고 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post('/api/stockFixt/deleteStockFixt', async (req, res) => {
+    const { userId, schoolCode, rowId } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.stockFixt WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [userId, schoolCode, rowId], (err, result) => {
+        if(err) {
+            console.log("비품 재고 DELETE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }
