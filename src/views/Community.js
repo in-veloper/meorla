@@ -12,6 +12,7 @@ import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import { LiaCrownSolid } from "react-icons/lia";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import { useDropzone } from "react-dropzone";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -42,8 +43,14 @@ function Community() {
     const [myOpinionSharingData, setMyOpinionSharingData] = useState(null);
     const [resourceWriteModal, setResourceWriteModal] = useState(false);
     const [selectedResourceCategoryOption, setSelectedResourceCategoryOption] = useState("classResource");
-    const [fileMessage, setFileMessage] = useState(<div className='d-flex justify-content-center align-items-center text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일을 업로드 해주세요</div>);
+    const [fileMessage, setFileMessage] = useState(<div className='d-flex justify-content-center align-items-center text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [resourceSharingSelectedRow, setResourceSharingSelectedRow] = useState(null);
+    const [resourceCategoryDetailValue, setResourceCategoryDetailValue] = useState("");
+    const [resourceTitleDetailValue, setResourceTitleDetailValue] = useState("");
+    const [resourceContentDetailValue, setResourceContentDetailValue] = useState("");
+    const [resourceDetailContentData, setResourceDetailContentData] = useState("");
+    const [resourceDetailModal, setResourceDetailModal] = useState(false);
 
     const opinionSharingGridRef = useRef(null);
     const resourceSharingGridRef = useRef(null);
@@ -54,6 +61,7 @@ function Community() {
     const toggleOpinionDetailModal = () => setOpinionDetailModal(!opinionDetailModal);
     const toggleMyOpinionSharingModal = () => setMyOpinionSharingModal(!myOpinionSharingModal);
     const toggleResourceWriteModal = () => setResourceWriteModal(!resourceWriteModal);
+    const toggleResourceDetailModal = () => setResourceDetailModal(!resourceDetailModal);
 
     const defaultColDef = {
         sortable: true,
@@ -241,12 +249,37 @@ function Community() {
         await opinionSharingIncrementViewCount(params.data.id);
     };
 
+    const resourceSharingDoubleClick = async (params) => {
+        const selectedRow = params.data;
+
+        resourceCheckThumbsUp(selectedRow.id);
+        setResourceSharingSelectedRow(selectedRow);
+        setResourceCategoryDetailValue(selectedRow.rsCategory);
+        setResourceTitleDetailValue(selectedRow.rsTitle);
+        setResourceContentDetailValue(selectedRow.rsContent);
+        setIsEditMode(params.data.userId === user.userId);
+        toggleResourceDetailModal();
+
+        const parsedContent = JSON.parse(selectedRow.rsContent);
+        setResourceDetailContentData(parsedContent.content);
+
+        await resourceSharingIncrementViewCount(params.data.id);
+    };
+
     const opinionSharingIncrementViewCount = async (rowId) => {
         const response = await axios.post(`${BASE_URL}/api/community/opinionSharingIncrementViewCount`, {
             rowId: rowId
         });
 
         if(response.data === "success") fetchOpinionSharingData();
+    };
+
+    const resourceSharingIncrementViewCount = async (rowId) => {
+        const response = await axios.post(`${BASE_URL}/api/community/resourceSharingIncrementViewCount`, {
+            rowId: rowId
+        });
+
+        if(response.data === "success") fetchResourceSharingData();
     };
 
     const updateOpinionSharing = async () => {
@@ -318,6 +351,20 @@ function Community() {
         }
     };
 
+    const resourceCheckThumbsUp = async (rowId) => {
+        const response = await axios.get(`${BASE_URL}/api/community/resourceCheckThumbsUp`, {
+            params: {
+                viewType: 'rs',
+                userId: user.userId,
+                postId: rowId
+            }
+        });
+        if(response.data) {
+            if(response.data.hasThumbedUp === 0) setIsThumbedUp(false);
+            else if(response.data.hasThumbedUp === 1) setIsThumbedUp(true);
+        }
+    };
+
     const getRowClass = (params) => {
         if(params.node.rowPinned) {
             return 'pinned-row';
@@ -341,15 +388,16 @@ function Community() {
         setTitleValue("");
         setContentData("");
         setSelectedFile(null);
-        setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일을 업로드 해주세요</div>);
+        setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>);
     };
 
     const saveResourceWrite = async () => {
         const payload = { content: contentData };
 
         let formData = new FormData();
+        const encodedFileName = encodeURIComponent(selectedFile.name);
         formData.append("uploadPath", user.userId + "/resourceFiles");
-        formData.append("file", selectedFile);
+        formData.append("file", new File([selectedFile], encodedFileName, { type: selectedFile.type }));
 
         const config = { headers: { "Content-Type": "multipart/form-data" }};
 
@@ -357,8 +405,8 @@ function Community() {
             const fileUploadResponse = await axios.post(`${BASE_URL}/upload/image`, formData, config);
 
             if(fileUploadResponse.status === 200) {
-                const fileName = fileUploadResponse.data.filename;
-
+                const { filename, fileUrl } = fileUploadResponse.data;
+                
                 const response = await axios.post(`${BASE_URL}/api/community/saveResourceSharing`, {
                     userId: user.userId,
                     userName: user.name,
@@ -366,7 +414,8 @@ function Community() {
                     rsCategory: selectedResourceCategoryOption,
                     rsTitle: titleValue,
                     rsContent: JSON.stringify(payload),
-                    fileName: fileName,
+                    fileName: filename,
+                    fileUrl: fileUrl,
                     category: "resourceSharing"
                 });
 
@@ -374,7 +423,7 @@ function Community() {
                     const infoMessage = "자료공유 글이 정상적으로 등록되었습니다";
                     NotiflixInfo(infoMessage);
                     toggleResourceWriteModal();
-                    
+                    fetchResourceSharingData();
                 }
 
             }
@@ -413,8 +462,44 @@ function Community() {
 
     const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
         onDrop,
-        onFileDialogCancel: () => setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>인증서 파일(.cer)을 업로드 해주세요</div>)
-    })
+        onFileDialogCancel: () => setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>)
+    });
+
+    const deleteOpinionSharing = () => {
+        if(opinionSharingSelectedRow) {
+            const confirmTitle = "의견공유 글 삭제";
+            const confirmMessage = "선택하신 의견공유 글을 삭제하시겠습니까?";
+            
+            const yesCallback = async () => {
+                const response = await axios.post(`${BASE_URL}/api/community/deleteOpinionSharing`, {
+                    rowId: opinionSharingSelectedRow.id,
+                    userId: user.userId,
+                    schoolCode: user.schoolCode,
+                });
+
+                if(response.data === 'success') {
+                    const infoMessage = "의견공유 글이 정상적으로 삭제되었습니다";
+                    NotiflixInfo(infoMessage);
+                    fetchOpinionSharingData();
+                    toggleOpinionDetailModal();
+                }
+            };
+
+            const noCallback = () => {
+                return;
+            };
+
+            NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+        }
+    };
+    
+    const updateResourceSharing = () => {
+
+    };
+
+    const deleteResourceSharing = () => {
+
+    };
 
     return (
         <>
@@ -486,6 +571,7 @@ function Community() {
                                     rowData={resourceSharingData} 
                                     columnDefs={resourceSharingColDef} 
                                     defaultColDef={defaultColDef}
+                                    onRowDoubleClicked={resourceSharingDoubleClick}
                                     overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 자료공유 글이 없습니다</span>' }
                                     pinnedTopRowData={resourcePinnedRows}
                                 />
@@ -680,6 +766,7 @@ function Community() {
                         {isEditMode ? (
                             <Col className="d-flex justify-content-end">
                                 <Button onClick={updateOpinionSharing}>수정</Button>
+                                <Button onClick={deleteOpinionSharing}>삭제</Button>
                                 <Button className="ml-1" onClick={toggleOpinionDetailModal}>취소</Button>
                             </Col>
                         ) : (
@@ -785,6 +872,112 @@ function Community() {
                             <Button className="mr-1" color="secondary" onClick={saveResourceWrite}>저장</Button>
                             <Button color="secondary" onClick={toggleResourceWriteModal}>취소</Button>
                         </Col>
+                    </Row>
+                </ModalFooter>
+            </Modal>
+            
+            <Modal isOpen={resourceDetailModal} toggle={toggleResourceDetailModal} centered style={{ minWidth: '32%' }}>
+                <ModalHeader toggle={toggleResourceDetailModal}><b className="text-muted">자료공유 상세</b></ModalHeader>
+                <ModalBody className="pb-0">
+                    <Row className="d-flex align-items-center text-muted no-gutters">
+                        <Col md="1" className="text-center">
+                            <Label>분류</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            <Input
+                                id="resourceCategory"
+                                name="select"
+                                type="select"
+                                style={{ width: '120px' }}
+                                defaultValue={resourceSharingSelectedRow ? resourceSharingSelectedRow.rsCategory : ""}
+                                onChange={(e) => setResourceCategoryDetailValue(e.target.value)}
+                                disabled={!isEditMode}
+                            >
+                                <option value='classResource'>수업자료</option>
+                                <option value='businessResource'>사업자료</option>
+                                <option value='formResource'>양식</option>
+                                <option value='etcResource'>기타</option>
+                            </Input>
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>제목</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            <Input 
+                                id="communityTitle"
+                                type="text"
+                                defaultValue={resourceSharingSelectedRow ? resourceSharingSelectedRow.rsTitle : ""}
+                                onChange={(e) => setResourceTitleDetailValue(e.target.value)}
+                                readOnly={!isEditMode}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>내용</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            {isEditMode ? (
+                                <div style={{ height: '20.6vh' }}>
+                                    <ReactQuill
+                                        ref={quillRef}
+                                        style={{ height: "14vh" }}
+                                        theme="snow"
+                                        modules={modules}
+                                        formats={formats}
+                                        defaultValue={resourceDetailContentData || ""}
+                                        onChange={handleDetailQuillChange}
+                                    />
+                                </div>
+                            ) : (
+                                <div style={{ height: '26vh'}}>
+                                    <ReactQuill
+                                        ref={quillRef}
+                                        style={{ height: "24.5vh" }}
+                                        theme="snow"
+                                        modules={{ toolbar: false }}
+                                        readOnly={true}
+                                        value={resourceDetailContentData || ""}
+                                    />
+                                </div>
+                            )}
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3">
+                        <Col md="1" className="text-center">
+                            <Label>파일</Label>
+                        </Col>
+                        <Col md="11" style={{ border: '1px solid lightgrey'}}>
+                            {isEditMode ? (
+                                <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', height: '5vh', paddingTop: '7px', textAlign: 'center' }}>
+                                    <input {...getInputProps()}/>
+                                    {fileMessage}
+                                </div>
+                            ) : (
+                                resourceSharingSelectedRow && resourceSharingSelectedRow.fileUrl ? (
+                                    <a href={resourceSharingSelectedRow.fileUrl} download>{resourceSharingSelectedRow.fileName}</a>
+                                ) : (
+                                    <div className="text-muted">파일 없음</div>
+                                )
+                            )}
+                        </Col>
+                    </Row>
+                </ModalBody>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        {isEditMode ? (
+                            <Col className="d-flex justify-content-end">
+                                <Button onClick={updateResourceSharing}>수정</Button>
+                                <Button onClick={deleteResourceSharing}>삭제</Button>
+                                <Button className="ml-1" onClick={toggleResourceDetailModal}>취소</Button>
+                            </Col>
+                        ) : (
+                            <Col className="d-flex justify-content-end">
+                                <Button onClick={toggleResourceDetailModal}>취소</Button>
+                            </Col>
+                        )}
                     </Row>
                 </ModalFooter>
             </Modal>

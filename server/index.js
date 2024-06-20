@@ -1082,9 +1082,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.post("/upload/image", upload.single('file'), (req, res) => {
+    const fileUrl = `/uploads/${req.body.uploadPath}/${req.file.filename}`;
     res.json({
         message: 'Image가 업로드 성공',
-        filename: req.file.filename
+        filename: req.file.filename,
+        fileUrl: fileUrl
     });
 });
 
@@ -1793,6 +1795,18 @@ app.post('/api/community/updateOpinionSharing', async (req, res) => {
     });
 });
 
+app.post('/api/community/deleteOpinionSharing', async (req, res) => {
+    const { rowId, userId, schoolCode } = req.body;
+     const sqlQuery = "DELETE FROM teaform_db.opinionSharing WHERE id = ? AND userId = ? AND schoolCode = ?";
+     db.query(sqlQuery, [rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("의견공유 글 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+     });
+});
+
 app.post('/api/community/opinionSharingIncrementViewCount', async (req, res) => {
     const { rowId } = req.body;
 
@@ -1800,6 +1814,19 @@ app.post('/api/community/opinionSharingIncrementViewCount', async (req, res) => 
     db.query(sqlQuery, [rowId], (err, result) => {
         if(err) {
             console.log("커뮤니티 의견공유 조회수 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post('/api/community/resourceSharingIncrementViewCount', async (req, res) => {
+    const { rowId } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.resourceSharing SET views = views + 1 WHERE id = ?";
+    db.query(sqlQuery, [rowId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 자료공유 조회수 UPDATE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }
@@ -1849,16 +1876,30 @@ app.get('/api/community/opinionCheckThumbsUp', async (req, res) => {
     });
 });
 
-app.post("/api/community/saveResourceSharing", async (req, res) => {
-    const { userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName, category } = req.body;
+app.get('/api/community/resourceCheckThumbsUp', async (req, res) => {
+    const { viewType, userId, postId } = req.query;
 
-    const sqlQuery = "INSERT INTO teaform_db.uploadFile (userId, schoolCode, category, fileName) VALUES (?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, category, fileName], (err, result) => {
+    const sqlQuery = "SELECT EXISTS (SELECT 1 FROM teaform_db.recommendations WHERE viewType = ? AND userId = ? AND postId = ?) AS hasThumbedUp";
+    db.query(sqlQuery, [viewType, userId, postId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 자료공유 추천여부 조회 중 ERROR", err);
+        }else{
+            const hasThumbedUp = result[0].hasThumbedUp;
+            res.json({hasThumbedUp: hasThumbedUp}); // 1: 추천 있음, 0: 추천 없음
+        }
+    });
+});
+
+app.post("/api/community/saveResourceSharing", async (req, res) => {
+    const { userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName, fileUrl, category } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.uploadFile (userId, schoolCode, category, fileName, fileUrl) VALUES (?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, category, fileName, fileUrl], (err, result) => {
         if(err) {
             console.log("자료공유 업로드 파일 정보 INSERT 처리 중 ERROR", err);
         }else{
-            const sqlQuery2 = "INSERT INTO teaform_db.resourceSharing (userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName) VALUES (?,?,?,?,?,?,?)"
-            db.query(sqlQuery2, [userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName], (err, result) => {
+            const sqlQuery2 = "INSERT INTO teaform_db.resourceSharing (userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName, fileUrl) VALUES (?,?,?,?,?,?,?,?)"
+            db.query(sqlQuery2, [userId, userName, schoolCode, rsCategory, rsTitle, rsContent, fileName, fileUrl], (err, result) => {
                 if(err) {
                     console.log("자료공유 글 INSERT 처리 중 ERROR", err);
                 }else{
