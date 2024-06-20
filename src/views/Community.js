@@ -51,6 +51,8 @@ function Community() {
     const [resourceContentDetailValue, setResourceContentDetailValue] = useState("");
     const [resourceDetailContentData, setResourceDetailContentData] = useState("");
     const [resourceDetailModal, setResourceDetailModal] = useState(false);
+    const [uploadedFileUrl, setUploadedFileUrl] = useState(null);
+    const [uploadedFileName, setUploadedFileName] = useState(null);
 
     const opinionSharingGridRef = useRef(null);
     const resourceSharingGridRef = useRef(null);
@@ -77,6 +79,13 @@ function Community() {
         else if(params.data.osCategory === "etc") return "기타";
     };
 
+    const resourceSharingCategoryFormatter = (params) => {
+        if(params.data.rsCategory === "classResource") return "수업자료";
+        else if(params.data.rsCategory === "businessResource") return "사업자료";
+        else if(params.data.rsCategory === "formResource") return "양식자료";
+        else if(params.data.rsCategory === "etcResource") return "기타";
+    };
+
     const registDateFormatter = (params) => {
         const dateTime = params.data.createdAt;
 
@@ -98,7 +107,7 @@ function Community() {
     ]);
 
     const [resourceSharingColDef] = useState([
-        { field: "rsCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: opinionSharingCategoryFormatter },
+        { field: "rsCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: resourceSharingCategoryFormatter },
         { field: "rsTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
         { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
         { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
@@ -457,13 +466,46 @@ function Community() {
 
     const onDrop = useCallback((acceptedFiles, fileRejections) => {
         setSelectedFile(acceptedFiles[0]);
-        setFileMessage(<div className='d-flex justify-content-center align-items-center text-muted pt-2'>{acceptedFiles[0].name}</div>);
+        setUploadedFileUrl(null);
+        setUploadedFileName(acceptedFiles[0].name);
+        setFileMessage(
+            <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
+                {acceptedFiles[0].name}
+                <Button close onClick={() => handleFileDelete()} />
+            </div>
+        );
     }, []);
-
-    const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    
+    const dropzoneConfig = {
         onDrop,
-        onFileDialogCancel: () => setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>)
+        onFileDialogCancel: () => setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br />파일을 업로드 해주세요</div>)
+    };
+
+    const { getRootProps, getInputProps, open } = useDropzone({
+        ...dropzoneConfig,
+        noClick: !!uploadedFileUrl // 파일이 기존에 등록된 경우 noClick 옵션을 적용
     });
+
+    // 자료공유 모달 열릴 시 Dropzone 파일 메시지 설정
+    useEffect(() => {
+        if(resourceDetailModal && resourceSharingSelectedRow && resourceSharingSelectedRow.fileUrl) {
+            setUploadedFileUrl(resourceSharingSelectedRow.fileUrl);
+            setUploadedFileName(resourceSharingSelectedRow.fileName);
+            setFileMessage(
+                <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
+                    <a href={resourceSharingSelectedRow.fileUrl} download>{resourceSharingSelectedRow.fileName}</a>
+                    <Button close onClick={() => handleFileDelete()} />
+                </div>
+            );
+        }
+    }, [resourceDetailModal, setResourceSharingSelectedRow]);
+
+    const handleFileDelete = () => {
+        setUploadedFileUrl(null);
+        setUploadedFileName(null);
+        setSelectedFile(null);
+        setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br />파일을 업로드 해주세요</div>);
+    };
 
     const deleteOpinionSharing = () => {
         if(opinionSharingSelectedRow) {
@@ -766,7 +808,7 @@ function Community() {
                         {isEditMode ? (
                             <Col className="d-flex justify-content-end">
                                 <Button onClick={updateOpinionSharing}>수정</Button>
-                                <Button onClick={deleteOpinionSharing}>삭제</Button>
+                                <Button className="ml-1" onClick={deleteOpinionSharing}>삭제</Button>
                                 <Button className="ml-1" onClick={toggleOpinionDetailModal}>취소</Button>
                             </Col>
                         ) : (
@@ -945,11 +987,11 @@ function Community() {
                             )}
                         </Col>
                     </Row>
-                    <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3">
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3" style={{ marginLeft: 2 }}>
                         <Col md="1" className="text-center">
                             <Label>파일</Label>
                         </Col>
-                        <Col md="11" style={{ border: '1px solid lightgrey'}}>
+                        <Col className="p-2" md="11" style={{ border: '1px solid lightgrey', borderRadius: 3 }}>
                             {isEditMode ? (
                                 <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', height: '5vh', paddingTop: '7px', textAlign: 'center' }}>
                                     <input {...getInputProps()}/>
@@ -957,7 +999,7 @@ function Community() {
                                 </div>
                             ) : (
                                 resourceSharingSelectedRow && resourceSharingSelectedRow.fileUrl ? (
-                                    <a href={resourceSharingSelectedRow.fileUrl} download>{resourceSharingSelectedRow.fileName}</a>
+                                    <b><a href={resourceSharingSelectedRow.fileUrl} download>{resourceSharingSelectedRow.fileName}</a></b>
                                 ) : (
                                     <div className="text-muted">파일 없음</div>
                                 )
@@ -970,7 +1012,7 @@ function Community() {
                         {isEditMode ? (
                             <Col className="d-flex justify-content-end">
                                 <Button onClick={updateResourceSharing}>수정</Button>
-                                <Button onClick={deleteResourceSharing}>삭제</Button>
+                                <Button className="ml-1" onClick={deleteResourceSharing}>삭제</Button>
                                 <Button className="ml-1" onClick={toggleResourceDetailModal}>취소</Button>
                             </Col>
                         ) : (
