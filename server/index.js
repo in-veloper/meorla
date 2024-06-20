@@ -105,7 +105,8 @@ app.get("/api/token", async (req, res) => {
                             workStatus: user.workStatus,
                             bedCount: user.bedCount,
                             pmStation: user.pmStation,
-                            notifyPm: user.notifyPm
+                            notifyPm: user.notifyPm,
+                            isPopUpProtectStudent: user.isPopUpProtectStudent
                         };
 
                         const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
@@ -241,7 +242,7 @@ app.post("/api/user/login", async (req, res) => {
     })
 });
 
-app.post("/api/user/changePassword", (req, res) => {
+app.post("/api/user/changePassword", async (req, res) => {
     const { userId, schoolCode, oldPassword, newPassword } = req.body;
 
     const sqlQuery = "SELECT * FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
@@ -273,7 +274,7 @@ app.post("/api/user/changePassword", (req, res) => {
     });
 });
 
-app.post("/api/user/logout", (req, res) => {
+app.post("/api/user/logout", async (req, res) => {
     const userId = req.body.userId;
     const refreshToken = null;
     
@@ -289,7 +290,7 @@ app.post("/api/user/logout", (req, res) => {
     });
 });
 
-app.post("/api/user/updateUserInfo", (req, res) => {
+app.post("/api/user/updateUserInfo", async (req, res) => {
     const { userId, schoolCode, userName, userEmail, bedCount } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET name = ?, email = ?, bedCount = ? WHERE userId = ? AND schoolCode = ?";
@@ -302,7 +303,7 @@ app.post("/api/user/updateUserInfo", (req, res) => {
     });
 });
 
-app.get("/api/user/getMaskedStatus", (req, res) => {
+app.get("/api/user/getMaskedStatus", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT masked FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
@@ -315,7 +316,7 @@ app.get("/api/user/getMaskedStatus", (req, res) => {
     });
 });
 
-app.post("/api/user/updateMaskedStatus", (req, res) => {
+app.post("/api/user/updateMaskedStatus", async (req, res) => {
     const { userId, schoolCode, masked } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET masked = ? WHERE userId = ? AND schoolCode = ?";
@@ -328,7 +329,7 @@ app.post("/api/user/updateMaskedStatus", (req, res) => {
     })
 });
 
-app.get("/api/user/getAlertHiddenStatus", (req, res) => {
+app.get("/api/user/getAlertHiddenStatus", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT alertHidden FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
@@ -341,33 +342,33 @@ app.get("/api/user/getAlertHiddenStatus", (req, res) => {
     });
 });
 
-app.post("/api/user/updateAlertHiddenStatus", (req, res) => {
+app.post("/api/user/updateAlertHiddenStatus", async (req, res) => {
     const { userId, schoolCode, alertHidden } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET alertHidden = ? WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [alertHidden, userId, schoolCode], (err, result) => {
         if(err) {
-            console.log("보건실 방문요청 알람 숨김 여부 Update 중 ERROR", err);
+            console.log("보건실 방문요청 알람 숨김 여부 UPDATE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }
     })
 });
 
-app.post("/api/user/updatePmStation", (req, res) => {
+app.post("/api/user/updatePmStation", async (req, res) => {
     const { userId, schoolCode, pmStation } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET pmStation = ? WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [pmStation, userId, schoolCode], (err, result) => {
         if(err) {
-            console.log("미세먼지 측정소 선택 값 Update 중 ERROR", err);
+            console.log("미세먼지 측정소 선택 값 UPDATE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }
     });
 });
 
-app.post("/api/user/updateNotifyPmInfo", (req, res) => {
+app.post("/api/user/updateNotifyPmInfo", async (req, res) => {
     const { userId, schoolCode, notifyPm } = req.body;
 
     const sqlQuery = "UPDATE teaform_db.users SET notifyPm = ? WHERE userId = ? AND schoolCode = ?";
@@ -380,13 +381,39 @@ app.post("/api/user/updateNotifyPmInfo", (req, res) => {
     });
 });
 
-app.get("/api/user/getNotifyPmInfo", (req, res) => {
+app.get("/api/user/getNotifyPmInfo", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
     const sqlQuery = "SELECT notifyPm FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("미세먼지 알림 여부 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.post("/api/user/updatePopUpProtectStudentStatus", async (req, res) => {
+    const { userId, schoolCode, isPopUpProtectStudent } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.users SET isPopUpProtectStudent = ? WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [isPopUpProtectStudent, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보호학생 팝업 알림 여부 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
+app.get("/api/user/getPopUpProtectStudentStatus", async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT isPopUpProtectStudent FROM teaform_db.users WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("보호학생 팝업 알림 여부 조회 중 ERROR", err);
         }else{
             res.json(result);
         }

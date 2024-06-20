@@ -25,6 +25,7 @@ import { getSocket } from "components/Socket/socket";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { TiPrinter } from "react-icons/ti";
 import '../assets/css/worknote.css';
+import e from "cors";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const MENU_ID_LEFT_GRID = 'students_context_menu';
@@ -2343,9 +2344,52 @@ function WorkNote(args) {
     fetchProtectStudentData();
   }, [fetchDiabetesStudentData, fetchProtectStudentData]);
 
-  const handlePopUpProtectStudent = () => {
-    
+  const handlePopUpProtectStudent = (e) => {
+    e.preventDefault();
+
+    const confirmTitle = "보호학생 팝업 알림 설정";
+    const confirmMessage = isPopUpProtectStudent ? "보호학생 팝업 알림을 해제하도록 설정하시겠습니까?" : "보호학생 팝업 알림으로 설정하시겠습니까?";
+
+    const yesCallback = async () => {
+      if(user) {
+        const response = await axios.post(`${BASE_URL}/api/user/updatePopUpProtectStudentStatus`, {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          isPopUpProtectStudent: !isPopUpProtectStudent
+        });
+
+        if(response.data === "success") {
+          setIsPopUpProtectStudent(!isPopUpProtectStudent);
+        }
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
   };
+
+  const fetchPopUpProtectStudentStatus = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/user/getPopUpProtectStudentStatus`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        const popUpProtectStudentStatus = Boolean(response.data[0].isPopUpProtectStudent);
+        setIsPopUpProtectStudent(popUpProtectStudentStatus);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchPopUpProtectStudentStatus();
+  }, [fetchPopUpProtectStudentStatus]);
   
   return (
     <>
@@ -3185,7 +3229,7 @@ function WorkNote(args) {
           <ModalHeader toggle={toggleManageProtectStudentModal}><b>보호학생 관리</b></ModalHeader>
           <ModalBody>
             <Card className="p-2" style={{ border: '1px solid lightgray'}}>
-              <Row className="d-flex align-items-center no-gutters">
+              <Row className="d-flex align-items-center no-gutters pl-2 pr-2">
                 <Col md="10">
                   <span className="mr-2">보호학생은 개인정보로 인하여 당뇨질환학생은</span>
                   <span className="mr-2" style={{ color: 'red', fontWeight: 'bold' }}>*</span>
