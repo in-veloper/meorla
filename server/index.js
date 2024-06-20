@@ -1075,7 +1075,8 @@ const storage = multer.diskStorage({
         return callback(null, dir);
     },
     filename: function(req, file, callback) {
-        callback(null, file.originalname)
+        const decodedFileName = decodeURIComponent(file.originalname.replace(/\+/g, ' '));
+        callback(null, decodedFileName)
     }
 });
 
@@ -1248,19 +1249,6 @@ app.get("/api/workNote/getOnBedStudentList", async (req, res) => {
             res.json(result);
         }
     });    
-});
-
-app.get("/api/workNote/getDiabetesStudents", async (req, res) => {
-    const { userId, schoolCode } = req.query;
-
-    const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND isDiabetes = 1";
-    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
-        if(err) {
-            console.log("당뇨질환 학생 조회 중 ERROR", err);
-        }else{
-            res.json(result);
-        }
-    });
 });
 
 app.get("/api/workNote/getProtectStudents", async (req, res) => {
@@ -1516,19 +1504,6 @@ app.post('/api/workNote/updateEntireRequestReadStatus', async (req, res) => {
     db.query(sqlQuery, [isRead, requestIds], (err, result) => {
         if(err) {
             console.log("보건실 방문 요청 알람 내역 전체 읽음 처리 중 ERROR", err);
-        }else{
-            res.send("success");
-        }
-    });
-});
-
-app.post('/api/workNote/updateDiabetesStudent', async (req, res) => {
-    const { userId, schoolCode, targetGrade, targetClass, targetNumber, targetName, isDiabetes } = req.body;
-
-    const sqlQuery = "UPDATE teaform_db.students SET isDiabetes = ? WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sName = ?";
-    db.query(sqlQuery, [isDiabetes, userId, schoolCode, targetGrade, targetClass, targetNumber, targetName], (err, result) => {
-        if(err) {
-            console.log("당뇨질환학생 등록 처리 중 ERROR", err);
         }else{
             res.send("success");
         }

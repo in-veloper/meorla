@@ -131,18 +131,11 @@ function WorkNote(args) {
   const customCellRenderer = (params) => {
     const { value } = params;
 
-    if(params.data.isDiabetes) {
+    if(params.data.isProtected) {
       return (
         <span style={{ marginLeft: 10 }}>
           {value}&nbsp;
           <span style={{ color: 'red' }}>*</span>
-        </span>
-      )
-    }else if(params.data.isProtected) {
-      return (
-        <span style={{ marginLeft: 10 }}>
-          {value}&nbsp;
-          <span style={{ color: 'blue' }}>*</span>
         </span>
       )
     }else{
@@ -207,7 +200,7 @@ function WorkNote(args) {
     { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sGender", headerName: "성별", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }},
-    { field: "protectContent", headerName: "보호내용", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "protectContent", headerName: "보호내용", flex: 4, cellStyle: { textAlign: "center" }},
   ]);
 
 
@@ -582,17 +575,13 @@ function WorkNote(args) {
     const selectedRow = event.api.getSelectedRows()[0];
     
     if(user && user.isPopUpProtectStudent) {
-      if(selectedRow.isDiabetes) {
-        const infoMessage = selectedRow.sName + " 학생은 당뇨질환 학생입니다";
-        NotiflixInfo(infoMessage, false);
-      }else if(selectedRow.isProtected) {
-        const infoMessage = selectedRow.sName + " 학생은 보호관리 대상 학생입니다";
+      if(selectedRow.isProtected) {
+        const infoMessage = selectedRow.sName + " 학생은 보호관리 대상 학생입니다<br/>보호내용 : " + selectedRow.protectContent;
         NotiflixInfo(infoMessage, false, '320px');
       }
     }    
     
     setSelectedStudent(selectedRow);
-
     fetchSelectedStudentData();
   };
 
@@ -1865,49 +1854,6 @@ function WorkNote(args) {
     autoUpdateBedBox();
   }, 1000);
 
-  const handleDiabetesClick = async ({ id, event, props }) => {
-    if(id === "registDiagetes" && contextStudentInfo && user) {
-      const targetGrade = contextStudentInfo.split(",")[0];
-      const targetClass = contextStudentInfo.split(",")[1];
-      const targetNumber = contextStudentInfo.split(",")[2];
-      const targetGender = contextStudentInfo.split(",")[3];
-      const targetName = contextStudentInfo.split(",")[4];
-      
-      if(targetName.includes("*")) {
-        const warnMessage = "이미 당뇨질환으로 등록된 학생입니다";
-        NotiflixWarn(warnMessage);
-        return;
-      }
-
-      const confirmTitle = "당뇨질환학생 등록";
-      const confirmMessage = targetGrade + "학년 " + targetClass + "반 " + targetNumber + "번 " + targetName + " 학생을<br/>당뇨질환 학생으로 등록하시겠습니까?";
-      
-      const yesCallback = async () => {
-        const response = await axios.post(`${BASE_URL}/api/workNote/updateDiabetesStudent`, {
-          userId: user.userId,
-          schoolCode: user.schoolCode,
-          targetGrade: targetGrade,
-          targetClass: targetClass,
-          targetNumber: targetNumber,
-          targetName: targetName,
-          isDiabetes: true
-        });
-  
-        if(response.data === "success") {
-          const infoMessage = "정상적으로 등록되었습니다";
-          NotiflixInfo(infoMessage);
-        }
-      };
-
-      const noCallback = () => {
-        return;
-      };
-
-      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback)
-
-    }
-  };
-
   const handleProtectClick = () => {
     if(contextStudentInfo) {
       const [sGrade, sClass, sNumber, sGender, sName] = contextStudentInfo.split(',');
@@ -2325,19 +2271,6 @@ function WorkNote(args) {
     toggleManageProtectStudentModal();
   };
 
-  const fetchDiabetesStudentData = useCallback(async () => {
-    if(user) {
-      const response = await axios.get(`${BASE_URL}/api/workNote/getDiabetesStudents`, {
-        params: {
-          userId: user.userId,
-          schoolCode: user.schoolCode
-        }
-      });
-
-      if(response.data) setDiabetesStudentsRowData(response.data);
-    }
-  }, [user]);
-
   const fetchProtectStudentData = useCallback(async () => {
     const response = await axios.get(`${BASE_URL}/api/workNote/getProtectStudents`, {
       params: {
@@ -2350,9 +2283,8 @@ function WorkNote(args) {
   }, [user]);
 
   useEffect(() => {
-    fetchDiabetesStudentData();
     fetchProtectStudentData();
-  }, [fetchDiabetesStudentData, fetchProtectStudentData]);
+  }, [fetchProtectStudentData]);
 
   const handlePopUpProtectStudent = (e) => {
     e.preventDefault();
@@ -2538,7 +2470,6 @@ function WorkNote(args) {
                     </div>
                     <div>
                       <Menu id={MENU_ID_LEFT_GRID} animation="fade">
-                        <Item id="registDiagetes" onClick={handleDiabetesClick}>당뇨질환학생 등록</Item>
                         <Item id="protectedsStdentd" onClick={handleProtectClick}>보호학생 등록</Item>
                         {/* <Item id="cut" onClick={handleItemClick}>Cut</Item>
                         <Separator />
@@ -3237,16 +3168,14 @@ function WorkNote(args) {
           </ModalFooter>
        </Modal>
 
-       <Modal isOpen={manageProtectStudentModal} toggle={toggleManageProtectStudentModal} centered style={{ minWidth: '50%' }}>
+       <Modal isOpen={manageProtectStudentModal} toggle={toggleManageProtectStudentModal} centered style={{ minWidth: '40%' }}>
           <ModalHeader toggle={toggleManageProtectStudentModal}><b>보호학생 관리</b></ModalHeader>
           <ModalBody>
             <Card className="p-2" style={{ border: '1px solid lightgray'}}>
               <Row className="d-flex align-items-center no-gutters pl-2 pr-2">
                 <Col md="10">
-                  <span className="mr-2">보호학생은 개인정보로 인하여 당뇨질환학생은</span>
+                  <span className="mr-2">보호학생은 개인정보로 인하여 </span>
                   <span className="mr-2" style={{ color: 'red', fontWeight: 'bold' }}>*</span>
-                  <span className="mr-2">그 외 보호학생은</span>
-                  <span className="mr-2" style={{ color: 'blue', fontWeight: 'bold' }}>*</span>
                   <span>으로 학생 이름 우측에 표시됩니다</span>
                 </Col>
                 <Col className="d-flex justify-content-end align-items-center mt-1" md="2">
@@ -3261,27 +3190,7 @@ function WorkNote(args) {
               </Row>
             </Card>
             <Row className="mt-3">
-              <Col md="5">
-                <Row className="d-flex align-items-center no-gutters">
-                  <label className="font-weight-bold" style={{ fontSize: 15 }}>당뇨질환학생 목록</label>
-                </Row>
-                <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
-                  <AgGridReact
-                    ref={diabetesStudentGridRef}
-                    rowData={diabetesStudentsRowData}
-                    columnDefs={diabetesStudentColumnDefs}
-                    overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                    overlayLoadingTemplate={
-                      '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                    }
-                    rowSelection={'single'} 
-                  />
-                </div>
-              </Col>
-              <Col md="7">
-                <Row className="d-flex align-items-center no-gutters">
-                  <label className="font-weight-bold" style={{ fontSize: 15 }}>보호학생 목록</label>
-                </Row>
+              <Col md="12">
                 <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                   <AgGridReact
                     ref={protectStudentGridRef}
@@ -3298,7 +3207,7 @@ function WorkNote(args) {
             </Row>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={toggleManageProtectStudentModal}>취소</Button>
+            <Button onClick={toggleManageProtectStudentModal}>닫기</Button>
           </ModalFooter>
        </Modal>
 

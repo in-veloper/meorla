@@ -183,6 +183,7 @@ function Community() {
             resetOpinionWrite();  
         }else if(selectedMenu === "resourceSharing") {
             toggleResourceWriteModal();
+            resetResourceWrite();
         }
     };
 
@@ -404,8 +405,8 @@ function Community() {
         const payload = { content: contentData };
 
         let formData = new FormData();
-        const encodedFileName = encodeURIComponent(selectedFile.name);
-        formData.append("uploadPath", user.userId + "/resourceFiles");
+        const encodedFileName = encodeURIComponent(selectedFile.name).replace(/%20/g, "+");
+        formData.append("uploadPath", `${user.userId}/resourceFiles`);
         formData.append("file", new File([selectedFile], encodedFileName, { type: selectedFile.type }));
 
         const config = { headers: { "Content-Type": "multipart/form-data" }};
@@ -433,6 +434,7 @@ function Community() {
                     NotiflixInfo(infoMessage);
                     toggleResourceWriteModal();
                     fetchResourceSharingData();
+                    resetResourceWrite();
                 }
 
             }
