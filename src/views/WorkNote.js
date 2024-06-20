@@ -25,14 +25,13 @@ import { getSocket } from "components/Socket/socket";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { TiPrinter } from "react-icons/ti";
 import '../assets/css/worknote.css';
-import e from "cors";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const MENU_ID_LEFT_GRID = 'students_context_menu';
 const MENU_ID_RIGHT_GRID = 'delete_context_menu';
 
 function WorkNote(args) {
-  const { user } = useUser();                              // 사용자 정보
+  const { user, getUser } = useUser();                              // 사용자 정보
   const [isEntireWorkNoteOpen, setIsEntireWorkNoteOpen] = useState(false);
   const [searchStudentRowData, setSearchStudentRowData] = useState([]); // 검색 결과를 저장할 state
   const [symptomRowData, setSymptomRowData] = useState([]);
@@ -581,6 +580,17 @@ function WorkNote(args) {
 
   const onGridSelectionChanged = (event) => {
     const selectedRow = event.api.getSelectedRows()[0];
+    
+    if(user && user.isPopUpProtectStudent) {
+      if(selectedRow.isDiabetes) {
+        const infoMessage = selectedRow.sName + " 학생은 당뇨질환 학생입니다";
+        NotiflixInfo(infoMessage, false);
+      }else if(selectedRow.isProtected) {
+        const infoMessage = selectedRow.sName + " 학생은 보호관리 대상 학생입니다";
+        NotiflixInfo(infoMessage, false, '320px');
+      }
+    }    
+    
     setSelectedStudent(selectedRow);
 
     fetchSelectedStudentData();
@@ -2360,6 +2370,8 @@ function WorkNote(args) {
 
         if(response.data === "success") {
           setIsPopUpProtectStudent(!isPopUpProtectStudent);
+          fetchPopUpProtectStudentStatus();
+          getUser();
         }
       }
     };
