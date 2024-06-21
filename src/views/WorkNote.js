@@ -871,7 +871,7 @@ function WorkNote(args) {
 
       api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
         const treatmentMatter = rowNode.data.treatmentMatter;                     // 처치사항 획득
-
+        debugger
         // 처치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 처치사항 데이터 생성
         if(treatmentMatter.length !== 0 && user) treatmentMatterString += treatmentMatter + "::";
         
@@ -883,13 +883,13 @@ function WorkNote(args) {
         response = await axios.post(`${BASE_URL}/api/treatmentMatter/update`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          treatmentMatter: treatmentMatterString
+          treatmentMatterString: treatmentMatterString
         });
       }else{                            // 등록된 처치사항이 없는 경우 - Insert
         response = await axios.post(`${BASE_URL}/api/treatmentMatter/insert`, {
           userId: user.userId,
           schoolCode: user.schoolCode,
-          treatmentMatter: treatmentMatterString
+          treatmentMatterString: treatmentMatterString
         });
       }
       
@@ -1781,9 +1781,10 @@ function WorkNote(args) {
   const handleVitalSignChange = (e) => {
     const newValue = e.target.value;
 
-    if(!isNaN(newValue)) {
+    if(e.target.id === 'bloodPressure') {
+      setBloodPressureValue(newValue);
+    }else if(!isNaN(newValue)) {
       if(e.target.id === "temperature") setTempuratureValue(newValue);
-      else if(e.target.id === "bloodPressure") setBloodPressureValue(newValue);
       else if(e.target.id === "pulse") setpulseValue(newValue);
       else if(e.target.id === "oxygenSaturation") setOxygenSaturationValue(newValue);
       else if(e.target.id === "bloodSugar") setBloodSugarValue(newValue);
@@ -2711,7 +2712,7 @@ function WorkNote(args) {
                       <CardBody className="pt-2 pb-2 align-content-center" style={{ flex: '1 1 auto' }}>
                         <Row>
                           <Col className="d-flex align-items-center justify-content-start">
-                            <label style={{ color: 'black', fontSize: 13, paddingRight: 41 }}>체온</label>
+                            <label style={{ color: 'black', fontSize: 13, width: '63px' }}>체온</label>
                             <Input
                               id="temperature"
                               type="text"
@@ -2719,18 +2720,18 @@ function WorkNote(args) {
                               min={30}
                               onChange={handleVitalSignChange}
                               value={temperatureValue}
-                              style={{ width: '50px' }}
+                              style={{ width: '70px' }}
                             />
                             <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(°C)</label>
                           </Col>
-                          <Col className="d-flex align-items-center justify-content-center" style={{ marginLeft: 11 }}>
-                            <label className="pr-2" style={{ color: 'black', fontSize: 13 }}>혈압</label>
+                          <Col className="d-flex align-items-center justify-content-center" style={{ marginLeft: '12px' }}>
+                            <label className="pr-2" style={{ color: 'black', fontSize: 13, width: '40px', marginRight: '-10px' }}>혈압</label>
                             <Input
                               id="bloodPressure"
                               type="text"
                               onChange={handleVitalSignChange}
                               value={bloodPressureValue}
-                              style={{ width: '50px' }}
+                              style={{ width: '80px' }}
                             />
                             <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(mm/Hg)</label>
                           </Col>
@@ -2741,7 +2742,7 @@ function WorkNote(args) {
                               type="number"
                               onChange={handleVitalSignChange}
                               value={pulseValue}
-                              style={{ width: '50px' }}
+                              style={{ width: '70px' }}
                             />
                             <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(bpm)</label>
                           </Col>
@@ -2754,7 +2755,7 @@ function WorkNote(args) {
                               type="number"
                               onChange={handleVitalSignChange}
                               value={oxygenSaturationValue}
-                              style={{ width: '50px' }}
+                              style={{ width: '70px' }}
                             />
                             <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(%)</label>
                           </Col>
@@ -2765,7 +2766,7 @@ function WorkNote(args) {
                               type="number"
                               onChange={handleVitalSignChange}
                               value={bloodSugarValue}
-                              style={{ width: '50px' }}
+                              style={{ width: '80px' }}
                             />
                             <label className="pl-2" style={{ color: 'black', fontSize: 13 }}>(mg/dl)</label>
                           </Col>

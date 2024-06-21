@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label, InputGroup, InputGroupText } from "reactstrap";
+import { Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup, Form, Input, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Label, InputGroup, InputGroupText, Popover, PopoverHeader, PopoverBody } from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import ExcelJS from "exceljs";
 import { read, utils } from "xlsx";
@@ -16,6 +16,7 @@ import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import { Block } from 'notiflix/build/notiflix-block-aio';
+import { IoInformationCircleOutline } from "react-icons/io5";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -69,6 +70,8 @@ function User() {
   const [updateTeacherContact, setUpdateTeacherContact] = useState("");
   const [updateTeacherSubject, setUpdateTeacherSubject] = useState("");
   const [selectedUpdateTeacher, setSelectedUpdateTeacher] = useState(null);
+  const [studentTablePopOverOpen, setStudentTablePopOverOpen] = useState(false);
+  const [teacherTablePopOverOpen, setTeacherTablePopOverOpen] = useState(false);
 
   const studentTableGridRef = useRef(null);     
   const teacherTableGridRef = useRef(null);                                // 등록한 명렬표 출력 Grid Reference
@@ -98,6 +101,8 @@ function User() {
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
   const toggleAddTeacherModal = () => setAddTeacherModal(!addTeacherModal);
   const toggleUpdateTeacherModal = () => setUpdateTeacherModal(!updateTeacherModal);
+  const toggleStudentTablePopOver = () => { setStudentTablePopOverOpen(!studentTablePopOverOpen); };
+  const toggleTeacherTablePopOver = () => { setTeacherTablePopOverOpen(!teacherTablePopOverOpen); };
     const toggleAddStudentModal = () => {
       setIsAddStudentModalOpen(!isAddStudentModalOpen);
       resetTransferStudent();
@@ -184,6 +189,7 @@ function User() {
 
       if(response.data) {
         setTeacherData(response.data.teacherData);
+        setIsRegisteredTeachersTable(response.data.teacherData.length > 0);
       }
     } catch (error) {
       console.log("교직원 데이터 조회 중 ERROR", error);
@@ -192,7 +198,7 @@ function User() {
 
   useEffect(() => {
     fetchTeacherData();
-  }, [fetchUserData])
+  }, [fetchTeacherData])
 
   // 소속학교 기준 명렬표 학년별 등록 및 확인 Button 생성
   const generateNameTableButtons = () => {
@@ -1046,6 +1052,55 @@ function User() {
     }
   };
 
+  // 데이터 연관성 때문에 학생관련하여 등록된 데이터가 존재할 시에는 일괄삭제 막음 처리 필요할 듯
+  const onStudentBulkDelete = async () => {
+    const confirmTitle = "명렬표 일괄 삭제";
+    const confirmMessage = "등록한 명렬표를 일괄삭제 하시겠습니까?";
+
+    const yesCallback = async () => {
+      const response = await axios.post(`${BASE_URL}/api/studentsTable/deleteAllStudentTable`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "학생 정보가 정상적으로 일괄삭제 되었습니다";
+        NotiflixInfo(infoMessage, true, '320px');
+        setIsRegisteredStudentsTable(false);
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+  };
+
+  const onTeacherBulkDelete = async () => {
+    const confirmTitle = "교직원 명단 일괄 삭제";
+    const confirmMessage = "등록한 교직원 명단을 일괄삭제 하시겠습니까?";
+
+    const yesCallback = async () => {
+      const response = await axios.post(`${BASE_URL}/api/teachersTable/deleteAllTeachersTable`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "교직원 정보가 정상적으로 일괄삭제 되었습니다";
+        NotiflixInfo(infoMessage, true, '320px');
+        setIsRegisteredTeachersTable(false);
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
@@ -1294,8 +1349,19 @@ function User() {
                   <Row className="align-items-center" style={{ marginTop: '-7px' }}>
                     <Col md="4">
                       <FormGroup>
-                        <label>학생 명렬표</label>
-                        <div style={{ marginTop: -12}}>
+                        <label>
+                          학생 명렬표
+                          <IoInformationCircleOutline id="student-table-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
+                          <Popover flip target="student-table-popover" isOpen={studentTablePopOverOpen} toggle={toggleStudentTablePopOver}>
+                            <PopoverHeader>
+                              명렬표 등록 안내
+                            </PopoverHeader>
+                            <PopoverBody>
+                              명령표는 반드시 우측 템플릿을 다운로드 받아 정해진 컬럼에 맞게 가지고 계신 명렬표 자료의 명단을 붙여넣어 일괄등록 해주시기 바랍니다
+                            </PopoverBody>
+                          </Popover>
+                        </label>
+                        <div style={{ marginTop: -12 }}>
                           <ButtonGroup className="" size="md">
                             {generateNameTableButtons()}
                           </ButtonGroup>
@@ -1305,25 +1371,38 @@ function User() {
                     <Col md="3">
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
-                          <Button className="user-inner-button" onClick={handleDownloadStudentTemplate}>템플릿 다운로드</Button>
-                          <Button className="user-inner-button" onClick={onStudentBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={handleDownloadStudentTemplate} style={{ whiteSpace: 'nowrap'}}>템플릿 다운로드</Button>
+                          <Button className="user-inner-button" onClick={onStudentBulkRegist} style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={onStudentBulkDelete} style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>일괄삭제</Button>
                         </ButtonGroup>
                       </Row>
                     </Col>
                     <Col md="2">
                       <FormGroup>
-                        <label>교직원 정보</label>
+                        <label>
+                          교직원 정보
+                          <IoInformationCircleOutline id="teacher-table-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
+                          <Popover flip target="teacher-table-popover" isOpen={teacherTablePopOverOpen} toggle={toggleTeacherTablePopOver}>
+                            <PopoverHeader>
+                              교직원 명단 등록 안내
+                            </PopoverHeader>
+                            <PopoverBody>
+                              교직원 명단은 반드시 우측 템플릿을 다운로드 받아 정해진 컬럼에 맞게 가지고 계신 명단 자료를 붙여넣어 일괄등록 해주시기 바랍니다
+                            </PopoverBody>
+                          </Popover>
+                        </label>
                         <div style={{ marginTop: '-12px'}}>
                         <span className=""></span>
-                          <Button className={`${teacherData && teacherData.length > 0 ? 'registered-name-table' : 'btn-outline-default name-table-default'}`} onClick={handleTeacherTable}><b>교직원</b></Button>
+                          <Button className={`${teacherData && teacherData.length > 0 ? 'registered-teacher-table' : 'btn-outline-default name-table-default'}`} onClick={handleTeacherTable}><b>교직원</b></Button>
                         </div>
                       </FormGroup>
                     </Col>
                     <Col md="3">
                       <Row className="justify-content-end no-gutters">
                         <ButtonGroup>
-                          <Button className="user-inner-button" onClick={handleDownloadTeacherTemplate}>템플릿 다운로드</Button>
-                          <Button className="user-inner-button" onClick={onTeacherBulkRegist} style={{ borderLeft: 'none' }}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={handleDownloadTeacherTemplate} style={{ whiteSpace: 'nowrap' }}>템플릿 다운로드</Button>
+                          <Button className="user-inner-button" onClick={onTeacherBulkRegist} style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>일괄등록</Button>
+                          <Button className="user-inner-button" onClick={onTeacherBulkDelete} style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>일괄삭제</Button>
                         </ButtonGroup>
                       </Row>
                     </Col>

@@ -45,8 +45,8 @@
 .card-user .user-inner-button:hover,
 .card-user .user-inner-button:active,
 .card-user .user-inner-button:focus {
-    color: #66615b !important;
-    background-color: #E5C1BD !important;
+    color: #fff !important;
+    background-color: #403D39 !important;
     border: none !important;
 
 }
@@ -54,6 +54,12 @@
 .registered-name-table {
     background-color: #E5C1BD !important;
     color: #fff !important;
+}
+
+.registered-teacher-table {
+    background-color: #E5C1BD !important;
+    color: #fff !important;
+    border: none;
 }
 
 .name-table-default {

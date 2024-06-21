@@ -8,6 +8,7 @@ import { FaCheck } from "react-icons/fa";
 import { useUser } from "contexts/UserContext";
 import axios from "axios";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -159,6 +160,32 @@ function QnaRequest() {
                 toggleDetailModal();
             } 
         }
+    };
+
+    const deleteQnaRequest = async () => {
+        const confirmTitle = "문의 및 요청사항 글 삭제";
+        const confirmMessage = "선택하신 문의 및 요청사항 글을 삭제하시겠습니까?";
+
+        const yesCallback = async () => {
+            const response = await axios.post(`${BASE_URL}/api/qnaRequest/deleteQnaRequest`, {
+                rowId: selectedRowData.id,
+                userId: user.userId,
+                schoolCode: user.schoolCode
+            });
+
+            if(response.data === 'success') {
+                const infoMessage = "문의 및 요청사항이 정상적으로 삭제되었습니다";
+                NotiflixInfo(infoMessage, true, '320px');
+                fetchQnaRequestData();
+                toggleDetailModal();
+            }
+        };
+
+        const noCallback = () => {
+            return;
+        };
+
+        NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '340px');
     };
 
     useEffect(() => {
@@ -438,6 +465,7 @@ function QnaRequest() {
                     {isEditMode ? (
                         <Row>
                             <Button onClick={updateQnaRequest}>수정</Button>
+                            <Button className="ml-1" onClick={deleteQnaRequest}>삭제</Button>
                             <Button className="ml-1" onClick={toggleDetailModal}>취소</Button>
                         </Row>
                     ) : (

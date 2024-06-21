@@ -706,6 +706,19 @@ app.post("/api/studentsTable/addTransferStudent", async (req, res) => {
     res.send('success');
 });
 
+app.post('/api/studentsTable/deleteAllStudentTable', async (req, res) => {
+    const { userId, schoolCode } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("명렬표 일괄삭제 중 ERROR", err);
+        }else{
+            res.send("success");
+        }
+    });
+});
+
 app.post("/api/teachersTable/insert", async (req, res) => {
     const teachersArray = req.body.teachersArray;
     const values = teachersArray.map(teacher => {
@@ -778,6 +791,19 @@ app.post("/api/teachersTable/deleteTeacher", async (req, res) => {
     db.query(sqlQuery, [rowId, userId, schoolCode], (err, result) => {
         if(err) {
             console.log("교직원 정보 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post("/api/teachersTable/deleteAllTeachersTable", async (req, res) => {
+    const { userId, schoolCode } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.teachers WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("교직원 정보 일괄삭제 처리 중 ERROR", err);
         }else{
             res.send('success');
         }
@@ -1698,6 +1724,19 @@ app.post('/api/qnaRequest/updateQnaRequest', async (req, res) => {
     db.query(sqlQuery, [writingCategory, qnaRequestTitle, qnaRequestContent, isSecret, rowId, userId, schoolCode], (err, result) => {
         if(err) {
             console.log("문의 및 요청사항 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post('/api/qnaRequest/deleteQnaRequest', async (req, res) => {
+    const { rowId, userId, schoolCode } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.qnaRequest WHERE id = ? AND userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("문의 및 요청사항 DELETE 처리 중 ERROR", err);
         }else{
             res.send('success');
         }

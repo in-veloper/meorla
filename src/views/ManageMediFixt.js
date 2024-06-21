@@ -257,7 +257,7 @@ function ManageMediFixt() {
 
     // 검색 Event
     const handleSearch = async (e) => {
-        if(!document.querySelector('.notiflix-block')) Block.dots('.ag-theme-alpine');
+        if(!document.querySelector('.notiflix-block')) Block.dots('.search-medicine');
         
         if(medicineData.length > 0) {
             let filteredResults = medicineData;
@@ -276,7 +276,7 @@ function ManageMediFixt() {
             setSearchResult(filteredResults);
         }
 
-        if(document.querySelector('.notiflix-block')) Block.remove('.ag-theme-alpine');
+        if(document.querySelector('.notiflix-block')) Block.remove('.search-medicine');
     };
 
     // 검색어 입력 후 Enter 입력 시 검색 Event
@@ -759,9 +759,9 @@ function ManageMediFixt() {
             <Modal isOpen={updateMedicineModal} toggle={toggleUpdateMedicineModal} centered style={{ minWidth: '30%' }}>
                 <ModalHeader toggle={toggleUpdateMedicineModal}><b className="text-muted">약품 재고 수정</b></ModalHeader>
                 <ModalBody className="pb-0">
-                    <Row>
+                    <Row className="d-flex w-100 no-gutters">
                         <Input
-                            className="ml-3 mr-2"
+                            className="mr-2"
                             id="searchCategory"
                             name="select"
                             type="select"
@@ -780,10 +780,12 @@ function ManageMediFixt() {
                             placeholder="검색 키워드를 입력하세요"
                             onKeyDown={handleKeyDown}
                             autoFocus={true}
-                            style={{ width: '59.5%', height: '40px'}}
+                            style={{ width: '62%', height: '40px'}}
                             onChange={handleSearchText}
                         />
-                        <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
+                        <Col className="d-flex justify-content-end">
+                            <Button className="ml-2" style={{ height: '38px', marginTop: 1 }} onClick={handleSearch}>검색</Button>
+                        </Col>
                     </Row>
                     <Row>
                         <Col md="12">
