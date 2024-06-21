@@ -24,7 +24,9 @@ function Community() {
     const [rowData, setRowData] = useState([]);
     const [columnDefs, setColumnDefs] = useState([]);
     const [opinionWriteModal, setOpinionWriteModal] = useState(false);
-    const [contentData, setContentData] = useState("");
+    const [opinionContentData, setOpinionContentData] = useState("");
+    const [resourceContentData, setResourceContentData] = useState("");
+    // const [contentData, setContentData] = useState("");
     const [titleValue, setTitleValue] = useState("");
     const [selectedOpinionCategoryOption, setSelectedOpinionCategoryOption] = useState("healthClass");
     const [opinionSharingData, setOpinionSharingData] = useState([]);
@@ -53,17 +55,22 @@ function Community() {
     const [resourceDetailModal, setResourceDetailModal] = useState(false);
     const [uploadedFileUrl, setUploadedFileUrl] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState(null);
+    const [myResourceSharingModal, setMyResourceSharingModal] = useState(false);
+    const [myResourceSharingData, setMyResourceSharingData] = useState(null);
 
     const opinionSharingGridRef = useRef(null);
     const resourceSharingGridRef = useRef(null);
-    const quillRef = useRef(null);
+    const opinionQuillRef = useRef(null);
+    const resourceQuillRef = useRef(null);
     const myOpinionSharingGridRef = useRef(null);
+    const myResourceSharingGridRef = useRef(null);
 
     const toggleOpinionWriteModal = () => setOpinionWriteModal(!opinionWriteModal);
     const toggleOpinionDetailModal = () => setOpinionDetailModal(!opinionDetailModal);
     const toggleMyOpinionSharingModal = () => setMyOpinionSharingModal(!myOpinionSharingModal);
     const toggleResourceWriteModal = () => setResourceWriteModal(!resourceWriteModal);
     const toggleResourceDetailModal = () => setResourceDetailModal(!resourceDetailModal);
+    const toggleMyResourceSharingModal = () => setMyResourceSharingModal(!myResourceSharingModal);
 
     const defaultColDef = {
         sortable: true,
@@ -118,6 +125,15 @@ function Community() {
     const [myOpinionSharingColDef] = useState([
         { field: "osCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: opinionSharingCategoryFormatter },
         { field: "osTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+        { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "recommendationCount", headerName: "추천수", flex: 1, cellStyle: { textAlign: "center" } }
+    ]);
+
+    const [myResourceSharingColDef] = useState([
+        { field: "rsCategory", headerName: "분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: resourceSharingCategoryFormatter },
+        { field: "rsTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
         { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
         { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
         { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } },
@@ -189,11 +205,11 @@ function Community() {
 
     const resetOpinionWrite = () => {
         setTitleValue("");
-        setContentData("");
+        setOpinionContentData("");
     };
 
     const saveOpinionWrite = async () => {
-        const payload = { content: contentData };
+        const payload = { content: opinionContentData };
 
         const response = await axios.post(`${BASE_URL}/api/community/saveOpinionSharing`, {
             userId: user.userId,
@@ -209,6 +225,7 @@ function Community() {
             NotiflixInfo(infoMessage);
             toggleOpinionWriteModal();
             fetchOpinionSharingData();
+            resetOpinionWrite();
         }
     };
 
@@ -230,12 +247,20 @@ function Community() {
         fetchOpinionSharingData();
     }, [fetchOpinionSharingData]);
 
-    const handleQuillChange = (content, delta, source, editor) => {
-        setContentData(editor.getContents());
+    const handleOpinionQuillChange = (content, delta, source, editor) => {
+        setOpinionContentData(editor.getContents());
     };
 
-    const handleDetailQuillChange = (content, delta, source, editor) => {
+    const handleResourceQuillChange = (content, delta, source, editor) => {
+        setResourceContentData(editor.getContents());
+    };
+
+    const handleOpinionDetailQuillChange = (content, delta, source, editor) => {
         setOpinionContentDetailValue(editor.getContents());
+    };
+
+    const handleResourceDetailQuillChange = (content, delta, source, editor) => {
+        setResourceContentDetailValue(editor.getContents());
     };
 
     const handleSelectOpinionCategoryOption = (e) => {
@@ -256,6 +281,10 @@ function Community() {
         const parsedContent = JSON.parse(selectedRow.osContent);
         setOpinionDetailContentData(parsedContent.content);
 
+        if (opinionQuillRef.current && opinionQuillRef.current.getEditor) {
+            opinionQuillRef.current.getEditor().setContents(parsedContent.content);
+        }
+
         await opinionSharingIncrementViewCount(params.data.id);
     };
 
@@ -272,6 +301,10 @@ function Community() {
 
         const parsedContent = JSON.parse(selectedRow.rsContent);
         setResourceDetailContentData(parsedContent.content);
+
+        if (resourceQuillRef.current && resourceQuillRef.current.getEditor) {
+            resourceQuillRef.current.getEditor().setContents(parsedContent.content);
+        }
 
         await resourceSharingIncrementViewCount(params.data.id);
     };
@@ -396,47 +429,60 @@ function Community() {
 
     const resetResourceWrite = () => {
         setTitleValue("");
-        setContentData("");
+        setResourceContentData("");
         setSelectedFile(null);
+        setUploadedFileUrl(null);
+        setUploadedFileName(null);
         setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>);
     };
 
     const saveResourceWrite = async () => {
-        const payload = { content: contentData };
+        const payload = { content: resourceContentData };
 
-        let formData = new FormData();
-        const encodedFileName = encodeURIComponent(selectedFile.name).replace(/%20/g, "+");
-        formData.append("uploadPath", `${user.userId}/resourceFiles`);
-        formData.append("file", new File([selectedFile], encodedFileName, { type: selectedFile.type }));
+        let fileName = null;
+        let fileUrl = null;
 
-        const config = { headers: { "Content-Type": "multipart/form-data" }};
+        if (selectedFile) {
+            let formData = new FormData();
+            const encodedFileName = encodeURIComponent(selectedFile.name).replace(/%20/g, "+");
+            formData.append("uploadPath", `${user.userId}/resourceFiles`);
+            formData.append("file", new File([selectedFile], encodedFileName, { type: selectedFile.type }));
+
+            const config = { headers: { "Content-Type": "multipart/form-data" }};
+
+            try{
+                const fileUploadResponse = await axios.post(`${BASE_URL}/upload/image`, formData, config);
+
+                if(fileUploadResponse.status === 200) {
+                    const { filename, fileUrl: newFileUrl } = fileUploadResponse.data;
+                    fileName = filename;
+                    fileUrl = newFileUrl;
+                }
+            } catch (error) {
+                console.log("자료공유 파일 업로드 중 ERROR", error);
+                return; // 파일 업로드 실패 시 함수 종료
+            }
+        }
 
         try{
-            const fileUploadResponse = await axios.post(`${BASE_URL}/upload/image`, formData, config);
+            const response = await axios.post(`${BASE_URL}/api/community/saveResourceSharing`, {
+                userId: user.userId,
+                userName: user.name,
+                schoolCode: user.schoolCode,
+                rsCategory: selectedResourceCategoryOption,
+                rsTitle: titleValue,
+                rsContent: JSON.stringify(payload),
+                fileName: fileName,
+                fileUrl: fileUrl,
+                category: "resourceSharing"
+            });
 
-            if(fileUploadResponse.status === 200) {
-                const { filename, fileUrl } = fileUploadResponse.data;
-                
-                const response = await axios.post(`${BASE_URL}/api/community/saveResourceSharing`, {
-                    userId: user.userId,
-                    userName: user.name,
-                    schoolCode: user.schoolCode,
-                    rsCategory: selectedResourceCategoryOption,
-                    rsTitle: titleValue,
-                    rsContent: JSON.stringify(payload),
-                    fileName: filename,
-                    fileUrl: fileUrl,
-                    category: "resourceSharing"
-                });
-
-                if(response.data === 'success') {
-                    const infoMessage = "자료공유 글이 정상적으로 등록되었습니다";
-                    NotiflixInfo(infoMessage);
-                    toggleResourceWriteModal();
-                    fetchResourceSharingData();
-                    resetResourceWrite();
-                }
-
+            if(response.data === 'success') {
+                const infoMessage = "자료공유 글이 정상적으로 등록되었습니다";
+                NotiflixInfo(infoMessage);
+                toggleResourceWriteModal();
+                fetchResourceSharingData();
+                resetResourceWrite();
             }
         } catch (error) {
             console.log("자료공유 파일 업로드 중 ERROR", error);
@@ -467,15 +513,17 @@ function Community() {
     };
 
     const onDrop = useCallback((acceptedFiles, fileRejections) => {
-        setSelectedFile(acceptedFiles[0]);
-        setUploadedFileUrl(null);
-        setUploadedFileName(acceptedFiles[0].name);
-        setFileMessage(
-            <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
-                {acceptedFiles[0].name}
-                <Button close onClick={() => handleFileDelete()} />
-            </div>
-        );
+        if (acceptedFiles.length > 0) {
+            setSelectedFile(acceptedFiles[0]);
+            setUploadedFileUrl(null);
+            setUploadedFileName(acceptedFiles[0].name);
+            setFileMessage(
+                <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
+                    {acceptedFiles[0].name}
+                    <Button close onClick={() => handleFileDelete()} />
+                </div>
+            );
+        }
     }, []);
     
     const dropzoneConfig = {
@@ -484,8 +532,9 @@ function Community() {
     };
 
     const { getRootProps, getInputProps, open } = useDropzone({
-        ...dropzoneConfig,
-        noClick: !!uploadedFileUrl // 파일이 기존에 등록된 경우 noClick 옵션을 적용
+        onDrop,
+        multiple: false,
+        noClick: uploadedFileUrl !== null, // 파일이 업로드된 상태에서는 클릭 비활성화
     });
 
     // 자료공유 모달 열릴 시 Dropzone 파일 메시지 설정
@@ -499,6 +548,10 @@ function Community() {
                     <Button close onClick={() => handleFileDelete()} />
                 </div>
             );
+        } else if (resourceDetailModal && !resourceSharingSelectedRow) {
+            setUploadedFileUrl(null);
+            setUploadedFileName(null);
+            setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br />파일을 업로드 해주세요</div>);
         }
     }, [resourceDetailModal, setResourceSharingSelectedRow]);
 
@@ -518,7 +571,7 @@ function Community() {
                 const response = await axios.post(`${BASE_URL}/api/community/deleteOpinionSharing`, {
                     rowId: opinionSharingSelectedRow.id,
                     userId: user.userId,
-                    schoolCode: user.schoolCode,
+                    schoolCode: user.schoolCode
                 });
 
                 if(response.data === 'success') {
@@ -537,12 +590,91 @@ function Community() {
         }
     };
     
-    const updateResourceSharing = () => {
+    const updateResourceSharing = async () => {
+        const payload = { content: resourceContentDetailValue };
+        let fileUrl = uploadedFileUrl;
+        let fileName = uploadedFileName;
 
+        if(selectedFile) {
+            let formData = new FormData();
+            const encodedFileName = encodeURIComponent(selectedFile.name).replace(/%20/g, "+");
+            formData.append("uploadPath", `${user.userId}/resourceFiles`);
+            formData.append("file", new File([selectedFile], encodedFileName, { type: selectedFile.type }));
+
+            const config = { header: { "Content-Type": "multipart/form-data" }};
+
+            try {
+                const fileUploadResponse = await axios.post(`${BASE_URL}/upload/image`, formData, config);
+
+                if(fileUploadResponse.status === 200) {
+                    const { filename, fileUrl: newFileUrl } = fileUploadResponse.data;
+                    fileName = filename;
+                    fileUrl = newFileUrl;
+                }
+            } catch (error) {
+                console.log("자료공유 파일 업로드 중 ERROR", error);
+                return;
+            }
+        }
+
+        const response = await axios.post(`${BASE_URL}/api/community/updateResourceSharing`, {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            rowId: resourceSharingSelectedRow.id,
+            rsCategory: resourceCategoryDetailValue,
+            rsTitle: resourceTitleDetailValue,
+            rsContent: JSON.stringify(payload),
+            fileName: fileName,
+            fileUrl: fileUrl
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "자료공유 글이 정상적으로 수정되었습니다";
+            NotiflixInfo(infoMessage);
+            fetchResourceSharingData();
+            toggleResourceDetailModal();
+        }
     };
 
     const deleteResourceSharing = () => {
+        if(resourceSharingSelectedRow) {
+            const confirmTitle = "자료공유 글 삭제";
+            const confirmMessage = "선택하신 자료공유 글을 삭제하시겠습니까?";
 
+            const yesCallback = async () => {
+                const response = await axios.post(`${BASE_URL}/api/community/deleteResourceSharing`, {
+                    rowId: resourceSharingSelectedRow.id,
+                    userId: user.userId,
+                    schoolCode: user.schoolCode
+                });
+                
+                if(response.data === 'success') {
+                    const infoMessage = "자료공유 글이 정상적으로 삭제되었습니다";
+                    NotiflixInfo(infoMessage);
+                    fetchResourceSharingData();
+                    toggleResourceDetailModal();
+                }
+            };
+
+            const noCallback = () => {
+                return;
+            };
+
+            NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+        }
+    };
+
+    useEffect(() => {
+        if(resourceSharingData && user) {
+            const filteredData = resourceSharingData.filter(item => (
+                item.userId === user.userId
+            ));
+            setMyResourceSharingData(filteredData);
+        }
+    }, [resourceSharingData]);
+
+    const handleMyResourceSharingView = () => {
+        toggleMyResourceSharingModal();
     };
 
     return (
@@ -647,7 +779,7 @@ function Community() {
                         <Button className="ml-1" onClick={handleMyOpinionSharingView}>내가 쓴 의견공유 글</Button>
                     )}
                     {selectedMenu === 'resourceSharing' && (
-                        <Button className="ml-1">내가 쓴 자료공유 글</Button>
+                        <Button className="ml-1" onClick={handleMyResourceSharingView}>내가 쓴 자료공유 글</Button>
                     )}
                     {selectedMenu === 'interact' && (
                         <Button className="ml-1">내가 쓴 시도교류 글</Button>
@@ -702,13 +834,13 @@ function Community() {
                         <Col md="11" className="pr-4">
                             <div style={{ height: '24.6vh'}}>
                                 <ReactQuill
-                                    ref={quillRef}
+                                    ref={opinionQuillRef}
                                     style={{ height: "18vh" }}
                                     theme="snow"
                                     modules={modules}
                                     formats={formats}
-                                    value={contentData || ""}
-                                    onChange={handleQuillChange}
+                                    value={opinionContentData || ""}
+                                    onChange={handleOpinionQuillChange}
                                 />
                             </div>
                         </Col>
@@ -781,19 +913,19 @@ function Community() {
                                 {isEditMode ? (
                                     <div style={{ height: '24.6vh'}}>
                                         <ReactQuill
-                                            ref={quillRef}
+                                            ref={opinionQuillRef}
                                             style={{ height: "18vh" }}
                                             theme="snow"
                                             modules={modules}
                                             formats={formats}
                                             defaultValue={opinionDetailContentData || ""}
-                                            onChange={handleDetailQuillChange}
+                                            onChange={handleOpinionDetailQuillChange}
                                         />
                                     </div>
                                 ) : (
                                     <div style={{ height: '26vh'}}>
                                         <ReactQuill
-                                            ref={quillRef}
+                                            ref={opinionQuillRef}
                                             style={{ height: "24.5vh" }}
                                             theme="snow"
                                             modules={{ toolbar: false }}
@@ -832,7 +964,7 @@ function Community() {
                             columnDefs={myOpinionSharingColDef}
                             defaultColDef={defaultColDef}
                             onRowDoubleClicked={opinionSharingDoubleClick}
-                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 문의 및 요청 내역이 없습니다</span>' } 
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내 의견공유 글 내역이 없습니다</span>' } 
                         />
                     </div>
                 </ModalBody>
@@ -884,26 +1016,33 @@ function Community() {
                         <Col md="11" className="pr-4">
                             <div style={{ height: '20.6vh' }}>
                                 <ReactQuill
-                                    ref={quillRef}
+                                    ref={resourceQuillRef}
                                     style={{ height: "14vh" }}
                                     theme="snow"
                                     modules={modules}
                                     formats={formats}
-                                    value={contentData || ""}
-                                    onChange={handleQuillChange}
+                                    value={resourceContentData || ""}
+                                    onChange={handleResourceQuillChange}
                                 />
                             </div>
                         </Col>
                     </Row>
-                    <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3">
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3" style={{ marginLeft: 2}}>
                         <Col md="1" className="text-center">
                             <Label>파일</Label>
                         </Col>
-                        <Col md="11" style={{ border: '1px solid lightgrey'}}>
-                            <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', height: '5vh', paddingTop: '7px', textAlign: 'center' }}>
-                                <input {...getInputProps()}/>
-                                {fileMessage}
-                            </div>
+                        <Col md="11" style={{ border: '1px solid lightgrey', borderRadius: 3 }}>
+                            {uploadedFileUrl ? (
+                                <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
+                                    <a href={uploadedFileUrl} download>{uploadedFileName}</a>
+                                    <Button close onClick={handleFileDelete} />
+                                </div>
+                            ) : (
+                                <div {...getRootProps({ className: 'dropzone' })} style={{ width: '100%', height: '5vh', paddingTop: '7px', textAlign: 'center' }}>
+                                    <input {...getInputProps()} />
+                                    {fileMessage}
+                                </div>
+                            )}
                         </Col>
                     </Row>
                 </ModalBody>
@@ -966,19 +1105,19 @@ function Community() {
                             {isEditMode ? (
                                 <div style={{ height: '20.6vh' }}>
                                     <ReactQuill
-                                        ref={quillRef}
+                                        ref={resourceQuillRef}
                                         style={{ height: "14vh" }}
                                         theme="snow"
                                         modules={modules}
                                         formats={formats}
                                         defaultValue={resourceDetailContentData || ""}
-                                        onChange={handleDetailQuillChange}
+                                        onChange={handleResourceDetailQuillChange}
                                     />
                                 </div>
                             ) : (
                                 <div style={{ height: '26vh'}}>
                                     <ReactQuill
-                                        ref={quillRef}
+                                        ref={resourceQuillRef}
                                         style={{ height: "24.5vh" }}
                                         theme="snow"
                                         modules={{ toolbar: false }}
@@ -1023,6 +1162,25 @@ function Community() {
                             </Col>
                         )}
                     </Row>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={myResourceSharingModal} toggle={toggleMyResourceSharingModal} centered style={{ minWidth: '58%' }}>
+                <ModalHeader toggle={toggleMyResourceSharingModal}><b className="text-muted">내 자료공유 글 내역</b></ModalHeader>
+                <ModalBody>
+                    <div className="ag-theme-alpine" style={{ height: '30vh'}}>
+                        <AgGridReact 
+                            ref={myResourceSharingGridRef}
+                            rowData={myResourceSharingData}
+                            columnDefs={myResourceSharingColDef}
+                            defaultColDef={defaultColDef}
+                            onRowDoubleClicked={resourceSharingDoubleClick}
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내 자료공유 글 내역이 없습니다</span>' } 
+                        />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={toggleMyResourceSharingModal}>닫기</Button>
                 </ModalFooter>
             </Modal>
         </>

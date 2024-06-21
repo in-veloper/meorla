@@ -227,7 +227,7 @@ function RequesterLogin({onLogin}) {
                             <b style={{ color: '#66615B', fontSize: 20 }}>MEORLA</b>
                         </Row>
                     </Card>
-                    <Card style={{ width: '350px', height: 'auto' }}>
+                    <Card style={{ height: 'auto' }}>
                         <CardBody className="mt-2">
                             <Row className="mt-2 align-items-center">    
                                 <Col xs="4" className="text-center">
