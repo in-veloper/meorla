@@ -1940,6 +1940,10 @@ function WorkNote(args) {
     if(e.key === "Enter") searchEntireWorkNote();
   };
 
+  const handleSearchOnBedKeyDown = (e) => {
+    if(e.key === "Enter") searchOnBedStudentList();
+  };
+
   const resetSearchEntireWorkNote = () => {
     setSelectedStudent("");
     setSearchStartDate("");
@@ -2433,7 +2437,7 @@ function WorkNote(args) {
                 <Row className="pt-1">
                   <Col md="12">
                     <Alert className="d-flex justify-content-center align-items-center text-center text-muted mb-0" style={{ backgroundColor: '#f8f8f8', borderRadius: 10, height: 20 }}>
-                      <FaInfoCircle className="mr-2" style={{ marginTop: '-2px', fontSize: 17}}/> 일부 항목 입력으로도 조회 가능합니다
+                      <FaInfoCircle className="mr-2" style={{ marginTop: '-2px', fontSize: 17}}/> 일부 항목이나 이름 중 부분 입력으로도 조회 가능합니다
                     </Alert>
                   </Col>
                 </Row>
@@ -3121,7 +3125,7 @@ function WorkNote(args) {
                   style={{ width: '10%', height: 28 }}
                   value={searchSname}
                   onChange={(e) => setSearchSname(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
+                  onKeyDown={handleSearchOnBedKeyDown}
                 />
                 <Button className="ml-3 mr-1" size="sm" onClick={resetSearchOnBedStudentList}>초기화</Button>
                 <Button size="sm" onClick={searchOnBedStudentList}>검색</Button>
