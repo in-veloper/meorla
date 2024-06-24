@@ -634,81 +634,71 @@ function Request({onLogOut}) {
                         </CardHeader>
                         <CardBody className="pb-1 pt-0">
                             <Row className="d-flex align-items-center mt-3" style={{ height: 23, marginLeft: 7 }}>
-                                <Col xs="3">
-                                    <FormGroup style={{  }}>
-                                        <Input
-                                            id="hr"
-                                            name="teacherClassification"
-                                            type="radio"
-                                            value="hr"
-                                            checked={selectedTeacherClassification === "hr"}
-                                            onChange={handleTeacherClassificationChange}
-                                        />
-                                        <Label htmlFor="hr" style={{ fontSize: 13 }}>담임교사</Label>
-                                    </FormGroup>
+                                <Col xs="auto">
+                                    <Input
+                                        id="hr"
+                                        name="teacherClassification"
+                                        type="radio"
+                                        value="hr"
+                                        checked={selectedTeacherClassification === "hr"}
+                                        onChange={handleTeacherClassificationChange}
+                                    />
+                                    <Label htmlFor="hr" style={{ fontSize: 13, marginLeft: '0.3rem' }}>담임교사</Label>
                                 </Col>
-                                <Col xs="3" style={{ }}>
-                                    <FormGroup style={{  }}>
-                                        <Input
-                                            id="sb"
-                                            name="teacherClassification"
-                                            type="radio"
-                                            value="sb"
-                                            checked={selectedTeacherClassification === "sb"}
-                                            onChange={handleTeacherClassificationChange}
-                                        />
-                                        <Label htmlFor="sb" style={{ fontSize: 13 }}>교과교사</Label>
-                                    </FormGroup>
+                                <Col xs="auto" style={{ }}>
+                                    <Input
+                                        id="sb"
+                                        name="teacherClassification"
+                                        type="radio"
+                                        value="sb"
+                                        checked={selectedTeacherClassification === "sb"}
+                                        onChange={handleTeacherClassificationChange}
+                                    />
+                                    <Label htmlFor="sb" style={{ fontSize: 13, marginLeft: '0.3rem' }}>교과교사</Label>
                                 </Col>
-                                <Col xs="4" style={{ marginLeft: 9 }}>
-                                    <FormGroup style={{ }}>
-                                        <Label style={{ fontSize: 13 }}>요청교사</Label>
-                                    </FormGroup>
-                                </Col>
-                                <Col xs="2" style={{ marginLeft: '-50px' }}>
-                                    <FormGroup>
-                                        <Input
-                                            id="teacherName"
-                                            type="text"
-                                            style={{ width: '65px', height: '27px' }}
-                                        />
-                                    </FormGroup>
+                                <Col xs="auto" className="d-flex justify-content-end" style={{ flexGrow: 1 }}>
+                                    <Label style={{ fontSize: 13 }}>요청교사</Label>
+                                    <Input
+                                        id="teacherName"
+                                        type="text"
+                                        style={{ width: '65px', height: '27px', marginLeft: '0.5rem' }}
+                                    />
                                 </Col>
                             </Row>
-                            <Row className="d-flex align-items-center no-gutters">
-                                <Label className="mr-1 pt-1" style={{ fontSize: 13 }}>학년</Label>
+                            <Row className="d-flex align-items-center no-gutters flex-nowrap" style={{ gap: '0.5rem'}}>
+                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>학년</Label>
                                 <Input
-                                    className="text-right mr-2"
-                                    style={{ width: '30px', height: '27px' }}
+                                    className="text-right"
+                                    style={{ width: '30px', height: '27px', flex: '1 1 auto' }}
                                     onChange={(e) => onInputChange("iGrade", e.target.value)}
                                     value={searchCriteria.iGrade}
                                     onKeyDown={(e) => handleKeyDown(e, "iGrade")}
                                 />
-                                <Label className="mr-1 pt-1" style={{ fontSize: 13 }}>반</Label>
+                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>반</Label>
                                 <Input
-                                    className="text-right mr-2"
-                                    style={{ width: '30px', height: '27px' }}
+                                    className="text-right"
+                                    style={{ width: '30px', height: '27px', flex: '1 1 auto' }}
                                     onChange={(e) => onInputChange("iClass", e.target.value)}
                                     value={searchCriteria.iClass}
                                     onKeyDown={(e) => handleKeyDown(e, "iClass")}
                                 />
-                                <Label className="mr-1 pt-1" style={{ fontSize: 13 }}>번호</Label>
+                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>번호</Label>
                                 <Input
-                                    className="text-right mr-2"
-                                    style={{ width: '42px', height: '27px' }}
+                                    className="text-right"
+                                    style={{ width: '42px', height: '27px', flex: '1 1 auto' }}
                                     onChange={(e) => onInputChange("iNumber", e.target.value)}
                                     value={searchCriteria.iNumber}
                                     onKeyDown={(e) => handleKeyDown(e, "iNumber")}
                                 />
-                                <label className="mr-1 pt-1" style={{ fontSize: 13 }}>이름</label>
+                                <label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>이름</label>
                                 <Input
                                     className="text-right"
-                                    style={{ width: '65px', height: '27px', marginRight: 5 }}
+                                    style={{ width: '65px', height: '27px',flex: '2 1 auto', marginRight: 5 }}
                                     onChange={(e) => onInputChange("iName", e.target.value)}
                                     value={searchCriteria.iName}
                                     onKeyDown={(e) => handleKeyDown(e, "iName")}
                                 />
-                                <Button size="sm" style={{ height: '27px', paddingLeft: '8px', paddingRight: '10px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
+                                <Button size="sm" style={{ height: '27px', flex: '0 0 auto', paddingLeft: '10px', paddingRight: '10px' }} onClick={() => onSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
                             </Row>
                             <Row className="pt-1">
                                 <Col md="12">
