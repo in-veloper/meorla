@@ -628,11 +628,11 @@ function Request({onLogOut}) {
                             {generateBedBox()}
                         </Row>
                     </Card>
-                    <Card className="mb-3" style={{ width: '100%', height: '58vh', border: '1px dashed lightgrey' }}>
+                    <Card className="mb-3" style={{ width: '100%', height: 'auto', border: '1px dashed lightgrey', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                         <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
                             <b>보건실 방문 요청</b>
                         </CardHeader>
-                        <CardBody className="pb-1 pt-0">
+                        <CardBody className="pb-3 pt-0">
                             <Row className="d-flex align-items-center mt-3" style={{ height: 23, marginLeft: 7 }}>
                                 <Col xs="auto">
                                     <Input
@@ -722,24 +722,26 @@ function Request({onLogOut}) {
                                     </div>
                                 </Col>
                             </Row>
-                            <Form onSubmit={sendVisitRequest} className="mt-3" style={{ border: '1px dotted #babfc7', backgroundColor: '#fcfcfc', borderRadius: 4, height: '20vh' }}>
-                                <Row className="d-flex align-items-center justify-content-center no-gutters mt-2">
+                            <Form onSubmit={sendVisitRequest} className="mt-3" style={{ border: '1px dotted #babfc7', backgroundColor: '#fcfcfc', borderRadius: 4, height: 'auto', padding: '0.5rem' }}>
+                                <Row className="d-flex align-items-center justify-content-center no-gutters mt-1">
                                     <b className="p-1 pl-2 pr-2 text-muted" style={{ float: 'right', fontSize: '12px', backgroundColor: '#F5F1E7', borderRadius: '7px'}}>
                                         {selectedStudent ? `${selectedStudent.sGrade} 학년 ${'\u00A0'} ${selectedStudent.sClass} 반 ${'\u00A0'} ${selectedStudent.sNumber}번 ${'\u00A0'} ${selectedStudent.sName}` :  '학생을 선택하세요'}
                                     </b>
                                 </Row>
-                                <Row className="d-flex align-items-center no-gutters pt-2 pl-2 pr-2 pb-0" style={{ marginTop: 3 }}>
+                                <Row className="d-flex align-items-center no-gutters pt-2 pl-1 pr-1 pb-0" style={{ marginTop: 3 }}>
                                     <Input
                                         id="requestContent"
-                                        className="p-1"
+                                        className="p-2"
                                         type="textarea"
                                         placeholder="특이사항을 입력해주세요"
-                                        style={{ height: 68 }}
+                                        style={{ height: '6rem', width: '100%' }}
                                     />
                                 </Row>
-                                <Row className="d-flex align-items-center justify-content-center no-gutters">
-                                    <Button size="sm" onClick={sendVisitRequest}>전송</Button>
-                                    <Button className="ml-1" size="sm" onClick={resetVisitRequestForm}>초기화</Button>
+                                <Row className="d-flex align-items-center justify-content-center no-gutters mt-1">
+                                    <div className="d-flex justify-content-center" style={{ width: '100%', gap: '0.5rem' }}>
+                                        <Button size="sm" onClick={resetVisitRequestForm}>초기화</Button>
+                                        <Button size="sm" onClick={sendVisitRequest}>전송</Button>
+                                    </div>
                                 </Row>
                             </Form>
                         </CardBody>
