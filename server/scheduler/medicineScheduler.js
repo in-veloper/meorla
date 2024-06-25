@@ -103,7 +103,8 @@ async function fetchGrainMedicineApiData() {
             params: {
                 serviceKey: "keLWlFS+rObBs8V1oJnzhsON3lnDtz5THBBLn0pG/2bSG4iycOwJfIf5fx8Vl7SiOtsgsat2374sDmkU6bA7Zw==",
                 type: "json"
-            }
+            },
+            timeout: 30000   // 30초 타임아웃 설정
         });
         
         if(response.data.hasOwnProperty('body')) {
