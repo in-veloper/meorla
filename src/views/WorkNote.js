@@ -1,5 +1,5 @@
 import React, {useState, useRef, useCallback, useEffect} from "react";
-import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput, Tooltip, CardFooter } from "reactstrap";
+import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput, Tooltip, CardFooter, Popover, PopoverBody, PopoverHeader } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -24,6 +24,7 @@ import moment from "moment";
 import { getSocket } from "components/Socket/socket";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { TiPrinter } from "react-icons/ti";
+import { IoInformationCircleOutline } from "react-icons/io5";
 import '../assets/css/worknote.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -94,6 +95,7 @@ function WorkNote(args) {
   const [diabetesStudentsRowData, setDiabetesStudentsRowData] = useState([]);
   const [protectStudentsRowData, setProtectStudentsRowData] = useState([]);
   const [isPopUpProtectStudent, setIsPopUpProtectStudent] = useState(false);
+  const [medicineBookmarkPopOverOpen, setMedicineBookmarkPopOverOpen] = useState(false);
 
   const searchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
@@ -127,6 +129,7 @@ function WorkNote(args) {
   const toggleOnBedStudentListModal = () => setOnBedStudentListModal(!onBedStudentListModal);
   const toggleRegistProtectStudentModal = () => setRegistProtectStudentModal(!registProtectStudentModal);
   const toggleManageProtectStudentModal = () => setManageProtectStudentModal(!manageProtectStudentModal);
+  const toggleMedicineBookmarkPopOver = () => setMedicineBookmarkPopOverOpen(!medicineBookmarkPopOverOpen);
 
   const customCellRenderer = (params) => {
     const { value } = params;
@@ -2353,7 +2356,7 @@ function WorkNote(args) {
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <b>학생 조회</b>
               </CardHeader>
-              <CardBody className="pb-1">
+              <CardBody className="pb-1" style={{ display: 'flex', flexDirection: "column", height: '100%' }}>
                 <Row className="pr-0">
                   <Col md="10" className="ml-1" style={{ marginRight: '-15px'}}>
                     <Row>
@@ -2452,10 +2455,10 @@ function WorkNote(args) {
                     />
                   </Col>
                 </Row>
-                <Row className="pt-1">
-                  <Col md="12">
-                    <div className="search-student-grid" style={{ flex: '1 1 auto'}}>
-                      <div className="ag-theme-alpine" style={{ height: '20.1vh' }} onContextMenu={handleLeftGridContextMenu}>
+                <Row className="pt-1" style={{ flex: '1 1 auto', minHeight: 0 }}>
+                  <Col md="12" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <div className="search-student-grid" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
+                      <div className="ag-theme-alpine" style={{ flex: '1 1 auto', minHeight: 0 }} onContextMenu={handleLeftGridContextMenu}>
                         <AgGridReact
                           rowHeight={30}
                           ref={searchStudentGridRef}
@@ -2502,7 +2505,7 @@ function WorkNote(args) {
                 </Row>
               </CardBody>
             </Card>
-            <Card style={{ flex: '1 1 290px', border: '1px solid lightgrey' }}>
+            <Card style={{ flex: '1 1 100px', border: '1px solid lightgrey' }}>
               <CardHeader style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-items-center">
                   <Col className="text-left pl-3" md="3">
@@ -2645,8 +2648,18 @@ function WorkNote(args) {
                             <b className="action-title" style={{ marginRight: '-9px' }}>투약사항</b>
                           </Col>
                           <Col className="text-right" md="5">
-                            <IoMdRefresh id="medicationTagField" className="text-muted mr-2" style={{ marginTop: '-8px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
-                            <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/>
+                            <IoMdRefresh id="medicationTagField" className="text-muted mr-2" style={{ marginTop: '-9px', cursor: 'pointer' }} onClick={handleClearWorkNote} />                            
+                            <IoInformationCircleOutline className="text-muted font-weight-bold" id="medicine-bookmark-popover" style={{ marginTop: '-8px'}} />
+                            <Popover flip target="medicine-bookmark-popover" isOpen={medicineBookmarkPopOverOpen} toggle={toggleMedicineBookmarkPopOver}>
+                              <PopoverHeader>
+                                투약사항 설정 안내
+                              </PopoverHeader>
+                              <PopoverBody>
+                                투약사항 설정은 좌측 약품관리 기능 내에서 등록 후 사용해 주시기 바랍니다 <br/>
+                                <a href="/meorla/manageMediFixt">약품관리 바로가기</a>
+                              </PopoverBody>
+                            </Popover>
+                            {/* <BiMenu className="text-muted" style={{ float: 'right', marginTop: '-8px', cursor: 'pointer' }} onClick={handleMedication}/> */}
                           </Col>
                         </Row>
                       </CardHeader>
@@ -2817,7 +2830,7 @@ function WorkNote(args) {
                   </Col>
                 </Row>
               </CardBody>
-              <CardFooter className="pt-2 pb-2">
+              <CardFooter className="pt-2 pb-3">
                 <Row className="d-flex justify-content-center">
                   <Col md="3">
                     <Button className="" onClick={toggleEntireWorkNoteGrid}>전체 보건일지</Button>

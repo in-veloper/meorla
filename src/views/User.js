@@ -313,6 +313,8 @@ function User() {
       cell.alignment = { horizontal: "center", vertical: "middle" };  // 중앙 정렬 적용
     });
 
+    worksheet.getColumn(5).numFmt = '@';                // 연락처 컬럼 텍스트 형식 지정
+
     const buffer = await workbook.xlsx.writeBuffer();   // buffer 쓰기 처리 (파일로 쓰기)
     const blob = new Blob([buffer], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
     const fileName = "교직원 템플릿.xlsx";                  // 다운로드할 파일 이름 설정
@@ -1306,11 +1308,15 @@ function User() {
                   <Row>
                     <Col md="12">
                       <FormGroup>
-                        <label>About Me</label>
-                        <Input
-                          type="textarea"
-                          defaultValue="Oh so, your weak rhyme You doubt I'll bother, reading into it"
-                        />
+                        <label>마이그레이션</label>
+                        <Row className="d-flex no-gutters">
+                          <ButtonGroup>
+                            <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}}>규OOO</Button>
+                            <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>천OOO</Button>
+                            <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>스OOO</Button>
+                          </ButtonGroup>
+
+                        </Row>
                       </FormGroup>
                     </Col>
                   </Row>
