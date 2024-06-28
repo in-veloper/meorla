@@ -1108,7 +1108,7 @@ function User() {
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
           <Col md="4">
-            <Card className="card-user" style={{ height: '555px', border: '1px solid lightgray' }}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
+            <Card className="card-user" style={{ height: '523px', border: '1px solid lightgray' }}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <input 
                   type="file"
@@ -1306,17 +1306,35 @@ function User() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col md="12">
+                    <Col md="4">
                       <FormGroup>
                         <label>마이그레이션</label>
-                        <Row className="d-flex no-gutters">
-                          <ButtonGroup>
-                            <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}}>규OOO</Button>
-                            <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>천OOO</Button>
-                            <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>스OOO</Button>
-                          </ButtonGroup>
-
-                        </Row>
+                          <div style={{ marginTop: '-12px' }}>
+                            <ButtonGroup className="w-100">
+                              <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}}>규OOO</Button>
+                              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>천OOO</Button>
+                              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>스OOO</Button>
+                            </ButtonGroup>
+                          </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="5">
+                      <FormGroup>
+                        <label>학교이동</label>
+                          <div style={{ marginTop: '-12px' }}>
+                            <ButtonGroup className="w-100">
+                              <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}}>데이터 일괄 초기화</Button>
+                              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>데이터 선택 초기화</Button>
+                            </ButtonGroup>
+                          </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="3">
+                      <FormGroup>
+                        <label>보조교사</label>
+                        <div style={{ marginTop: '-12px' }}>
+                          <Button className="user-inner-button w-100">보조교사 권한관리</Button>
+                        </div>
                       </FormGroup>
                     </Col>
                   </Row>
@@ -1330,7 +1348,7 @@ function User() {
                           onChange={(e) => setBedCount(e.target.value)}
                           type="number"
                           min={0}
-                          max={20}
+                          max={4}
                         />
                       </FormGroup>
                     </Col>

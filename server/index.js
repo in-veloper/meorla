@@ -538,6 +538,24 @@ app.get("/api/bookmark/getBookmark", async (req, res) => {
     });
 });
 
+const algorithm = 'aes-256-cbc';
+const key = Buffer.from('b9c9a3e9f8d7c6a5b4e3d2c1f0e9d8c7b6a5e4d3c2b1a0f9e8d7c6b5a4e3d2c1', 'hex'); // 32 바이트 고정 키
+const iv = Buffer.from('f0e9d8c7b6a5e4d3c2b1a0f9e8d7c6b5', 'hex'); // 고정된 16 바이트 IV
+
+const encrypt = (text) => {
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return encrypted;
+};
+
+const decrypt = (text) => {
+  const decipher = crypto.createDecipheriv(algorithm, key, iv);
+  let decrypted = decipher.update(text, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+};
+
 app.post("/api/studentsTable/insert", async (req, res) => {
     const studentsArray = req.body.studentsArray;
     const values = studentsArray.map(student => {
@@ -545,11 +563,11 @@ app.post("/api/studentsTable/insert", async (req, res) => {
             student.userId,
             student.schoolName,
             student.schoolCode,
-            student.sGrade,
-            student.sClass,
-            student.sNumber,
+            encrypt(student.sGrade.toString()), // 암호화
+            encrypt(student.sClass.toString()), // 암호화
+            encrypt(student.sNumber.toString()), // 암호화
             student.sGender,
-            student.sName
+            encrypt(student.sName) // 암호화
         ];
     });
 
@@ -572,21 +590,47 @@ app.get("/api/studentsTable/getStudentInfo", async (req, res) => {
             console.log("학생 정보 조회 중 ERROR", err);
             res.status(500).json({ error: "Internal Server Error" });
         }else{
-            res.json({ studentData: result });
+            const decryptedResults = result.map(student => {
+                return {
+                    userId: student.userId,
+                    schoolName: student.schoolName,
+                    schoolCode: student.schoolCode,
+                    sGrade: decrypt(student.sGrade),
+                    sClass: decrypt(student.sClass),
+                    sNumber: decrypt(student.sNumber),
+                    sGender: student.sGender,
+                    sName: decrypt(student.sName)
+                };
+            });
+            res.json({ studentData: decryptedResults });
         }
     });
 });
 
 app.get("/api/studentsTable/getStudentInfoByGrade", async (req, res) => {
     const { userId, schoolCode, sGrade } = req.query;
-
+    const encryptedGrade = encrypt(sGrade.toString());
+    console.log(encryptedGrade)
     const sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND sGrade = ?";
-    db.query(sqlQuery, [userId, schoolCode, sGrade], (err, result) => {
+    db.query(sqlQuery, [userId, schoolCode, encryptedGrade], (err, result) => {
         if(err) {
             console.log("학생 정보 조회 중 ERROR", err);
             res.status(500).json({ error: "Internal Server Error" });
         }else{
-            res.json({ studentData: result });
+            const decryptedResults = result.map(student => {
+                return {
+                    userId: student.userId,
+                    schoolName: student.schoolName,
+                    schoolCode: student.schoolCode,
+                    sGrade: decrypt(student.sGrade),
+                    sClass: decrypt(student.sClass),
+                    sNumber: decrypt(student.sNumber),
+                    sGender: student.sGender,
+                    sName: decrypt(student.sName)
+                };
+            });
+            console.log(decryptedResults)
+            res.json({ studentData: decryptedResults });
         }
     });
 });
@@ -600,23 +644,23 @@ app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
     // 동적으로 조건 추가
     if (sGrade) {
         sqlQuery += " AND sGrade = ?";
-        queryParams.push(sGrade);
+        queryParams.push(encrypt(sGrade.toString()));
     }
 
     if (sClass) {
         sqlQuery += " AND sClass = ?";
-        queryParams.push(sClass);
+        queryParams.push(encrypt(sClass.toString()));
     }
 
     if (sNumber) {
         sqlQuery += " AND sNumber = ?";
-        queryParams.push(sNumber);
+        queryParams.push(encrypt(sNumber.toString()));
     }
 
     if (sName) {
         // 이름 일부만 입력되었을 때를 위한 LIKE 구문 사용
         sqlQuery += " AND sName LIKE ?";
-        queryParams.push(`%${sName}%`);
+        queryParams.push(`%${encrypt(sName.toString())}%`);
     }
 
     db.query(sqlQuery, queryParams, (err, result) => {
@@ -624,7 +668,19 @@ app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
             console.log("학생 정보 조회 중 ERROR", err);
             res.status(500).json({ error: "Internal Server Error" });
         } else {
-            res.json({ studentData: result });
+            const decryptedResults = result.map(student => {
+                return {
+                    userId: student.userId,
+                    schoolName: student.schoolName,
+                    schoolCode: student.schoolCode,
+                    sGrade: decrypt(student.sGrade),
+                    sClass: decrypt(student.sClass),
+                    sNumber: decrypt(student.sNumber),
+                    sGender: student.sGender,
+                    sName: decrypt(student.sName)
+                };
+            });
+            res.json({ studentData: decryptedResults });
         }
     });
 });
@@ -637,23 +693,23 @@ app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) =
 
     if (sGrade) {
         sqlQuery += " AND sGrade = ?";
-        queryParams.push(sGrade);
+        queryParams.push(encrypt(sGrade.toString()));
     }
 
     if (sClass) {
         sqlQuery += " AND sClass = ?";
-        queryParams.push(sClass);
+        queryParams.push(encrypt(sClass.toString()));
     }
 
     if (sNumber) {
         sqlQuery += " AND sNumber = ?";
-        queryParams.push(sNumber);
+        queryParams.push(encrypt(sNumber.toString()));
     }
 
     if (sName) {
         // 이름 일부만 입력되었을 때를 위한 LIKE 구문 사용
         sqlQuery += " AND sName LIKE ?";
-        queryParams.push(`%${sName}%`);
+        queryParams.push(`%${encrypt(sName.toString())}%`);
     }
 
     db.query(sqlQuery, queryParams, (err, result) => {
@@ -661,7 +717,19 @@ app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) =
             console.log("학생 정보 조회 중 ERROR", err);
             res.status(500).json({ error: "Internal Server Error" });
         } else {
-            res.json({ studentData: result });
+            const decryptedResults = result.map(student => {
+                return {
+                    userId: student.userId,
+                    schoolName: student.schoolName,
+                    schoolCode: student.schoolCode,
+                    sGrade: decrypt(student.sGrade),
+                    sClass: decrypt(student.sClass),
+                    sNumber: decrypt(student.sNumber),
+                    sGender: student.sGender,
+                    sName: decrypt(student.sName)
+                };
+            });
+            res.json({ studentData: decryptedResults });
         }
     });
 });
@@ -669,8 +737,13 @@ app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) =
 app.post("/api/studentsTable/deleteStudentInfo", async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "DELETE FROM teaform_db.students WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+    db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
         if(err) {
             console.log("명렬표 학생 DELETE 처리 중 ERROR", err);
         }else{
@@ -682,27 +755,38 @@ app.post("/api/studentsTable/deleteStudentInfo", async (req, res) => {
 app.post("/api/studentsTable/addTransferStudent", async (req, res) => {
     const { userId, schoolName, schoolCode, sGrade, sClass, sGender, sName } = req.body;
 
-    const maxNumberResult = await new Promise((resolve, reject) => {
-        const query = 'SELECT MAX(sNumber) as maxNumber FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ?';
-        db.query(query, [userId, schoolCode, sGrade, sClass], (err, results) => {
-            if(err) return reject(err);
-            resolve(results)
-        });
-    });
-    
-    let newNumber = 1;
-    if(maxNumberResult[0].maxNumber !== null) {
-        newNumber = parseInt(maxNumberResult[0].maxNumber) + 1;
-    }
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedName = encrypt(sName.toString());
 
-    const insertStudentResult = await new Promise((resolve, reject) => {
-        const query = 'INSERT INTO teaform_db.students (userId, schoolName, schoolCode, sGrade, sClass, sGender, sNumber, sName) VALUES (?,?,?,?,?,?,?,?)';
-        db.query(query, [userId, schoolName, schoolCode, sGrade, sClass, sGender, newNumber, sName], (err, results) => {
-            if(err) return reject(err);
+    const allNumbersResult = await new Promise((resolve, reject) => {
+        const query = 'SELECT sNumber FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ?';
+        db.query(query, [userId, schoolCode, encryptedGrade, encryptedClass], (err, results) => {
+            if (err) return reject(err);
             resolve(results);
         });
     });
 
+    let maxNumber = 0;
+    for (const result of allNumbersResult) {
+        const decryptedNumber = parseInt(decrypt(result.sNumber));
+        if (decryptedNumber > maxNumber) {
+            maxNumber = decryptedNumber;
+        }
+    }
+
+    const newNumber = maxNumber + 1;
+    const encryptedNewNumber = encrypt(newNumber.toString());
+
+
+    await new Promise((resolve, reject) => {
+        const query = 'INSERT INTO teaform_db.students (userId, schoolName, schoolCode, sGrade, sClass, sGender, sNumber, sName) VALUES (?,?,?,?,?,?,?,?)';
+        db.query(query, [userId, schoolName, schoolCode, encryptedGrade, encryptedClass, sGender, encryptedNewNumber, encryptedName], (err, results) => {
+          if (err) return reject(err);
+          resolve(results);
+        });
+    });
+  
     res.send('success');
 });
 
@@ -1228,8 +1312,13 @@ app.get("/api/workNote/getStockMedication", async (req, res) => {
 app.post("/api/workNote/saveWorkNote", async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
+    db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
         if(err) {
             console.log("보건일지 INSERT 처리 중 ERROR", err);
         }else{
@@ -1241,8 +1330,13 @@ app.post("/api/workNote/saveWorkNote", async (req, res) => {
 app.post("/api/workNote/updateWorkNote", async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "UPDATE teaform_db.workNote SET symptom = ?, medication = ?, bodyParts = ?, treatmentMatter = ?, onBedStartTime = ?, onBedEndTime = ?, temperature = ?, bloodPressure = ?, pulse = ?, oxygenSaturation = ?, bloodSugar = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+    db.query(sqlQuery, [symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
         if(err) {
             console.log("보건일지 UPDATE 처리 중 ERROR", err);
         }else{
@@ -1254,8 +1348,13 @@ app.post("/api/workNote/updateWorkNote", async (req, res) => {
 app.post("/api/workNote/deleteWorkNote", async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "DELETE FROM teaform_db.workNote WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+    db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
         if(err) {
             console.log("보건일지 DELETE 처리 중 ERROR", err);
         }else{
@@ -1272,7 +1371,16 @@ app.get("/api/workNote/getOnBedStudentList", async (req, res) => {
         if(err) {
             console.log("보건일지 내 침상안정 내역 학생 조회 중 ERROR", err);
         }else{
-            res.json(result);
+            const decryptedResults = result.map(note => {
+                return {
+                  ...note,
+                  sGrade: decrypt(note.sGrade),
+                  sClass: decrypt(note.sClass),
+                  sNumber: decrypt(note.sNumber),
+                  sName: decrypt(note.sName)
+                };
+            });
+            res.json(decryptedResults);
         }
     });    
 });
@@ -1285,7 +1393,16 @@ app.get("/api/workNote/getProtectStudents", async (req, res) => {
         if(err) {
             console.log("보호학생 조회 중 ERROR", err);
         }else{
-            res.json(result);
+            const decryptedResults = result.map(student => {
+                return {
+                  ...student,
+                  sGrade: decrypt(student.sGrade),
+                  sClass: decrypt(student.sClass),
+                  sNumber: decrypt(student.sNumber),
+                  sName: decrypt(student.sName)
+                };
+            });
+            res.json(decryptedResults);
         }
     });
 });
@@ -1402,7 +1519,17 @@ app.get('/api/workNote/getSelectedStudentData', async (req, res) => {
         if(err) {
             console.log("보건일지 선택한 학생별 일지 등록 내역 조회 중 ERROR", err);
         }else{
-            res.json(result);
+
+            const decryptedResults = result.map(entry => {
+                return {
+                    ...entry,
+                    sGrade: decrypt(entry.sGrade),
+                    sClass: decrypt(entry.sClass),
+                    sNumber: decrypt(entry.sNumber),
+                    sName: decrypt(entry.sName)
+                };
+            });
+            res.json(decryptedResults);
         }
     });
 });
@@ -1416,7 +1543,16 @@ app.get('/api/workNote/getEntireWorkNote', async (req, res) => {
         if(err) {
             console.log("전체 등록된 보건일지 조회 중 ERROR", err);
         }else{
-            res.json(result);
+            const decryptedResults = result.map(note => {
+                return {
+                  ...note,
+                  sGrade: decrypt(note.sGrade),
+                  sClass: decrypt(note.sClass),
+                  sNumber: decrypt(note.sNumber),
+                  sName: decrypt(note.sName)
+                };
+            });
+            res.json(decryptedResults);
         }
     });
 });
@@ -1424,9 +1560,14 @@ app.get('/api/workNote/getEntireWorkNote', async (req, res) => {
 app.post('/api/workNote/updateOnBedEndTime', async (req, res) => {
     const { onBedEndTime, userId, schoolCode, rowId, targetStudentGrade, targetStudentClass, targetStudentNumber, targetStudentGender, targetStudentName } = req.body;
 
+    const encryptedGrade = encrypt(targetStudentGrade.toString());
+    const encryptedClass = encrypt(targetStudentClass.toString());
+    const encryptedNumber = encrypt(targetStudentNumber.toString());
+    const encryptedName = encrypt(targetStudentName.toString());
+
     // 침상안정 종료시간 update 처리 필요
     const sqlQuery = "UPDATE teaform_db.workNote SET onBedEndTime = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [onBedEndTime, userId, schoolCode, rowId, targetStudentGrade, targetStudentClass, targetStudentNumber, targetStudentGender, targetStudentName], (err, result) => {
+    db.query(sqlQuery, [onBedEndTime, userId, schoolCode, rowId, encryptedGrade, encryptedClass, encryptedNumber, targetStudentGender, encryptedName], (err, result) => {
         if(err) {
             console.log("침상종료 시간 Update 처리 중 ERROR", err);
         }else{
@@ -1438,8 +1579,13 @@ app.post('/api/workNote/updateOnBedEndTime', async (req, res) => {
 app.post('/api/workNote/saveProtectStudent', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, isProtected, protectContent } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "UPDATE teaform_db.students SET isProtected = ?, protectContent = ? WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [isProtected, protectContent, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+    db.query(sqlQuery, [isProtected, protectContent, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
         if(err) {
             console.log("보호학생 UPDATE 처리 중 ERROR", err);
         }else{
@@ -1478,7 +1624,16 @@ app.get('/api/request/getOnBedRestInfo', async (req, res) => {
         if(err) {
             console.log("보건실 요청 기능 내 침상정보 조회 중 ERROR", err);
         }else{
-            res.json(result);
+            const decryptedResults = result.map(note => {
+                return {
+                  ...note,
+                  sGrade: decrypt(note.sGrade),
+                  sClass: decrypt(note.sClass),
+                  sNumber: decrypt(note.sNumber),
+                  sName: decrypt(note.sName)
+                };
+            });
+            res.json(decryptedResults);
         }
     })
 });
@@ -1486,8 +1641,13 @@ app.get('/api/request/getOnBedRestInfo', async (req, res) => {
 app.post('/api/request/saveVisitRequest', async (req, res) => {
     const { schoolCode, targetGrade, targetClass, targetNumber, targetName, requestContent, teacherClassification, teacherName, requestTime } = req.body;
 
+    const encryptedGrade = encrypt(targetGrade.toString());
+    const encryptedClass = encrypt(targetClass.toString());
+    const encryptedNumber = encrypt(targetNumber.toString());
+    const encryptedName = encrypt(targetName.toString());
+
     const sqlQuery = "INSERT INTO teaform_db.visitRequest (schoolCode, teacherClassification, teacherName, sGrade, sClass, sNumber, sName, requestContent, requestTime) VALUES (?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [schoolCode, teacherClassification, teacherName, targetGrade, targetClass, targetNumber, targetName, requestContent, requestTime ], (err, result) => {
+    db.query(sqlQuery, [schoolCode, teacherClassification, teacherName, encryptedGrade, encryptedClass, encryptedNumber, encryptedName, requestContent, requestTime ], (err, result) => {
         if(err) {
             console.log("보건실 방문 요청 내 요청 메시지 Insert 처리 중 ERROR", err);
         }else{
@@ -1505,7 +1665,16 @@ app.get('/api/workNote/getVisitRequest', async (req, res) => {
         if(err) {
             console.log("보건실 방문 신청 내역 조회 중 ERROR", err);
         }else{
-            res.json(result);
+            const decryptedResults = result.map(requestData => {
+                return {
+                  ...requestData,
+                  sGrade: decrypt(requestData.sGrade),
+                  sClass: decrypt(requestData.sClass),
+                  sNumber: decrypt(requestData.sNumber),
+                  sName: decrypt(requestData.sName)
+                };
+            });
+            res.json(decryptedResults);
         }
     });
 });
@@ -1600,8 +1769,13 @@ app.get('/api/medicineInfo/getBookmarkMedicine', async (req, res) => {
 app.post('/api/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
+    db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
         if(err) {
             console.log("응급학생관리 등록 중 ERROR", err);
         }else{
@@ -1613,8 +1787,13 @@ app.post('/api/manageEmergency/saveEmergencyManagement', async (req, res) => {
 app.post('/manageEmergency/updateEmergencyManagement', async (req, res) => {
     const { userId, schoolCode, rowId, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "UPDATE teaform_db.manageEmergency SET firstDiscoveryTime = ?, teacherConfirmTime = ?, occuringArea = ?, firstWitness = ?, vitalSign = ?, mainSymptom = ?, accidentOverview = ?, emergencyTreatmentDetail = ?, transferTime = ?, guardianContact = ?, transferHospital = ?, homeroomTeacherName = ?, registDate = ?, registerName = ?, bodyChartPoints = ?, transferVehicle = ?, transpoter = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-     db.query(sqlQuery, [firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter, userId, schoolCode, rowId, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+     db.query(sqlQuery, [firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter, userId, schoolCode, rowId, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
         if(err) {
             console.log("응급학생관리 Update 처리 중 ERROR", err);
         }else{
@@ -1631,7 +1810,16 @@ app.get('/api/manageEmergency/getManageEmergencyData', async (req, res) => {
         if(err) {
             console.log("응급학생관리 전체 목록 조회 중 ERROR", err);
         }else{
-            res.json(result);
+            const decryptedResults = result.map(emergencyData => {
+                return {
+                  ...emergencyData,
+                  sGrade: decrypt(emergencyData.sGrade),
+                  sClass: decrypt(emergencyData.sClass),
+                  sNumber: decrypt(emergencyData.sNumber),
+                  sName: decrypt(emergencyData.sName)
+                };
+            });
+            res.json(decryptedResults);
         }
     });
 });
@@ -1639,8 +1827,12 @@ app.get('/api/manageEmergency/getManageEmergencyData', async (req, res) => {
 app.post('/api/manageEmergency/deleteEmergencyManagement', async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber } = req.body;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+
     const sqlQuery = "DELETE FROM teaform_db.manageEmergency WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ?";
-    db.query(sqlQuery, [rowId, userId, schoolCode, sGrade, sClass, sNumber], (err, result) => {
+    db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber], (err, result) => {
         if(err) {
             console.log("응급학생 내역 DELETE 처리 중 ERROR", err);
         }else{

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import { Row, Col, Card, CardBody, Button, Input, Label } from "reactstrap";
 import HealthExaminationSurveyForm from "components/SurveyForm/HealthExaminationSurveyForm";
-import EmergencyManagementServeyForm from "components/SurveyForm/EmergencyManagementSurveyForm";
 import { useReactToPrint } from "react-to-print";
+import SurveyPhoneView from "components/SurveyForm/SurveyPhoneView";
 import '../assets/css/survey.css';
 
 
@@ -13,10 +13,6 @@ function Survey() {
 
 
     const handleHealthStateSurvey = () => {
-
-    };
-
-    const handleEmergencyStudentManagement = () => {
 
     };
 
@@ -43,22 +39,11 @@ function Survey() {
                                     id="healthStateSurvey"
                                     name="healthStateSurvey"
                                     type="select"
-                                    style={{ width: '250px' }}
+                                    style={{ width: '450px' }}
                                     value={surveyTopic}
                                     onChange={handleHealthStateSurvey}
                                 >
-                                    <option value='none'>건강실태조사</option>
-                                </Input>
-                                <Input
-                                    className="ml-2"
-                                    id="emergencyStudentManagement"
-                                    name="emergencyStudentManagement"
-                                    type="select"
-                                    style={{ width: '300px' }}
-                                    value={surveyTopic}
-                                    onChange={handleEmergencyStudentManagement}
-                                >
-                                    <option value='none'>학교 내 응급환자 관리 안내</option>
+                                    <option value='none'>건강실태조사 및 학교 내 응급환자 관리 안내</option>
                                 </Input>
                                 <Button className="ml-3">PDF 다운로드</Button>
                                 <Button className="ml-1" onClick={printSurveyForm}>프린트</Button>
@@ -76,10 +61,16 @@ function Survey() {
                         </div>
                     </div>
                 </Card>
-                <Card style={{ width: '49%', height: '75.1vh', overflowY: 'auto', float: 'right', border: '1px solid lightgray' }}>
-                    <div className="p-3">
-                        <div style={{ border: '1px solid gray' }}>
-                            <EmergencyManagementServeyForm />
+                <Card className="ml-4" style={{ width: '48.4%', height: '75.1vh', border: '1px solid lightgray', float: 'left' }}>
+                    <div className="iphone-preview">
+                        <div className="iphone">
+                            <div className="notch">
+                                <div className="camera"></div>
+                                <div className="speaker"></div>
+                            </div>
+                            <div className="screen" style={{ overflowY: 'scroll'}}>
+                                <SurveyPhoneView />
+                            </div>
                         </div>
                     </div>
                 </Card>
