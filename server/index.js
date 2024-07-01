@@ -16,7 +16,9 @@ const { startMedicineScheduler } = require('./scheduler/medicineScheduler');
 const socketIo = require('socket.io');
 const http = require('http');
 const nodemailer = require('nodemailer');
+const { default: axios } = require('axios');
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const BASE_ORIGIN = process.env.REACT_APP_BASE_ORIGIN;
 const PORT = process.env.REACT_APP_BASE_PORT || 8002;
 
@@ -566,7 +568,7 @@ app.post("/api/studentsTable/insert", async (req, res) => {
             encrypt(student.sGrade.toString()), // 암호화
             encrypt(student.sClass.toString()), // 암호화
             encrypt(student.sNumber.toString()), // 암호화
-            student.sGender,
+            encrypt(student.sGender.toString()), // 암호화
             encrypt(student.sName) // 암호화
         ];
     });
@@ -598,7 +600,7 @@ app.get("/api/studentsTable/getStudentInfo", async (req, res) => {
                     sGrade: decrypt(student.sGrade),
                     sClass: decrypt(student.sClass),
                     sNumber: decrypt(student.sNumber),
-                    sGender: student.sGender,
+                    sGender: decrypt(student.sGender),
                     sName: decrypt(student.sName)
                 };
             });
@@ -625,7 +627,7 @@ app.get("/api/studentsTable/getStudentInfoByGrade", async (req, res) => {
                     sGrade: decrypt(student.sGrade),
                     sClass: decrypt(student.sClass),
                     sNumber: decrypt(student.sNumber),
-                    sGender: student.sGender,
+                    sGender: decrypt(student.sGender),
                     sName: decrypt(student.sName)
                 };
             });
@@ -676,7 +678,7 @@ app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
                     sGrade: decrypt(student.sGrade),
                     sClass: decrypt(student.sClass),
                     sNumber: decrypt(student.sNumber),
-                    sGender: student.sGender,
+                    sGender: decrypt(student.sGender),
                     sName: decrypt(student.sName)
                 };
             });
@@ -725,7 +727,7 @@ app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) =
                     sGrade: decrypt(student.sGrade),
                     sClass: decrypt(student.sClass),
                     sNumber: decrypt(student.sNumber),
-                    sGender: student.sGender,
+                    sGender: decrypt(student.sGender),
                     sName: decrypt(student.sName)
                 };
             });
@@ -740,10 +742,11 @@ app.post("/api/studentsTable/deleteStudentInfo", async (req, res) => {
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
     const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const sqlQuery = "DELETE FROM teaform_db.students WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
+    db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
         if(err) {
             console.log("명렬표 학생 DELETE 처리 중 ERROR", err);
         }else{
@@ -757,6 +760,7 @@ app.post("/api/studentsTable/addTransferStudent", async (req, res) => {
 
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const allNumbersResult = await new Promise((resolve, reject) => {
@@ -781,7 +785,7 @@ app.post("/api/studentsTable/addTransferStudent", async (req, res) => {
 
     await new Promise((resolve, reject) => {
         const query = 'INSERT INTO teaform_db.students (userId, schoolName, schoolCode, sGrade, sClass, sGender, sNumber, sName) VALUES (?,?,?,?,?,?,?,?)';
-        db.query(query, [userId, schoolName, schoolCode, encryptedGrade, encryptedClass, sGender, encryptedNewNumber, encryptedName], (err, results) => {
+        db.query(query, [userId, schoolName, schoolCode, encryptedGrade, encryptedClass, encryptedGender, encryptedNewNumber, encryptedName], (err, results) => {
           if (err) return reject(err);
           resolve(results);
         });
@@ -1315,10 +1319,11 @@ app.post("/api/workNote/saveWorkNote", async (req, res) => {
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
     const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
+    db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
         if(err) {
             console.log("보건일지 INSERT 처리 중 ERROR", err);
         }else{
@@ -1333,10 +1338,11 @@ app.post("/api/workNote/updateWorkNote", async (req, res) => {
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
     const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const sqlQuery = "UPDATE teaform_db.workNote SET symptom = ?, medication = ?, bodyParts = ?, treatmentMatter = ?, onBedStartTime = ?, onBedEndTime = ?, temperature = ?, bloodPressure = ?, pulse = ?, oxygenSaturation = ?, bloodSugar = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
+    db.query(sqlQuery, [symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
         if(err) {
             console.log("보건일지 UPDATE 처리 중 ERROR", err);
         }else{
@@ -1351,10 +1357,11 @@ app.post("/api/workNote/deleteWorkNote", async (req, res) => {
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
     const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const sqlQuery = "DELETE FROM teaform_db.workNote WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
+    db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
         if(err) {
             console.log("보건일지 DELETE 처리 중 ERROR", err);
         }else{
@@ -1377,6 +1384,7 @@ app.get("/api/workNote/getOnBedStudentList", async (req, res) => {
                   sGrade: decrypt(note.sGrade),
                   sClass: decrypt(note.sClass),
                   sNumber: decrypt(note.sNumber),
+                  sGender: decrypt(note.sGender),
                   sName: decrypt(note.sName)
                 };
             });
@@ -1399,6 +1407,7 @@ app.get("/api/workNote/getProtectStudents", async (req, res) => {
                   sGrade: decrypt(student.sGrade),
                   sClass: decrypt(student.sClass),
                   sNumber: decrypt(student.sNumber),
+                  sGender: decrypt(student.sGender),
                   sName: decrypt(student.sName)
                 };
             });
@@ -1526,6 +1535,7 @@ app.get('/api/workNote/getSelectedStudentData', async (req, res) => {
                     sGrade: decrypt(entry.sGrade),
                     sClass: decrypt(entry.sClass),
                     sNumber: decrypt(entry.sNumber),
+                    sGender: decrypt(entry.sGender),
                     sName: decrypt(entry.sName)
                 };
             });
@@ -1549,6 +1559,7 @@ app.get('/api/workNote/getEntireWorkNote', async (req, res) => {
                   sGrade: decrypt(note.sGrade),
                   sClass: decrypt(note.sClass),
                   sNumber: decrypt(note.sNumber),
+                  sGender: decrypt(note.sGender),
                   sName: decrypt(note.sName)
                 };
             });
@@ -1563,11 +1574,12 @@ app.post('/api/workNote/updateOnBedEndTime', async (req, res) => {
     const encryptedGrade = encrypt(targetStudentGrade.toString());
     const encryptedClass = encrypt(targetStudentClass.toString());
     const encryptedNumber = encrypt(targetStudentNumber.toString());
+    const encryptedGender = encrypt(targetStudentGender.toString());
     const encryptedName = encrypt(targetStudentName.toString());
 
     // 침상안정 종료시간 update 처리 필요
     const sqlQuery = "UPDATE teaform_db.workNote SET onBedEndTime = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [onBedEndTime, userId, schoolCode, rowId, encryptedGrade, encryptedClass, encryptedNumber, targetStudentGender, encryptedName], (err, result) => {
+    db.query(sqlQuery, [onBedEndTime, userId, schoolCode, rowId, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
         if(err) {
             console.log("침상종료 시간 Update 처리 중 ERROR", err);
         }else{
@@ -1582,10 +1594,11 @@ app.post('/api/workNote/saveProtectStudent', async (req, res) => {
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
     const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const sqlQuery = "UPDATE teaform_db.students SET isProtected = ?, protectContent = ? WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [isProtected, protectContent, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
+    db.query(sqlQuery, [isProtected, protectContent, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
         if(err) {
             console.log("보호학생 UPDATE 처리 중 ERROR", err);
         }else{
@@ -1630,6 +1643,7 @@ app.get('/api/request/getOnBedRestInfo', async (req, res) => {
                   sGrade: decrypt(note.sGrade),
                   sClass: decrypt(note.sClass),
                   sNumber: decrypt(note.sNumber),
+                  sGender: decrypt(note.sGender),
                   sName: decrypt(note.sName)
                 };
             });
@@ -1772,10 +1786,11 @@ app.post('/api/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
     const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
+    db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
         if(err) {
             console.log("응급학생관리 등록 중 ERROR", err);
         }else{
@@ -1790,10 +1805,11 @@ app.post('/manageEmergency/updateEmergencyManagement', async (req, res) => {
     const encryptedGrade = encrypt(sGrade.toString());
     const encryptedClass = encrypt(sClass.toString());
     const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
     const encryptedName = encrypt(sName.toString());
 
     const sqlQuery = "UPDATE teaform_db.manageEmergency SET firstDiscoveryTime = ?, teacherConfirmTime = ?, occuringArea = ?, firstWitness = ?, vitalSign = ?, mainSymptom = ?, accidentOverview = ?, emergencyTreatmentDetail = ?, transferTime = ?, guardianContact = ?, transferHospital = ?, homeroomTeacherName = ?, registDate = ?, registerName = ?, bodyChartPoints = ?, transferVehicle = ?, transpoter = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-     db.query(sqlQuery, [firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter, userId, schoolCode, rowId, encryptedGrade, encryptedClass, encryptedNumber, sGender, encryptedName], (err, result) => {
+     db.query(sqlQuery, [firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter, userId, schoolCode, rowId, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
         if(err) {
             console.log("응급학생관리 Update 처리 중 ERROR", err);
         }else{
@@ -1816,6 +1832,7 @@ app.get('/api/manageEmergency/getManageEmergencyData', async (req, res) => {
                   sGrade: decrypt(emergencyData.sGrade),
                   sClass: decrypt(emergencyData.sClass),
                   sNumber: decrypt(emergencyData.sNumber),
+                  sGender: decrypt(emergencyData.sGender),
                   sName: decrypt(emergencyData.sName)
                 };
             });

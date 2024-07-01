@@ -774,7 +774,7 @@ function User() {
 
   const handlePrint = useReactToPrint({
     content: () => printComponentRef.current,
-    documentTitle: '보건실 사용요청 QR코드'
+    documentTitle: '보건실 방문요청 QR코드'
   });
 
   const clipboardRequestURL = () => {
@@ -1354,7 +1354,7 @@ function User() {
                     </Col>
                     <Col className="" md="6">
                       <FormGroup>
-                        <label>보건실 사용요청 공유</label>
+                        <label>보건실 방문요청 공유</label>
                         <div style={{ marginTop: '-12px' }}>
                           <Button className="mr-2 user-inner-button" style={{ width: '48%' }} onClick={toggleRequestURLModal}>URL</Button>
                           <Button className="user-inner-button" onClick={toggleRequestQRcodeModal} style={{ width: '48%' }}>QR코드</Button>
@@ -1862,7 +1862,7 @@ function User() {
       </Modal>
 
       <Modal isOpen={requestURLModal} toggle={toggleRequestURLModal} centered style={{ minWidth: '15%' }}>
-        <ModalHeader><b className="text-muted">보건실 사용요청 URL</b></ModalHeader>
+        <ModalHeader><b className="text-muted">보건실 방문요청 URL</b></ModalHeader>
         <ModalBody>
           <Row className="d-flex align-items-center justify-content-center no-gutters">
             <InputGroup>
@@ -1885,17 +1885,17 @@ function User() {
       </Modal>
 
       <Modal isOpen={requestQRcodeModal} toggle={toggleRequestQRcodeModal} centered style={{ minWidth: '30%' }}>
-        <ModalHeader><b className="text-muted">보건실 사용요청 QR코드</b></ModalHeader>
+        <ModalHeader><b className="text-muted">보건실 방문요청 QR코드</b></ModalHeader>
         <ModalBody>
           <div ref={printComponentRef}>
             <Row className="d-flex justify-content-center qrcode-title">
-              <h3 className="text-muted">보건실 사용요청 접속 QR코드</h3>
+              <h3 className="text-muted">보건실 방문요청 접속 QR코드</h3>
             </Row>
             <Row className="d-flex justify-content-center align-items-center mt-2 qrcode-image">
               <div id="qrcode" dangerouslySetInnerHTML={{ __html: QRCodeImage }}></div>
             </Row>
             <Row className="d-flex justify-content-center mt-5 qrcode-footer">
-              <p className="text-muted" style={{ fontSize: 15 }}>위 QR코드를 모바일로 인식 시 보건실 사용요청 페이지로 접속하실 수 있습니다</p>
+              <p className="text-muted" style={{ fontSize: 15 }}>위 QR코드를 모바일로 인식 시 보건실 방문요청 페이지로 접속하실 수 있습니다</p>
             </Row>
           </div>
         </ModalBody>

@@ -578,7 +578,7 @@ function WorkNote(args) {
     const selectedRow = event.api.getSelectedRows()[0];
     
     if(user && user.isPopUpProtectStudent) {
-      if(selectedRow.isProtected) {
+      if(selectedRow && selectedRow.isProtected) {
         const infoMessage = selectedRow.sName + " 학생은 보호관리 대상 학생입니다<br/>보호내용 : " + selectedRow.protectContent;
         NotiflixInfo(infoMessage, false, '320px');
       }

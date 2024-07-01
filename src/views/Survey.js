@@ -56,7 +56,7 @@ function Survey() {
                 </Card>
                 <Card style={{ width: '50%', height: '75.1vh', overflowY: 'auto', float: 'left', border: '1px solid lightgray' }}>
                     <div className="p-3">
-                        <div ref={surveyFormRef} style={{ border: '1px solid gray' }}>
+                        <div ref={surveyFormRef} style={{ border: '2px solid gray' }}>
                             <HealthExaminationSurveyForm/>
                         </div>
                     </div>
