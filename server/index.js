@@ -679,7 +679,9 @@ app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
                     sClass: decrypt(student.sClass),
                     sNumber: decrypt(student.sNumber),
                     sGender: decrypt(student.sGender),
-                    sName: decrypt(student.sName)
+                    sName: decrypt(student.sName),
+                    isProtected: student.isProtected,
+                    protectContent: student.protectContent
                 };
             });
             res.json({ studentData: decryptedResults });
@@ -1373,7 +1375,7 @@ app.post("/api/workNote/deleteWorkNote", async (req, res) => {
 app.get("/api/workNote/getOnBedStudentList", async (req, res) => {
     const { userId, schoolCode } = req.query;
 
-    const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE (onBedStartTime IS NOT NULL OR onBedEndTime IS NOT NULL) AND userId = ? AND schoolCode = ?";
+    const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE (onBedStartTime IS NOT NULL AND onBedStartTime <> '') OR (onBedEndTime IS NOT NULL AND onBedEndTime <> '') AND userId = ? AND schoolCode = ?";
     db.query(sqlQuery, [userId, schoolCode], (err, result) => {
         if(err) {
             console.log("보건일지 내 침상안정 내역 학생 조회 중 ERROR", err);
@@ -1523,8 +1525,14 @@ app.get('/api/request/getCommonPassword', async (req, res) => {
 app.get('/api/workNote/getSelectedStudentData', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.query;
 
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
+    const encryptedName = encrypt(sName.toString());
+
     const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
-    db.query(sqlQuery, [userId, schoolCode, sGrade, sClass, sNumber, sGender, sName], (err, result) => {
+    db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
         if(err) {
             console.log("보건일지 선택한 학생별 일지 등록 내역 조회 중 ERROR", err);
         }else{
@@ -2217,6 +2225,32 @@ app.post("/api/community/deleteResourceSharing", async (req, res) => {
                     res.send('success');
                 }
             });
+        }
+    });
+});
+
+app.get('/api/statistics/getSymptomData', async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT id AS worknote_id, symptom AS worknote_symptom FROM teaform_db.workNote WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("통계 내 증상 데이터 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.get('/api/statistics/getSymptomCategory', async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT symptom AS symptom_categorys FROM teaform_db.symptom WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("통계 내 증상 분류 데이터 조회 중 ERROR", err);
+        }else{
+            res.json(result);
         }
     });
 });

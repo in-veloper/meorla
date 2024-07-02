@@ -133,7 +133,7 @@ function WorkNote(args) {
 
   const customCellRenderer = (params) => {
     const { value } = params;
-
+    console.log(params)
     if(params.data.isProtected) {
       return (
         <span style={{ marginLeft: 10 }}>
@@ -1155,8 +1155,8 @@ function WorkNote(args) {
       });
 
       if(response.data === "success") {
-        const infoMessage = item.sName + "학생의 침상안정이 종료 처리 되었습니다"
-        NotiflixInfo(infoMessage);
+        const infoMessage = item.sName + " 학생의 침상안정이 종료 처리 되었습니다"
+        NotiflixInfo(infoMessage, true, '320px');
         fetchEntireWorkNoteGrid();
 
         if(socket) socket.emit('sendBedStatus', { message: "endBed::" + item.sGrade + "," + item.sClass + "," + item.sNumber + "," + item.sName });
@@ -3182,7 +3182,7 @@ function WorkNote(args) {
           </ModalBody>
           <ModalFooter>
             <Button onClick={saveProtectStudent}>등록</Button>
-            <Button onClick={toggleRegistProtectStudentModal}>취소</Button>
+            <Button className="ml-1" onClick={toggleRegistProtectStudentModal}>취소</Button>
           </ModalFooter>
        </Modal>
 

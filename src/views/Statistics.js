@@ -1,8 +1,147 @@
-import React from "react";
-import { Col, Row, Table } from "reactstrap";
+import React, { useCallback, useEffect, useState } from "react";
+import { Card, Col, Row, Table } from "reactstrap";
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, PieChart, Pie, Cell, ScatterChart, Scatter, LineChart, Line } from "recharts";
+import { useUser } from "contexts/UserContext";
+import moment from "moment";
+import axios from "axios";
+
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Statistics() {
+    const { user } = useUser();  
+    const [symptomData, setSymptomData] = useState([]);
+    const [symptomCategorys, setSymptomCategorys] = useState("");
+    const [workNodeData, setWorkNoteData] = useState([]);
+
+    const fetchSymptomData = useCallback(async() => {
+        if(user) {
+            const response = await axios.get(`${BASE_URL}/api/statistics/getSymptomData`, {
+                params: {
+                    userId: user.userId,
+                    schoolCode: user.schoolCode
+                }
+            });
+
+            if(response.data) {
+                setSymptomData(response.data);
+            }
+        }
+    }, [user]);
+
+    const fetchSymptomCategory = useCallback(async() => {
+        if(user) {
+            const response = await axios.get(`${BASE_URL}/api/statistics/getSymptomCategory`, {
+                params: {
+                    userId: user.userId,
+                    schoolCode: user.schoolCode
+                }
+            });
+
+            if(response.data) {
+                setSymptomCategorys(response.data[0].symptom_categorys);
+            }
+        }
+    }, [user]);
+
+    const fetchWorkNoteData = useCallback(async() => {
+        if(user) {
+            const response = await axios.get(`${BASE_URL}/api/workNote/getEntireWorkNote`,{
+                params: {
+                  userId: user.userId,
+                  schoolCode: user.schoolCode
+                }
+            });
+    
+            if(response.data) {
+                console.log(response.data)
+                setWorkNoteData(response.data);
+            }
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchSymptomData();
+        fetchSymptomCategory();
+        fetchWorkNoteData();
+    }, [fetchSymptomData, fetchSymptomCategory, fetchWorkNoteData]);
+
+    const dataLoaded = symptomData.length > 0 && symptomCategorys && workNodeData.length > 0;
+
+    const symptomMapping = {};
+    if(dataLoaded) {
+        symptomCategorys.split("::").forEach(pair => {
+            const [symptom, category] = pair.split(":");
+            symptomMapping[symptom.trim()] = category.trim();
+        });
+    }
+
+    const categoryCounts = {
+        감염증: 0,
+        구강치아계: 0,
+        근골격계: 0,
+        비뇨생식기계: 0,
+        소화기계: 0,
+        순환기계: 0,
+        안과계: 0,
+        이비인후과계: 0,
+        정신신경계: 0,
+        피부피하계: 0,
+        호흡기계: 0,
+        기타: 0
+    };
+
+    if(dataLoaded) {
+        symptomData.forEach(row => {
+            row.worknote_symptom.split("::").forEach(symptom => {
+                const trimmedSymptom = symptom.trim();
+                const category = symptomMapping[trimmedSymptom];
+                if(category) {
+                    if(categoryCounts[category] !== undefined) {
+                        categoryCounts[category]++;
+                    }else{
+                        category['기타']++;
+                    }
+                }else{
+                    categoryCounts['기타']++;
+                }
+            });
+        });
+    }
+
+    const fullHourlyData = Array.from({ length: 10 }, (_, i) => ({
+        hour: 9 + i,
+        male: 0,
+        female: 0
+    }));
+
+    if(dataLoaded) {
+        workNodeData.forEach(({ updatedAt, sGender }) => {
+            const visitHour = moment(updatedAt).hour();
+            if(visitHour >= 9 && visitHour < 19) {
+                const index = visitHour - 9;
+                if(sGender === "남") {
+                    fullHourlyData[index].male++;
+                }else if(sGender === "여") {
+                    fullHourlyData[index].female++;
+                }
+            }
+        });
+    }
+
+    const CustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="custom-tooltip" style={{ backgroundColor: "#fff", padding: "10px", border: "1px solid #ccc" }}>
+                    <p className="label">{`${label}시간대 방문 학생`}</p>
+                    <p className="intro" style={{ color: '#8884d8'}}>{`남학생: ${payload[0].value}`}</p>
+                    <p className="intro" style={{ color: '#82ca9d'}}>{`여학생: ${payload[1].value}`}</p>
+                </div>
+            );
+        }
+
+        return null;
+    };
+
 // BarChart--------------------------------------
     const data = [
         {
@@ -144,7 +283,7 @@ const lineData = [
                     <Table bordered className="stats-table text-center text-muted">
                         <thead>
                         <tr>
-                            <th>감염병</th>
+                            <th>감염증</th>
                             <th>구강치아계</th>
                             <th>근골격계</th>
                             <th>비뇨생식기계</th>
@@ -153,50 +292,66 @@ const lineData = [
                             <th>안과계</th>
                             <th>이비인후과계</th>
                             <th>정신신경계</th>
+                            <th>피부피하계</th>
                             <th>호흡기계</th>
                             <th>기타</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>2</td>
-                            <td>3</td>
-                            <td>3</td>
-                            <td>23</td>
-                            <td>12</td>
-                            <td>3</td>
-                            <td>5</td>
-                            <td>7</td>
-                            <td>5</td>
-                            <td>10</td>
-                            <td>17</td>
+                            <td>{categoryCounts.감염증}</td>
+                            <td>{categoryCounts.구강치아계}</td>
+                            <td>{categoryCounts.근골격계}</td>
+                            <td>{categoryCounts.비뇨생식기계}</td>
+                            <td>{categoryCounts.소화기계}</td>
+                            <td>{categoryCounts.순환기계}</td>
+                            <td>{categoryCounts.안과계}</td>
+                            <td>{categoryCounts.이비인후과계}</td>
+                            <td>{categoryCounts.정신신경계}</td>
+                            <td>{categoryCounts.피부피하계}</td>
+                            <td>{categoryCounts.호흡기계}</td>
+                            <td>{categoryCounts.기타}</td>
                         </tr>
                         </tbody>
                     </Table>
                 </Row>
                 <Row className="d-flex w-100">
                     <Col md="6">
-                        <ResponsiveContainer width={500} height={400}>
-                            <BarChart
-                                width={500}
-                                height={300}
-                                data={data}
-                                margin={{
-                                    top: 20,
-                                    right: 30,
-                                    left: 20,
-                                    bottom: 5,
-                                }}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Bar dataKey="pv" stackId="a" fill="#8884d8" />
-                                <Bar dataKey="uv" stackId="a" fill="#82ca9d" />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <Card style={{ border: '1px solid lightgray' }}>
+                            <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
+                                시간대별 남·여 학생 보건실 방문 수
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <ResponsiveContainer width={500} height={400}>
+                                    <BarChart
+                                        width={500}
+                                        height={300}
+                                        data={fullHourlyData}
+                                        margin={{
+                                            top: 20,
+                                            right: 30,
+                                            left: 20,
+                                            bottom: 5,
+                                        }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="hour" label={{ value: '시간', position: 'insideRight', offset: -30 }}/>
+                                        <YAxis label={{ value: '인원 수', position: 'insideTopLeft', offset: -5 }} />
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Bar dataKey="male" stackId="a" fill="#8884d8" />
+                                        <Bar dataKey="female" stackId="a" fill="#82ca9d" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                                <div style={{ width: '20%', padding: '10px', alignContent: 'center' }}>
+                                    <div className="d-flex align-content-center mb-2">
+                                        <span style={{ backgroundColor: '#8884d8', display: 'inline-block', width: '20px', height: '20px', marginRight: '5px' }}></span> 남학생
+                                    </div>
+                                    <div className="d-flex align-content-center">
+                                        <span style={{ backgroundColor: '#82ca9d', display: 'inline-block', width: '20px', height: '20px', marginRight: '5px' }}></span> 여학생
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
                     </Col>
                     <Col md="6">
                         <ResponsiveContainer width={500} height={400}>
