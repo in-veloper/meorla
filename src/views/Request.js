@@ -4,8 +4,7 @@ import { Row, Col, Card, CardBody, CardFooter, Label, Input, Button, Badge, Card
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
-import { BrowserView, MobileView, isBrowser } from "react-device-detect";
-import { FaCheck } from "react-icons/fa";
+import { BrowserView, MobileView, TabletView, isBrowser, isIOS, isTablet } from "react-device-detect";
 import { useNavigate } from "react-router-dom";
 import { getSocket } from "components/Socket/socket";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
@@ -170,6 +169,38 @@ function RequesterLogin({onLogin}) {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    const isIpad = () => {
+        return /iPad|Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document;
+    };
+
+    if (isIpad()) {
+        return (
+            <div className="content d-flex justify-content-center align-items-center" style={{ height: '100vh', backgroundColor: '#f6f5f7' }}>
+                <Card style={{ width: '400px', height: 'auto' }}>
+                    <CardBody className="text-center">
+                        <h4><b>iPad 사용 제한</b></h4>
+                        <p>MEORLA 서비스는</p>
+                        <p>학생들의 무단 사용을 방지하기 위해 iPad에서 사용할 수 없습니다</p>
+                    </CardBody>
+                </Card>
+            </div>
+        );
+    }
+
+    if (isTablet) {
+        return (
+            <div className="content d-flex justify-content-center align-items-center" style={{ height: '100vh', backgroundColor: '#f6f5f7' }}>
+                <Card style={{ width: '400px', height: 'auto' }}>
+                    <CardBody className="text-center">
+                        <h4><b>태블릿 사용 제한</b></h4>
+                        <p>MEORLA 서비스는</p>
+                        <p>학생들의 무단 사용을 방지하기 위해 태블릿에서 사용할 수 없습니다</p>
+                    </CardBody>
+                </Card>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="content d-flex justify-content-center align-items-center" style={{ height: isBrowser ? '83.3vh' : contentHeight, backgroundColor: '#f6f5f7' }}>
@@ -296,6 +327,16 @@ function Request({onLogOut}) {
         { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
         { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
         { field: "sName", headerName: "이름", flex: 1.3, cellStyle: { textAlign: "center" }}
+    ]);
+
+    const [visitListColumnDefs] = useState([
+        { field: "visitTime", headerName: "방문시간", flex: 1.5, cellStyle: { textAlign: "center" }},
+        { field: "visitDate", headerName: "방문일자", flex: 2, cellStyle: { textAlign: "center" }}
+    ]);
+
+    const [bedRestColumnDefs] = useState([
+        { field: "bedRestTime", headerName: "침상안정 시간", flex: 1.5, cellStyle: { textAlign: "center" }},
+        { field: "bedRestDate", headerName: "침상안정 일자", flex: 2, cellStyle: { textAlign: "center" }}
     ]);
 
     const notEditDefaultColDef = {
@@ -615,7 +656,7 @@ function Request({onLogOut}) {
                             </Col>
                         </Row>
                     </Card>
-                    <Card className="mb-2" style={{ width: '100%', height: '19vh', border: '1px dashed lightgrey' }}>
+                    <Card className="mb-2" style={{ width: '100%', height: '19vh' }}>
                         <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
                             <b>보건실 현황</b>
                         </CardHeader>
@@ -628,7 +669,7 @@ function Request({onLogOut}) {
                             {generateBedBox()}
                         </Row>
                     </Card>
-                    <Card className="mb-3" style={{ width: '100%', height: 'auto', border: '1px dashed lightgrey', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+                    <Card className="mb-3" style={{ width: '100%', height: '100vh', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                         <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
                             <b>보건실 방문 요청</b>
                         </CardHeader>
@@ -703,22 +744,19 @@ function Request({onLogOut}) {
                             <Row className="pt-1">
                                 <Col md="12">
                                     <div className="ag-theme-alpine" style={{ height: '18.7vh' }}>
-                                    <AgGridReact
-                                        rowHeight={27}
-                                        headerHeight={32}
-                                        ref={searchStudentGridRef}
-                                        rowData={searchStudentRowData} 
-                                        columnDefs={searchStudentColumnDefs}
-                                        defaultColDef={notEditDefaultColDef}
-                                        paginationPageSize={4}
-                                        overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다.</span>' }  // 표시할 데이터가 없을 시 출력 문구
-                                        rowSelection="single"
-                                        onSelectionChanged={onGridSelectionChanged}
-                                        suppressCellFocus={true}
-                                        overlayLoadingTemplate={
-                                            '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                                        }
-                                    />
+                                        <AgGridReact
+                                            rowHeight={27}
+                                            headerHeight={32}
+                                            ref={searchStudentGridRef}
+                                            rowData={searchStudentRowData} 
+                                            columnDefs={searchStudentColumnDefs}
+                                            defaultColDef={notEditDefaultColDef}
+                                            paginationPageSize={4}
+                                            overlayNoRowsTemplate={ '<span>일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                            rowSelection="single"
+                                            onSelectionChanged={onGridSelectionChanged}
+                                            suppressCellFocus={true}
+                                        />
                                     </div>
                                 </Col>
                             </Row>
@@ -744,10 +782,59 @@ function Request({onLogOut}) {
                                     </div>
                                 </Row>
                             </Form>
+                            <Row className="mt-3">
+                                <Col md="12">
+                                    <div>
+                                        <span><b>보건실 방문 내역</b></span>
+                                    </div>
+                                    <div className="ag-theme-alpine pt-1" style={{ height: '13.7vh' }}>
+                                        <AgGridReact
+                                            rowHeight={27}
+                                            headerHeight={32}
+                                            ref={searchStudentGridRef}
+                                            rowData={searchStudentRowData} 
+                                            columnDefs={visitListColumnDefs}
+                                            defaultColDef={notEditDefaultColDef}
+                                            paginationPageSize={4}
+                                            overlayNoRowsTemplate={ '<span>보건실 방문 내역이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                            rowSelection="single"
+                                        />
+                                    </div>
+                                </Col>
+                            </Row>
+                            <Row className="mt-2">
+                                <Col md="12">
+                                    <div>
+                                        <span><b>침상안정 내역</b></span>
+                                    </div>
+                                    <div className="ag-theme-alpine pt-1" style={{ height: '13.7vh' }}>
+                                        <AgGridReact
+                                            rowHeight={27}
+                                            headerHeight={32}
+                                            ref={searchStudentGridRef}
+                                            rowData={searchStudentRowData} 
+                                            columnDefs={bedRestColumnDefs}
+                                            defaultColDef={notEditDefaultColDef}
+                                            paginationPageSize={4}
+                                            overlayNoRowsTemplate={ '<span>침상안정 내역이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                                            rowSelection="single"
+                                        />
+                                    </div>
+                                </Col>
+
+                            </Row>
                         </CardBody>
-                    </Card>
-                    <Card style={{ height: '12.5vh' }}>
-                        Footer 영역
+                        <CardFooter style={{ borderTop: '1px solid lightgray' }}>
+                            <Row>
+                                <nav className="footer-nav">
+                                    <span className="text-muted pl-2" style={{ fontWeight: 'bold' }}>MEORLA</span>
+                                    <span className="copyright ml-4">
+                                        &copy; {" "}
+                                        Copyright 이해 컴퍼니. All right reserved.
+                                    </span>
+                                </nav>
+                            </Row>
+                        </CardFooter>
                     </Card>
                 </MobileView>
             </div>
