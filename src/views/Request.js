@@ -319,8 +319,41 @@ function Request({onLogOut}) {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [personalStudentRowData, setPersonalStudentRowData] = useState([]);
     const [selectedTeacherClassification, setSelectedTeacherClassification] = useState("hr");
+    const [workNoteData, setWorkNoteData] = useState([]);
+    const [originalVisitListRowData, setOriginalVisitListRowData] = useState([]);
+    const [visitListRowData, setVisitListRowData] = useState([]);
+    const [originalBedRestRowData, setOriginalBedRestRowData] = useState([]);
+    const [bedRestRowData, setBedRestRowData] = useState([]);
 
-    const searchStudentGridRef = useRef();
+    const searchStudentGridRef = useRef(null);
+    const visitListGridRef = useRef(null);
+    const bedRestGridRef = useRef(null);
+
+    const visitTimeRenderer = (params) => {
+        let visitTime = params.data.visitDateTime;
+        const formattedVisitTime = moment(visitTime, 'HH:mm:ss').format('A h:mm').replace('AM', '오전').replace('PM', '오후');
+        return formattedVisitTime
+    };
+
+    const visitDateRenderer = (params) => {
+        let visitDate = params.data.visitDateTime;
+        const formattedVisitDate = moment(visitDate).format('YYYY년 M월 D일');
+        return formattedVisitDate;
+    };
+
+    const bedRestTimeRenderer = (params) => {
+        let bedRestStartTime = params.data.onBedStartTime;
+        let bedRestEndTime = params.data.onBedEndTime;
+        const formattedBedRestStartTime = moment(bedRestStartTime, 'HH:mm').format('A h:mm').replace('AM', '오전').replace('PM', '오후');
+        const formattedBedRestEndTime = moment(bedRestEndTime, 'HH:mm').format('A h:mm').replace('AM', '오전').replace('PM', '오후');
+        return formattedBedRestStartTime + " ~ " + formattedBedRestEndTime;
+    };
+
+    const bedRestDateRenderer = (params) => {
+        let visitDate = params.data.visitDateTime.split(' ')[0];
+        const formattedVisitDate = moment(visitDate).format('YYYY년 M월 D일');
+        return formattedVisitDate;
+    };
 
     const [searchStudentColumnDefs] = useState([
         { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
@@ -330,13 +363,13 @@ function Request({onLogOut}) {
     ]);
 
     const [visitListColumnDefs] = useState([
-        { field: "visitTime", headerName: "방문시간", flex: 1.5, cellStyle: { textAlign: "center" }},
-        { field: "visitDate", headerName: "방문일자", flex: 2, cellStyle: { textAlign: "center" }}
+        { field: "visitTime", headerName: "방문시간", flex: 1.5, cellStyle: { textAlign: "center" }, cellRenderer: visitTimeRenderer },
+        { field: "visitDate", headerName: "방문일자", flex: 2, cellStyle: { textAlign: "center" }, cellRenderer: visitDateRenderer }
     ]);
 
     const [bedRestColumnDefs] = useState([
-        { field: "bedRestTime", headerName: "침상안정 시간", flex: 1.5, cellStyle: { textAlign: "center" }},
-        { field: "bedRestDate", headerName: "침상안정 일자", flex: 2, cellStyle: { textAlign: "center" }}
+        { field: "bedRestTime", headerName: "침상안정 시간", flex: 2.5, cellStyle: { textAlign: "center" }, cellRenderer: bedRestTimeRenderer },
+        { field: "bedRestDate", headerName: "침상안정 일자", flex: 2, cellStyle: { textAlign: "center" }, cellRenderer: bedRestDateRenderer }
     ]);
 
     const notEditDefaultColDef = {
@@ -549,6 +582,23 @@ function Request({onLogOut}) {
         setSelectedStudent(selectedRow);
     
         fetchSelectedStudentData();
+        
+        if(selectedRow && workNoteData) {
+            const filteredData = workNoteData.filter(data => 
+                data.sGrade === selectedRow.sGrade &&
+                data.sClass === selectedRow.sClass &&
+                data.sNumber === selectedRow.sNumber &&
+                data.sGender === selectedRow.sGender &&
+                data.sName === selectedRow.sName
+            );
+            
+            const filteredVisitListData = filteredData.filter(data => data.visitDateTime && data.visitDateTime.length > 0);
+            const filteredBedRestData = filteredData.filter(data => data.onBedStartTime && data.onBedStartTime.length > 0 && (!data.onBedEndTime || data.onBedEndTime.length > 0));
+            setOriginalVisitListRowData(filteredVisitListData);
+            setVisitListRowData(filteredVisitListData);
+            setOriginalBedRestRowData(filteredBedRestData);
+            setBedRestRowData(filteredBedRestData);
+        }
     };
 
     const fetchSelectedStudentData = useCallback(async () => {
@@ -581,7 +631,7 @@ function Request({onLogOut}) {
     }, [schoolCode, selectedStudent]);
     
     useEffect(() => {
-    fetchSelectedStudentData();
+        fetchSelectedStudentData();
     }, [fetchSelectedStudentData]);
 
     const sendVisitRequest = async (e) => {
@@ -628,10 +678,85 @@ function Request({onLogOut}) {
         document.getElementById('teacherName').value = "";
         setSelectedTeacherClassification('hr');
         setSelectedStudent("");
+
+        setVisitListRowData([]);
+        setBedRestRowData([]);
     };
 
     const handleTeacherClassificationChange = (e) => {
         setSelectedTeacherClassification(e.target.value);
+    };
+
+    const fetchWorkNoteData = useCallback(async() => {
+        const response = await axios.get(`${BASE_URL}/api/request/getWorkNoteData`, {
+            params: {
+                schoolCode: schoolCode
+            }
+        });
+
+        if(response.data) setWorkNoteData(response.data);
+    }, [schoolCode]);
+
+    useEffect(() => {
+        fetchWorkNoteData();
+    }, [fetchWorkNoteData]);
+
+    const visitListOnToday = () => {
+        if(originalVisitListRowData) {
+            const today = moment().format('YYYY-MM-DD');
+            const filteredData = originalVisitListRowData.filter(data => {
+                const visitDate = moment(data.visitDateTime).format('YYYY-MM-DD');
+                return visitDate === today;
+            });
+
+            setVisitListRowData(filteredData);
+        }
+    };
+
+    const visitListOnWeek = () => {
+        if(originalVisitListRowData) {
+            const today = moment();
+            const oneWeekAgo = moment().subtract(7, 'days').startOf('day');
+            const filteredData = originalVisitListRowData.filter(data => {
+                const visitDate = moment(data.visitDateTime);
+                return visitDate.isSameOrAfter(oneWeekAgo) && visitDate.isSameOrBefore(today);
+            });
+
+            setVisitListRowData(filteredData);
+        }
+    };
+
+    const visitListOnEntire = () => {
+        if(originalVisitListRowData) setVisitListRowData(originalVisitListRowData);
+    };
+
+    const bedRestListOnToday = () => {
+        if(originalBedRestRowData) {
+            const today = moment().format('YYYY-MM-DD');
+            const filteredData = originalBedRestRowData.filter(data => {
+                const visitDate = moment(data.visitDateTime).format('YYYY-MM-DD');
+                return visitDate === today;
+            });
+
+            setBedRestRowData(filteredData);
+        }
+    };
+
+    const bedRestListOnWeek = () => {
+        if(originalBedRestRowData) {
+            const today = moment();
+            const oneWeekAgo = moment().subtract(7, 'days').startOf('day');
+            const filteredData = originalBedRestRowData.filter(data => {
+                const visitDate = moment(data.visitDateTime);
+                return visitDate.isSameOrAfter(oneWeekAgo) && visitDate.isSameOrBefore(today);
+            });
+
+            setBedRestRowData(filteredData);
+        }
+    };
+
+    const bedRestListOnEntire = () => {
+        if(originalBedRestRowData) setBedRestRowData(originalBedRestRowData);
     };
 
     return(
@@ -669,7 +794,7 @@ function Request({onLogOut}) {
                             {generateBedBox()}
                         </Row>
                     </Card>
-                    <Card className="mb-3" style={{ width: '100%', height: '100vh', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+                    <Card className="mb-3" style={{ width: '100%', height: '105vh', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                         <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
                             <b>보건실 방문 요청</b>
                         </CardHeader>
@@ -684,7 +809,7 @@ function Request({onLogOut}) {
                                         checked={selectedTeacherClassification === "hr"}
                                         onChange={handleTeacherClassificationChange}
                                     />
-                                    <Label htmlFor="hr" style={{ fontSize: 13, marginLeft: '0.3rem' }}>담임교사</Label>
+                                    <Label htmlFor="hr" style={{ fontSize: 13, marginLeft: '0.3rem', color: 'black' }}>담임교사</Label>
                                 </Col>
                                 <Col xs="auto" style={{ }}>
                                     <Input
@@ -695,10 +820,10 @@ function Request({onLogOut}) {
                                         checked={selectedTeacherClassification === "sb"}
                                         onChange={handleTeacherClassificationChange}
                                     />
-                                    <Label htmlFor="sb" style={{ fontSize: 13, marginLeft: '0.3rem' }}>교과교사</Label>
+                                    <Label htmlFor="sb" style={{ fontSize: 13, marginLeft: '0.3rem', color: 'black' }}>교과교사</Label>
                                 </Col>
                                 <Col xs="auto" className="d-flex justify-content-end" style={{ flexGrow: 1 }}>
-                                    <Label style={{ fontSize: 13 }}>요청교사</Label>
+                                    <Label style={{ fontSize: 13, color: 'black' }}>요청교사</Label>
                                     <Input
                                         id="teacherName"
                                         type="text"
@@ -707,7 +832,7 @@ function Request({onLogOut}) {
                                 </Col>
                             </Row>
                             <Row className="d-flex align-items-center no-gutters flex-nowrap" style={{ gap: '0.5rem'}}>
-                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>학년</Label>
+                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto', color: 'black' }}>학년</Label>
                                 <Input
                                     className="text-right"
                                     style={{ width: '30px', height: '27px', flex: '1 1 auto' }}
@@ -715,7 +840,7 @@ function Request({onLogOut}) {
                                     value={searchCriteria.iGrade}
                                     onKeyDown={(e) => handleKeyDown(e, "iGrade")}
                                 />
-                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>반</Label>
+                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto', color: 'black' }}>반</Label>
                                 <Input
                                     className="text-right"
                                     style={{ width: '30px', height: '27px', flex: '1 1 auto' }}
@@ -723,15 +848,15 @@ function Request({onLogOut}) {
                                     value={searchCriteria.iClass}
                                     onKeyDown={(e) => handleKeyDown(e, "iClass")}
                                 />
-                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>번호</Label>
+                                <Label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto', color: 'black' }}>번호</Label>
                                 <Input
                                     className="text-right"
-                                    style={{ width: '42px', height: '27px', flex: '1 1 auto' }}
+                                    style={{ width: '42px', height: '27px', flex: '1 1 auto', color: 'black' }}
                                     onChange={(e) => onInputChange("iNumber", e.target.value)}
                                     value={searchCriteria.iNumber}
                                     onKeyDown={(e) => handleKeyDown(e, "iNumber")}
                                 />
-                                <label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto' }}>이름</label>
+                                <label className="pt-1" style={{ fontSize: 13, flex: '0 0 auto', color: 'black' }}>이름</label>
                                 <Input
                                     className="text-right"
                                     style={{ width: '65px', height: '27px',flex: '2 1 auto', marginRight: 5 }}
@@ -782,17 +907,27 @@ function Request({onLogOut}) {
                                     </div>
                                 </Row>
                             </Form>
+
+                            <hr />
+
                             <Row className="mt-3">
                                 <Col md="12">
-                                    <div>
-                                        <span><b>보건실 방문 내역</b></span>
-                                    </div>
+                                    <Row className="d-flex align-items-center">
+                                        <Col className="d-flex">
+                                            <span><b className="text-muted">보건실 방문 내역</b></span>
+                                        </Col>
+                                        <Col className="d-flex justify-content-end">
+                                            <Button className="m-0" size="sm" style={{ whiteSpace: 'nowrap' }} onClick={visitListOnToday}>오늘</Button>
+                                            <Button className="m-0 ml-1" size="sm" style={{ whiteSpace: 'nowrap' }} onClick={visitListOnWeek}>일주일</Button>
+                                            <Button className="m-0 ml-1" size="sm" style={{ whiteSpace: 'nowrap' }} onClick={visitListOnEntire}>전체</Button>
+                                        </Col>
+                                    </Row>
                                     <div className="ag-theme-alpine pt-1" style={{ height: '13.7vh' }}>
                                         <AgGridReact
                                             rowHeight={27}
                                             headerHeight={32}
-                                            ref={searchStudentGridRef}
-                                            rowData={searchStudentRowData} 
+                                            ref={visitListGridRef}
+                                            rowData={visitListRowData} 
                                             columnDefs={visitListColumnDefs}
                                             defaultColDef={notEditDefaultColDef}
                                             paginationPageSize={4}
@@ -802,17 +937,24 @@ function Request({onLogOut}) {
                                     </div>
                                 </Col>
                             </Row>
-                            <Row className="mt-2">
+                            <Row className="mt-3">
                                 <Col md="12">
-                                    <div>
-                                        <span><b>침상안정 내역</b></span>
-                                    </div>
+                                    <Row className="d-flex align-items-center">
+                                        <Col className="d-flex">
+                                            <span><b className="text-muted">침상안정 내역</b></span>
+                                        </Col>
+                                        <Col className="d-flex justify-content-end">
+                                            <Button className="m-0" size="sm" style={{ whiteSpace: 'nowrap' }} onClick={bedRestListOnToday}>오늘</Button>
+                                            <Button className="m-0 ml-1" size="sm" style={{ whiteSpace: 'nowrap' }} onClick={bedRestListOnWeek}>일주일</Button>
+                                            <Button className="m-0 ml-1" size="sm" style={{ whiteSpace: 'nowrap' }} onClick={bedRestListOnEntire}>전체</Button>
+                                        </Col>
+                                    </Row>
                                     <div className="ag-theme-alpine pt-1" style={{ height: '13.7vh' }}>
                                         <AgGridReact
                                             rowHeight={27}
                                             headerHeight={32}
-                                            ref={searchStudentGridRef}
-                                            rowData={searchStudentRowData} 
+                                            ref={bedRestGridRef}
+                                            rowData={bedRestRowData} 
                                             columnDefs={bedRestColumnDefs}
                                             defaultColDef={notEditDefaultColDef}
                                             paginationPageSize={4}

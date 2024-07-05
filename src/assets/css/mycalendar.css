@@ -22,6 +22,10 @@
     color: #6E6E6E;
 }
 
+.fc-day-today {
+    background-color: lightblue !important;
+}
+
 video
 .fc-day-sat a {
     color: blue;

@@ -142,6 +142,39 @@ function Statistics() {
         return null;
     };
 
+    const CustomVisitTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="custom-tooltip" style={{ backgroundColor: "#fff", padding: "10px", border: "1px solid #ccc" }}>
+                    <p className="label">{`${label}`}</p>
+                    <p className="intro" style={{ color: '#8884d8'}}>{`방문수 : ${payload[0].value}`}</p>
+                </div>
+            );
+        }
+
+        return null;
+    };
+
+    const studentVisitCounts = {};
+
+    if(dataLoaded) {
+        workNodeData.forEach(({ sName }) => {
+            if(studentVisitCounts[sName]) {
+                studentVisitCounts[sName]++;
+            }else{
+                studentVisitCounts[sName] = 1;
+            }
+        });
+    }
+
+    const sortedStudentVisitData = Object.keys(studentVisitCounts)
+        .map(name => ({
+            name,
+            visits: studentVisitCounts[name]
+        }))
+        .sort((a, b) => b.visits - a.visits)
+        .slice(0, 10);  // 상위 10명까지 획득
+
 // BarChart--------------------------------------
     const data = [
         {
@@ -315,14 +348,14 @@ const lineData = [
                         </tbody>
                     </Table>
                 </Row>
-                <Row className="d-flex w-100">
-                    <Col md="6">
+                <Row className="d-flex no-gutters w-100">
+                    <Col className="mr-2" style={{ width: '49%' }}>
                         <Card style={{ border: '1px solid lightgray' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 시간대별 남·여 학생 보건실 방문 수
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width={500} height={400}>
+                                <ResponsiveContainer width="100%" height={400}>
                                     <BarChart
                                         width={500}
                                         height={300}
@@ -353,25 +386,46 @@ const lineData = [
                             </div>
                         </Card>
                     </Col>
-                    <Col md="6">
-                        <ResponsiveContainer width={500} height={400}>
-                            <PieChart width={400} height={400}>
-                                <Pie
-                                    data={pieData}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    label={renderCustomizedLabel}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {pieData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                            </PieChart>
-                        </ResponsiveContainer>
+                    <Col className="ml-2" style={{ width: '49%' }}>
+                        <Card style={{ border: '1px solid lightgray' }}>
+                            <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
+                                학생별 보건실 방문 빈도 수
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <ResponsiveContainer width="100%" height={400}>
+                                    <BarChart
+                                        layout="vertical"
+                                        width={500}
+                                        height={300}
+                                        data={sortedStudentVisitData}
+                                        margin={{
+                                            top: 20,
+                                            right: 30,
+                                            left: 20,
+                                            bottom: 5,
+                                        }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis type="number" dataKey="visits" label={{ value: '빈도', position: 'insideRight', offset: -30 }}/>
+                                        <YAxis type="category" dataKey="name" label={{ value: '학생 이름', position: 'insideTopLeft', offset: -5 }} interval={0} tickCount={10} />
+                                        <Tooltip content={<CustomVisitTooltip />} />
+                                        <Bar dataKey="visits">
+                                            {sortedStudentVisitData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={index < 5 ? '#EC5353' : '#ECD253'} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                                <div style={{ width: '20%', padding: '10px', alignContent: 'center' }}>
+                                    <div className="d-flex align-content-center mb-2">
+                                        <span style={{ backgroundColor: '#EC5353', display: 'inline-block', width: '20px', height: '20px', marginRight: '5px' }}></span> 상위 빈도 방문
+                                    </div>
+                                    <div className="d-flex align-content-center">
+                                        <span style={{ backgroundColor: '#ECD253', display: 'inline-block', width: '20px', height: '20px', marginRight: '5px' }}></span> 하위 빈도 방문
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
                     </Col>
                 </Row>
                 <Row>

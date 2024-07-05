@@ -1697,6 +1697,29 @@ app.post('/api/request/saveVisitRequest', async (req, res) => {
     });
 });
 
+app.get('/api/request/getWorkNoteData', async (req, res) => {
+    const { schoolCode } = req.query;
+
+    const sqlQuery = "SELECT id, schoolCode, sGrade, sClass, sNumber, sGender, sName, onBedStartTime, onBedEndTime, visitDateTime FROM teaform_db.workNote WHERE schoolCode = ?";
+    db.query(sqlQuery, [schoolCode], (err, result) => {
+        if(err) {
+            console.log("보건실 방문 요청 페이지 내 보건일지 데이터 조회 중 ERROR", err);
+        }else{
+            const decryptedResults = result.map(note => {
+                return {
+                    ...note,
+                    sGrade: decrypt(note.sGrade),
+                    sClass: decrypt(note.sClass),
+                    sNumber: decrypt(note.sNumber),
+                    sGender: decrypt(note.sGender),
+                    sName: decrypt(note.sName)
+                };
+            });
+            res.json(decryptedResults);
+        }
+    });
+});
+
 // DB에서 조회할때 오늘날짜로 등록된 목록만 조회하도록 수정 필요
 app.get('/api/workNote/getVisitRequest', async (req, res) => {
     const { schoolCode, isRead } = req.query;
