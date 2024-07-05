@@ -1353,6 +1353,25 @@ app.post("/api/workNote/updateWorkNote", async (req, res) => {
     });
 });
 
+app.post("/api/workNote/updateVisitDateTime", async (req, res) => {
+    const { visitDateTime, rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
+
+    const encryptedGrade = encrypt(sGrade.toString());
+    const encryptedClass = encrypt(sClass.toString());
+    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGender = encrypt(sGender.toString());
+    const encryptedName = encrypt(sName.toString());
+
+    const sqlQuery = "UPDATE teaform_db.workNote SET visitDateTime = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
+    db.query(sqlQuery, [visitDateTime, rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
+        if(err) {
+            console.log("보건일지 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.post("/api/workNote/deleteWorkNote", async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
 

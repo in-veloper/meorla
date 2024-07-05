@@ -25,6 +25,7 @@ import { getSocket } from "components/Socket/socket";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { TiPrinter } from "react-icons/ti";
 import { IoInformationCircleOutline } from "react-icons/io5";
+import DateTimeEditor from "components/Tools/DateTimeEditor";
 import '../assets/css/worknote.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -155,7 +156,7 @@ function WorkNote(args) {
   ]);
 
   const [personalStudentColumnDefs] = useState([
-    { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "visitDateTime", headerName: "방문일자", flex: 1.5, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "bodyParts", headerName: "인체 부위", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "medication", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" }},
@@ -164,16 +165,16 @@ function WorkNote(args) {
   ]);
 
   const [entireWorkNoteColumnDefs] = useState([
-    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sGrade", headerName: "학년", flex: 0.7, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 0.7, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 0.7, cellStyle: { textAlign: "center" }},
     { field: "sName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "bodyParts", headerName: "인체 부위", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "medication", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
-    { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }}
+    { field: "visitDateTime", headerName: "방문일자", flex: 2, cellStyle: { textAlign: "center" }, cellEditor: DateTimeEditor, editable: true }
   ]);
 
   const [onBedStudentListColumnDefs] = useState([
@@ -1115,15 +1116,34 @@ function WorkNote(args) {
       });
 
       if(response.data) {
-        const resultData = response.data.map(item => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
-          symptom: (item.symptom || "").replace(/::/g, ', '),
-          medication: (item.medication || "").replace(/::/g, ', '),
-          bodyParts: (item.bodyParts || "").replace(/::/g, ', '),
-          treatmentMatter: (item.treatmentMatter || "").replace(/::/g, ', '),
-          onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
-        }));
+        const resultData = response.data.map(item => {
+          let visitDateTime = '';
+          if (item.visitDateTime) {
+              const date = new Date(item.visitDateTime);
+              if (!isNaN(date.getTime())) {
+                  visitDateTime = new Intl.DateTimeFormat('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      second: 'numeric',
+                      hour12: true,
+                      timeZone: 'Asia/Seoul'
+                  }).format(date).replace(/\./g, '').replace(' 오전 ', ' 오전 ').replace(' 오후 ', ' 오후 ');
+              }
+          }
+  
+          return {
+              ...item,
+              visitDateTime,
+              symptom: (item.symptom || "").replace(/::/g, ', '),
+              medication: (item.medication || "").replace(/::/g, ', '),
+              bodyParts: (item.bodyParts || "").replace(/::/g, ', '),
+              treatmentMatter: (item.treatmentMatter || "").replace(/::/g, ', '),
+              onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" : item.onBedStartTime + " ~ " + item.onBedEndTime
+          };
+        });
 
         setEntireWorkNoteRowData(resultData);
       }
@@ -1703,15 +1723,34 @@ function WorkNote(args) {
       });
       
       if(response.data) {
-        const resultData = response.data.map(item => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
-          symptom: (item.symptom || "").replace(/::/g, ', '),
-          medication: (item.medication || "").replace(/::/g, ', '),
-          bodyParts: (item.bodyParts || "").replace(/::/g, ', '),
-          treatmentMatter: (item.treatmentMatter || "").replace(/::/g, ', '),
-          onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" :  item.onBedStartTime + " ~ " + item.onBedEndTime
-        }));
+        const resultData = response.data.map(item => {
+          let visitDateTime = '';
+          if (item.visitDateTime) {
+              const date = new Date(item.visitDateTime);
+              if (!isNaN(date.getTime())) {
+                  visitDateTime = new Intl.DateTimeFormat('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      second: 'numeric',
+                      hour12: true,
+                      timeZone: 'Asia/Seoul'
+                  }).format(date).replace(/\./g, '').replace(' 오전 ', ' 오전 ').replace(' 오후 ', ' 오후 ');
+              }
+          }
+  
+          return {
+              ...item,
+              visitDateTime,
+              symptom: (item.symptom || "").replace(/::/g, ', '),
+              medication: (item.medication || "").replace(/::/g, ', '),
+              bodyParts: (item.bodyParts || "").replace(/::/g, ', '),
+              treatmentMatter: (item.treatmentMatter || "").replace(/::/g, ', '),
+              onBedTime: (!item.onBedStartTime && !item.onBedEndTime) ? "" : item.onBedStartTime + " ~ " + item.onBedEndTime
+          };
+        });
 
         setPersonalStudentRowData(resultData);
       }
@@ -2342,6 +2381,39 @@ function WorkNote(args) {
   useEffect(() => {
     fetchPopUpProtectStudentStatus();
   }, [fetchPopUpProtectStudentStatus]);
+
+  const onEntireWorkNoteCellValueChanged = (params) => {
+    const confirmTitle = "보건일지 수정";
+    const confirmMessage = "변경사항이 확인되었습니다<br/>입력하신 사항과 같이 수정하시겠습니까?";
+
+    const yesCallback = async () => {
+      const response = await axios.post(`${BASE_URL}/api/workNote/updateVisitDateTime`, {
+        visitDateTime: params.data.visitDateTime,
+        rowId: params.data.id,
+        userId: params.data.userId,
+        schoolCode: params.data.schoolCode,
+        sGrade: params.data.sGrade,
+        sClass: params.data.sClass,
+        sNumber: params.data.sNumber,
+        sGender: params.data.sGender,
+        sName: params.data.sName,
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "보건일지가 정상적으로 수정되었습니다";
+        NotiflixInfo(infoMessage);
+
+        fetchEntireWorkNoteGrid();
+      }
+    };
+
+    const noCallback = () => {
+      return;
+    };
+  
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+  };
+
   
   return (
     <>
@@ -2903,6 +2975,7 @@ function WorkNote(args) {
                   ref={registeredAllGridRef}
                   rowData={entireWorkNoteRowData}
                   columnDefs={entireWorkNoteColumnDefs} 
+                  onCellValueChanged={onEntireWorkNoteCellValueChanged}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                 />
               </div>
