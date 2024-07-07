@@ -53,7 +53,6 @@ function Statistics() {
             });
     
             if(response.data) {
-                console.log(response.data)
                 setWorkNoteData(response.data);
             }
         }
