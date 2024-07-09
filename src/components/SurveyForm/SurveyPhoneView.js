@@ -1,12 +1,28 @@
-import React from "react";
-import { Row, Input, Col, Label, Button } from "reactstrap";
+import React, { useState } from "react";
+import { Row, Input, Col, Label, Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import ReactSignatureCanvas from "react-signature-canvas";
 import moment from 'moment';
 import { useUser } from "contexts/UserContext";
 import "../../assets/css/surveyPhoneView.css";
 
 function SurveyPhoneView() {
-
     const { user } = useUser();
+    const [showSignature, setShowSignature] = useState(false);
+    const [signature, setSignature] = useState(null);
+    const [sigCanvas, setSigCanvas] = useState(null);
+
+    const toggleSignature = () => {
+        setShowSignature(!showSignature);
+    };
+
+    const clearSignature = () => {
+        if(sigCanvas) sigCanvas.clear();
+    };
+
+    const saveSignature = () => {
+        if(sigCanvas) setSignature(sigCanvas.getTrimmedCanvas().toDataURL('image/png'));
+        toggleSignature();
+    };
     
     const generateCurrentDate = () => {
         const currentDate = moment().format('YYYY. MM. DD.');
@@ -1251,8 +1267,29 @@ function SurveyPhoneView() {
                         type="text"
                         style={{ width: '30%', height: 28, flexGrow: 1}}
                     />
-                    <Button size="sm">서명</Button>
+                    <Button size="sm" onClick={toggleSignature}>서명</Button>
                 </Row>
+                {signature && (
+                    <div className="mt-3">
+                        <img src={signature} alt="Signature" style={{ width: '100%', height: 'auto' }} />
+                    </div>
+                )}
+                {showSignature && (
+                    <div className="signature-popup-container">
+                        <div className="signature-popup">
+                            <ReactSignatureCanvas
+                                ref={(ref) => setSigCanvas(ref)}
+                                penColor="black"
+                                canvasProps={{ width: 300, height: 150, className: 'sigCanvas' }}
+                            />
+                            <div className="signature-buttons">
+                                <Button color="secondary" onClick={clearSignature} className="mr-2">초기화</Button>
+                                <Button color="primary" onClick={saveSignature}>저장</Button>
+                                <Button color="danger" onClick={toggleSignature} className="ml-2">취소</Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <Row className="d-flex justify-content-center align-items-center no-gutters mt-3">
                     <Button>최종제출</Button>
                 </Row>
