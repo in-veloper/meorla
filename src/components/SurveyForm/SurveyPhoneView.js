@@ -13,6 +13,14 @@ function SurveyPhoneView() {
 
     const toggleSignature = () => {
         setShowSignature(!showSignature);
+        if (!showSignature) {
+            setTimeout(() => {
+                const element = document.getElementById('signature-popup');
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100); // Scroll after rendering
+        }
     };
 
     const clearSignature = () => {
@@ -1274,25 +1282,27 @@ function SurveyPhoneView() {
                         <img src={signature} alt="Signature" style={{ width: '100%', height: 'auto' }} />
                     </div>
                 )}
-                {showSignature && (
-                    <div className="signature-popup-container">
-                        <div className="signature-popup">
-                            <ReactSignatureCanvas
-                                ref={(ref) => setSigCanvas(ref)}
-                                penColor="black"
-                                canvasProps={{ width: 300, height: 150, className: 'sigCanvas' }}
-                            />
-                            <div className="signature-buttons">
-                                <Button color="secondary" onClick={clearSignature} className="mr-2">초기화</Button>
-                                <Button color="primary" onClick={saveSignature}>저장</Button>
-                                <Button color="danger" onClick={toggleSignature} className="ml-2">취소</Button>
-                            </div>
-                        </div>
-                    </div>
-                )}
                 <Row className="d-flex justify-content-center align-items-center no-gutters mt-3">
                     <Button>최종제출</Button>
                 </Row>
+                <div id="signature-section" className="signature-section">
+                    {showSignature && (
+                        <div id="signature-popup" className="signature-popup-container">
+                            <div className="signature-popup">
+                                <ReactSignatureCanvas
+                                    ref={(ref) => setSigCanvas(ref)}
+                                    penColor="black"
+                                    canvasProps={{ width: 200, height: 150, className: 'sigCanvas' }}
+                                />
+                                <div className="signature-buttons">
+                                    <Button size="sm" onClick={clearSignature} className="mr-2">초기화</Button>
+                                    <Button size="sm" onClick={saveSignature}>저장</Button>
+                                    <Button size="sm" onClick={toggleSignature} className="ml-2">취소</Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
