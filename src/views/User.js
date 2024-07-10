@@ -17,6 +17,8 @@ import NotiflixInfo from "components/Notiflix/NotiflixInfo";
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import { IoInformationCircleOutline } from "react-icons/io5";
+import { Accordion, AccordionItem, AccordionItemHeading, AccordionItemButton, AccordionItemPanel } from 'react-accessible-accordion';
+import 'react-accessible-accordion/dist/fancy-example.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -72,6 +74,8 @@ function User() {
   const [selectedUpdateTeacher, setSelectedUpdateTeacher] = useState(null);
   const [studentTablePopOverOpen, setStudentTablePopOverOpen] = useState(false);
   const [teacherTablePopOverOpen, setTeacherTablePopOverOpen] = useState(false);
+  const [migraionExistPlatformModal, setMigrationExistPlatformModal] = useState(false);
+  const [synchronizeGradeDataModal, setSynchronizeGradeDataModal] = useState(false);
 
   const studentTableGridRef = useRef(null);     
   const teacherTableGridRef = useRef(null);                                // 등록한 명렬표 출력 Grid Reference
@@ -101,12 +105,14 @@ function User() {
   const toggleEmailFormModal = () => setEmailFormModal(!emailFormModal); 
   const toggleAddTeacherModal = () => setAddTeacherModal(!addTeacherModal);
   const toggleUpdateTeacherModal = () => setUpdateTeacherModal(!updateTeacherModal);
+  const toggleMigraionExistPlatformModal = () => setMigrationExistPlatformModal(!migraionExistPlatformModal);
+  const toggleSynchronizeGradeDataModal = () => setSynchronizeGradeDataModal(!synchronizeGradeDataModal);
   const toggleStudentTablePopOver = () => { setStudentTablePopOverOpen(!studentTablePopOverOpen); };
   const toggleTeacherTablePopOver = () => { setTeacherTablePopOverOpen(!teacherTablePopOverOpen); };
-    const toggleAddStudentModal = () => {
-      setIsAddStudentModalOpen(!isAddStudentModalOpen);
-      resetTransferStudent();
-    };
+  const toggleAddStudentModal = () => {
+    setIsAddStudentModalOpen(!isAddStudentModalOpen);
+    resetTransferStudent();
+  };
   const toggleRequestQRcodeModal = () => {
     setRequestQRcodeModal(!requestQRcodeModal);
     if(!requestQRcodeModal) generateQRCode();
@@ -1103,6 +1109,14 @@ function User() {
     NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
   };
 
+  const handleMigrationExistPlatform = () => {
+    toggleMigraionExistPlatformModal();
+  };
+
+  const handleSynchronizeGradeData = () => {
+    toggleSynchronizeGradeDataModal();
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
@@ -1306,30 +1320,34 @@ function User() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col md="4">
+                    <Col md="3">
                       <FormGroup>
-                        <label>마이그레이션</label>
-                          <div style={{ marginTop: '-12px' }}>
-                            <ButtonGroup className="w-100">
-                              <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}}>규OOO</Button>
-                              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>천OOO</Button>
-                              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>스OOO</Button>
-                            </ButtonGroup>
-                          </div>
-                      </FormGroup>
-                    </Col>
-                    <Col md="5">
-                      <FormGroup>
-                        <label>학교이동</label>
-                          <div style={{ marginTop: '-12px' }}>
-                            <ButtonGroup className="w-100">
-                              <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}}>데이터 일괄 초기화</Button>
-                              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>데이터 선택 초기화</Button>
-                            </ButtonGroup>
-                          </div>
+                        <label>학년 진급 자동 동기화</label>
+                        <div style={{ marginTop: '-12px' }}>
+                          <Button className="user-inner-button w-100" onClick={handleSynchronizeGradeData}>학년 진급 자동 동기화</Button>
+                        </div>
                       </FormGroup>
                     </Col>
                     <Col md="3">
+                      <FormGroup>
+                        <label>마이그레이션</label>
+                        <div style={{ marginTop: '-12px' }}>
+                          <Button className="user-inner-button w-100" onClick={handleMigrationExistPlatform}>기존 플랫폼 데이터 이관</Button>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="4">
+                      <FormGroup>
+                        <label>학교이동</label>
+                        <div style={{ marginTop: '-12px' }}>
+                          <ButtonGroup className="w-100">
+                            <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}}>데이터 일괄 초기화</Button>
+                            <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }}>데이터 선택 초기화</Button>
+                          </ButtonGroup>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
                       <FormGroup>
                         <label>보조교사</label>
                         <div style={{ marginTop: '-12px' }}>
@@ -1356,8 +1374,10 @@ function User() {
                       <FormGroup>
                         <label>보건실 방문요청 공유</label>
                         <div style={{ marginTop: '-12px' }}>
-                          <Button className="mr-2 user-inner-button" style={{ width: '48%' }} onClick={toggleRequestURLModal}>URL</Button>
-                          <Button className="user-inner-button" onClick={toggleRequestQRcodeModal} style={{ width: '48%' }}>QR코드</Button>
+                          <ButtonGroup className="w-100">
+                            <Button className="user-inner-button" style={{ whiteSpace: 'nowrap'}} onClick={toggleRequestURLModal}>URL</Button>
+                            <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap' }} onClick={toggleRequestQRcodeModal}>QR코드</Button>
+                          </ButtonGroup> 
                         </div>
                       </FormGroup>
                     </Col>
@@ -1903,6 +1923,106 @@ function User() {
           <Row className="d-flex justify-content-end no-gutters w-100">
             <Button className="mr-2" onClick={onPrintQRCode}>프린트</Button>
             <Button color="secondary" onClick={toggleRequestQRcodeModal}>취소</Button>
+          </Row>
+        </ModalFooter>
+      </Modal>
+
+      <Modal isOpen={migraionExistPlatformModal} toggle={toggleMigraionExistPlatformModal} centered style={{ minWidth: '15%' }}>
+        <ModalHeader><b className="text-muted">기존 사용 플랫폼 데이터 이관</b></ModalHeader>
+        <ModalBody>
+          <Row className="d-flex align-items-center no-gutters w-100">
+            <Accordion allowZeroExpanded style={{ width: '100%'}}>
+              <AccordionItem>
+                <AccordionItemHeading>
+                  <AccordionItemButton>
+                    규OOO 데이터 이관 안내
+                  </AccordionItemButton>
+                </AccordionItemHeading>
+                <AccordionItemPanel>
+                  <strong>
+                    This is the first item's accordion body.
+                  </strong>
+                  You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the{' '}
+                  <code>
+                    .accordion-body
+                  </code>
+                  , though the transition does limit overflow.
+                </AccordionItemPanel>
+              </AccordionItem>
+              <AccordionItem>
+                <AccordionItemHeading>
+                  <AccordionItemButton>
+                    처OOO 데이터 이관 안내
+                  </AccordionItemButton>
+                </AccordionItemHeading>
+                <AccordionItemPanel>
+                  <strong>
+                    This is the second item's accordion body.
+                  </strong>
+                  You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the{' '}
+                  <code>
+                    .accordion-body
+                  </code>
+                  , though the transition does limit overflow.
+                </AccordionItemPanel>
+              </AccordionItem>
+              <AccordionItem>
+                <AccordionItemHeading>
+                  <AccordionItemButton>
+                    스OOO 데이터 이관 안내
+                  </AccordionItemButton>
+                </AccordionItemHeading>
+                <AccordionItemPanel>
+                  <strong>
+                    This is the third item's accordion body.
+                  </strong>
+                  You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the{' '}
+                  <code>
+                    .accordion-body
+                  </code>
+                  , though the transition does limit overflow.
+                </AccordionItemPanel>
+              </AccordionItem>
+            </Accordion>
+          </Row>
+          <Row className="d-flex align-items-center justify-content-center no-gutters mt-3">
+            <ButtonGroup className="w-100">
+              <Button className="user-inner-button" style={{ whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>규OOO</Button>
+              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>천OOO</Button>
+              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>스OOO</Button>
+            </ButtonGroup>
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Row className="d-flex justify-content-end no-gutters w-100">
+            <Button color="secondary" onClick={toggleMigraionExistPlatformModal}>취소</Button>
+          </Row>
+        </ModalFooter>
+      </Modal>
+
+      <Modal isOpen={synchronizeGradeDataModal} toggle={toggleSynchronizeGradeDataModal} centered style={{ minWidth: '43%' }}>
+        <ModalHeader><b className="text-muted">학년 진급 자동 데이터 동기화</b></ModalHeader>
+        <ModalBody>
+          <Row className="d-flex align-items-center justify-content-center no-gutters">
+            <Col md="5">
+              <ButtonGroup className="" size="md">
+                {generateNameTableButtons()}
+              </ButtonGroup>
+            </Col>
+            <Col md="7">
+              <Row className="justify-content-end no-gutters">
+                <ButtonGroup>
+                  <Button className="user-inner-button" onClick={handleDownloadStudentTemplate} style={{ whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>템플릿 다운로드</Button>
+                  <Button className="user-inner-button" onClick={onStudentBulkRegist} style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>일괄등록</Button>
+                  <Button className="user-inner-button" onClick={onStudentBulkDelete} style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>일괄삭제</Button>
+                </ButtonGroup>
+              </Row>
+            </Col>
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Row className="d-flex justify-content-end no-gutters w-100">
+            <Button color="secondary" onClick={toggleSynchronizeGradeDataModal}>취소</Button>
           </Row>
         </ModalFooter>
       </Modal>
