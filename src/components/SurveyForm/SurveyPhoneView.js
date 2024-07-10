@@ -10,6 +10,7 @@ function SurveyPhoneView() {
     const [showSignature, setShowSignature] = useState(false);
     const [signature, setSignature] = useState(null);
     const [sigCanvas, setSigCanvas] = useState(null);
+    const [isSignatureCompleted, setIsSignatureCompleted] = useState(false);
 
     const toggleSignature = () => {
         setShowSignature(!showSignature);
@@ -28,7 +29,10 @@ function SurveyPhoneView() {
     };
 
     const saveSignature = () => {
-        if(sigCanvas) setSignature(sigCanvas.getTrimmedCanvas().toDataURL('image/png'));
+        if(sigCanvas) {
+            setSignature(sigCanvas.getTrimmedCanvas().toDataURL('image/png'));
+            setIsSignatureCompleted(true);
+        }
         toggleSignature();
     };
     
@@ -1275,13 +1279,8 @@ function SurveyPhoneView() {
                         type="text"
                         style={{ width: '30%', height: 28, flexGrow: 1}}
                     />
-                    <Button size="sm" onClick={toggleSignature}>서명</Button>
+                    <Button size="sm" onClick={toggleSignature}>{isSignatureCompleted ? "서명 완료" : "서명"}</Button>
                 </Row>
-                {signature && (
-                    <div className="mt-3">
-                        <img src={signature} alt="Signature" style={{ width: '100%', height: 'auto' }} />
-                    </div>
-                )}
                 <Row className="d-flex justify-content-center align-items-center no-gutters mt-3">
                     <Button>최종제출</Button>
                 </Row>

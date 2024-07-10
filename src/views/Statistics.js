@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, Col, Row, Table } from "reactstrap";
-import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, PieChart, Pie, Cell, ScatterChart, Scatter, LineChart, Line } from "recharts";
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, PieChart, Pie, Cell, ScatterChart, Scatter, LineChart, Line } from "recharts";
 import { useUser } from "contexts/UserContext";
 import moment from "moment";
 import axios from "axios";
@@ -11,7 +11,7 @@ function Statistics() {
     const { user } = useUser();  
     const [symptomData, setSymptomData] = useState([]);
     const [symptomCategorys, setSymptomCategorys] = useState("");
-    const [workNodeData, setWorkNoteData] = useState([]);
+    const [workNoteData, setWorkNoteData] = useState([]);
 
     const fetchSymptomData = useCallback(async() => {
         if(user) {
@@ -64,7 +64,7 @@ function Statistics() {
         fetchWorkNoteData();
     }, [fetchSymptomData, fetchSymptomCategory, fetchWorkNoteData]);
 
-    const dataLoaded = symptomData.length > 0 && symptomCategorys && workNodeData.length > 0;
+    const dataLoaded = symptomData.length > 0 && symptomCategorys && workNoteData.length > 0;
 
     const symptomMapping = {};
     if(dataLoaded) {
@@ -114,7 +114,7 @@ function Statistics() {
     }));
 
     if(dataLoaded) {
-        workNodeData.forEach(({ updatedAt, sGender }) => {
+        workNoteData.forEach(({ updatedAt, sGender }) => {
             const visitHour = moment(updatedAt).hour();
             if(visitHour >= 9 && visitHour < 19) {
                 const index = visitHour - 9;
@@ -157,7 +157,8 @@ function Statistics() {
     const studentVisitCounts = {};
 
     if(dataLoaded) {
-        workNodeData.forEach(({ sName }) => {
+        console.log(workNoteData)
+        workNoteData.forEach(({ sName }) => {
             if(studentVisitCounts[sName]) {
                 studentVisitCounts[sName]++;
             }else{
@@ -167,147 +168,136 @@ function Statistics() {
     }
 
     const sortedStudentVisitData = Object.keys(studentVisitCounts)
-        .map(name => ({
-            name,
-            visits: studentVisitCounts[name]
-        }))
-        .sort((a, b) => b.visits - a.visits)
-        .slice(0, 10);  // 상위 10명까지 획득
+    .map(name => ({
+        name,
+        visits: studentVisitCounts[name]
+    }))
+    .sort((a, b) => b.visits - a.visits)
+    .slice(0, 10);  // 상위 10명까지 획득
 
-// BarChart--------------------------------------
-    const data = [
-        {
-          name: 'Page A',
-          uv: 4000,
-          pv: 2400,
-          amt: 2400,
-        },
-        {
-          name: 'Page B',
-          uv: 3000,
-          pv: 1398,
-          amt: 2210,
-        },
-        {
-          name: 'Page C',
-          uv: 2000,
-          pv: 9800,
-          amt: 2290,
-        },
-        {
-          name: 'Page D',
-          uv: 2780,
-          pv: 3908,
-          amt: 2000,
-        },
-        {
-          name: 'Page E',
-          uv: 1890,
-          pv: 4800,
-          amt: 2181,
-        },
-        {
-          name: 'Page F',
-          uv: 2390,
-          pv: 3800,
-          amt: 2500,
-        },
-        {
-          name: 'Page G',
-          uv: 3490,
-          pv: 4300,
-          amt: 2100,
-        },
-    ];
-//---------------------------------------------------------
+    const bodyPartsCounts = {};
 
-//PieChart-------------------------------------------------
-    const pieData = [
-    { name: 'Group A', value: 400 },
-    { name: 'Group B', value: 300 },
-    { name: 'Group C', value: 300 },
-    { name: 'Group D', value: 200 },
-    ];
+    if(dataLoaded) {
+        workNoteData.forEach(({ bodyParts }) => {
+            if(bodyPartsCounts[bodyParts]) {
+                bodyPartsCounts[bodyParts]++;
+            }else{
+                bodyPartsCounts[bodyParts] = 1;
+            }
+        });
+    }
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+    const bodyPartsData = Object.keys(bodyPartsCounts).map(part =>  ({
+        name: part,
+        value: bodyPartsCounts[part]
+    }));
+
+    const sortedBodyPartsData = bodyPartsData
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 10); // 상위 10개까지 획득
+
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6347', '#ADFF2F', '#FFD700', '#1E90FF', '#FF69B4', '#8A2BE2'];
 
     const RADIAN = Math.PI / 180;
     const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-    return (
-        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-            {`${(percent * 100).toFixed(0)}%`}
-        </text>
-    );
+        return (
+            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                {`${(percent * 100).toFixed(0)}%`}
+            </text>
+        );
     };
-//---------------------------------------------------------
 
-//ScatterChart---------------------------------------------
+    const CustomBloodPressureTooltip = ({ active, payload }) => {
+        if (active && payload && payload.length) {
+            const student = payload[0].payload;
+            return (
+                <div className="custom-tooltip" style={{ backgroundColor: "#fff", padding: "10px", border: "1px solid #ccc" }}>
+                    <p className="label font-weight-bold">{`${student.sGrade}학년 ${student.sClass}반 ${student.sNumber}번 ${student.sGender} ${student.sName}`}</p>
+                    <p className="intro" style={{ color: '#EC5353'}}>{`수축기 혈압: ${student.systolicBloodPressure}`}</p>
+                    <p className="intro" style={{ color: '#0088FE'}}>{`이완기 혈압: ${student.diastolicBloodPressure}`}</p>
+                </div>
+            );
+        }
 
-const scatterData = [
-    { x: 100, y: 200, z: 200 },
-    { x: 120, y: 100, z: 260 },
-    { x: 170, y: 300, z: 400 },
-    { x: 140, y: 250, z: 280 },
-    { x: 150, y: 400, z: 500 },
-    { x: 110, y: 280, z: 200 },
-  ];
-  const SCATTER_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
+        return null;
+    };
 
+    const bloodPressureData = workNoteData
+    .filter(entry => {
+        if (typeof entry.bloodPressure !== 'string') return false;
+        const parts = entry.bloodPressure.split('/');
+        if (parts.length !== 2) return false;
+        const [systolic, diastolic] = parts.map(Number);
+        return !isNaN(systolic) && !isNaN(diastolic);
+    })
+    .map(entry => {
+        const [systolicBloodPressure, diastolicBloodPressure] = entry.bloodPressure.split('/').map(Number);
+        return {
+            systolicBloodPressure,
+            diastolicBloodPressure,
+            sGrade: entry.sGrade,
+            sClass: entry.sClass,
+            sNumber: entry.sNumber,
+            sGender: entry.sGender,
+            sName: entry.sName,
+        };
+    });
 
-//---------------------------------------------------------
+    const generateRandomColor = () => {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    };
 
-//LineChart------------------------------------------------
+    const CustomBloodSugarTooltip = ({ active, payload }) => {
+        if (active && payload && payload.length) {
+            const student = payload[0].payload;
+            return (
+                <div className="custom-tooltip" style={{ backgroundColor: "#fff", padding: "10px", border: "1px solid #ccc" }}>
+                    <p className="label font-weight-bold">{`${student.sGrade}학년 ${student.sClass}반 ${student.sNumber}번 ${student.sGender} ${student.sName}`}</p>
+                    <p className="intro" style={{ color: '#EC5353'}}>{`혈당: ${student.bloodSugar}`}</p>
+                </div>
+            );
+        }
 
-const lineData = [
-    {
-      name: 'Page A',
-      uv: 4000,
-      pv: 2400,
-      amt: 2400,
-    },
-    {
-      name: 'Page B',
-      uv: 3000,
-      pv: 1398,
-      amt: 2210,
-    },
-    {
-      name: 'Page C',
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
-    {
-      name: 'Page D',
-      uv: 2780,
-      pv: 3908,
-      amt: 2000,
-    },
-    {
-      name: 'Page E',
-      uv: 1890,
-      pv: 4800,
-      amt: 2181,
-    },
-    {
-      name: 'Page F',
-      uv: 2390,
-      pv: 3800,
-      amt: 2500,
-    },
-    {
-      name: 'Page G',
-      uv: 3490,
-      pv: 4300,
-      amt: 2100,
-    },
-];
+        return null;
+    };
 
-//---------------------------------------------------------
+    const groupedBloodSugarData = {};
+
+    if (dataLoaded) {
+        workNoteData.forEach(entry => {
+            if (entry.bloodSugar > 0) {
+                const key = `${entry.sGrade}-${entry.sClass}-${entry.sNumber} ${entry.sName}`;
+                if (!groupedBloodSugarData[key]) {
+                    groupedBloodSugarData[key] = [];
+                }
+                groupedBloodSugarData[key].push({
+                    date: moment(entry.visitDateTime).format('YYYY-MM-DD'),
+                    bloodSugar: entry.bloodSugar,
+                    sGrade: entry.sGrade,
+                    sClass: entry.sClass,
+                    sNumber: entry.sNumber,
+                    sGender: entry.sGender,
+                    sName: entry.sName
+                });
+            }
+        });
+    }
+
+    // 학생별 색상 매핑
+    const studentColors = Object.keys(groupedBloodSugarData).reduce((acc, student) => {
+        acc[student] = generateRandomColor();
+        return acc;
+    }, {});
+
     return (
         <>
             <div className="content">
@@ -427,53 +417,77 @@ const lineData = [
                         </Card>
                     </Col>
                 </Row>
-                <Row>
-                    <Col md="6">
-                        <ResponsiveContainer width={500} height={400}>
-                            <ScatterChart
-                                width={400}
-                                height={400}
-                                margin={{
-                                    top: 20,
-                                    right: 20,
-                                    bottom: 20,
-                                    left: 20,
-                                }}
-                                >
-                                <CartesianGrid />
-                                <XAxis type="number" dataKey="x" name="stature" unit="cm" />
-                                <YAxis type="number" dataKey="y" name="weight" unit="kg" />
-                                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                                <Scatter name="A school" data={scatterData} fill="#8884d8">
-                                    {scatterData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={SCATTER_COLORS[index % SCATTER_COLORS.length]} />
+                <Row className="d-flex no-gutters w-100">
+                    <Col className="mr-2" style={{ maxWidth: '39%' }}>
+                        <Card style={{ border: '1px solid lightgray' }}>
+                            <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
+                                인체 부위별 보건일지 누적 등록 수
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <ResponsiveContainer width="100%" height={400}>
+                                    <PieChart>
+                                        <Pie
+                                            data={bodyPartsData}
+                                            cx="50%"
+                                            cy="50%"
+                                            labelLine={false}
+                                            label={renderCustomizedLabel}
+                                            outerRadius={150}
+                                            fill="#8884d8"
+                                            dataKey="value"
+                                        >
+                                            {sortedBodyPartsData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div style={{ width: '30%', padding: '10px', alignContent: 'center' }}>
+                                    {sortedBodyPartsData.map((entry, index) => (
+                                        <div key={`legend-${index}`} className="d-flex align-content-center mb-2">
+                                            <span style={{ backgroundColor: COLORS[index % COLORS.length], display: 'inline-block', width: '20px', height: '20px', marginRight: '5px' }}></span>
+                                            {entry.name}
+                                        </div>
                                     ))}
-                                </Scatter>
-                            </ScatterChart>
-                        </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </Card>
                     </Col>
-                    <Col md="6">
-                        <ResponsiveContainer width={500} height={400}>
-                            <LineChart
-                                width={500}
-                                height={300}
-                                data={lineData}
-                                margin={{
-                                    top: 5,
-                                    right: 30,
-                                    left: 20,
-                                    bottom: 5,
-                                }}
-                                >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
-                                <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                            </LineChart>
-                        </ResponsiveContainer>
+                    <Col className="ml-2" style={{ maxWidth: '60%' }}>
+                        <Card style={{ border: '1px solid lightgray' }}>
+                            <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
+                                학생별 혈압 분포도 및 혈당 추세선
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingRight: 25 }}>
+                                <ResponsiveContainer width="48%" height={370} style={{ marginTop: 30 }}>
+                                    <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                                        <CartesianGrid />
+                                        <XAxis type="number" dataKey="systolicBloodPressure" name="수축기 혈압" label={{ value: '수축 혈압', position: 'insideRight', offset: 0, dy: 12, dx: 13 }} />
+                                        <YAxis type="number" dataKey="diastolicBloodPressure" name="이완기 혈압" label={{ value: '이완 혈압', position: 'insideTopLeft', offset: 0, dy: -19 }} />
+                                        <Tooltip content={<CustomBloodPressureTooltip />} />
+                                        <Scatter name="학생" data={bloodPressureData} fill="#EC5353" />
+                                    </ScatterChart>
+                                </ResponsiveContainer>
+                                <ResponsiveContainer width="48%" height={370} style={{ marginTop: 30 }}>
+                                    <LineChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="date" label={{ value: '날짜', position: 'insideRight', offset: 0, dy: 12, dx: 20 }} />
+                                        <YAxis label={{ value: '혈당', position: 'insideTopLeft', offset: 0, dy: -19, dx: 28 }} />
+                                        <Tooltip content={<CustomBloodSugarTooltip />} />
+                                        {Object.keys(groupedBloodSugarData).map((key) => (
+                                            <Line
+                                                key={key}
+                                                type="monotone"
+                                                data={groupedBloodSugarData[key]}
+                                                dataKey="bloodSugar"
+                                                stroke={studentColors[key]}
+                                            />
+                                        ))}
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </Card>
                     </Col>
                 </Row>
             </div>

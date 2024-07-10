@@ -526,6 +526,10 @@ function ManageMediFixt() {
         setUpdatedFixtRgistrationUnitAmount("");
     };
 
+    const getNavLinkStyle = (menu) => ({
+        color: selectedMenu === menu ? '#FFF' : '#66615B'
+    });
+
     return (
         <>
             <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
@@ -533,10 +537,10 @@ function ManageMediFixt() {
                     <Col md="7" className="align-items-left no-gutters">
                         <Nav className="medifixt-nav" pills>
                             <NavItem>
-                                <NavLink id="medicine" onClick={moveManageMenu} active={selectedMenu === 'medicine'}>약품관리</NavLink>
+                                <NavLink id="medicine" onClick={moveManageMenu} active={selectedMenu === 'medicine'} style={getNavLinkStyle('medicine')}>약품관리</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink id="fixture" onClick={moveManageMenu} active={selectedMenu === 'fixture'}>비품관리</NavLink>
+                                <NavLink id="fixture" onClick={moveManageMenu} active={selectedMenu === 'fixture'} style={getNavLinkStyle('fixture')}>비품관리</NavLink>
                             </NavItem>
                         </Nav>
                     </Col>

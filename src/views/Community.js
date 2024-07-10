@@ -677,6 +677,10 @@ function Community() {
         toggleMyResourceSharingModal();
     };
 
+    const getNavLinkStyle = (menu) => ({
+        color: selectedMenu === menu ? '#FFF' : '#66615B'
+    });
+
     return (
         <>
             <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
@@ -684,16 +688,16 @@ function Community() {
                     <Col md="7" className="align-items-left no-gutters">
                         <Nav className="community-nav" pills>
                             <NavItem>
-                                <NavLink id="opinionSharing" onClick={moveCommunityMenu} active={selectedMenu === 'opinionSharing'}>의견공유</NavLink>
+                                <NavLink id="opinionSharing" onClick={moveCommunityMenu} active={selectedMenu === 'opinionSharing'} style={getNavLinkStyle('opinionSharing')}>의견공유</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink id="resourceSharing" onClick={moveCommunityMenu} active={selectedMenu === 'resourceSharing'}>자료공유</NavLink>
+                                <NavLink id="resourceSharing" onClick={moveCommunityMenu} active={selectedMenu === 'resourceSharing'} style={getNavLinkStyle('resourceSharing')}>자료공유</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink id="interact" onClick={moveCommunityMenu} active={selectedMenu === 'interact'}>시도교류</NavLink>
+                                <NavLink id="interact" onClick={moveCommunityMenu} active={selectedMenu === 'interact'} style={getNavLinkStyle('interact')}>시도교류</NavLink>
                             </NavItem>
                             <NavItem>
-                                <NavLink id="bambooForest" onClick={moveCommunityMenu} active={selectedMenu === 'bambooForest'}>대나무숲</NavLink>
+                                <NavLink id="bambooForest" onClick={moveCommunityMenu} active={selectedMenu === 'bambooForest'} style={getNavLinkStyle('bambooForest')}>대나무숲</NavLink>
                             </NavItem>
                         </Nav>
                     </Col>
