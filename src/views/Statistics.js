@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, Col, Row, Table } from "reactstrap";
+import { Button, ButtonGroup, Card, Col, Row, Table } from "reactstrap";
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, PieChart, Pie, Cell, ScatterChart, Scatter, LineChart, Line } from "recharts";
 import { useUser } from "contexts/UserContext";
 import moment from "moment";
@@ -341,10 +341,22 @@ function Statistics() {
                     <Col className="mr-2" style={{ width: '49%' }}>
                         <Card style={{ border: '1px solid lightgray' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
-                                시간대별 남·여 학생 보건실 방문 수
+                                <Row className="d-flex align-items-center no-gutters">
+                                    <Col className="d-flex justify-content-start pl-3">
+                                        시간대별 남·여 학생 보건실 방문 수
+                                    </Col>
+                                    <Col className="d-flex justify-content-end">
+                                        <ButtonGroup size="sm">
+                                            <Button className="mt-0 mb-0">일주일</Button>
+                                            <Button className="mt-0 mb-0">한달</Button>
+                                            <Button className="mt-0 mb-0">6개월</Button>
+                                            <Button className="mt-0 mb-0">전체</Button>
+                                        </ButtonGroup>
+                                    </Col>
+                                </Row>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={400}>
+                                <ResponsiveContainer width="100%" height={385}>
                                     <BarChart
                                         width={500}
                                         height={300}
@@ -378,10 +390,22 @@ function Statistics() {
                     <Col className="ml-2" style={{ width: '49%' }}>
                         <Card style={{ border: '1px solid lightgray' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
-                                학생별 보건실 방문 빈도 수
+                                <Row className="d-flex align-items-center no-gutters">
+                                    <Col className="d-flex justify-content-start pl-3">
+                                        학생별 보건실 방문 빈도 수
+                                    </Col>
+                                    <Col className="d-flex justify-content-end">
+                                        <ButtonGroup size="sm">
+                                            <Button className="mt-0 mb-0">일주일</Button>
+                                            <Button className="mt-0 mb-0">한달</Button>
+                                            <Button className="mt-0 mb-0">6개월</Button>
+                                            <Button className="mt-0 mb-0">전체</Button>
+                                        </ButtonGroup>
+                                    </Col>
+                                </Row>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={400}>
+                                <ResponsiveContainer width="100%" height={385}>
                                     <BarChart
                                         layout="vertical"
                                         width={500}
@@ -389,14 +413,14 @@ function Statistics() {
                                         data={sortedStudentVisitData}
                                         margin={{
                                             top: 20,
-                                            right: 30,
+                                            right: 35,
                                             left: 20,
                                             bottom: 5,
                                         }}
                                     >
                                         <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis type="number" dataKey="visits" label={{ value: '빈도', position: 'insideRight', offset: -30 }}/>
-                                        <YAxis type="category" dataKey="name" label={{ value: '학생 이름', position: 'insideTopLeft', offset: -5 }} interval={0} tickCount={10} />
+                                        <XAxis type="number" dataKey="visits" label={{ value: '빈도', position: 'insideRight', offset: 0, dx: 35, dy: -1.5 }}/>
+                                        <YAxis type="category" dataKey="name" label={{ value: '학생 이름', position: 'insideTopLeft', offset: 0, dy: -10 }} interval={0} tickCount={10} />
                                         <Tooltip content={<CustomVisitTooltip />} />
                                         <Bar dataKey="visits">
                                             {sortedStudentVisitData.map((entry, index) => (
@@ -421,10 +445,23 @@ function Statistics() {
                     <Col className="mr-2" style={{ maxWidth: '39%' }}>
                         <Card style={{ border: '1px solid lightgray' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
-                                인체 부위별 보건일지 누적 등록 수
+                                <Row className="d-flex align-items-center no-gutters">
+                                    <Col className="d-flex justify-content-start pl-3">
+                                        인체 부위별 보건일지 누적 등록 수
+                                    </Col>
+                                    <Col className="d-flex justify-content-end">
+                                        <ButtonGroup size="sm">
+                                            <Button className="mt-0 mb-0">일주일</Button>
+                                            <Button className="mt-0 mb-0">한달</Button>
+                                            <Button className="mt-0 mb-0">6개월</Button>
+                                            <Button className="mt-0 mb-0">전체</Button>
+                                        </ButtonGroup>
+                                    </Col>
+                                </Row>
+
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={400}>
+                                <ResponsiveContainer width="100%" height={385}>
                                     <PieChart>
                                         <Pie
                                             data={bodyPartsData}
@@ -457,23 +494,35 @@ function Statistics() {
                     <Col className="ml-2" style={{ maxWidth: '60%' }}>
                         <Card style={{ border: '1px solid lightgray' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
-                                학생별 혈압 분포도 및 혈당 추세선
+                                <Row className="d-flex align-items-center no-gutters">
+                                    <Col className="d-flex justify-content-start pl-3">
+                                        학생별 혈압 분포도 및 혈당 추세선
+                                    </Col>
+                                    <Col className="d-flex justify-content-end">
+                                        <ButtonGroup size="sm">
+                                            <Button className="mt-0 mb-0">일주일</Button>
+                                            <Button className="mt-0 mb-0">한달</Button>
+                                            <Button className="mt-0 mb-0">6개월</Button>
+                                            <Button className="mt-0 mb-0">전체</Button>
+                                        </ButtonGroup>
+                                    </Col>
+                                </Row>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', paddingRight: 25 }}>
-                                <ResponsiveContainer width="48%" height={370} style={{ marginTop: 30 }}>
+                                <ResponsiveContainer width="48%" height={355} style={{ marginTop: 30 }}>
                                     <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                                         <CartesianGrid />
-                                        <XAxis type="number" dataKey="systolicBloodPressure" name="수축기 혈압" label={{ value: '수축 혈압', position: 'insideRight', offset: 0, dy: 12, dx: 13 }} />
-                                        <YAxis type="number" dataKey="diastolicBloodPressure" name="이완기 혈압" label={{ value: '이완 혈압', position: 'insideTopLeft', offset: 0, dy: -19 }} />
+                                        <XAxis type="number" dataKey="systolicBloodPressure" name="수축기 혈압" domain={[0, 200]} label={{ value: '수축 혈압', position: 'insideRight', offset: 0, dy: 12, dx: 13 }} />
+                                        <YAxis type="number" dataKey="diastolicBloodPressure" name="이완기 혈압" domain={[0, 150]} label={{ value: '이완 혈압', position: 'insideTopLeft', offset: 0, dy: -19 }} />
                                         <Tooltip content={<CustomBloodPressureTooltip />} />
                                         <Scatter name="학생" data={bloodPressureData} fill="#EC5353" />
                                     </ScatterChart>
                                 </ResponsiveContainer>
-                                <ResponsiveContainer width="48%" height={370} style={{ marginTop: 30 }}>
+                                <ResponsiveContainer width="48%" height={355} style={{ marginTop: 30 }}>
                                     <LineChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                                         <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="date" label={{ value: '날짜', position: 'insideRight', offset: 0, dy: 12, dx: 20 }} />
-                                        <YAxis label={{ value: '혈당', position: 'insideTopLeft', offset: 0, dy: -19, dx: 28 }} />
+                                        <XAxis dataKey="date" domain={['dataMin', 'dataMax']} label={{ value: '날짜', position: 'insideRight', offset: 0, dy: 12, dx: 20 }} />
+                                        <YAxis domain={[0, 200]} label={{ value: '혈당', position: 'insideTopLeft', offset: 0, dy: -19, dx: 28 }} />
                                         <Tooltip content={<CustomBloodSugarTooltip />} />
                                         {Object.keys(groupedBloodSugarData).map((key) => (
                                             <Line

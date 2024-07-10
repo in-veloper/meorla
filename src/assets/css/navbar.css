@@ -31,5 +31,5 @@
 
 /* 상단 네비게이션 배경 색상 설정 */
 .navbar-absolute.fixed-top.navbar-transparent.navbar.navbar-expand-lg {
-    background-color: #f8f9fa !important;
+    background-color: #FFF !important;
 }
