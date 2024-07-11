@@ -356,7 +356,7 @@ function Statistics() {
                                 </Row>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={385}>
+                                <ResponsiveContainer width="100%" height={320}>
                                     <BarChart
                                         width={500}
                                         height={300}
@@ -405,7 +405,7 @@ function Statistics() {
                                 </Row>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={385}>
+                                <ResponsiveContainer width="100%" height={320}>
                                     <BarChart
                                         layout="vertical"
                                         width={500}
@@ -461,7 +461,7 @@ function Statistics() {
 
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={385}>
+                                <ResponsiveContainer width="100%" height={320}>
                                     <PieChart>
                                         <Pie
                                             data={bodyPartsData}
@@ -509,7 +509,7 @@ function Statistics() {
                                 </Row>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', paddingRight: 25 }}>
-                                <ResponsiveContainer width="48%" height={355} style={{ marginTop: 30 }}>
+                                <ResponsiveContainer width="48%" height={290} style={{ marginTop: 30 }}>
                                     <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                                         <CartesianGrid />
                                         <XAxis type="number" dataKey="systolicBloodPressure" name="수축기 혈압" domain={[0, 200]} label={{ value: '수축 혈압', position: 'insideRight', offset: 0, dy: 12, dx: 13 }} />
@@ -518,7 +518,7 @@ function Statistics() {
                                         <Scatter name="학생" data={bloodPressureData} fill="#EC5353" />
                                     </ScatterChart>
                                 </ResponsiveContainer>
-                                <ResponsiveContainer width="48%" height={355} style={{ marginTop: 30 }}>
+                                <ResponsiveContainer width="48%" height={290} style={{ marginTop: 30 }}>
                                     <LineChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="date" domain={['dataMin', 'dataMax']} label={{ value: '날짜', position: 'insideRight', offset: 0, dy: 12, dx: 20 }} />
