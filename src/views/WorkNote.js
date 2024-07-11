@@ -2609,7 +2609,15 @@ function WorkNote(args) {
               <CardHeader className="text-center" style={{ fontSize: '17px' }}>
                 <Row className="d-flex align-item-center">
                   <Col className="d-flex">
-                    <Button className="mt-0 mb-0" size="sm" style={{ fontSize: 13}} onClick={handleOnBedStudentList}>침상안정 사용 학생 내역</Button>
+                    <Button className="mt-0 mb-0" size="sm" style={{ fontSize: 13, whiteSpace: 'nowrap' }} onClick={handleOnBedStudentList}>침상안정 사용 학생 내역</Button>
+                    <Button className="mt-0 mb-0 ml-1" size="sm" onClick={onBedStudentListExportCSV} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                      <SiMicrosoftexcel className="mr-1" style={{ color: 'green', fontSize: 15 }}/>
+                      엑셀 다운로드
+                    </Button>
+                    <Button className="mt-0 mb-0 ml-1" size="sm" onClick={onBedStudentListPrint} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                      <TiPrinter className="mr-1" style={{ fontSize: 16, color: 'gray' }}/>
+                      프린트
+                    </Button>
                   </Col>
                   <Col>
                     <b style={{ position: 'absolute', marginLeft: '-35px' }}>보건 일지</b>

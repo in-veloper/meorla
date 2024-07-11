@@ -404,7 +404,7 @@ function MedicalInfo() {
   const handleRouteEmedipia = () => {
     if(selectedRowData) {
       let itemName = selectedRowData.itemName;
-      let regex = /[^a-zA-Z0-9가-힣\s]/;
+      let regex = /[^a-zA-Z가-힣\s]/;
 
       if(regex.test(itemName)) {
         itemName = itemName.split(regex)[0];
