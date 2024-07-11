@@ -5,7 +5,7 @@
 
 /* calendar 배경 색상 */
 .fc-view-harness {
-    background-color: #fafafa;
+    background-color: #FFF;
 }
 
 /* 토요일 표시 색상 */
@@ -23,7 +23,7 @@
 }
 
 .fc-day-today {
-    background-color: lightblue !important;
+    background-color: #ADD8E6 !important;
 }
 
 video

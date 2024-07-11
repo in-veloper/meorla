@@ -76,6 +76,8 @@ function User() {
   const [teacherTablePopOverOpen, setTeacherTablePopOverOpen] = useState(false);
   const [migraionExistPlatformModal, setMigrationExistPlatformModal] = useState(false);
   const [synchronizeGradeDataModal, setSynchronizeGradeDataModal] = useState(false);
+  const [initialPassword, setInitialPassword] = useState("");
+  const [resetPasswordVerified, setResetPasswordVerified] = useState(false);
 
   const studentTableGridRef = useRef(null);     
   const teacherTableGridRef = useRef(null);                                // 등록한 명렬표 출력 Grid Reference
@@ -491,6 +493,7 @@ function User() {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    setInitialPassword("");
   };
 
   const saveCommonPassword = async (e) => {
@@ -831,32 +834,57 @@ function User() {
   };
   
   const handleVerifyCode = () => {
-    if (verificationCode === emailCode) {
-      axios.post(`${BASE_URL}/api/reset-password`, { userId: user.userId })
-        .then((response) => {
-          if (response.data === 'success') {
-            const infoMessage = "비밀번호가 초기화 되었습니다";
-            NotiflixInfo(infoMessage);
-            togglePasswordSettingModal();
-          } else {
-            const warnMessage = "비밀번호 초기화에 실패하였습니다";
-            NotiflixWarn(warnMessage);
-          }
-        })
-        .catch((error) => {
-          console.log("비밀번호 초기화 중 ERROR", error);
-          const warnMessage = "비밀번호 초기화 중 문제가 발생하였습니다<br/>관리자에게 문의해 주세요";
-          NotiflixWarn(warnMessage);
-        });
-    } else {
-      const warnMessage = "인증코드가 일치하지 않습니다";
+    if(verificationCode.length === 0) {
+      const warnMessage = "인증코드를 입력해주세요";
       NotiflixWarn(warnMessage);
+      return;
+    }else{
+      if(verificationCode === emailCode) {
+        const infoMessage = "정상적으로 인증되었습니다";
+        NotiflixInfo(infoMessage);
+        setResetPasswordVerified(true);
+      }else{
+        const warnMessage = "인증코드가 일치하지 않습니다";
+        NotiflixWarn(warnMessage);
+        return;
+      }
+    }
+  };
+
+  const saveResetPassword = () => {
+    if(!resetPasswordVerified) {
+      const warnMessage = "이메일 인증을 완료해주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }else{
+      if(initialPassword.length === 0) {
+        const warnMessage = "초기화할 비밀번호를 입력해주세요";
+        NotiflixWarn(warnMessage);
+        return;
+      }else{
+        axios.post(`${BASE_URL}/api/reset-password`, { userId: user.userId, newPassword: initialPassword })
+          .then((response) => {
+            if (response.data === 'success') {
+              const infoMessage = "비밀번호가 초기화 되었습니다";
+              NotiflixInfo(infoMessage);
+              togglePasswordSettingModal();
+            } else {
+              const warnMessage = "비밀번호 초기화에 실패하였습니다";
+              NotiflixWarn(warnMessage);
+            }
+          })
+          .catch((error) => {
+            console.log("비밀번호 초기화 중 ERROR", error);
+            const warnMessage = "비밀번호 초기화 중 문제가 발생하였습니다<br/>관리자에게 문의해 주세요";
+            NotiflixWarn(warnMessage);
+        });
+      }
     }
   };
 
   const resetPassword = async () => {
     const confirmTitle = "비밀번호 초기화";
-    const confirmMessage = "초기화된 비밀번호는 가입하신 아이디 뒤에 12!@ 가 더해진 형식입니다<br/>확인을 누르신 후 인증코드를 입력하세요<br/>인증코드는 가입하신 이메일을 확인하세요";
+    const confirmMessage = "가입하신 이메일로 인증 후 초기화 하실수 있습니다<br/>초기화 하시겠습니까?";
 
     const yesCallback = async () => {
       await sendVerificationCode();
@@ -866,7 +894,7 @@ function User() {
       return;
     };
 
-    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '430px');
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
   };
 
   const addStudent = () => {
@@ -1396,7 +1424,7 @@ function User() {
                         <label>
                           학생 명렬표
                           <IoInformationCircleOutline id="student-table-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
-                          <Popover flip target="student-table-popover" isOpen={studentTablePopOverOpen} toggle={toggleStudentTablePopOver}>
+                          <Popover flip target="student-table-popover" isOpen={studentTablePopOverOpen} toggle={toggleStudentTablePopOver} trigger="focus">
                             <PopoverHeader>
                               명렬표 등록 안내
                             </PopoverHeader>
@@ -1426,7 +1454,7 @@ function User() {
                         <label>
                           교직원 정보
                           <IoInformationCircleOutline id="teacher-table-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
-                          <Popover flip target="teacher-table-popover" isOpen={teacherTablePopOverOpen} toggle={toggleTeacherTablePopOver}>
+                          <Popover flip target="teacher-table-popover" isOpen={teacherTablePopOverOpen} toggle={toggleTeacherTablePopOver} trigger="focus">
                             <PopoverHeader>
                               교직원 명단 등록 안내
                             </PopoverHeader>
@@ -1752,30 +1780,45 @@ function User() {
                 </Col>
               </Row>
               {showVerification && (
-                <Row className="d-flex align-items-center mt-2 no-gutters">
-                  <Col md="4" className="text-center align-tiems-center">
-                    <Label className="text-muted">비밀번호 초기화</Label>
-                  </Col>
-                  <Col md="8">
-                    <Row className="d-flex align-items-center">
-                      <Col md="4">
-                        <Input 
-                          type="text"
-                          placeholder="인증코드"
-                          value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value)}
-                          style={{ width: '100%', marginRight: '10px' }}
-                        />
-                      </Col>
-                      <Col md="2">
-                        <span>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</span>
-                      </Col>
-                      <Col md="6">
-                        <Button size="sm" onClick={handleVerifyCode}>인증 코드 확인</Button>
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
+                <div>
+                  <Row className="d-flex align-items-center mt-2 no-gutters">
+                    <Col md="4" className="text-center align-tiems-center">
+                      <Label className="text-muted">비밀번호 초기화</Label>
+                    </Col>
+                    <Col md="8">
+                      <Row className="d-flex align-items-center">
+                        <Col md="4">
+                          <Input 
+                            type="text"
+                            placeholder="인증코드"
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value)}
+                            style={{ width: '100%', marginRight: '10px' }}
+                          />
+                        </Col>
+                        <Col md="2">
+                          <span>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</span>
+                        </Col>
+                        <Col md="6">
+                          <Button size="sm" onClick={handleVerifyCode}>인증 코드 확인</Button>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+                  <Row className="mt-3 no-gutters">
+                    <Col md="4" className="text-center align-items-center">
+                      <Label className="text-muted">새 비밀번호</Label>
+                    </Col>
+                    <Col md="8">
+                      <Input 
+                        type="password"
+                        value={initialPassword}
+                        style={{ width: '88%' }}
+                        onChange={(e) => setInitialPassword(e.target.value)}
+                      />
+                    </Col>
+                  </Row>
+                </div>
               )}
             </Form>
           </ModalBody>
@@ -1783,7 +1826,7 @@ function User() {
             <Col className="mt-0 mb-0">
               <Button onClick={resetPassword}>비밀번호 초기화</Button>
             </Col>
-            <Button className="mr-1" onClick={savePassword}>저장</Button>
+            <Button className="mr-1" onClick={saveResetPassword}>저장</Button>
             <Button onClick={togglePasswordSettingModal}>취소</Button>
           </ModalFooter>
       </Modal>

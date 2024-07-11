@@ -8,7 +8,7 @@ import axios from "axios";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
-import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg, Table } from "reactstrap";
+import { Input, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter, ListGroup, ListGroupItem, CardImg, Table, Popover, PopoverBody, PopoverHeader } from "reactstrap";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import { FaRegStar } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
@@ -30,6 +30,8 @@ import None from "../assets/img/medicine/none.png";
 import Minus from "../assets/img/medicine/minus.png";
 import Plus from "../assets/img/medicine/plus.png";
 import Etc from "../assets/img/medicine/etc.png";
+import emedipia_log_remove from "../assets/img/logo/emedipia_logo-removebg-preview.png";
+import { IoInformationCircleOutline } from "react-icons/io5";
 import '../assets/css/medicalInfo.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -46,12 +48,15 @@ function MedicalInfo() {
   const [grainMedicineData, setGrainMedicineData] = useState(null);
   const [discriminationText, setDiscriminationText] = useState("");
   const [bookmarkMedicineData, setBookmarkMedicineData] = useState(null);
+  const [emedipiaPopOverOpen, setEmedipiaPopOverOpen] = useState(false);
   const [selectedCells, setSelectedCells] = useState({
     shape: null,
     color: null,
     formulation: null,
     dividing: null
   });
+
+  const toggleEmedipiaPopOver = () => { setEmedipiaPopOverOpen(!emedipiaPopOverOpen); };
   
   const gridRef = useRef();                                             // 검색 결과 출력 Grid
 
@@ -396,6 +401,20 @@ function MedicalInfo() {
     }
   }, [bookmarkMedicineData, medicineData]);
 
+  const handleRouteEmedipia = () => {
+    if(selectedRowData) {
+      let itemName = selectedRowData.itemName;
+      let regex = /[^a-zA-Z0-9가-힣\s]/;
+
+      if(regex.test(itemName)) {
+        itemName = itemName.split(regex)[0];
+      }
+
+      let address = `https://emedipia.co.kr/shop/search.php?q=${encodeURIComponent(itemName)}`;
+      window.open(address);
+    }
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
@@ -561,7 +580,26 @@ function MedicalInfo() {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button color="secondary" onClick={toggleModal}>닫기</Button>
+            <Row className="mt-0 mb-0" style={{ width: '100%' }}>
+              <Col className="d-flex align-items-center justify-content-start">
+                <Button onClick={handleRouteEmedipia}>
+                  <img className="mr-2" src={emedipia_log_remove} style={{ width: 70 }}/>
+                  이메디피아 약품구매 바로가기
+                </Button>
+                <IoInformationCircleOutline className="text-muted" id="emedipia-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 10 }} />
+                <Popover flip target="emedipia-popover" isOpen={emedipiaPopOverOpen} toggle={toggleEmedipiaPopOver} trigger="focus">
+                  <PopoverHeader>
+                    이메디피아 바로가기 사용 안내
+                  </PopoverHeader>
+                  <PopoverBody>
+                    개인정보로 인하여 이메디피아의 로그인 정보를 사용할 수 없어 불편하시더라도 미리 이메디피아 홈페이지에서 <span style={{ color: 'red' }}>미리 로그인</span>을 하시고 난 후 본 기능을 사용하실 수 있습니다
+                  </PopoverBody>
+                </Popover>
+              </Col>
+              <Col className="d-flex justify-content-end">
+                <Button onClick={toggleModal}>닫기</Button>
+              </Col>
+            </Row>
           </ModalFooter>
         </Modal>
 

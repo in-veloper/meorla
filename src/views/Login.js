@@ -57,11 +57,21 @@ function Login() {
     const [ppModal, setPpModal] = useState(false);
     const [lnModal, setLnModal] = useState(false);
     const [rceModal, setRceModal] = useState(false);
+    const [resetPasswordModal, setResetPasswordModal] = useState(false);
+    const [resetId, setResetId] = useState('');
+    const [resetEmail, setResetEmail] = useState('');
+    const [showVerification, setShowVerification] = useState(false);
+    const [resetVerificationCode, setResetVerificationCode] = useState('');
+    const [emailCode, setEmailCode] = useState('');
+    const [initialPassword, setInitialPassword] = useState('');
+    const [resetPasswordVerified, setResetPasswordVerified] = useState(false);
+    const [matchedUserData, setMatchedUserData] = useState(null);
 
     const toggleTouModal = () => setTouModal(!touModal);
     const togglePpModal = () => setPpModal(!ppModal);
     const toggleLnModal = () => setLnModal(!lnModal);
     const toggleRceModal = () => setRceModal(!rceModal);
+    const toggleResetPasswordModal = () => setResetPasswordModal(!resetPasswordModal);
 
     const clearRegisterInput = () => {
         setSchoolName("");
@@ -417,6 +427,136 @@ function Login() {
         toggleRceModal();
     };
 
+    const handleForgotPassword = () => {
+        setShowVerification(false);
+        setResetId('');
+        setResetEmail('');
+        setResetVerificationCode('');
+        setInitialPassword('');
+        toggleResetPasswordModal();
+    };
+
+    const verifiedIsMatchIdEmail = async () => {
+        if(resetId.length === 0) {
+            const warnMessage = "가입하신 ID를 입력해주세요";
+            NotiflixWarn(warnMessage);
+        }else if(resetEmail.length === 0) {
+            const warnMessage = "가입하신 이메일을 입력해주세요";
+            NotiflixWarn(warnMessage);
+        }else{
+            try {
+                const response = await axios.get(`${BASE_URL}/api/user/checkMatchIdEmail`, {
+                    params: {
+                        resetId: resetId,
+                        resetEmail: resetEmail
+                    }
+                });
+    
+                if(response.data.length > 0) {
+                    setMatchedUserData(response.data);
+                    return true;
+                }else{
+                    setMatchedUserData(null);
+                    return false;
+                }
+            } catch (error) {
+                console.log("ID와 이메일 회원정보 매칭 조회 중 ERROR", error);
+                return false;
+            }
+        }
+    };
+
+    const sendResetVerificationCode = async () => {
+        const isMatched = await verifiedIsMatchIdEmail();
+
+        if(!isMatched) {
+            const warnMessage = "일치하는 회원정보가 없습니다";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+
+        Block.dots('.passwordSettingModal', '인증코드 메일 발송중');
+        try {
+            const response = await axios.post(`${BASE_URL}/api/send-email-verification`, { email: resetEmail });
+
+            if (response.data.success) {
+                setEmailCode(response.data.code);
+                setTimeLeft(180);
+                setShowVerification(true);
+                startTimer();
+                setResetVerificationCode("");
+                setInitialPassword("");
+                Block.remove('.passwordSettingModal');
+            } else {
+                const warnMessage = "인증코드 전송에 실패했습니다<br/>다시 시도해 주세요";
+                NotiflixWarn(warnMessage);
+            }
+        } catch (error) {
+            console.log("비밀번호 초기화 인증코드 전송 중 ERROR", error);
+        } finally {
+            Block.remove('.passwordSettingModal');
+        }
+    };
+
+    const startTimer = () => {
+        const timerInterval = setInterval(() => {
+          setTimeLeft((prevTime) => {
+            if (prevTime <= 1) {
+              clearInterval(timerInterval);
+              return 0;
+            }
+            return prevTime - 1;
+          });
+        }, 1000);
+    };
+
+    const handleVerifyCode = () => {
+        if(resetVerificationCode === emailCode) {
+            const infoMessage = "정상적으로 인증되었습니다";
+            NotiflixInfo(infoMessage);
+            setResetPasswordVerified(true);
+        }else{
+            const warnMessage = "인증코드가 일치하지 않습니다";
+            NotiflixWarn(warnMessage);
+            return;
+        }
+    };
+
+    const saveResetPassword = () => {
+        if(resetVerificationCode.length === 0) {
+            const warnMessage = "인증 코드를 입력해주세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }else if(!resetPasswordVerified) {
+            const warnMessage = "인증이 완료되지 않았습니다";
+            NotiflixWarn(warnMessage);
+            return;
+        }else if(initialPassword.length === 0) {
+            const warnMessage = "초기화 비밀번호를 입력해주세요";
+            NotiflixWarn(warnMessage);
+            return;
+        }else{
+            if(matchedUserData) {
+                axios.post(`${BASE_URL}/api/reset-password`, { userId: matchedUserData[0].userId, newPassword: initialPassword })
+                .then((response) => {
+                    if (response.data === 'success') {
+                        const infoMessage = "비밀번호가 초기화 되었습니다";
+                        NotiflixInfo(infoMessage);
+                        toggleResetPasswordModal();
+                    } else {
+                        const warnMessage = "비밀번호 초기화에 실패하였습니다";
+                        NotiflixWarn(warnMessage);
+                    }
+                })
+                .catch((error) => {
+                    console.log("비밀번호 초기화 중 ERROR", error);
+                    const warnMessage = "비밀번호 초기화 중 문제가 발생하였습니다<br/>관리자에게 문의해 주세요";
+                    NotiflixWarn(warnMessage);
+                });
+            }
+        }
+    };
+
     return (
         <div className={`App login_page login-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
             <Navbar className='pb-0 pt-0' bg="white" expand="lg" fixed="top" style={{ borderBottom: '1.5px dotted lightgray', height: 60 }}>
@@ -502,7 +642,7 @@ function Login() {
                         <input type="email" placeholder="아이디" value={confirmUserId} onChange={(e) => setConfirmUserId(e.target.value)} />
                         <input type="password" placeholder="비밀번호" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={handleKeyDown}/>
                         {/* <input type='file' accept='.cer' onChange={handleCertChange} /> */}
-                        <a href="/forgot-password">비밀번호를 잊으셨나요?</a>
+                        <a onClick={handleForgotPassword} style={{ cursor: 'pointer' }}>비밀번호를 잊으셨나요?</a>
                         <Button onClick={handleLogin}>로그인</Button>
                         </Form>
                     </Col>
@@ -591,7 +731,7 @@ function Login() {
 
             <Modal show={rceModal} onHide={toggleRceModal} centered style={{ minWidth: '40%' }}>
                 <Modal.Header className='pt-0 pb-0'>
-                <Modal.Title>이메일무단수집거부</Modal.Title>
+                    <Modal.Title>이메일무단수집거부</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ height: 'auto' }}>
                     <RCE />
@@ -600,6 +740,96 @@ function Login() {
                     <Button variant="secondary" onClick={toggleRceModal}>
                         닫기
                     </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={resetPasswordModal} onHide={toggleResetPasswordModal} centered style={{ minWidth: '20%' }}>
+                <Modal.Header className='pt-0 pb-0'>
+                    <Modal.Title><b className="text-muted">비밀번호 초기화</b></Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="pb-0 passwordSettingModal">
+                    <Form className="mt-2 mb-3">
+                        {!showVerification && (
+                            <>
+                                <Row className="no-gutters">
+                                    <Col md="4" className="text-center align-items-center">
+                                        <label className="text-muted">가입한 ID</label>
+                                    </Col>
+                                    <Col md="8">
+                                        <input
+                                        type="text"
+                                        value={resetId}
+                                        style={{ width: '90%' }}
+                                        onChange={(e) => setResetId(e.target.value)}
+                                        />
+                                    </Col>
+                                </Row>
+                                <Row className="no-gutters mt-2">
+                                    <Col md="4" className="text-center align-items-center">
+                                        <label className="text-muted">가입한 이메일</label>
+                                    </Col>
+                                    <Col md="8">
+                                        <input
+                                        type="email"
+                                        value={resetEmail}
+                                        style={{ width: '90%' }}
+                                        onChange={(e) => setResetEmail(e.target.value)}
+                                        />
+                                    </Col>
+                                </Row>
+                            </>
+                        )}
+                        {showVerification && (
+                            <div>
+                                <Row className="d-flex align-items-center mt-2 no-gutters">
+                                <Col md="4" className="text-center align-tiems-center">
+                                    <label className="text-muted">인증 코드</label>
+                                </Col>
+                                <Col md="8">
+                                    <Row className="d-flex align-items-center">
+                                    <Col md="4">
+                                        <input
+                                        type="text"
+                                        placeholder="인증코드"
+                                        value={resetVerificationCode}
+                                        onChange={(e) => setResetVerificationCode(e.target.value)}
+                                        style={{ width: '100%', marginRight: '10px' }}
+                                        />
+                                    </Col>
+                                    <Col md="2">
+                                        <span>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</span>
+                                    </Col>
+                                    <Col md="6">
+                                        <Button size="sm" onClick={handleVerifyCode}>인증 코드 확인</Button>
+                                    </Col>
+                                    </Row>
+                                </Col>
+                                </Row>
+                                <Row className="mt-3 no-gutters">
+                                <Col md="4" className="text-center align-items-center">
+                                    <label className="text-muted">새 비밀번호</label>
+                                </Col>
+                                <Col md="8">
+                                    <input
+                                    type="password"
+                                    value={initialPassword}
+                                    style={{ width: '88%' }}
+                                    onChange={(e) => setInitialPassword(e.target.value)}
+                                    />
+                                </Col>
+                                </Row>
+                            </div>
+                        )}
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    {!showVerification && (
+                        <Button className="mr-1" onClick={sendResetVerificationCode}>인증코드 발송</Button>
+                    )}
+                    {showVerification && (
+                        <Button className="mr-1" onClick={saveResetPassword}>저장</Button>
+                    )}
+                    <Button onClick={toggleResetPasswordModal}>취소</Button>
                 </Modal.Footer>
             </Modal>
         </div>

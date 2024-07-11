@@ -422,6 +422,19 @@ app.get("/api/user/getPopUpProtectStudentStatus", async (req, res) => {
     });
 });
 
+app.get("/api/user/checkMatchIdEmail", async (req, res) => {
+    const { resetId, resetEmail } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.users WHERE userId = ? AND email = ?";
+    db.query(sqlQuery, [resetId, resetEmail], (err, result) => {
+        if(err) {
+            console.log("비밀번호 초기화 시 일치하는 ID와 이메일로 회원정보 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 const verificationCodes = {};    // 간단한 메모리 저장소
 
 app.post("/api/send-email-verification", async (req, res) => {
@@ -441,7 +454,7 @@ app.post("/api/send-email-verification", async (req, res) => {
             res.json({ success: false });
         }else{
             verificationCodes[email] = verificationCode;     // 메모리에 인증코드 저장
-            res.json({ success: true });
+            res.json({ success: true, code: verificationCode });
         }
     })
 });
@@ -479,8 +492,7 @@ app.post("/api/send-password-reset-code", async (req, res) => {
   });
   
   app.post("/api/reset-password", (req, res) => {
-    const { userId } = req.body;
-    const newPassword = userId + "12!@"; // 임시 비밀번호 생성
+    const { userId, newPassword } = req.body;
     const hashedPassword = hashPassword(newPassword);
   
     const sqlQuery = "UPDATE teaform_db.users SET password = ? WHERE userId = ?";
@@ -489,7 +501,11 @@ app.post("/api/send-password-reset-code", async (req, res) => {
         console.log("비밀번호 초기화 중 ERROR", err);
         res.status(500).json({ error: "내부 Server ERROR" });
       }else{
-        res.send('success');
+        if(result.affectedRows === 0) {
+            res.send('fail');
+        }else{
+            res.send('success');
+        }
       }
     });
   });
