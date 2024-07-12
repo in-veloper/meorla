@@ -18,6 +18,7 @@ import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import { IoInformationCircleOutline } from "react-icons/io5";
 import { Accordion, AccordionItem, AccordionItemHeading, AccordionItemButton, AccordionItemPanel } from 'react-accessible-accordion';
+import DateTimeEditor from "components/Tools/DateTimeEditor";
 import 'react-accessible-accordion/dist/fancy-example.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -78,10 +79,22 @@ function User() {
   const [synchronizeGradeDataModal, setSynchronizeGradeDataModal] = useState(false);
   const [initialPassword, setInitialPassword] = useState("");
   const [resetPasswordVerified, setResetPasswordVerified] = useState(false);
+  const [isRegisteredKWN, setIsRegisteredKWN] = useState(false);
+  const [isRegisteredCWN, setIsRegisteredCWN] = useState(false);
+  const [isRegisteredSWN, setIsRegisteredSWN] = useState(false);
+  const [migrationWorkNoteData, setMigrationWorkNoteData] = useState([]);
+  const [migrationWorkNoteModalOpen, setMigrationWorkNoteModalOpen] = useState(false);
 
   const studentTableGridRef = useRef(null);     
   const teacherTableGridRef = useRef(null);                                // 등록한 명렬표 출력 Grid Reference
+  const migrationWorkNoteGridRef = useRef(null);
   const emailForm = useRef();
+
+  const defaultColDef = {
+    sortable: true,
+    resizable: true,
+    filter: true,
+  };
 
   // 등록한 명렬표 출력 Grid Column 정의
   const [ntColumnDefs] = useState([
@@ -99,6 +112,19 @@ function User() {
     { field: "tPhone", headerName: "연락처", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
 
+  const [migrationWorkNoteColumnDefs] = useState([
+    { field: "sGrade", headerName: "학년", flex: 0.7, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 0.7, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 0.7, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "bodyParts", headerName: "인체 부위", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "medication", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "visitDateTime", headerName: "방문일자", flex: 2, cellStyle: { textAlign: "center" }, cellEditor: DateTimeEditor, editable: true }
+  ]);
+
   // 등록한 명렬표 중 학년 선택 시 명렬표 미리보기 Model Open Handle Event
   const toggleModal = () => { setIsModalOpen(!isModalOpen); };
   const toggleCommonPasswordSettingModal = () => setCommonPasswordSettingModal(!commonPasswordSettingModal); 
@@ -111,6 +137,7 @@ function User() {
   const toggleSynchronizeGradeDataModal = () => setSynchronizeGradeDataModal(!synchronizeGradeDataModal);
   const toggleStudentTablePopOver = () => { setStudentTablePopOverOpen(!studentTablePopOverOpen); };
   const toggleTeacherTablePopOver = () => { setTeacherTablePopOverOpen(!teacherTablePopOverOpen); };
+  const toggleMigrationWorkNoteModal = () => { setMigrationWorkNoteModalOpen(!migrationWorkNoteModalOpen); };
   const toggleAddStudentModal = () => {
     setIsAddStudentModalOpen(!isAddStudentModalOpen);
     resetTransferStudent();
@@ -338,7 +365,7 @@ function User() {
   // 명렬표 파일 Change Event ([필요] handleBulkRegist Function과 중복으로 존재할 필요 있는지 확인)
   const handleStudentFileChange = (event) => {
     const file = event.target.files[0];   // 파일 획득
-    handleStudentBulkRegist(file);                   // 명렬표 등록 Event 호출
+    handleStudentBulkRegist(file);        // 명렬표 등록 Event 호출
   };
 
   // Default 파일 첨부 버튼 외 Custom 버튼으로 사용하기 위해 별도 태그 처리
@@ -1143,6 +1170,308 @@ function User() {
 
   const handleSynchronizeGradeData = () => {
     toggleSynchronizeGradeDataModal();
+  };
+
+  const handleMigrationKWN = () => {
+    if(isRegisteredKWN) {
+      toggleMigrationWorkNoteModal();
+    }else{
+      onKWNBulkRegist();
+    }
+  };
+
+  const onKWNBulkRegist = () => {
+    const fileInput = document.createElement("input");            // 파일 Input 생성
+    fileInput.type = "file";                                      // Input type 설정
+    fileInput.accept = ".xlsx,.xls";                              // 첨부 가능 확장자 설정
+    fileInput.addEventListener("change", handleKWNFileChange);    // change Event 속성 설정
+    fileInput.click();                                            // 파일 첨부 강제 Click
+  };
+
+  const handleKWNFileChange = (event) => {
+    const file = event.target.files[0];   // 파일 획득
+    handleKWNBulkRegist(file);        // 규OOO 보건일지 등록 Event 호출
+  };
+
+  const handleKWNBulkRegist = (selectedFile) => {
+    if(selectedFile) {  // 업로드할 파일 존재할 경우
+      Notiflix.Confirm.show('규OOO 보건일지 이관 등록', '선택하신 파일로 보건일지 이관을 진행하시겠습니까?', '예', '아니요', () => {
+        const reader = new FileReader();        // File Reader 객체 획득
+        reader.onload = (e) => {                // 보건일지 DB Insert 시 async(비동기) 사용할 경우 onload에 사용하기 부적합 (Function으로 분리 호출)
+          handleKWNExcelUpload(e);              // 이관파일(Excel 파일) Upload Function 호출
+        };
+        reader.readAsArrayBuffer(selectedFile); // 파일 읽음
+      },() => {
+        return;                                 // return
+      },{
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '330px'
+      });
+    }
+  };
+
+  const handleKWNExcelUpload = async (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);                     // 파일 Data 획득
+      const workbook = read(data, { type: "array" });                   // array type으로 workbook 획득
+      const sheetName = workbook.SheetNames[0];                         // sheet명 획득
+      const workSheet = workbook.Sheets[sheetName];                     // sheet명으로 필요 sheet 획득
+      const sheetData = utils.sheet_to_json(workSheet, { header: 1 });  // sheet 내 데이터 획득 (header: 1 -> 첫쨰 줄을 header로 사용하겠다는 의미)
+      
+      const workNoteArray = [];
+
+      for(let i = 7; i < 37; i++) {                                     // 보건일지 데이터 획득 위해 순회
+        const workNoteData = sheetData[i];                              // 보건일지 Sheet 데이터 획득
+
+        if(!workNoteData || workNoteData.length === 0) break;
+        if(!workNoteData[3] || !workNoteData[10] || !workNoteData[6] || !workNoteData[12] || !workNoteData[15]) break;
+
+        const sGrade = workNoteData[3].split('-')[0];                   // 학년 획득
+        const sClass = workNoteData[3].split('-')[1];                   // 반 획득
+        const sGender = workNoteData[10];                               // 성별 획득
+        const sName = workNoteData[6];                                  // 이름 획득
+        const symptom = workNoteData[12];                               // 병명 획득
+        const treatmentMatter = workNoteData[15];                       // 처치사항 획득
+
+        workNoteArray.push({
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          sGrade,
+          sClass,
+          sGender,
+          sName,
+          symptom,
+          treatmentMatter,
+          platform: 'K'
+        });
+      }
+
+      const response = await axios.post(`${BASE_URL}/api/migrationWorkNote/insertKWN`, { workNoteArray });
+
+      if(response.data === "success") {
+        const infoMessage = "규OOO 보건일지 데이터가 성공적으로 이관되었습니다";
+        NotiflixInfo(infoMessage, true, '350px');
+        fetchMigrationWorkNoteData();
+        setIsRegisteredKWN(true);
+      }
+    }catch(error) {
+      console.log("Excel 파일 읽기 중 ERROR", error);
+      const warnMessage = "규OOO 보건일지 데이터 이관에 실패하였습니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }
+  };
+
+  const fetchMigrationWorkNoteData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/migraionWorkNote/getWokeNote`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data.length > 0) {
+        setMigrationWorkNoteData(response.data);
+        const kRegistered = response.data.some(note => note.platform === 'K');
+        const cRegistered = response.data.some(note => note.platform === 'C');
+        const sRegistered = response.data.some(note => note.platform === 'S');
+
+        setIsRegisteredKWN(kRegistered);
+        setIsRegisteredCWN(cRegistered);
+        setIsRegisteredSWN(sRegistered);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchMigrationWorkNoteData();
+  }, [fetchMigrationWorkNoteData]);
+
+  const handleMigrationCWN = () => {
+    if(isRegisteredCWN) {
+      toggleMigrationWorkNoteModal();
+    }else{
+      onCWNBulkRegist();
+    }
+  };
+
+  const onCWNBulkRegist = () => {
+    const fileInput = document.createElement("input");            // 파일 Input 생성
+    fileInput.type = "file";                                      // Input type 설정
+    fileInput.accept = ".xlsx,.xls";                              // 첨부 가능 확장자 설정
+    fileInput.addEventListener("change", handleCWNFileChange);    // change Event 속성 설정
+    fileInput.click();                                            // 파일 첨부 강제 Click
+  };
+
+  const handleCWNFileChange = (event) => {
+    const file = event.target.files[0];   // 파일 획득
+    handleCWNBulkRegist(file);            // 천OOO 보건일지 등록 Event 호출
+  };
+
+  const handleCWNBulkRegist = (selectedFile) => {
+    if(selectedFile) {                          // 업로드할 파일 존재할 경우
+      Notiflix.Confirm.show('천OOO 보건일지 이관 등록', '선택하신 파일로 보건일지 이관을 진행하시겠습니까?', '예', '아니요', () => {
+        const reader = new FileReader();        // File Reader 객체 획득
+        reader.onload = (e) => {                // 보건일지 DB Insert 시 async(비동기) 사용할 경우 onload에 사용하기 부적합 (Function으로 분리 호출)
+          handleCWNExcelUpload(e);              // 이관파일(Excel 파일) Upload Function 호출
+        };
+        reader.readAsArrayBuffer(selectedFile); // 파일 읽음
+      },() => {
+        return;                                 // return
+      },{
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '330px'
+      });
+    }
+  };
+
+  const handleCWNExcelUpload = async (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);                     // 파일 Data 획득
+      const workbook = read(data, { type: "array" });                   // array type으로 workbook 획득
+      const sheetName = workbook.SheetNames[0];                         // sheet명 획득
+      const workSheet = workbook.Sheets[sheetName];                     // sheet명으로 필요 sheet 획득
+      const sheetData = utils.sheet_to_json(workSheet, { header: 1 });  // sheet 내 데이터 획득 (header: 1 -> 첫쨰 줄을 header로 사용하겠다는 의미)
+      
+      const workNoteArray = [];
+      debugger
+      for(let i = 7; i < 37; i++) {                                     // 보건일지 데이터 획득 위해 순회
+        const workNoteData = sheetData[i];                              // 보건일지 Sheet 데이터 획득
+
+        if(!workNoteData || workNoteData.length === 0) break;
+        if(!workNoteData[3] || !workNoteData[10] || !workNoteData[6] || !workNoteData[12] || !workNoteData[15]) break;
+
+        const sGrade = workNoteData[3].split('-')[0];                   // 학년 획득
+        const sClass = workNoteData[3].split('-')[1];                   // 반 획득
+        const sGender = workNoteData[10];                               // 성별 획득
+        const sName = workNoteData[6];                                  // 이름 획득
+        const symptom = workNoteData[12];                               // 병명 획득
+        const treatmentMatter = workNoteData[15];                       // 처치사항 획득
+
+        workNoteArray.push({
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          sGrade,
+          sClass,
+          sGender,
+          sName,
+          symptom,
+          treatmentMatter,
+          platform: 'K'
+        });
+      }
+
+      const response = await axios.post(`${BASE_URL}/api/migrationWorkNote/insertCWN`, { workNoteArray });
+
+      if(response.data === "success") {
+        const infoMessage = "천OOO 보건일지 데이터가 성공적으로 이관되었습니다";
+        NotiflixInfo(infoMessage, true, '350px');
+
+        setIsRegisteredKWN(true);
+      }
+    }catch(error) {
+      console.log("Excel 파일 읽기 중 ERROR", error);
+      const warnMessage = "천OOO 보건일지 데이터 이관에 실패하였습니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }
+  };
+
+  const handleMigraionSWN = () => {
+    if(isRegisteredSWN) {
+      toggleMigrationWorkNoteModal();
+    }else{
+      onSWNBulkRegist();
+    }
+  };
+
+  const onSWNBulkRegist = () => {
+    const fileInput = document.createElement("input");            // 파일 Input 생성
+    fileInput.type = "file";                                      // Input type 설정
+    fileInput.accept = ".xlsx,.xls";                              // 첨부 가능 확장자 설정
+    fileInput.addEventListener("change", handleSWNFileChange);    // change Event 속성 설정
+    fileInput.click();                                            // 파일 첨부 강제 Click
+  };
+
+  const handleSWNFileChange = (event) => {
+    const file = event.target.files[0];   // 파일 획득
+    handleSWNBulkRegist(file);            // 스OOO 보건일지 등록 Event 호출
+  };
+
+  const handleSWNBulkRegist = (selectedFile) => {
+    if(selectedFile) {                          // 업로드할 파일 존재할 경우
+      Notiflix.Confirm.show('스OOO 보건일지 이관 등록', '선택하신 파일로 보건일지 이관을 진행하시겠습니까?', '예', '아니요', () => {
+        const reader = new FileReader();        // File Reader 객체 획득
+        reader.onload = (e) => {                // 보건일지 DB Insert 시 async(비동기) 사용할 경우 onload에 사용하기 부적합 (Function으로 분리 호출)
+          handleSWNExcelUpload(e);              // 이관파일(Excel 파일) Upload Function 호출
+        };
+        reader.readAsArrayBuffer(selectedFile); // 파일 읽음
+      },() => {
+        return;                                 // return
+      },{
+        position: 'center-center', showOnlyTheLastOne: true, plainText: false, width: '330px'
+      });
+    }
+  };
+
+  const handleSWNExcelUpload = async (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);                     // 파일 Data 획득
+      const workbook = read(data, { type: "array" });                   // array type으로 workbook 획득
+      const sheetName = workbook.SheetNames[0];                         // sheet명 획득
+      const workSheet = workbook.Sheets[sheetName];                     // sheet명으로 필요 sheet 획득
+      const sheetData = utils.sheet_to_json(workSheet, { header: 1 });  // sheet 내 데이터 획득 (header: 1 -> 첫쨰 줄을 header로 사용하겠다는 의미)
+      
+      const workNoteArray = [];
+      let currentDate = null;
+
+      // 각 줄을 순회하며 날짜 정보가 있는 줄을 찾고, 이후 데이터를 Parsing
+      sheetData.forEach((row) => {
+        if(row[1] && row[1].toString().match(/^\d{4}-\d{2}-\d{2}$/)) {
+          currentDate = row[1];
+        }else if(currentDate && row[1] && row[1].toString().match(/^\d+$/)) {
+          const studentId = row[3].toString();
+          const sGrade = studentId.charAt(0);
+          const sClass = parseInt(studentId.slice(1, 3), 10).toString();
+          const sNumber = parseInt(studentId.slice(3, 5), 10).toString();
+          
+          const visitDateTime = `${currentDate} ${row[40]}`;
+
+          let treatmentMatter = '';
+          if(row[21] && row[30]) treatmentMatter = `${row[21]} / ${row[30]}`;
+          else if(row[21]) treatmentMatter = row[21];
+          else if(row[30]) treatmentMatter = row[30];
+
+          const entry = {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            sGrade: sGrade,
+            sClass: sClass,
+            sNumber: sNumber,
+            sName: row[6],
+            gender: row[10],
+            symptom: row[12],
+            treatmentMatter: treatmentMatter,
+            visitDateTime: visitDateTime,
+            platform: 'S'
+          };
+          workNoteArray.push(entry);
+        }
+      });
+
+      const response = await axios.post(`${BASE_URL}/api/migrationWorkNote/insertSWN`, { workNoteArray });
+
+      if(response.data === "success") {
+        const infoMessage = "스OOO 보건일지 데이터가 성공적으로 이관되었습니다";
+        NotiflixInfo(infoMessage, true, '350px');
+        fetchMigrationWorkNoteData();
+        setIsRegisteredSWN(true);
+      }
+    }catch(error) {
+      console.log("Excel 파일 읽기 중 ERROR", error);
+      const warnMessage = "스OOO 보건일지 데이터 이관에 실패하였습니다";
+      NotiflixWarn(warnMessage, '320px');
+      return;
+    }
   };
 
   return (
@@ -2023,16 +2352,16 @@ function User() {
                   <code>
                     .accordion-body
                   </code>
-                  , though the transition does limit overflow.
+                  , though the transition does limit overflow.₩
                 </AccordionItemPanel>
               </AccordionItem>
             </Accordion>
           </Row>
           <Row className="d-flex align-items-center justify-content-center no-gutters mt-3">
             <ButtonGroup className="w-100">
-              <Button className="user-inner-button" style={{ whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>규OOO</Button>
-              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>천OOO</Button>
-              <Button className="user-inner-button" style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }}>스OOO</Button>
+              <Button className={`user-inner-button ${isRegisteredKWN ? 'registered-migration-button' : ''}`} style={{ whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }} onClick={handleMigrationKWN}>규OOO</Button>
+              <Button className={`user-inner-button ${isRegisteredCWN ? 'registered-migration-button' : ''}`} style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }} onClick={handleMigrationCWN}>천OOO</Button>
+              <Button className={`user-inner-button ${isRegisteredSWN ? 'registered-migration-button' : ''}`} style={{ borderLeft: 'none', whiteSpace: 'nowrap', border: '1px solid #DDDDDD' }} onClick={handleMigraionSWN}>스OOO</Button>
             </ButtonGroup>
           </Row>
         </ModalBody>
@@ -2067,6 +2396,24 @@ function User() {
           <Row className="d-flex justify-content-end no-gutters w-100">
             <Button color="secondary" onClick={toggleSynchronizeGradeDataModal}>취소</Button>
           </Row>
+        </ModalFooter>
+      </Modal>
+
+      <Modal isOpen={migrationWorkNoteModalOpen} backdrop={true} toggle={toggleMigrationWorkNoteModal} centered={true} autoFocus={false} style={{ minWidth: '80%' }}>
+        <ModalHeader className="text-muted" toggle={toggleMigrationWorkNoteModal} closebutton="true">이관 보건일지</ModalHeader>
+        <ModalBody>
+          <div className="ag-theme-alpine" style={{ height: '50vh' }}>
+            <AgGridReact
+              ref={migrationWorkNoteGridRef}
+              rowData={migrationWorkNoteData} 
+              columnDefs={migrationWorkNoteColumnDefs} 
+              rowSelection="single"
+              defaultColDef={defaultColDef}
+            />
+          </div>
+        </ModalBody>
+        <ModalFooter className="pt-0 pb-0">
+          <Button color="secondary" onClick={toggleMigrationWorkNoteModal}>닫기</Button>
         </ModalFooter>
       </Modal>
     </>

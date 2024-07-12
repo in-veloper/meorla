@@ -613,11 +613,11 @@ app.get("/api/studentsTable/getStudentInfo", async (req, res) => {
                     userId: student.userId,
                     schoolName: student.schoolName,
                     schoolCode: student.schoolCode,
-                    sGrade: decrypt(student.sGrade),
-                    sClass: decrypt(student.sClass),
-                    sNumber: decrypt(student.sNumber),
-                    sGender: decrypt(student.sGender),
-                    sName: decrypt(student.sName)
+                    sGrade: student.sGrade ? decrypt(student.sGrade) : '',
+                    sClass: student.sClass ? decrypt(student.sClass) : '',
+                    sNumber: student.sNumber ? decrypt(student.sNumber) : '',
+                    sGender: student.sGender ? decrypt(student.sGender) : '',
+                    sName: student.sName ? decrypt(student.sName) : ''
                 };
             });
             res.json({ studentData: decryptedResults });
@@ -640,11 +640,11 @@ app.get("/api/studentsTable/getStudentInfoByGrade", async (req, res) => {
                     userId: student.userId,
                     schoolName: student.schoolName,
                     schoolCode: student.schoolCode,
-                    sGrade: decrypt(student.sGrade),
-                    sClass: decrypt(student.sClass),
-                    sNumber: decrypt(student.sNumber),
-                    sGender: decrypt(student.sGender),
-                    sName: decrypt(student.sName)
+                    sGrade: student.sGrade ? decrypt(student.sGrade) : '',
+                    sClass: student.sClass ? decrypt(student.sClass) : '',
+                    sNumber: student.sNumber ? decrypt(student.sNumber) : '',
+                    sGender: student.sGender ? decrypt(student.sGender) : '',
+                    sName: student.sName ? decrypt(student.sName) : ''
                 };
             });
             console.log(decryptedResults)
@@ -691,11 +691,11 @@ app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
                     userId: student.userId,
                     schoolName: student.schoolName,
                     schoolCode: student.schoolCode,
-                    sGrade: decrypt(student.sGrade),
-                    sClass: decrypt(student.sClass),
-                    sNumber: decrypt(student.sNumber),
-                    sGender: decrypt(student.sGender),
-                    sName: decrypt(student.sName),
+                    sGrade: student.sGrade ? decrypt(student.sGrade) : '',
+                    sClass: student.sClass ? decrypt(student.sClass) : '',
+                    sNumber: student.sNumber ? decrypt(student.sNumber) : '',
+                    sGender: student.sGender ? decrypt(student.sGender) : '',
+                    sName: student.sName ? decrypt(student.sName) : '',
                     isProtected: student.isProtected,
                     protectContent: student.protectContent
                 };
@@ -1418,11 +1418,11 @@ app.get("/api/workNote/getOnBedStudentList", async (req, res) => {
             const decryptedResults = result.map(note => {
                 return {
                   ...note,
-                  sGrade: decrypt(note.sGrade),
-                  sClass: decrypt(note.sClass),
-                  sNumber: decrypt(note.sNumber),
-                  sGender: decrypt(note.sGender),
-                  sName: decrypt(note.sName)
+                  sGrade: note.sGrade ? decrypt(note.sGrade) : '',
+                  sClass: note.sClass ? decrypt(note.sClass) : '',
+                  sNumber: note.sNumber ? decrypt(note.sNumber) : '',
+                  sGender: note.sGender ? decrypt(note.sGender) : '',
+                  sName: note.sName ? decrypt(note.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -1441,11 +1441,11 @@ app.get("/api/workNote/getProtectStudents", async (req, res) => {
             const decryptedResults = result.map(student => {
                 return {
                   ...student,
-                  sGrade: decrypt(student.sGrade),
-                  sClass: decrypt(student.sClass),
-                  sNumber: decrypt(student.sNumber),
-                  sGender: decrypt(student.sGender),
-                  sName: decrypt(student.sName)
+                  sGrade: student.sGrade ? decrypt(student.sGrade) : '',
+                  sClass: student.sClass ? decrypt(student.sClass) : '',
+                  sNumber: student.sNumber ? decrypt(student.sNumber) : '',
+                  sGender: student.sGender ? decrypt(student.sGender) : '',
+                  sName: student.sName ? decrypt(student.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -1575,11 +1575,11 @@ app.get('/api/workNote/getSelectedStudentData', async (req, res) => {
             const decryptedResults = result.map(entry => {
                 return {
                     ...entry,
-                    sGrade: decrypt(entry.sGrade),
-                    sClass: decrypt(entry.sClass),
-                    sNumber: decrypt(entry.sNumber),
-                    sGender: decrypt(entry.sGender),
-                    sName: decrypt(entry.sName)
+                    sGrade: entry.sGrade ? decrypt(entry.sGrade) : '',
+                    sClass: entry.sClass ? decrypt(entry.sClass) : '',
+                    sNumber: entry.sNumber ? decrypt(entry.sNumber) : '',
+                    sGender: entry.sGender ? decrypt(entry.sGender) : '',
+                    sName: entry.sName ? decrypt(entry.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -1599,11 +1599,11 @@ app.get('/api/workNote/getEntireWorkNote', async (req, res) => {
             const decryptedResults = result.map(note => {
                 return {
                   ...note,
-                  sGrade: decrypt(note.sGrade),
-                  sClass: decrypt(note.sClass),
-                  sNumber: decrypt(note.sNumber),
-                  sGender: decrypt(note.sGender),
-                  sName: decrypt(note.sName)
+                  sGrade: note.sGrade ? decrypt(note.sGrade) : '',
+                  sClass: note.sClass ? decrypt(note.sClass) : '',
+                  sNumber: note.sNumber ? decrypt(note.sNumber) : '',
+                  sGender: note.sGender ? decrypt(note.sGender) : '',
+                  sName: note.sName ? decrypt(note.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -1683,11 +1683,11 @@ app.get('/api/request/getOnBedRestInfo', async (req, res) => {
             const decryptedResults = result.map(note => {
                 return {
                   ...note,
-                  sGrade: decrypt(note.sGrade),
-                  sClass: decrypt(note.sClass),
-                  sNumber: decrypt(note.sNumber),
-                  sGender: decrypt(note.sGender),
-                  sName: decrypt(note.sName)
+                  sGrade: note.sGrade ? decrypt(note.sGrade) : '',
+                  sClass: note.sClass ? decrypt(note.sClass) : '',
+                  sNumber: note.sNumber ? decrypt(note.sNumber) : '',
+                  sGender: note.sGender ? decrypt(note.sGender) : '',
+                  sName: note.sName ? decrypt(note.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -1724,11 +1724,11 @@ app.get('/api/request/getWorkNoteData', async (req, res) => {
             const decryptedResults = result.map(note => {
                 return {
                     ...note,
-                    sGrade: decrypt(note.sGrade),
-                    sClass: decrypt(note.sClass),
-                    sNumber: decrypt(note.sNumber),
-                    sGender: decrypt(note.sGender),
-                    sName: decrypt(note.sName)
+                    sGrade: note.sGrade ? decrypt(note.sGrade) : '',
+                    sClass: note.sClass ? decrypt(note.sClass) : '',
+                    sNumber: note.sNumber ? decrypt(note.sNumber) : '',
+                    sGender: note.sGender ? decrypt(note.sGender) : '',
+                    sName: note.sName ? decrypt(note.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -1748,10 +1748,10 @@ app.get('/api/workNote/getVisitRequest', async (req, res) => {
             const decryptedResults = result.map(requestData => {
                 return {
                   ...requestData,
-                  sGrade: decrypt(requestData.sGrade),
-                  sClass: decrypt(requestData.sClass),
-                  sNumber: decrypt(requestData.sNumber),
-                  sName: decrypt(requestData.sName)
+                  sGrade: requestData.sGrade ? decrypt(requestData.sGrade) : '',
+                  sClass: requestData.sClass ? decrypt(requestData.sClass) : '',
+                  sNumber: requestData.sNumber ? decrypt(requestData.sNumber) : '',
+                  sName: requestData.sName ? decrypt(requestData.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -1895,11 +1895,11 @@ app.get('/api/manageEmergency/getManageEmergencyData', async (req, res) => {
             const decryptedResults = result.map(emergencyData => {
                 return {
                   ...emergencyData,
-                  sGrade: decrypt(emergencyData.sGrade),
-                  sClass: decrypt(emergencyData.sClass),
-                  sNumber: decrypt(emergencyData.sNumber),
-                  sGender: decrypt(emergencyData.sGender),
-                  sName: decrypt(emergencyData.sName)
+                  sGrade: emergencyData.sGrade ? decrypt(emergencyData.sGrade) : '',
+                  sClass: emergencyData.sClass ? decrypt(emergencyData.sClass) : '',
+                  sNumber: emergencyData.sNumber ? decrypt(emergencyData.sNumber) : '',
+                  sGender: emergencyData.sGender ? decrypt(emergencyData.sGender) : '',
+                  sName: emergencyData.sName ? decrypt(emergencyData.sName) : ''
                 };
             });
             res.json(decryptedResults);
@@ -2309,6 +2309,84 @@ app.get('/api/statistics/getSymptomCategory', async (req, res) => {
             console.log("통계 내 증상 분류 데이터 조회 중 ERROR", err);
         }else{
             res.json(result);
+        }
+    });
+});
+
+app.post("/api/migrationWorkNote/insertKWN", async (req, res) => {
+    const workNoteArray = req.body.workNoteArray;
+    const values = workNoteArray.map(workNote => {
+        return [
+            workNote.userId,
+            workNote.schoolCode,
+            encrypt(workNote.sGrade.toString()),
+            encrypt(workNote.sClass.toString()),
+            encrypt(workNote.sGender.toString()),
+            encrypt(workNote.sName.toString()),
+            workNote.symptom,
+            workNote.treatmentMatter,
+            workNote.platform
+        ];
+    });
+
+    const sqlQuery = "INSERT INTO teaform_db.migrationWorkNote (userId, schoolCode, sGrade, sClass, sGender, sName, symptom, treatmentMatter, platform) VALUES ?";
+    db.query(sqlQuery, [values], (err, result) => {
+        if(err) {
+            console.log("규OOO 보건일지 데이터 이관 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get("/api/migraionWorkNote/getWokeNote", async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.migrationWorkNote WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("이관 보건일지 내역 조회 중 ERROR", err);
+        }else{
+            const decryptedResults = result.map(workNoteData => {
+                return {
+                    ...workNoteData,
+                    sGrade: workNoteData.sGrade ? decrypt(workNoteData.sGrade) : '',
+                    sClass: workNoteData.sClass ? decrypt(workNoteData.sClass) : '',
+                    sNumber: workNoteData.sNumber ? decrypt(workNoteData.sNumber) : '',
+                    sGender: workNoteData.sGender ? decrypt(workNoteData.sGender) : '',
+                    sName: workNoteData.sName ? decrypt(workNoteData.sName) : ''
+                };
+            });
+
+            res.json(decryptedResults);
+        }
+    });
+});
+
+app.post("/api/migrationWorkNote/insertSWN", async (req, res) => {
+    const workNoteArray = req.body.workNoteArray;
+    const values = workNoteArray.map(workNote => {
+        return [
+            workNote.userId,
+            workNote.schoolCode,
+            encrypt(workNote.sGrade?.toString() || ''),
+            encrypt(workNote.sClass?.toString() || ''),
+            encrypt(workNote.sNumber?.toString() || ''),
+            encrypt(workNote.sGender?.toString() || ''),
+            encrypt(workNote.sName?.toString() || ''),
+            workNote.symptom,
+            workNote.treatmentMatter,
+            workNote.visitDateTime,
+            workNote.platform
+        ];
+    });
+
+    const sqlQuery = "INSERT INTO teaform_db.migrationWorkNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, treatmentMatter, visitDateTime, platform) VALUES ?";
+    db.query(sqlQuery, [values], (err, result) => {
+        if(err) {
+            console.log("스OOO 보건일지 데이터 이관 중 ERROR", err);
+        }else{
+            res.send('success');
         }
     });
 });
