@@ -581,11 +581,11 @@ app.post("/api/studentsTable/insert", async (req, res) => {
             student.userId,
             student.schoolName,
             student.schoolCode,
-            encrypt(student.sGrade.toString()), // 암호화
-            encrypt(student.sClass.toString()), // 암호화
-            encrypt(student.sNumber.toString()), // 암호화
-            encrypt(student.sGender.toString()), // 암호화
-            encrypt(student.sName) // 암호화
+            encrypt(student.sGrade?.toString() || ''), // 암호화
+            encrypt(student.sClass?.toString() || ''), // 암호화
+            encrypt(student.sNumber?.toString() || ''), // 암호화
+            encrypt(student.sGender?.toString() || ''), // 암호화
+            encrypt(student.sName?.toString() || '') // 암호화
         ];
     });
 
@@ -742,11 +742,11 @@ app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) =
                     userId: student.userId,
                     schoolName: student.schoolName,
                     schoolCode: student.schoolCode,
-                    sGrade: decrypt(student.sGrade),
-                    sClass: decrypt(student.sClass),
-                    sNumber: decrypt(student.sNumber),
-                    sGender: decrypt(student.sGender),
-                    sName: decrypt(student.sName)
+                    sGrade: student.sGrade ? decrypt(student.sGrade) : '',
+                    sClass: student.sClass ? decrypt(student.sClass) : '',
+                    sNumber: student.sNumber ? decrypt(student.sNumber) : '',
+                    sGender: student.sGender ? decrypt(student.sGender) : '',
+                    sName: student.sName ? decrypt(student.sName) : ''
                 };
             });
             res.json({ studentData: decryptedResults });
@@ -757,11 +757,11 @@ app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) =
 app.post("/api/studentsTable/deleteStudentInfo", async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "DELETE FROM teaform_db.students WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
     db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
@@ -776,10 +776,10 @@ app.post("/api/studentsTable/deleteStudentInfo", async (req, res) => {
 app.post("/api/studentsTable/addTransferStudent", async (req, res) => {
     const { userId, schoolName, schoolCode, sGrade, sClass, sGender, sName } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const allNumbersResult = await new Promise((resolve, reject) => {
         const query = 'SELECT sNumber FROM teaform_db.students WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ?';
@@ -1334,11 +1334,11 @@ app.get("/api/workNote/getStockMedication", async (req, res) => {
 app.post("/api/workNote/saveWorkNote", async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "INSERT INTO teaform_db.workNote (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar], (err, result) => {
@@ -1353,11 +1353,11 @@ app.post("/api/workNote/saveWorkNote", async (req, res) => {
 app.post("/api/workNote/updateWorkNote", async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "UPDATE teaform_db.workNote SET symptom = ?, medication = ?, bodyParts = ?, treatmentMatter = ?, onBedStartTime = ?, onBedEndTime = ?, temperature = ?, bloodPressure = ?, pulse = ?, oxygenSaturation = ?, bloodSugar = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
     db.query(sqlQuery, [symptom, medication, bodyParts, treatmentMatter, onBedStartTime, onBedEndTime, temperature, bloodPressure, pulse, oxygenSaturation, bloodSugar, rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
@@ -1372,11 +1372,11 @@ app.post("/api/workNote/updateWorkNote", async (req, res) => {
 app.post("/api/workNote/updateVisitDateTime", async (req, res) => {
     const { visitDateTime, rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "UPDATE teaform_db.workNote SET visitDateTime = ? WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
     db.query(sqlQuery, [visitDateTime, rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
@@ -1391,11 +1391,11 @@ app.post("/api/workNote/updateVisitDateTime", async (req, res) => {
 app.post("/api/workNote/deleteWorkNote", async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "DELETE FROM teaform_db.workNote WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
     db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
@@ -1560,11 +1560,11 @@ app.get('/api/request/getCommonPassword', async (req, res) => {
 app.get('/api/workNote/getSelectedStudentData', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName } = req.query;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "SELECT * FROM teaform_db.workNote WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
     db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
@@ -1614,11 +1614,11 @@ app.get('/api/workNote/getEntireWorkNote', async (req, res) => {
 app.post('/api/workNote/updateOnBedEndTime', async (req, res) => {
     const { onBedEndTime, userId, schoolCode, rowId, targetStudentGrade, targetStudentClass, targetStudentNumber, targetStudentGender, targetStudentName } = req.body;
 
-    const encryptedGrade = encrypt(targetStudentGrade.toString());
-    const encryptedClass = encrypt(targetStudentClass.toString());
-    const encryptedNumber = encrypt(targetStudentNumber.toString());
-    const encryptedGender = encrypt(targetStudentGender.toString());
-    const encryptedName = encrypt(targetStudentName.toString());
+    const encryptedGrade = encrypt(targetStudentGrade?.toString() || '');
+    const encryptedClass = encrypt(targetStudentClass?.toString() || '');
+    const encryptedNumber = encrypt(targetStudentNumber?.toString() || '');
+    const encryptedGender = encrypt(targetStudentGender?.toString() || '');
+    const encryptedName = encrypt(targetStudentName?.toString() || '');
 
     // 침상안정 종료시간 update 처리 필요
     const sqlQuery = "UPDATE teaform_db.workNote SET onBedEndTime = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
@@ -1634,11 +1634,11 @@ app.post('/api/workNote/updateOnBedEndTime', async (req, res) => {
 app.post('/api/workNote/saveProtectStudent', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, isProtected, protectContent } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "UPDATE teaform_db.students SET isProtected = ?, protectContent = ? WHERE userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
     db.query(sqlQuery, [isProtected, protectContent, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
@@ -1698,10 +1698,10 @@ app.get('/api/request/getOnBedRestInfo', async (req, res) => {
 app.post('/api/request/saveVisitRequest', async (req, res) => {
     const { schoolCode, targetGrade, targetClass, targetNumber, targetName, requestContent, teacherClassification, teacherName, requestTime } = req.body;
 
-    const encryptedGrade = encrypt(targetGrade.toString());
-    const encryptedClass = encrypt(targetClass.toString());
-    const encryptedNumber = encrypt(targetNumber.toString());
-    const encryptedName = encrypt(targetName.toString());
+    const encryptedGrade = encrypt(targetGrade?.toString() || '');
+    const encryptedClass = encrypt(targetClass?.toString() || '');
+    const encryptedNumber = encrypt(targetNumber?.toString() || '');
+    const encryptedName = encrypt(targetName?.toString() || '');
 
     const sqlQuery = "INSERT INTO teaform_db.visitRequest (schoolCode, teacherClassification, teacherName, sGrade, sClass, sNumber, sName, requestContent, requestTime) VALUES (?,?,?,?,?,?,?,?,?)";
     db.query(sqlQuery, [schoolCode, teacherClassification, teacherName, encryptedGrade, encryptedClass, encryptedNumber, encryptedName, requestContent, requestTime ], (err, result) => {
@@ -1849,11 +1849,11 @@ app.get('/api/medicineInfo/getBookmarkMedicine', async (req, res) => {
 app.post('/api/manageEmergency/saveEmergencyManagement', async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "INSERT INTO teaform_db.manageEmergency (userId, schoolCode, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     db.query(sqlQuery, [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter], (err, result) => {
@@ -1868,11 +1868,11 @@ app.post('/api/manageEmergency/saveEmergencyManagement', async (req, res) => {
 app.post('/manageEmergency/updateEmergencyManagement', async (req, res) => {
     const { userId, schoolCode, rowId, sGrade, sClass, sNumber, sGender, sName, firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
-    const encryptedGender = encrypt(sGender.toString());
-    const encryptedName = encrypt(sName.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedGender = encrypt(sGender?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
 
     const sqlQuery = "UPDATE teaform_db.manageEmergency SET firstDiscoveryTime = ?, teacherConfirmTime = ?, occuringArea = ?, firstWitness = ?, vitalSign = ?, mainSymptom = ?, accidentOverview = ?, emergencyTreatmentDetail = ?, transferTime = ?, guardianContact = ?, transferHospital = ?, homeroomTeacherName = ?, registDate = ?, registerName = ?, bodyChartPoints = ?, transferVehicle = ?, transpoter = ? WHERE userId = ? AND schoolCode = ? AND id = ? AND sGrade = ? AND sClass = ? AND sNumber = ? AND sGender = ? AND sName = ?";
      db.query(sqlQuery, [firstDiscoveryTime, teacherConfirmTime, occuringArea, firstWitness, vitalSign, mainSymptom, accidentOverview, emergencyTreatmentDetail, transferTime, guardianContact, transferHospital, homeroomTeacherName, registDate, registerName, bodyChartPoints, transferVehicle, transpoter, userId, schoolCode, rowId, encryptedGrade, encryptedClass, encryptedNumber, encryptedGender, encryptedName], (err, result) => {
@@ -1910,9 +1910,9 @@ app.get('/api/manageEmergency/getManageEmergencyData', async (req, res) => {
 app.post('/api/manageEmergency/deleteEmergencyManagement', async (req, res) => {
     const { rowId, userId, schoolCode, sGrade, sClass, sNumber } = req.body;
 
-    const encryptedGrade = encrypt(sGrade.toString());
-    const encryptedClass = encrypt(sClass.toString());
-    const encryptedNumber = encrypt(sNumber.toString());
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
 
     const sqlQuery = "DELETE FROM teaform_db.manageEmergency WHERE id = ? AND userId = ? AND schoolCode = ? AND sGrade = ? AND sClass = ? AND sNumber = ?";
     db.query(sqlQuery, [rowId, userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber], (err, result) => {
@@ -2319,10 +2319,10 @@ app.post("/api/migrationWorkNote/insertKWN", async (req, res) => {
         return [
             workNote.userId,
             workNote.schoolCode,
-            encrypt(workNote.sGrade.toString()),
-            encrypt(workNote.sClass.toString()),
-            encrypt(workNote.sGender.toString()),
-            encrypt(workNote.sName.toString()),
+            encrypt(workNote.sGrade?.toString() || ''),
+            encrypt(workNote.sClass?.toString() || ''),
+            encrypt(workNote.sGender?.toString() || ''),
+            encrypt(workNote.sName?.toString() || ''),
             workNote.symptom,
             workNote.treatmentMatter,
             workNote.platform
