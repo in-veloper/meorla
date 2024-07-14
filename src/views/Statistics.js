@@ -300,8 +300,8 @@ function Statistics() {
 
     return (
         <>
-            <div className="content">
-                <Row className="pl-3 pr-3" style={{ marginBottom: '-5px'}}>
+            <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
+                <Row className="pl-3 pr-3" style={{ marginBottom: '-5px' }}>
                     <Table bordered className="stats-table text-center text-muted">
                         <thead>
                         <tr>
@@ -337,9 +337,9 @@ function Statistics() {
                         </tbody>
                     </Table>
                 </Row>
-                <Row className="d-flex no-gutters w-100">
+                <Row className="d-flex no-gutters w-100" style={{ flex: '1 1 auto' }}>
                     <Col className="mr-2" style={{ width: '49%' }}>
-                        <Card style={{ border: '1px solid lightgray' }}>
+                        <Card style={{ border: '1px solid lightgray', height: '95%' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">
@@ -388,7 +388,7 @@ function Statistics() {
                         </Card>
                     </Col>
                     <Col className="ml-2" style={{ width: '49%' }}>
-                        <Card style={{ border: '1px solid lightgray' }}>
+                        <Card style={{ border: '1px solid lightgray', height: '95%' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">
@@ -441,9 +441,9 @@ function Statistics() {
                         </Card>
                     </Col>
                 </Row>
-                <Row className="d-flex no-gutters w-100">
+                <Row className="d-flex no-gutters w-100" style={{ flex: '1 1 auto'}}>
                     <Col className="mr-2" style={{ maxWidth: '39%' }}>
-                        <Card style={{ border: '1px solid lightgray' }}>
+                        <Card style={{ border: '1px solid lightgray', height: '100%' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">
@@ -492,7 +492,7 @@ function Statistics() {
                         </Card>
                     </Col>
                     <Col className="ml-2" style={{ maxWidth: '60%' }}>
-                        <Card style={{ border: '1px solid lightgray' }}>
+                        <Card style={{ border: '1px solid lightgray', height: '100%' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">

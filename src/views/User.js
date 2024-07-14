@@ -1270,7 +1270,7 @@ function User() {
         }
       });
 
-      if(response.data.length > 0) {
+      if(response.data && response.data.length > 0) {
         setMigrationWorkNoteData(response.data);
         const kRegistered = response.data.some(note => note.platform === 'K');
         const cRegistered = response.data.some(note => note.platform === 'C');
@@ -2215,6 +2215,7 @@ function User() {
                   defaultValue={currentUser ? currentUser.email : ''}
                   style={{ width: '90%' }}
                   required
+                  readOnly
                 />
               </Col>
             </Row>
@@ -2324,7 +2325,7 @@ function User() {
               <AccordionItem>
                 <AccordionItemHeading>
                   <AccordionItemButton>
-                    처OOO 데이터 이관 안내
+                    천OOO 데이터 이관 안내
                   </AccordionItemButton>
                 </AccordionItemHeading>
                 <AccordionItemPanel>
