@@ -157,7 +157,6 @@ function Statistics() {
     const studentVisitCounts = {};
 
     if(dataLoaded) {
-        console.log(workNoteData)
         workNoteData.forEach(({ sName }) => {
             if(studentVisitCounts[sName]) {
                 studentVisitCounts[sName]++;
@@ -355,7 +354,7 @@ function Statistics() {
                                     </Col>
                                 </Row>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
                                 <ResponsiveContainer width="100%" height={320}>
                                     <BarChart
                                         width={500}
@@ -404,7 +403,7 @@ function Statistics() {
                                     </Col>
                                 </Row>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between' }}>
                                 <ResponsiveContainer width="100%" height={320}>
                                     <BarChart
                                         layout="vertical"
@@ -460,7 +459,7 @@ function Statistics() {
                                 </Row>
 
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between' }}>
                                 <ResponsiveContainer width="100%" height={320}>
                                     <PieChart>
                                         <Pie
@@ -508,7 +507,7 @@ function Statistics() {
                                     </Col>
                                 </Row>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingRight: 25 }}>
+                            <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between', paddingRight: 25 }}>
                                 <ResponsiveContainer width="48%" height={290} style={{ marginTop: 30 }}>
                                     <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                                         <CartesianGrid />

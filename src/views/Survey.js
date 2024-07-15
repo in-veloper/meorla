@@ -61,14 +61,14 @@ function Survey() {
                         </div>
                     </div>
                 </Card>
-                <Card className="ml-4" style={{ width: '48.4%', height: '75.1vh', border: '1px solid lightgray', float: 'left' }}>
-                    <div className="iphone-preview">
-                        <div className="iphone">
+                <Card className="ml-4" style={{ width: '48.4%', height: '75.1vh', border: '1px solid lightgray', float: 'left', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div className="iphone-preview" style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <div className="iphone" style={{ maxWidth: '100%', maxHeight: '90%' }}>
                             <div className="notch">
                                 <div className="camera"></div>
                                 <div className="speaker"></div>
                             </div>
-                            <div className="screen" style={{ overflowY: 'scroll'}}>
+                            <div className="screen" style={{ overflowY: 'scroll', maxHeight: '100%' }}>
                                 <SurveyPhoneView />
                             </div>
                         </div>
