@@ -110,7 +110,7 @@
 .bed-number-badge {
     position: absolute;
     top: -10px;
-    right: 5px;
+    right: -3px;
     background-color: white;
     color: black;
     border-radius: 50%;

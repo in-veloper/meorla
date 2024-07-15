@@ -1,5 +1,5 @@
 import React, {useState, useRef, useCallback, useEffect} from "react";
-import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput, Tooltip, CardFooter, Popover, PopoverBody, PopoverHeader } from "reactstrap";
+import {Card, CardHeader, CardBody, Row, Col, Input, Button, Alert, Badge, UncontrolledAlert, Collapse, Table, Modal, ModalHeader, ModalBody, ModalFooter, Form, CustomInput, Tooltip, CardFooter, Popover, PopoverBody, PopoverHeader, Label } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import TagField from "components/TagField/TagField";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -2418,13 +2418,60 @@ function WorkNote(args) {
     <>
       <div className="content" style={{ height: '84.1vh' }}>
         <NotificationAlert ref={notificationAlert} />
-        <Row>
+        <Row className="mb-1">
           <Col md="7">
             <Row>
               {bedBoxContent}
             </Row>
           </Col>
           <Col md="5">
+            <Row style={{ marginTop: '-13px' }}>
+              <div style={{ borderRight: '1.5px dashed lightgray', marginBottom: 10, marginTop: 10 }}></div>
+              <Col md="5">
+                <div style={{ border: '1.5px solid lightgray', borderRadius: 3 }}>
+                  <Label className="m-0 pl-2 pt-1 font-weight-bold">대여물품 목록</Label>
+                  <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }}>
+                    <AgGridReact
+                      rowHeight={24}
+                      ref={searchStudentGridRef}
+                      rowData={searchStudentRowData} 
+                      columnDefs={searchStudentColumnDefs}
+                      defaultColDef={notEditDefaultColDef}
+                      headerHeight={0}                    
+                      overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                      rowSelection="single"
+                      onSelectionChanged={onGridSelectionChanged}
+                      suppressCellFocus={true}
+                      overlayLoadingTemplate={
+                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                      }
+                    />
+                  </div>
+                </div>
+              </Col>
+              <Col className="pl-0">
+                <div style={{ border: '1.5px solid lightgray', borderRadius: 3 }}>
+                  <Label className="m-0 pl-2 pt-1 font-weight-bold">대여 목록</Label>
+                  <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }}>
+                    <AgGridReact
+                      rowHeight={24}
+                      ref={searchStudentGridRef}
+                      rowData={searchStudentRowData} 
+                      columnDefs={searchStudentColumnDefs}
+                      defaultColDef={notEditDefaultColDef}
+                      headerHeight={0}                    
+                      overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                      rowSelection="single"
+                      onSelectionChanged={onGridSelectionChanged}
+                      suppressCellFocus={true}
+                      overlayLoadingTemplate={
+                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
+                      }
+                    />
+                  </div>
+                </div>
+              </Col>
+            </Row>
           </Col>
         </Row>
         <Row style={{ flex: '1 1 auto'}}>
