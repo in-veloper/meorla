@@ -134,7 +134,6 @@ function WorkNote(args) {
 
   const customCellRenderer = (params) => {
     const { value } = params;
-    console.log(params)
     if(params.data.isProtected) {
       return (
         <span style={{ marginLeft: 10 }}>
@@ -1228,7 +1227,7 @@ function WorkNote(args) {
   
           if(displayOnBedStudentArray.length > 0) {
             displayResultBox = displayOnBedStudentArray.map(item => (
-                <Col lg="2" md="6" sm="6" key={item.id}>
+                <Col lg="3" md="6" sm="12" key={item.id}>
                   <Card className="card-stats" style={{ borderRadius: 15 }} targetitem={item} onMouseOver={handleMouseOverOnBedCard} onMouseOut={handleMouseOutOnBedCard}>
                     <CardBody>
                       <Row>
@@ -1258,7 +1257,7 @@ function WorkNote(args) {
             remainingBox = Array.from({ length: (bedCount - displayOnBedStudentArray.length) }, (_, index) => {
               const i = index + 1;
               return (
-                <Col className="" lg="2" md="6" sm="6" key={i}>
+                <Col className="" lg="3" md="6" sm="12" key={i}>
                   <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
                     <CardBody>
                       <Row>
@@ -1284,7 +1283,7 @@ function WorkNote(args) {
             const i = index + 1;
     
             return (
-              <Col lg="2" md="6" sm="6" key={i}>
+              <Col lg="3" md="6" sm="12" key={i}>
                 <Card className="bed-card-stats" style={{ borderRadius: 15 }}>
                   <CardBody>
                     <Row>
@@ -2420,7 +2419,13 @@ function WorkNote(args) {
       <div className="content" style={{ height: '84.1vh' }}>
         <NotificationAlert ref={notificationAlert} />
         <Row>
-          {bedBoxContent}
+          <Col md="7">
+            <Row>
+              {bedBoxContent}
+            </Row>
+          </Col>
+          <Col md="5">
+          </Col>
         </Row>
         <Row style={{ flex: '1 1 auto'}}>
           <Col className="pr-2" md="4" style={{ height: '76vh', display: 'flex', flexDirection: 'column' }}>

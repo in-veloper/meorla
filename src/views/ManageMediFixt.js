@@ -760,7 +760,7 @@ function ManageMediFixt() {
                 </ModalFooter>
             </Modal>
 
-            <Modal isOpen={updateMedicineModal} toggle={toggleUpdateMedicineModal} centered style={{ minWidth: '30%' }}>
+            <Modal isOpen={updateMedicineModal} toggle={toggleUpdateMedicineModal} centered style={{ minWidth: '35%' }}>
                 <ModalHeader toggle={toggleUpdateMedicineModal}><b className="text-muted">약품 재고 수정</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Row className="d-flex w-100 no-gutters">
@@ -1018,7 +1018,7 @@ function ManageMediFixt() {
                 </ModalFooter>
             </Modal>
 
-            <Modal isOpen={updateFixtModal} toggle={toggleUpdateFixtModal} centered style={{ minWidth: '30%' }}>
+            <Modal isOpen={updateFixtModal} toggle={toggleUpdateFixtModal} centered style={{ minWidth: '35%' }}>
                 <ModalHeader toggle={toggleUpdateFixtModal}><b className="text-muted">비품 재고 수정</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Form onSubmit={saveFixt} className="mb-3" style={{ border: '1px dotted #babfc7', borderRadius: 4 }}>

@@ -18,7 +18,7 @@ import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import { Block } from 'notiflix/build/notiflix-block-aio';
 import { IoInformationCircleOutline } from "react-icons/io5";
 import { Accordion, AccordionItem, AccordionItemHeading, AccordionItemButton, AccordionItemPanel } from 'react-accessible-accordion';
-import DateTimeEditor from "components/Tools/DateTimeEditor";
+import moment from "moment";
 import 'react-accessible-accordion/dist/fancy-example.css';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -96,6 +96,14 @@ function User() {
     filter: true,
   };
 
+  const visitDateTimeFormatter = (params) => {
+    if(!params.value) return '';
+    const date = moment(params.value);
+    const formattedDate = date.format('YYYY-MM-DD');
+    const formattedTime = date.format('A h시 mm분').replace('AM', '오전').replace('PM', '오후');
+    return `${formattedDate} ${formattedTime}`;
+  };
+
   // 등록한 명렬표 출력 Grid Column 정의
   const [ntColumnDefs] = useState([
     { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
@@ -118,11 +126,8 @@ function User() {
     { field: "sNumber", headerName: "번호", flex: 0.7, cellStyle: { textAlign: "center" }},
     { field: "sName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" }},
-    { field: "bodyParts", headerName: "인체 부위", flex: 2, cellStyle: { textAlign: "center" }},
-    { field: "medication", headerName: "투약사항", flex: 2, cellStyle: { textAlign: "center" }},
     { field: "treatmentMatter", headerName: "처치 및 교육사항", flex: 2, cellStyle: { textAlign: "center" }},
-    { field: "onBedTime", headerName: "침상안정", flex: 2, cellStyle: { textAlign: "center" }},
-    { field: "visitDateTime", headerName: "방문일자", flex: 2, cellStyle: { textAlign: "center" }, cellEditor: DateTimeEditor, editable: true }
+    { field: "visitDateTime", headerName: "방문일자", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: visitDateTimeFormatter}
   ]);
 
   // 등록한 명렬표 중 학년 선택 시 명렬표 미리보기 Model Open Handle Event
@@ -553,10 +558,19 @@ function User() {
     }
   };
 
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
   const savePassword = async () => {
     if(newPassword !== confirmPassword) {
       const warnMessage = "새 비밀번호와 확인 비밀번호가 일치하지 않습니다";
       NotiflixWarn(warnMessage, '350px');
+    } else if(!validatePassword(newPassword)) {
+      const warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다";
+      NotiflixWarn(warnMessage);
+      return;
     }else{
       const response = await axios.post(`${BASE_URL}/api/user/changePassword`, {
         userId: user.userId,
@@ -886,6 +900,10 @@ function User() {
     }else{
       if(initialPassword.length === 0) {
         const warnMessage = "초기화할 비밀번호를 입력해주세요";
+        NotiflixWarn(warnMessage);
+        return;
+      }else if(!validatePassword(initialPassword)) {
+        const warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다";
         NotiflixWarn(warnMessage);
         return;
       }else{
@@ -1333,31 +1351,42 @@ function User() {
       const sheetData = utils.sheet_to_json(workSheet, { header: 1 });  // sheet 내 데이터 획득 (header: 1 -> 첫쨰 줄을 header로 사용하겠다는 의미)
       
       const workNoteArray = [];
-      debugger
-      for(let i = 7; i < 37; i++) {                                     // 보건일지 데이터 획득 위해 순회
-        const workNoteData = sheetData[i];                              // 보건일지 Sheet 데이터 획득
+      let currentDate = null;
 
-        if(!workNoteData || workNoteData.length === 0) break;
-        if(!workNoteData[3] || !workNoteData[10] || !workNoteData[6] || !workNoteData[12] || !workNoteData[15]) break;
+      for (let i = 0; i < sheetData.length; i++) {
+        const workNoteData = sheetData[i];
 
-        const sGrade = workNoteData[3].split('-')[0];                   // 학년 획득
-        const sClass = workNoteData[3].split('-')[1];                   // 반 획득
-        const sGender = workNoteData[10];                               // 성별 획득
-        const sName = workNoteData[6];                                  // 이름 획득
-        const symptom = workNoteData[12];                               // 병명 획득
-        const treatmentMatter = workNoteData[15];                       // 처치사항 획득
+        if (!workNoteData || workNoteData.length === 0) continue;
 
-        workNoteArray.push({
-          userId: user.userId,
-          schoolCode: user.schoolCode,
-          sGrade,
-          sClass,
-          sGender,
-          sName,
-          symptom,
-          treatmentMatter,
-          platform: 'K'
-        });
+        // 날짜 정보가 있는 줄 찾기
+        if (typeof workNoteData[0] === 'string' && workNoteData[0].includes('년')) {
+          currentDate = workNoteData[0].match(/\d{4}년 \d{2}월 \d{2}일/)[0].replace(/년 |월 /g, '-').replace('일', '').trim();
+        } else if (currentDate && typeof workNoteData[0] === 'string' && workNoteData[0].match(/^\d+$/)) {
+          // 보건일지 데이터 파싱
+          if (!workNoteData[3] || !workNoteData[14] || !workNoteData[8] || !workNoteData[16] || !workNoteData[22] || !workNoteData[91]) continue;
+          const sGrade = workNoteData[3].split('-')[0];        // 학년 획득
+          const sClass = workNoteData[3].split('-')[1];        // 반 획득
+          const sGender = workNoteData[14];                    // 성별 획득
+          const sName = workNoteData[8];                       // 이름 획득
+          const symptom = workNoteData[16];                    // 병명 획득
+          const treatmentMatter = workNoteData[22];            // 처치사항 획득
+          const visitTime = workNoteData[91];                  // 방문 시간 획득
+
+          const visitDateTime = `${currentDate} ${visitTime}`; // 방문 날짜 및 시간 합치기
+
+          workNoteArray.push({
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            sGrade,
+            sClass,
+            sGender,
+            sName,
+            symptom,
+            treatmentMatter,
+            visitDateTime,
+            platform: 'C' 
+          });
+        }
       }
 
       const response = await axios.post(`${BASE_URL}/api/migrationWorkNote/insertCWN`, { workNoteArray });
@@ -1365,8 +1394,8 @@ function User() {
       if(response.data === "success") {
         const infoMessage = "천OOO 보건일지 데이터가 성공적으로 이관되었습니다";
         NotiflixInfo(infoMessage, true, '350px');
-
-        setIsRegisteredKWN(true);
+        fetchMigrationWorkNoteData();
+        setIsRegisteredCWN(true);
       }
     }catch(error) {
       console.log("Excel 파일 읽기 중 ERROR", error);

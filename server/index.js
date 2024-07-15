@@ -2391,6 +2391,33 @@ app.post("/api/migrationWorkNote/insertSWN", async (req, res) => {
     });
 });
 
+app.post("/api/migrationWorkNote/insertCWN", async (req, res) => {
+    const workNoteArray = req.body.workNoteArray;
+    const values = workNoteArray.map(workNote => {
+        return [
+            workNote.userId,
+            workNote.schoolCode,
+            encrypt(workNote.sGrade?.toString() || ''),
+            encrypt(workNote.sClass?.toString() || ''),
+            encrypt(workNote.sGender?.toString() || ''),
+            encrypt(workNote.sName?.toString() || ''),
+            workNote.symptom,
+            workNote.treatmentMatter,
+            workNote.visitDateTime,
+            workNote.platform
+        ];
+    });
+
+    const sqlQuery = "INSERT INTO teaform_db.migrationWorkNote (userId, schoolCode, sGrade, sClass, sGender, sName, symptom, treatmentMatter, visitDateTime, platform) VALUES ?";
+    db.query(sqlQuery, [values], (err, result) => {
+        if(err) {
+            console.log("천OOO 보건일지 데이터 이관 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 server.listen(PORT, () => {
 // server.listen(8002, '0.0.0.0', () => {
     console.log(`running on port ${PORT}`);

@@ -806,7 +806,7 @@ function Community() {
                                 id="opinionCategory"
                                 name="select"
                                 type="select"
-                                style={{ width: '120px' }}
+                                style={{ width: '100%' }}
                                 value={selectedOpinionCategoryOption}
                                 onChange={handleSelectOpinionCategoryOption}
                             >
@@ -870,12 +870,12 @@ function Community() {
                         <Col md="1" className="text-center">
                             <Label>분류</Label>
                         </Col>
-                        <Col md="3" className="pr-4">
+                        <Col md={isEditMode ? 11 : 8} className="pr-4">
                             <Input
                                 id="opinionCategory"
                                 name="select"
                                 type="select"
-                                style={{ width: '120px' }}
+                                style={{ width: '100%' }}
                                 defaultValue={opinionSharingSelectedRow ? opinionSharingSelectedRow.osCategory : ""}
                                 onChange={(e) => setOpinionCategoryDetailValue(e.target.value)}
                                 disabled={!isEditMode}
@@ -887,7 +887,7 @@ function Community() {
                                 <option value='etc'>기타</option>
                             </Input>
                         </Col>
-                        <Col className="d-flex justify-content-end no-gutters pr-4" md="8">
+                        <Col className="d-flex justify-content-end no-gutters pr-4" md="3">
                             {!isEditMode && (
                                 <Button className="mb-0 mt-0" onClick={() => onThumbsUp("os")}>
                                     <LiaCrownSolid className="mr-1" style={{ fontSize: 18, marginTop: '-2px', color: isThumbedUp ? 'gold' : '' }}/>추천
@@ -989,7 +989,7 @@ function Community() {
                                 id="resourceCategory"
                                 name="select"
                                 type="select"
-                                style={{ width: '120px' }}
+                                style={{ width: '100%' }}
                                 value={selectedResourceCategoryOption}
                                 onChange={handleSelectResourceCategoryOption}
                             >
@@ -1070,12 +1070,12 @@ function Community() {
                         <Col md="1" className="text-center">
                             <Label>분류</Label>
                         </Col>
-                        <Col md="11" className="pr-4">
+                        <Col md={isEditMode ? 11 : 8} className="pr-4">
                             <Input
                                 id="resourceCategory"
                                 name="select"
                                 type="select"
-                                style={{ width: '120px' }}
+                                style={{ width: '100%' }}
                                 defaultValue={resourceSharingSelectedRow ? resourceSharingSelectedRow.rsCategory : ""}
                                 onChange={(e) => setResourceCategoryDetailValue(e.target.value)}
                                 disabled={!isEditMode}

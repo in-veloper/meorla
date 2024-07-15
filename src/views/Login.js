@@ -201,6 +201,20 @@ function Login() {
             console.log("인증코드 검증 처리 중 ERROR", error);
         }
     };
+    
+    const handlePasswordChange = (e) => {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+    };
+
+    const handleConfPasswordChange = (e) => {
+        setConfPassword(e.target.value);
+    };
+
+    const validatePassword = (password) => {
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+        return passwordRegex.test(password);
+    };
 
     // 회원가입 Form 전송
     const registUser = async () => {
@@ -240,29 +254,41 @@ function Login() {
             if(userData.schoolName === schoolName) {
                 warnMessage = "이미 가입된 학교입니다.<br/>학교당 하나의 계정만 가입 가능합니다.";
                 NotiflixWarn(warnMessage);
+                return;
             }else if(userData.userId === userId) {
                 warnMessage = "이미 존재하는 ID입니다.<br/>다른 ID로 가입해 주세요.";
                 NotiflixWarn(warnMessage);
+                return;
             }else{
                 // 입력할 곳에 Focus 처리 필요
                 if(schoolName.length === 0) {
                     warnMessage = "학교명을 입력해 주세요";
                     NotiflixWarn(warnMessage);
+                    return;
                 }else if(name.length === 0) {
-                    warnMessage = "이름을 입력해 주세요.";
+                    warnMessage = "이름을 입력해 주세요";
                     NotiflixWarn(warnMessage);
+                    return;
                 }else if(email.length === 0) {
-                    warnMessage = "Email을 입력해 주세요.";
+                    warnMessage = "Email을 입력해 주세요";
                     NotiflixWarn(warnMessage);
+                    return;
                 }else if(userId.length === 0) {
                     warnMessage = "ID를 입력해 주세요";
                     NotiflixWarn(warnMessage);
-                }else if(password.length === 0){
-                    warnMessage = "비밀번호를 입력해 주세요.";
+                    return;
+                }else if(!validatePassword(password)){
+                    warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다";
                     NotiflixWarn(warnMessage);
+                    return;
                 }else if(confPassword.length === 0){
-                    warnMessage = "비밀번호 확인을 입력해 주세요.";
+                    warnMessage = "비밀번호 확인을 입력해 주세요";
                     NotiflixWarn(warnMessage);
+                    return;
+                }else if(password !== confPassword) {
+                    warnMessage = "입력하신 비밀번호와 확인 비밀번호가 일치하지 않습니다<br/>확인 후 다시 입력해 주시기 바랍니다";
+                    NotiflixWarn(warnMessage, '340px');
+                    return;
                 }else{
                     Loading.dots(1000);
                     if(password === confPassword) {
@@ -535,6 +561,10 @@ function Login() {
             const warnMessage = "초기화 비밀번호를 입력해주세요";
             NotiflixWarn(warnMessage);
             return;
+        }else if(!validatePassword(initialPassword)) {
+            const warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다<br/>확인 후 다시 입력해 주시기 바랍니다";
+            NotiflixWarn(warnMessage, '340px');
+            return;
         }else{
             if(matchedUserData) {
                 axios.post(`${BASE_URL}/api/reset-password`, { userId: matchedUserData[0].userId, newPassword: initialPassword })
@@ -627,8 +657,8 @@ function Login() {
                             )}
                             <input type="email" placeholder="아이디" value={userId} onChange={(e) => setUserId(e.target.value)} />
                             <div style={{ display: 'flex', width: '100%' }}>
-                                <input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} style={{ flex: '1', marginRight: '10px' }}/>
-                                <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={(e) => setConfPassword(e.target.value)} style={{ flex: '1' }} />
+                                <input type="password" placeholder="비밀번호" value={password} onChange={handlePasswordChange} style={{ flex: '1', marginRight: '10px' }}/>
+                                <input type='password' placeholder="비밀번호 확인" value={confPassword} onChange={handleConfPasswordChange} style={{ flex: '1' }} />
                             </div>
                             <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
                                 <Button onClick={resetForm} style={{ marginRight: '5px' }}>초기화</Button>
