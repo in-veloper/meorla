@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const express = require('express');
 const app = express();
 const mysql = require('mysql2');
+const mysqlPromise = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -75,6 +76,13 @@ const removeCookie = (name) => {
 
 
 const db = mysql.createPool({
+    host: process.env.REACT_APP_MYSQL_HOST,
+    user: process.env.REACT_APP_MYSQL_USER,
+    password: process.env.REACT_APP_MYSQL_PASSWORD,
+    database: process.env.REACT_APP_MYSQL_DB
+});
+
+const poolPromise = mysqlPromise.createPool({
     host: process.env.REACT_APP_MYSQL_HOST,
     user: process.env.REACT_APP_MYSQL_USER,
     password: process.env.REACT_APP_MYSQL_PASSWORD,
@@ -655,7 +663,7 @@ app.get("/api/studentsTable/getStudentInfoByGrade", async (req, res) => {
 
 app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
     const { userId, schoolCode, sGrade, sClass, sNumber, sName } = req.query;
-    
+
     let sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
     const queryParams = [userId, schoolCode];
 
@@ -706,10 +714,10 @@ app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
 });
 
 app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) => {
-    const { schoolCode, sGrade, sClass, sNumber, sName } = req.query;
+    const { userId, schoolCode, sGrade, sClass, sNumber, sName } = req.query;
     
-    let sqlQuery = "SELECT * FROM teaform_db.students WHERE schoolCode = ?";
-    const queryParams = [schoolCode];
+    let sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
+    const queryParams = [userId, schoolCode];
 
     if (sGrade) {
         sqlQuery += " AND sGrade = ?";
@@ -2414,6 +2422,116 @@ app.post("/api/migrationWorkNote/insertCWN", async (req, res) => {
             console.log("천OOO 보건일지 데이터 이관 중 ERROR", err);
         }else{
             res.send('success');
+        }
+    });
+});
+
+app.post('/api/workNote/insertRentalProduct', async (req, res) => {
+    const { userId, schoolCode, productName, productAmount } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.rentalProducts (userId, schoolCode, productName, productAmount) VALUES (?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, productName, productAmount], (err, result) => {
+        if(err) {
+            console.log("대여물품 INSERT 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get('/api/workNote/getRentalProducts', async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.rentalProducts WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("대여 물품 목록 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.post('/api/workNote/updateRentalProduct', async (req, res) => {
+    const { rowId, userId, schoolCode, productName, productAmount } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.rentalProducts SET productName = ?, productAmount = ? WHERE id = ? AND userId = ? schoolCode = ?";
+    db.query(sqlQuery, [productName, productAmount, rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("대여물품 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post('/api/workNote/removeRentalProduct', async (req, res) => {
+    const { rowId, userId, schoolCode, productName } = req.body;
+
+    const sqlQuery = "DELETE FROM teaform_db.rentalProducts WHERE id = ? AND userId = ? AND schoolCode = ? AND productName = ?";
+    db.query(sqlQuery, [rowId, userId, schoolCode, productName], (err, result) => {
+        if(err) {
+            console.log("대여물품 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post('/api/workNote/saveRental', async (req, res) => {
+    const { userId, schoolCode, sGrade, sClass, sNumber, sName, productId, productName, productAmount } = req.body;
+
+    const encryptedGrade = encrypt(sGrade?.toString() || '');
+    const encryptedClass = encrypt(sClass?.toString() || '');
+    const encryptedNumber = encrypt(sNumber?.toString() || '');
+    const encryptedName = encrypt(sName?.toString() || '');
+
+    const connection = await poolPromise.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const insertRentalQuery = "INSERT INTO teaform_db.rental (userId, schoolCode, sGrade, sClass, sNumber, sName, productId, productName, productAmount) VALUES (?,?,?,?,?,?,?,?,?)";
+        const insertRentalParams = [userId, schoolCode, encryptedGrade, encryptedClass, encryptedNumber, encryptedName, productId, productName, productAmount];
+
+        await connection.query(insertRentalQuery, insertRentalParams);
+
+        const updateProductQuery = "UPDATE teaform_db.rentalProducts SET productAmount = productAmount - ? WHERE id = ? AND userId = ? AND schoolCode = ?";
+        const updateProductParams = [productAmount, productId, userId, schoolCode];
+
+        await connection.query(updateProductQuery, updateProductParams);
+
+        await connection.commit();
+
+        res.json('success');
+    } catch (error) {
+        await connection.rollback();
+        console.log("물품 대여 Transaction 처리 중 ERROR(ROLLBACK)", error);
+    } finally {
+        connection.release();
+    }
+});
+
+app.get('/api/workNote/getRental', async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT * FROM teaform_db.rental WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("물품 대여 목록 조회 중 ERROR", err);
+        }else{
+            const decryptedResults = result.map(rentalData => {
+                return {
+                    ...rentalData,
+                    sGrade: rentalData.sGrade ? decrypt(rentalData.sGrade) : '',
+                    sClass: rentalData.sClass ? decrypt(rentalData.sClass) : '',
+                    sNumber: rentalData.sNumber ? decrypt(rentalData.sNumber) : '',
+                    sGender: rentalData.sGender ? decrypt(rentalData.sGender) : '',
+                    sName: rentalData.sName ? decrypt(rentalData.sName) : ''
+                };
+            });
+
+            res.json(decryptedResults);
         }
     });
 });

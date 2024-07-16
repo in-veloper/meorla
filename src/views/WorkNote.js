@@ -24,6 +24,7 @@ import moment from "moment";
 import { getSocket } from "components/Socket/socket";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { TiPrinter } from "react-icons/ti";
+import { IoMdSettings } from "react-icons/io";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import DateTimeEditor from "components/Tools/DateTimeEditor";
 import '../assets/css/worknote.css';
@@ -31,16 +32,19 @@ import '../assets/css/worknote.css';
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const MENU_ID_LEFT_GRID = 'students_context_menu';
 const MENU_ID_RIGHT_GRID = 'delete_context_menu';
+const MENU_ID_RENTAL_GRID = 'rental_context_menu';
 
 function WorkNote(args) {
   const { user, getUser } = useUser();                              // 사용자 정보
   const [isEntireWorkNoteOpen, setIsEntireWorkNoteOpen] = useState(false);
   const [searchStudentRowData, setSearchStudentRowData] = useState([]); // 검색 결과를 저장할 state
+  const [rentalSearchStudentRowData, setRentalSearchStudentRowData] = useState([]);
   const [symptomRowData, setSymptomRowData] = useState([]);
   const [medicationRowData, setMedicationRowData] = useState([]);
   const [bodyPartsRowData, setBodyPartsRowData] = useState([]);
   const [treatmentMatterRowData, setTreatmentMatterRowData] = useState([]);
   const [searchCriteria, setSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
+  const [rentalSearchCriteria, setRentalSearchCriteria] = useState({ iGrade: "", iClass: "", iNumber: "", iName: "" });
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [symptomModal, setSymptomModal] = useState(false);
   const [medicationModal, setMedicationModal] = useState(false);
@@ -97,8 +101,20 @@ function WorkNote(args) {
   const [protectStudentsRowData, setProtectStudentsRowData] = useState([]);
   const [isPopUpProtectStudent, setIsPopUpProtectStudent] = useState(false);
   const [medicineBookmarkPopOverOpen, setMedicineBookmarkPopOverOpen] = useState(false);
+  const [rentalProductRowData, setRentalProductRowData] = useState([]);
+  const [rentalListRowData, setRentalListRowData] = useState([]);
+  const [rentalProductPopOverOpen, setRentalProductPopOverOpen] = useState(false);
+  const [registRentalProductModal, setRegistRentalProductModal] = useState(false);
+  const [originalData, setOriginalData] = useState([]);
+  const [manageEmergencyModal, setManageEmergencytModal] = useState(false);
+  const [selectedRentalProductRow, setSelectedRentalProductRow] = useState(null);
+  const [isRentalGridRowSelect ,setIsRentalGridRowSelect] = useState(false);
+  const [rentalProductModal, setRentalProductModal] = useState(false);
+  const [selectedRentalStudent, setSelectedRentalStudent] = useState(null);
+  const [rentalAmount, setRentalAmount] = useState(0);
 
   const searchStudentGridRef = useRef();
+  const rentalSearchStudentGridRef = useRef();
   const personalStudentGridRef = useRef();
   const registeredAllGridRef = useRef();
   const onBedStudentListGridRef = useRef();
@@ -107,8 +123,9 @@ function WorkNote(args) {
   const bodyPartsGridRef = useRef();
   const treatmentMatterGridRef = useRef();
   const notificationAlert = useRef();
-  const diabetesStudentGridRef = useRef();
   const protectStudentGridRef = useRef();
+  const rentalProductGridRef = useRef();
+  const rentalListGridRef = useRef();
 
   const { show: showLeftMenu } = useContextMenu({
     id: MENU_ID_LEFT_GRID,
@@ -116,6 +133,10 @@ function WorkNote(args) {
 
   const { show: showRightMenu } = useContextMenu({
     id: MENU_ID_RIGHT_GRID
+  });
+
+  const { show: showRentalMenu } = useContextMenu({
+    id: MENU_ID_RENTAL_GRID
   });
 
   // 최초 Grid Render Event
@@ -131,6 +152,10 @@ function WorkNote(args) {
   const toggleRegistProtectStudentModal = () => setRegistProtectStudentModal(!registProtectStudentModal);
   const toggleManageProtectStudentModal = () => setManageProtectStudentModal(!manageProtectStudentModal);
   const toggleMedicineBookmarkPopOver = () => setMedicineBookmarkPopOverOpen(!medicineBookmarkPopOverOpen);
+  const toggleRentalProductPopOver = () => setRentalProductPopOverOpen(!rentalProductPopOverOpen);
+  const toggleRegistRentalProductModal = () => setRegistRentalProductModal(!registRentalProductModal);
+  const toggleManageEmergencyModal = () => setManageEmergencytModal(!manageEmergencyModal);
+  const toggleRentalProductModal = () => setRentalProductModal(!rentalProductModal);
 
   const customCellRenderer = (params) => {
     const { value } = params;
@@ -206,6 +231,23 @@ function WorkNote(args) {
     { field: "protectContent", headerName: "보호내용", flex: 4, cellStyle: { textAlign: "center" }},
   ]);
 
+  const [rentalProductColumnDefs] = useState([
+    { field: "productName", headerName: "물품명", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "productAmount", headerName: "재고", flex: 1, cellStyle: { textAlign: "center" }, 
+      valueParser: (params) => {
+        const value = parseInt(params.newValue, 10);
+        return isNaN(value) ? 0 : value;
+      }
+    },
+  ]);
+
+  const [rentalListColumnDefs] = useState([
+    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "productName", headerName: "물품명", flex: 3, cellStyle: { textAlign: "center" }},
+  ]);
 
   // 기본 컬럼 속성 정의 (공통 부분)
   const defaultColDef = {
@@ -279,7 +321,6 @@ function WorkNote(args) {
     }
     return newData;
   };
-
 
   // Grid 행 추가 Function
   const appendSymptomRow = useCallback(() => {
@@ -385,6 +426,13 @@ function WorkNote(args) {
 
   const onInputChange = (field, value) => {
     setSearchCriteria((prevCriteria) => ({
+      ...prevCriteria,
+      [field]: value
+    }));
+  };
+
+  const onRentalInputChange = (field, value) => {
+    setRentalSearchCriteria((prevCriteria) => ({
       ...prevCriteria,
       [field]: value
     }));
@@ -534,12 +582,44 @@ function WorkNote(args) {
     }
   };
 
+  const fetchRentalStudentData = async (criteria) => {
+    try {
+      const { iGrade, iClass, iNumber, iName } = criteria;
+      
+      if(user) {
+        const response = await axios.get(`${BASE_URL}/api/studentsTable/getStudentInfoBySearch`, {
+          params: {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            sGrade:  iGrade,
+            sClass: iClass,
+            sNumber: iNumber,
+            sName: iName
+          }
+        });
+
+        return response.data.studentData;
+      }
+    } catch (error) {
+      console.error("학생 정보 조회 중 ERROR", error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     onSearchStudent(searchCriteria);
   }, []);
 
   const onResetSearch = () => {
     const api = searchStudentGridRef.current.api;
+    setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
+    api.setRowData([]);
+    setSelectedStudent('');
+    setPersonalStudentRowData([]);
+  };
+
+  const onRentalResetSearch = () => {
+    const api = rentalSearchStudentGridRef.current.api;
     setSearchCriteria({ iGrade: "", iClass: "", iNumber: "", iName: "" });
     api.setRowData([]);
     setSelectedStudent('');
@@ -570,8 +650,36 @@ function WorkNote(args) {
     }
   };
 
+  const onRentalSearchStudent = async (criteria) => {
+    Block.dots('.rental-search-student-grid');
+    
+    try {
+      const studentData = await fetchRentalStudentData(criteria);
+
+      rentalSearchStudentGridRef.current.api.setRowData(studentData);
+      setRentalSearchStudentRowData(studentData);
+
+      if(masked) {
+        const maskedStudentData = studentData.map(student => ({
+          ...student,
+          sName: Masking(student.sName)
+        }));
+
+        setRentalSearchStudentRowData(maskedStudentData);
+      }
+    } catch (error) {
+      console.error("학생 조회 중 ERROR", error);
+    }finally{
+      Block.remove('.rental-search-student-grid');
+    }
+  };
+
   const handleKeyDown = (e, criteria) => {
     if(e.key === 'Enter') onSearchStudent(searchCriteria);
+  };
+
+  const handleRentalKeyDown = (e, criteria) => {
+    if(e.key === 'Enter') onRentalSearchStudent(rentalSearchCriteria);
   };
 
   const onGridSelectionChanged = (event) => {
@@ -874,7 +982,6 @@ function WorkNote(args) {
 
       api.forEachNode(function(rowNode, index) {                  // 현재 Grid 행 순회
         const treatmentMatter = rowNode.data.treatmentMatter;                     // 처치사항 획득
-        debugger
         // 처치사항이 존재  && user 데이터 존재 -> Parameter로 전송할 처치사항 데이터 생성
         if(treatmentMatter.length !== 0 && user) treatmentMatterString += treatmentMatter + "::";
         
@@ -1970,8 +2077,32 @@ function WorkNote(args) {
     }
   };
 
-  const [manageEmergencyModal, setManageEmergencytModal] = useState(false);
-  const toggleManageEmergencyModal = () => setManageEmergencytModal(!manageEmergencyModal);
+  function handleRentalGridContextMenu(event) {
+    const api = rentalProductGridRef.current.api;
+    const rowIndex = event.target.parentNode.getAttribute('row-index');
+
+    if (rowIndex !== null) {
+      api.ensureIndexVisible(rowIndex);
+      api.forEachNode((node) => {
+        if (node.rowIndex == rowIndex) {
+          node.setSelected(true, true);
+        }
+      });
+      
+      const selectedRow = api.getSelectedRows()[0];
+      if (selectedRow) {
+        setSelectedRentalProductRow(selectedRow);
+        setIsRentalGridRowSelect(true);
+      }
+
+      showRentalMenu({
+        event,
+        props: {
+          key: 'value'
+        }
+      });
+    }
+  }
 
   const handleEmergencyStudent = () => {
     toggleManageEmergencyModal();
@@ -2413,7 +2544,275 @@ function WorkNote(args) {
     NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
   };
 
+  const handleManageRentalProduct = () => {
+    toggleRegistRentalProductModal();
+  };
+
+  const fetchRentalProdectData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/workNote/getRentalProducts`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        setRentalProductRowData(response.data);
+        setOriginalData(response.data.map(row => ({ ...row })));
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchRentalProdectData();
+  }, [fetchRentalProdectData]);
+
+  const onRentalProductRowDataUpdated = useCallback(() => {
+    const api = rentalProductGridRef.current.api;
+    const displayedRowCount = api.getDisplayedRowCount();
+    const lastRowIndex = displayedRowCount - 1;
+
+    if(isRemoved || isRegistered) {
+      api.stopEditing(true);
+      return;
+    }
+
+    if(lastRowIndex > -1) api.startEditingCell({ rowIndex: lastRowIndex, colKey: 'productName' }); // Edit 모드 진입 (삭제 시 행이 없을 때는 Edit 모드 진입하지 않음)
+  }, [isRemoved, isRegistered]);
   
+  const [addedRentalProductRow, setAddedRentalProductRow] = useState([]);
+
+  const appendRentalProductRow = useCallback(() => {
+    const api = rentalProductGridRef.current.api;                             // api 획득
+    const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에서 출력된 행 수
+    const newItem = [createNewRentalProductRowData()];                        // 추가할 행 데이터 획득
+
+    api.deselectAll();                                                        // 행 선택 상태에서 행 추가 이벤트 발생 시 항목 삭제하는 경우 예외 방지 (모든 행 선택 해제)
+    api.applyTransaction({ add: newItem, addIndex: displayedRowCount });      // Grid 최하단 마지막 행으로 추가
+    setAddedRentalProductRow(prevAddedRows => [...prevAddedRows, newItem]);
+    setIsRemoved(false);                                                      // 삭제 상태 state - false 
+    setIsRegistered(false);                                                   // Modal Open isRegistered state - false
+  }, []);
+
+  const removeRentalProductRow = () => {                                      // [필요] : 삭제된 후 마지막 행의 첫 Cell 진입 시 Edit Mode 
+    const api = rentalProductGridRef.current.api;                             // api 획득
+    const selectedRow = api.getSelectedRows();                                // 현재 선택된 행 획득
+    const warnMessage = "선택된 행이 없습니다<br/>삭제할 행을 선택해 주세요";
+    
+    if(selectedRow.length === 0) {                                            // 선택한 행이 없을 시
+      NotiflixWarn(warnMessage);      
+      return;
+    }
+
+    api.applyTransaction({ remove: selectedRow });                            // 선택 행 삭제 
+    setIsRemoved(true);                                                       // 삭제 상태 state - true (삭제 시에는 Edit 모드 진입 안함)
+  };
+
+  const allRentalProductRemoveRow = () => {
+    const api = rentalProductGridRef.current.api;
+    const displayedRowCount = api.getDisplayedRowCount();                     // 현재 Grid에 출력된 행 수
+    const warnMessage = "등록된 대여물품이 없습니다";
+
+    if(displayedRowCount === 0) {                         
+      NotiflixWarn(warnMessage);
+      return;                                             
+    }else{                                                
+      api.setRowData([]);                                 
+    }
+  };
+
+  const createNewRentalProductRowData = () => {
+    const newData = {
+      productName: "",
+      productAmount: 0,
+      editable: true
+    }
+    return newData;
+  };
+
+  const getDifference = (currentData, originalData) => {
+    const added = [];
+    const removed = [];
+    const updated = [];
+
+    const originalMap = new Map();
+    originalData.forEach(row => originalMap.set(row.id, row));
+
+    currentData.forEach(row => {
+      const originalRow = originalMap.get(row.id);
+
+      if (!originalRow) {
+        added.push(row);
+      } else {
+        originalMap.delete(row.id);
+        if (originalRow.productAmount !== row.productAmount || originalRow.productName !== row.productName) {
+          updated.push(row);
+        }
+      }
+    });
+    removed.push(...originalMap.values());
+
+    return { added, removed, updated };
+  };
+
+  const saveRentalProduct = async (e) => {
+    e.preventDefault();
+
+    const confirmTitle = "대여물품 설정";
+    const confirmMessage = "작성하신 대여물품을 저장하시겠습니까?";
+    const infoMessage = "대여물품 설정이 정상적으로 저장되었습니다";
+
+    const validateFields = () => {
+      const api = rentalProductGridRef.current.api;
+      let allFieldFilled = true;
+
+      api.forEachNode(function(rowNode) {
+        const productName = rowNode.data.productName;
+        const productAmount = rowNode.data.productAmount;
+
+        if(!productName || !productAmount) {
+          allFieldFilled = false;
+          return;
+        }
+      });
+
+      return allFieldFilled;
+    };
+
+    if(!validateFields()) {
+      const warnMessage = "입력되지 않은 항목이 존재합니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }
+
+    const yesCallback = async () => {
+      const api = rentalProductGridRef.current.api;                      // Grid api 획득
+      const rowData = [];
+      let response = null;
+
+      api.forEachNode(function (node) {
+        rowData.push(node.data);
+      });
+      
+      const { added, removed, updated } = getDifference(rowData, originalData);
+      let responseSuccess = true;
+
+      for (const rowNode of removed) {
+        response = await axios.post(`${BASE_URL}/api/workNote/removeRentalProduct`, {
+          rowId: rowNode.id,
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          productName: rowNode.productName
+        });
+
+        if(response.data !== 'success') responseSuccess = false;
+      }
+
+      for (const rowNode of added) {
+        response = await axios.post(`${BASE_URL}/api/workNote/insertRentalProduct`, {
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          productName: rowNode.productName,
+          productAmount: rowNode.productAmount
+        });
+
+        if(response.data !== 'success') responseSuccess = false;
+      }
+
+      for (const rowNode of updated) {
+        response = await axios.post(`${BASE_URL}/api/workNote/updateRentalProduct`, {
+          rowId: rowNode.id,
+          userId: user.userId,
+          schoolCode: user.schoolCode,
+          productName: rowNode.productName,
+          productAmount: rowNode.productAmount
+        });
+
+        if(response.data !== 'success') responseSuccess = false;
+      }
+
+      if(responseSuccess) {
+        NotiflixInfo(infoMessage, true, '320px');
+      }else{
+        const warnMessage = "대여물품 등록에 실패하였습니다<br/>다시 시도해 주세요";
+        NotiflixWarn(warnMessage);
+        return;
+      }
+
+      fetchRentalProdectData();
+    };
+
+    const noCallback = () => {
+       return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback);
+  };
+
+  const rentalProduct = () => {
+    if(selectedRentalProductRow) {
+      toggleRentalProductModal();
+      onRentalSearchStudent(rentalSearchCriteria);
+    }
+  };
+
+  const onRentalGridSelectionChanged = (event) => {
+    const selectedRow = event.api.getSelectedRows()[0];
+    setSelectedRentalStudent(selectedRow);
+  };
+
+  const saveRental = async () => {
+    if(rentalAmount === 0) {
+      const warnMessage = "물품 대여 수량을 입력하세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }else if(!selectedRentalStudent) {
+      const warnMessage = "물품을 대여할 학생을 선택하세요";
+      NotiflixWarn(warnMessage, '320px');
+      return;
+    }else{
+      const response = await axios.post(`${BASE_URL}/api/workNote/saveRental`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        sGrade: selectedRentalStudent.sGrade,
+        sClass: selectedRentalStudent.sClass,
+        sNumber: selectedRentalStudent.sNumber,
+        sName: selectedRentalStudent.sName,
+        productId: selectedRentalProductRow.id,
+        productName: selectedRentalProductRow.productName,
+        productAmount: rentalAmount
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "물품 대여가 정상적으로 처리되었습니다";
+        NotiflixInfo(infoMessage, true, '320px');
+        fetchRentalProdectData();
+        // fetchRentalData();
+        toggleRentalProductModal();
+      }
+    }
+  };
+
+  const fetchRentalData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/workNote/getRental`, {
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        setRentalListRowData(response.data);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchRentalData();
+  }, [fetchRentalData]);
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh' }}>
@@ -2429,22 +2828,34 @@ function WorkNote(args) {
               <div style={{ borderRight: '1.5px dashed lightgray', marginBottom: 10, marginTop: 10 }}></div>
               <Col md="5">
                 <div style={{ border: '1.5px solid lightgray', borderRadius: 3 }}>
-                  <Label className="m-0 pl-2 pt-1 font-weight-bold">대여물품 목록</Label>
-                  <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }}>
+                  <Row className="d-flex align-items-center no-gutters">
+
+                  <Label className="m-0 pl-2 pt-1 font-weight-bold">
+                    대여물품 목록
+                    <IoInformationCircleOutline className="text-muted" id="rental-product-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
+                    <Popover flip target="rental-product-popover" isOpen={rentalProductPopOverOpen} toggle={toggleRentalProductPopOver} trigger="focus">
+                      <PopoverHeader>
+                        대여 물품 관리 안내
+                      </PopoverHeader>
+                      <PopoverBody>
+                        우측 관리 버튼을 클릭하여 대여물품을 등록하시면 하단 목록에서 대여물품을 관리하실 수 있습니다. <span style={{ color: 'red' }}>물품 우클릭</span> 시 바로 대여를 희망하는 학생을 선택하여 물품 대여를 등록하실 수 있습니다
+                      </PopoverBody>
+                    </Popover>
+                  </Label>
+                  <Col className="d-flex justify-content-end pr-2">
+                    <IoMdSettings onClick={handleManageRentalProduct} style={{ fontSize: 18, cursor: 'pointer' }} />
+                  </Col>
+                  </Row>
+                  <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }} onContextMenu={handleRentalGridContextMenu}>
                     <AgGridReact
                       rowHeight={24}
-                      ref={searchStudentGridRef}
-                      rowData={searchStudentRowData} 
-                      columnDefs={searchStudentColumnDefs}
+                      ref={rentalProductGridRef}
+                      rowData={rentalProductRowData} 
+                      columnDefs={rentalProductColumnDefs}
                       defaultColDef={notEditDefaultColDef}
                       headerHeight={0}                    
-                      overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                      overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 대여물품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       rowSelection="single"
-                      onSelectionChanged={onGridSelectionChanged}
-                      suppressCellFocus={true}
-                      overlayLoadingTemplate={
-                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                      }
                     />
                   </div>
                 </div>
@@ -2455,18 +2866,13 @@ function WorkNote(args) {
                   <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }}>
                     <AgGridReact
                       rowHeight={24}
-                      ref={searchStudentGridRef}
-                      rowData={searchStudentRowData} 
-                      columnDefs={searchStudentColumnDefs}
+                      ref={rentalListGridRef}
+                      rowData={rentalListRowData} 
+                      columnDefs={rentalListColumnDefs}
                       defaultColDef={notEditDefaultColDef}
                       headerHeight={0}                    
-                      overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                      overlayNoRowsTemplate={ '<span style="color: #6c757d;">대여중인 물품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       rowSelection="single"
-                      onSelectionChanged={onGridSelectionChanged}
-                      suppressCellFocus={true}
-                      overlayLoadingTemplate={
-                        '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                      }
                     />
                   </div>
                 </div>
@@ -2614,6 +3020,9 @@ function WorkNote(args) {
                       </Menu>
                       <Menu id={MENU_ID_RIGHT_GRID} animation="fade">
                           <Item id="deleteWorkNote" onClick={deleteWorkNote}>보건일지 내역 삭제</Item>
+                      </Menu>
+                      <Menu id={MENU_ID_RENTAL_GRID} animation="fade">
+                          <Item id="rentalProduct" onClick={rentalProduct}>물품 대여</Item>
                       </Menu>
                     </div>
                   </Col>
@@ -3359,6 +3768,181 @@ function WorkNote(args) {
           </ModalBody>
           <ModalFooter>
             <Button onClick={toggleManageProtectStudentModal}>닫기</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={registRentalProductModal} toggle={toggleRegistRentalProductModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={toggleRegistRentalProductModal}><b>대여물품 등록</b></ModalHeader>
+          <ModalBody>
+            <Form onSubmit={saveTreatmentMatter}>
+              <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
+                <AgGridReact
+                  ref={rentalProductGridRef}
+                  rowData={rentalProductRowData}
+                  columnDefs={rentalProductColumnDefs}
+                  stopEditingWhenCellsLoseFocus={true}
+                  paginationPageSize={5} // 페이지 크기를 원하는 값으로 설정
+                  defaultColDef={defaultColDef}
+                  overlayNoRowsTemplate={ '<span>등록된 대여물품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                  onGridReady={onGridReady}
+                  rowSelection={'multiple'} // [필요 : Panel로 Ctrl키를 누른채로 클릭하면 여러행 선택하여 삭제가 가능하다 표시]
+                  enterNavigatesVertically={true}
+                  enterNavigatesVerticallyAfterEdit={true}
+                  onRowDataUpdated={onRentalProductRowDataUpdated}
+                  onCellValueChanged={onCellValueChanged}
+                />
+              </div>
+            </Form>
+            <Row>
+              <Col className="justify-content-start no-gutters">
+                <Button className="btn-plus" size="sm" onClick={appendRentalProductRow}>
+                  추가
+                </Button>
+                <Button className="btn-minus" size="sm" onClick={removeRentalProductRow}>
+                  삭제
+                </Button>
+              </Col>
+              <Col>
+                <Button className="btn-allMinus" size="sm" style={{float:'right'}} onClick={allRentalProductRemoveRow}>전체 삭제</Button>
+              </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={saveRentalProduct}>저장</Button>
+            <Button className="ml-1" onClick={toggleRegistRentalProductModal}>취소</Button>
+          </ModalFooter>
+       </Modal>
+
+       <Modal isOpen={rentalProductModal} toggle={toggleRentalProductModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={toggleRentalProductModal}><b>물품 대여</b></ModalHeader>
+          <ModalBody>
+            <Row className="d-flex align-content-center no-gutters p-2 pt-3" style={{ border: '1px dashed lightgray', borderRadius: 5 }}>
+              <Col md="2">
+                <Label>대여 물품 : </Label>
+              </Col>
+              <Col md="3">
+                <span>{selectedRentalProductRow ? selectedRentalProductRow.productName : ''}</span>
+              </Col>
+              <Col md="2">
+                <Label>대여 수량 :</Label>
+              </Col>
+              <Col md="1">
+                <Input 
+                  type="number"
+                  max={selectedRentalProductRow ? selectedRentalProductRow.productAmount : 0}
+                  style={{ height: 27 }}
+                  value={rentalAmount}
+                  onChange={(e) => setRentalAmount(e.target.value)}
+                />
+              </Col>
+              <Col className="d-flex justify-content-end" md="4">
+                  <b className="p-1 pl-2 pr-2" style={{ backgroundColor: '#F1F3F5', borderRadius: 7, fontSize: 13, marginTop: -3 }}>{selectedRentalStudent ? selectedRentalStudent.sGrade + "학년 " + selectedRentalStudent.sClass + "반 " + selectedRentalStudent.sNumber + "번 " + selectedRentalStudent.sName : "학생을 선택하세요" }</b>
+              </Col>
+            </Row>
+            <Row className="pr-0 mt-4">
+              <Col md="10" className="ml-1" style={{ marginRight: '-15px'}}>
+                <Row>
+                  <Col md="3">
+                    <Row className="align-items-center mr-0">
+                      <Col md="8" className="text-left">
+                        <label style={{ color: 'black' }}>학년</label>
+                      </Col>
+                      <Col md="4" className="p-0" style={{ marginLeft: '-12px' }}>
+                        <Input
+                          className="text-right"
+                          style={{ width: '40px' }}
+                          onChange={(e) => onRentalInputChange("iGrade", e.target.value)}
+                          value={rentalSearchCriteria.iGrade}
+                          onKeyDown={(e) => handleRentalKeyDown(e, "iGrade")}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col md="2">
+                    <Row className="align-items-center">
+                      <Col md="6" className="text-left" style={{ marginLeft: '-20px' }}>
+                        <label style={{ color: 'black' }}>반</label>
+                      </Col>
+                      <Col md="6" className="p-0">
+                        <Input
+                          className="text-right"
+                          style={{ width: '40px' }}
+                          onChange={(e) => onRentalInputChange("iClass", e.target.value)}
+                          value={rentalSearchCriteria.iClass}
+                          onKeyDown={(e) => handleRentalKeyDown(e, "iClass")}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col md="3">
+                    <Row className="align-items-center">
+                      <Col md="7" className="text-left" style={{ marginLeft: '-20px' }}>
+                        <label style={{ color: 'black' }}>번호</label>
+                      </Col>
+                      <Col md="5" className="p-0" style={{ marginLeft: '-13px'}}>
+                        <Input
+                          className="text-right"
+                          style={{ width: '40px' }}
+                          onChange={(e) => onRentalInputChange("iNumber", e.target.value)}
+                          value={rentalSearchCriteria.iNumber}
+                          onKeyDown={(e) => handleRentalKeyDown(e, "iNumber")}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col md="4">
+                    <Row className="align-items-center pr-0">
+                      <Col md="5" className="text-right" style={{ marginLeft: '-40px'}}>
+                        <label style={{ color: 'black' }}>이름</label>
+                      </Col>
+                      <Col md="7" className="p-0" style={{ marginLeft: '-5px'}}>
+                        <Input
+                          className="text-right"
+                          style={{ width: '80px' }}
+                          onChange={(e) => onRentalInputChange("iName", e.target.value)}
+                          value={rentalSearchCriteria.iName}
+                          onKeyDown={(e) => handleRentalKeyDown(e, "iName")}
+                        />
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </Col>
+              <Col md="2" style={{ marginLeft: '-25px' }}>
+                <Row>
+                  <Col md="6" style={{ marginTop: '-10px', marginLeft: '-7px', marginRight: '7px' }}>
+                    <Button size="sm" style={{ height: '30px' }} onClick={onRentalResetSearch}><IoMdRefresh style={{ fontSize: '15px'}} /></Button>
+                  </Col>
+                  <Col md="6" style={{ marginTop: '-10px' }}>
+                    <Button size="sm" style={{ height: '30px' }} onClick={() => onRentalSearchStudent(searchCriteria)}><RiSearchLine style={{ fontSize: '15px' }}/></Button>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+            <Row className="pt-1" style={{ flex: '1 1 auto', minHeight: 0 }}>
+              <Col md="12" style={{ display: 'flex', flexDirection: 'column', height: '20vh' }}>
+                <div className="rental-search-student-grid" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
+                  <div className="ag-theme-alpine" style={{ flex: '1 1 auto', minHeight: 0 }} onContextMenu={handleLeftGridContextMenu}>
+                    <AgGridReact
+                      rowHeight={30}
+                      ref={rentalSearchStudentGridRef}
+                      rowData={rentalSearchStudentRowData} 
+                      columnDefs={searchStudentColumnDefs}
+                      defaultColDef={notEditDefaultColDef}
+                      paginationPageSize={4}
+                      overlayNoRowsTemplate={ '<span style="color: #6c757d;">일치하는 검색결과가 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
+                      rowSelection="single"
+                      suppressCellFocus={true}
+                      onSelectionChanged={onRentalGridSelectionChanged}
+                    />
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={saveRental}>대여</Button>
+            <Button className="ml-1" onClick={toggleRentalProductModal}>취소</Button>
           </ModalFooter>
        </Modal>
 

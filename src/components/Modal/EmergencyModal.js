@@ -128,6 +128,10 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
           console.error("학생 조회 중 ERROR", error);
         }
     };
+
+    useEffect(() => {
+        onSearchStudentInEmergencyManagement(searchCriteria);
+    }, [manageEmergencyModal]);
     
     const onResetSearchInEmergencyManagement = () => {
         const api = searchStudentInEmergencyManagementGridRef.current.api;
