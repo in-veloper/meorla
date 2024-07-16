@@ -2536,6 +2536,35 @@ app.get('/api/workNote/getRental', async (req, res) => {
     });
 });
 
+app.post('/api/workNote/saveReturn', async (req, res) => {
+    const { rowId, userId, schoolCode, productId, productAmount } = req.body;
+
+    const connection = await poolPromise.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const deleteRentalQuery = "DELETE FROM teaform_db.rental WHERE id = ? AND userId = ? AND schoolCode = ?";
+        const deleteRentalParams = [rowId, userId, schoolCode];
+
+        await connection.query(deleteRentalQuery, deleteRentalParams);
+
+        const updateProductQuery = "UPDATE teaform_db.rentalProducts SET productAmount = productAmount + ? WHERE id = ? AND userId = ? AND schoolCode = ?";
+        const updateProductParams = [productAmount, productId, userId, schoolCode];
+
+        await connection.query(updateProductQuery, updateProductParams);
+
+        await connection.commit();
+
+        res.json('success');
+    } catch (error) {
+        await connection.rollback();
+        console.log("물품 반납 Transaction 처리 중 ERROR(ROLLBACK)", error);
+    } finally {
+        connection.release();
+    }
+});
+
 server.listen(PORT, () => {
 // server.listen(8002, '0.0.0.0', () => {
     console.log(`running on port ${PORT}`);

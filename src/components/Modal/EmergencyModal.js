@@ -466,7 +466,7 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const handleDownloadEntirePDF = async () => {
         Block.dots('.modal-content', "PDF 파일 생성을 위해 해부도 이미지 처리중");
 
-        if(entireManageEmergencyRowData) {
+        if(entireManageEmergencyRowData.length > 0) {
             const doc = new jsPDF("p", "mm", "a4");
             const tableWidth = 150; // 표의 너비
             const pageWidth = doc.internal.pageSize.getWidth(); // 용지의 너비
@@ -620,6 +620,10 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
             }
 
             doc.save('응급사고 및 이송 기록지_전체');
+        }else{
+            const warnMessage = "다운로드할 응급일지 내역이 존재하지 않습니다";
+            NotiflixWarn(warnMessage, '320px');
+            return;
         }
 
         if(document.querySelector('.notiflix-block')) Block.remove('.modal-content');
@@ -628,149 +632,155 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF("p", "mm", "a4");
-        
-        fetch(NanumGothic)
-        .then(response => response.blob())
-        .then(fontBlob => {
-            const reader = new FileReader();
-            reader.readAsDataURL(fontBlob);
-            reader.onload = () => {
-                const NanumGothicBase64 = reader.result.split(',')[1];
-                const tableWidth = 150; // 표의 너비
-                const pageWidth = doc.internal.pageSize.getWidth(); // 용지의 너비
 
-                doc.addFileToVFS('NanumGothic.ttf', NanumGothicBase64);
-                doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
-                doc.setFont('NanumGothic');
+        if(selectedEmergencyStudent) {
+            fetch(NanumGothic)
+            .then(response => response.blob())
+            .then(fontBlob => {
+                const reader = new FileReader();
+                reader.readAsDataURL(fontBlob);
+                reader.onload = () => {
+                    const NanumGothicBase64 = reader.result.split(',')[1];
+                    const tableWidth = 150; // 표의 너비
+                    const pageWidth = doc.internal.pageSize.getWidth(); // 용지의 너비
 
-                fetch(NanumGothicBold)
-                .then(response => response.blob())
-                .then(boldFontBlob => {
-                    const boldReader = new FileReader();
-                    boldReader.readAsDataURL(boldFontBlob);
-                    boldReader.onload = () => {
-                        const NanumGothicBoldBase64 = boldReader.result.split(',')[1];
-                        doc.addFileToVFS('NanumGothicBold.ttf', NanumGothicBoldBase64);
-                        doc.addFont('NanumGothicBold.ttf', 'NanumGothicBold', 'bold');
+                    doc.addFileToVFS('NanumGothic.ttf', NanumGothicBase64);
+                    doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+                    doc.setFont('NanumGothic');
 
-                        doc.autoTable({
-                            startX: (pageWidth - tableWidth) / 2,
-                            startY: 20,
-                            tableWidth: tableWidth,
-                            styles: { font: 'NanumGothicBold', fontStyle: 'bold', fontSize: 25, textColor: [255, 255, 255] },
-                            margin: { left: (pageWidth - tableWidth) / 2, },
-                            body: [
-                                [
-                                    { content: '응급사고 및 이송 기록지', styles: { fillColor: [240, 114, 106], halign: 'center' } }
+                    fetch(NanumGothicBold)
+                    .then(response => response.blob())
+                    .then(boldFontBlob => {
+                        const boldReader = new FileReader();
+                        boldReader.readAsDataURL(boldFontBlob);
+                        boldReader.onload = () => {
+                            const NanumGothicBoldBase64 = boldReader.result.split(',')[1];
+                            doc.addFileToVFS('NanumGothicBold.ttf', NanumGothicBoldBase64);
+                            doc.addFont('NanumGothicBold.ttf', 'NanumGothicBold', 'bold');
+
+                            doc.autoTable({
+                                startX: (pageWidth - tableWidth) / 2,
+                                startY: 20,
+                                tableWidth: tableWidth,
+                                styles: { font: 'NanumGothicBold', fontStyle: 'bold', fontSize: 25, textColor: [255, 255, 255] },
+                                margin: { left: (pageWidth - tableWidth) / 2, },
+                                body: [
+                                    [
+                                        { content: '응급사고 및 이송 기록지', styles: { fillColor: [240, 114, 106], halign: 'center' } }
+                                    ]
                                 ]
-                            ]
-                        });
+                            });
 
-                        doc.setFont('NanumGothic');
+                            doc.setFont('NanumGothic');
 
-                        doc.setFontSize(12);
-                        doc.text(165, 47, user.schoolName);
+                            doc.setFontSize(12);
+                            doc.text(165, 47, user.schoolName);
 
-                        doc.autoTable({
-                            startY: 50,
-                            headStyles: { font: 'NanumGothicBold', lineColor: [187, 67, 48], lineWidth: 0.3, fillColor: [243, 159, 155], halign: 'center', fontStyle: 'bold', textColor: [0, 0, 0] },
-                            bodyStyles: { lineColor: [187, 67, 48], lineWidth: 0.3 },
-                            theme: 'grid',
-                            tableLineColor: [187, 67, 48],
-                            tableLineWidth: 0.4,
-                            styles: { font: 'NanumGothic', fontStyle: 'bold', fontSize: 12, textColor: [255, 255, 255] },
-                            head: [
-                                [
-                                    { content: '학년반', colSpan: 2 },
-                                    { content: '학생명' },
-                                    { content: '성별' },
-                                    { content: '보호자 전화번호', styles: { cellWidth: 45 } },
-                                    { content: '담임교사', styles: { cellWidth: 25 } },
+                            doc.autoTable({
+                                startY: 50,
+                                headStyles: { font: 'NanumGothicBold', lineColor: [187, 67, 48], lineWidth: 0.3, fillColor: [243, 159, 155], halign: 'center', fontStyle: 'bold', textColor: [0, 0, 0] },
+                                bodyStyles: { lineColor: [187, 67, 48], lineWidth: 0.3 },
+                                theme: 'grid',
+                                tableLineColor: [187, 67, 48],
+                                tableLineWidth: 0.4,
+                                styles: { font: 'NanumGothic', fontStyle: 'bold', fontSize: 12, textColor: [255, 255, 255] },
+                                head: [
+                                    [
+                                        { content: '학년반', colSpan: 2 },
+                                        { content: '학생명' },
+                                        { content: '성별' },
+                                        { content: '보호자 전화번호', styles: { cellWidth: 45 } },
+                                        { content: '담임교사', styles: { cellWidth: 25 } },
+                                    ]
+                                ],
+                                body: [
+                                    [
+                                        { content: selectedEmergencyStudent.sGrade + "학년 " + selectedEmergencyStudent.sClass + "반", styles: { textColor: [0, 0, 0], halign: 'center' }, colSpan: 2 }, // 폰트 색상 변경
+                                        { content: selectedEmergencyStudent.sName, styles: { textColor: [0, 0, 0], halign: 'center' } },
+                                        { content: selectedEmergencyStudent.sGender, styles: { textColor: [0, 0, 0], halign: 'center' } },
+                                        { content: selectedEmergencyStudent.guardianContact ? selectedEmergencyStudent.guardianContact : "", styles: { textColor: [0, 0, 0], halign: 'center' } },
+                                        { content: selectedEmergencyStudent.homeroomTeacherName, styles: { textColor: [0, 0, 0], halign: 'center' } }
+                                    ],
+                                    [
+                                        { content: "주증상", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], minCellHeight: 20, valign: 'middle' }, colSpan: 2 },
+                                        { content: selectedEmergencyStudent.mainSymptom ? selectedEmergencyStudent.mainSymptom : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 },
+                                        { rowSpan: 5, colSpan: 2 }
+                                    ],
+                                    [
+                                        { content: "발\r생\r장\r소\r&\r시\r간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', valign: 'middle', fillColor: [251, 225, 206], cellWidth: 10 }, rowSpan: 4 },
+                                        { content: "발생\r장소", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
+                                        { content: selectedEmergencyStudent.occuringArea ? selectedEmergencyStudent.occuringArea : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 },
+                                    ],
+                                    [
+                                        { content: "최초\r목격자", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
+                                        { content: selectedEmergencyStudent.firstWitness ? selectedEmergencyStudent.firstWitness : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
+                                    ],
+                                    [
+                                        { content: "최초\r발견\r시간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
+                                        { content: selectedEmergencyStudent.firstDiscoveryTime ? convertDateTimeValue("dt", selectedEmergencyStudent.firstDiscoveryTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
+                                    ],
+                                    [
+                                        { content: "보건\r교사\r확인\r시간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
+                                        { content: selectedEmergencyStudent.teacherConfirmTime ? convertDateTimeValue("dt", selectedEmergencyStudent.teacherConfirmTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
+                                    ],
+                                    [ 
+                                        { content: "활력징후", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle', minCellHeight: 12 }, colSpan: 2 },
+                                        { content: selectedEmergencyStudent.vitalSign ? selectedEmergencyStudent.vitalSign : "", styles: { textColor: [0, 0, 0] }, colSpan: 5 }
+                                    ],
+                                    [
+                                        { content: "사고 개요", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle', minCellHeight: 20 }, colSpan: 2 },
+                                        { content: selectedEmergencyStudent.accidentOverview ? selectedEmergencyStudent.accidentOverview : "", styles: { textColor: [0, 0, 0] }, colSpan: 5 }
+                                    ],
+                                    [
+                                        { content: "응급처치\r내용", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle', minCellHeight: 20 }, colSpan: 2 },
+                                        { content: selectedEmergencyStudent.emergencyTreatmentDetail ? selectedEmergencyStudent.emergencyTreatmentDetail : "", styles: { textColor: [0, 0, 0] }, colSpan: 5 }
+                                    ],
+                                    [
+                                        { content: "이송시간 및\r이송방법", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle' }, rowSpan: 4, colSpan: 2 },
+                                        { content: "이송시간", styles: { textColor: [0, 0, 0], halign: 'center', cellWidth: 25 } },
+                                        { content: selectedEmergencyStudent.transferTime ? convertDateTimeValue("t", selectedEmergencyStudent.transferTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 4 }
+                                    ],
+                                    [
+                                        { content: "이송차량", styles: { textColor: [0, 0, 0], halign: 'center' } },
+                                        { content: (selectedEmergencyStudent.transferVehicle === "ambulance" ? "\u25A0" : "\u25A1") + "구급차     " + (selectedEmergencyStudent.transferVehicle === "generalVehicle" ? "\u25A0" : "\u25A1") + "일반차량     " + (selectedEmergencyStudent.transferVehicle.split("::")[0] === "etcTransfer" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.transferVehicle.split("::")[0] === "etcTransfer" ? selectedEmergencyStudent.transferVehicle.split("::")[1] : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
+                                    ],
+                                    [
+                                        { content: "이송자", styles: { textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+                                        { content: (selectedEmergencyStudent.transpoter === "paramedic" ? "\u25A0" : "\u25A1") + "119 대원          " + (selectedEmergencyStudent.transpoter === "schoolNurse" ? "\u25A0" : "\u25A1") + "보건교사          " + (selectedEmergencyStudent.transpoter === "homeroomTeacher" ? "\u25A0" : "\u25A1") + "담임          " + (selectedEmergencyStudent.transpoter === "parents" ? "\u25A0" : "\u25A1") + "학부모\r" + (selectedEmergencyStudent.transpoter.split("::")[0] === "etcTranspoter" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.transpoter.split("::")[0] === "etcTranspoter" ? selectedEmergencyStudent.transpoter.split("::")[1] : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
+                                    ],
+                                    [
+                                        { content: "이송병원", styles: { textColor: [0, 0, 0], halign: 'center' } },
+                                        { content: selectedEmergencyStudent.transferHospital ? selectedEmergencyStudent.transferHospital : "", styles: { textColor: [0, 0, 0] }, colSpan: 4 }
+                                    ],
+                                    [
+                                        { content: "작성일 및\r작성자", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', valign: 'middle', fillColor: [251, 225, 206] }, colSpan: 2 },
+                                        { content: convertDateTimeValue("d", selectedEmergencyStudent.registDate) + "\r\r성명 :            " + selectedEmergencyStudent.registerName + "       (인)", styles: { textColor: [0, 0, 0], halign: 'center' }, colSpan: 5 }
+                                    ]
                                 ]
-                            ],
-                            body: [
-                                [
-                                    { content: selectedEmergencyStudent.sGrade + "학년 " + selectedEmergencyStudent.sClass + "반", styles: { textColor: [0, 0, 0], halign: 'center' }, colSpan: 2 }, // 폰트 색상 변경
-                                    { content: selectedEmergencyStudent.sName, styles: { textColor: [0, 0, 0], halign: 'center' } },
-                                    { content: selectedEmergencyStudent.sGender, styles: { textColor: [0, 0, 0], halign: 'center' } },
-                                    { content: selectedEmergencyStudent.guardianContact ? selectedEmergencyStudent.guardianContact : "", styles: { textColor: [0, 0, 0], halign: 'center' } },
-                                    { content: selectedEmergencyStudent.homeroomTeacherName, styles: { textColor: [0, 0, 0], halign: 'center' } }
-                                ],
-                                [
-                                    { content: "주증상", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], minCellHeight: 20, valign: 'middle' }, colSpan: 2 },
-                                    { content: selectedEmergencyStudent.mainSymptom ? selectedEmergencyStudent.mainSymptom : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 },
-                                    { rowSpan: 5, colSpan: 2 }
-                                ],
-                                [
-                                    { content: "발\r생\r장\r소\r&\r시\r간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', valign: 'middle', fillColor: [251, 225, 206], cellWidth: 10 }, rowSpan: 4 },
-                                    { content: "발생\r장소", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
-                                    { content: selectedEmergencyStudent.occuringArea ? selectedEmergencyStudent.occuringArea : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 },
-                                ],
-                                [
-                                    { content: "최초\r목격자", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
-                                    { content: selectedEmergencyStudent.firstWitness ? selectedEmergencyStudent.firstWitness : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
-                                ],
-                                [
-                                    { content: "최초\r발견\r시간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
-                                    { content: selectedEmergencyStudent.firstDiscoveryTime ? convertDateTimeValue("dt", selectedEmergencyStudent.firstDiscoveryTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
-                                ],
-                                [
-                                    { content: "보건\r교사\r확인\r시간", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], cellWidth: 17 } },
-                                    { content: selectedEmergencyStudent.teacherConfirmTime ? convertDateTimeValue("dt", selectedEmergencyStudent.teacherConfirmTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 2 }
-                                ],
-                                [ 
-                                    { content: "활력징후", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle', minCellHeight: 12 }, colSpan: 2 },
-                                    { content: selectedEmergencyStudent.vitalSign ? selectedEmergencyStudent.vitalSign : "", styles: { textColor: [0, 0, 0] }, colSpan: 5 }
-                                ],
-                                [
-                                    { content: "사고 개요", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle', minCellHeight: 20 }, colSpan: 2 },
-                                    { content: selectedEmergencyStudent.accidentOverview ? selectedEmergencyStudent.accidentOverview : "", styles: { textColor: [0, 0, 0] }, colSpan: 5 }
-                                ],
-                                [
-                                    { content: "응급처치\r내용", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle', minCellHeight: 20 }, colSpan: 2 },
-                                    { content: selectedEmergencyStudent.emergencyTreatmentDetail ? selectedEmergencyStudent.emergencyTreatmentDetail : "", styles: { textColor: [0, 0, 0] }, colSpan: 5 }
-                                ],
-                                [
-                                    { content: "이송시간 및\r이송방법", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', fillColor: [251, 225, 206], valign: 'middle' }, rowSpan: 4, colSpan: 2 },
-                                    { content: "이송시간", styles: { textColor: [0, 0, 0], halign: 'center', cellWidth: 25 } },
-                                    { content: selectedEmergencyStudent.transferTime ? convertDateTimeValue("t", selectedEmergencyStudent.transferTime) : "", styles: { textColor: [0, 0, 0] }, colSpan: 4 }
-                                ],
-                                [
-                                    { content: "이송차량", styles: { textColor: [0, 0, 0], halign: 'center' } },
-                                    { content: (selectedEmergencyStudent.transferVehicle === "ambulance" ? "\u25A0" : "\u25A1") + "구급차     " + (selectedEmergencyStudent.transferVehicle === "generalVehicle" ? "\u25A0" : "\u25A1") + "일반차량     " + (selectedEmergencyStudent.transferVehicle.split("::")[0] === "etcTransfer" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.transferVehicle.split("::")[0] === "etcTransfer" ? selectedEmergencyStudent.transferVehicle.split("::")[1] : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
-                                ],
-                                [
-                                    { content: "이송자", styles: { textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
-                                    { content: (selectedEmergencyStudent.transpoter === "paramedic" ? "\u25A0" : "\u25A1") + "119 대원          " + (selectedEmergencyStudent.transpoter === "schoolNurse" ? "\u25A0" : "\u25A1") + "보건교사          " + (selectedEmergencyStudent.transpoter === "homeroomTeacher" ? "\u25A0" : "\u25A1") + "담임          " + (selectedEmergencyStudent.transpoter === "parents" ? "\u25A0" : "\u25A1") + "학부모\r" + (selectedEmergencyStudent.transpoter.split("::")[0] === "etcTranspoter" ? "\u25A0" : "\u25A1") + "기타(" + (selectedEmergencyStudent.transpoter.split("::")[0] === "etcTranspoter" ? selectedEmergencyStudent.transpoter.split("::")[1] : "     ") + ")",  styles: { textColor: [0, 0, 0] }, colSpan: 4 }
-                                ],
-                                [
-                                    { content: "이송병원", styles: { textColor: [0, 0, 0], halign: 'center' } },
-                                    { content: selectedEmergencyStudent.transferHospital ? selectedEmergencyStudent.transferHospital : "", styles: { textColor: [0, 0, 0] }, colSpan: 4 }
-                                ],
-                                [
-                                    { content: "작성일 및\r작성자", styles: { font: 'NanumGothicBold', textColor: [0, 0, 0], halign: 'center', valign: 'middle', fillColor: [251, 225, 206] }, colSpan: 2 },
-                                    { content: convertDateTimeValue("d", selectedEmergencyStudent.registDate) + "\r\r성명 :            " + selectedEmergencyStudent.registerName + "       (인)", styles: { textColor: [0, 0, 0], halign: 'center' }, colSpan: 5 }
-                                ]
-                            ]
-                        });
+                            });
 
-                        doc.text(15, 270, "* 안전사고 발생 시 환자 상태, 사고 현황, 응급처치 내용 및 이송 상황에 대하여 육하원칙에 의거 기록\r   (사건 개요는 담임교사 또는 사고 당시 교과담당 교사가 작성)");
-                        
-                        const imageMapperDiv = document.getElementById("imageMapperContainer");
-                        htmlToImage.toPng(imageMapperDiv)
-                        .then((dataUrl) => {
-                            const base64Img = dataUrl.split(',')[1];
-                            const img = new Image();
-                            img.src = 'data:image/png;base64,' + base64Img;
-                            img.onload = function() {
-                                doc.addImage(img, 'PNG', 126, 67, 69.9, 87.5);
-                                doc.save('응급사고 및 이송 기록지_' + selectedEmergencyStudent.sName +  '.pdf');
-                            }
-                        });
-                    };
-                });
-            };
-        });
+                            doc.text(15, 270, "* 안전사고 발생 시 환자 상태, 사고 현황, 응급처치 내용 및 이송 상황에 대하여 육하원칙에 의거 기록\r   (사건 개요는 담임교사 또는 사고 당시 교과담당 교사가 작성)");
+                            
+                            const imageMapperDiv = document.getElementById("imageMapperContainer");
+                            htmlToImage.toPng(imageMapperDiv)
+                            .then((dataUrl) => {
+                                const base64Img = dataUrl.split(',')[1];
+                                const img = new Image();
+                                img.src = 'data:image/png;base64,' + base64Img;
+                                img.onload = function() {
+                                    doc.addImage(img, 'PNG', 126, 67, 69.9, 87.5);
+                                    doc.save('응급사고 및 이송 기록지_' + selectedEmergencyStudent.sName +  '.pdf');
+                                }
+                            });
+                        };
+                    });
+                };
+            });
+        }else{
+            const warnMessage = "선택된 응급일지 내역이 없습니다";
+            NotiflixWarn(warnMessage);
+            return;
+        }
     };
 
     const convertDateTimeValue = (category, dateTime) => {
@@ -1152,7 +1162,6 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
                                         id='guardianContact'
                                         className='ml-2 mr-2'
                                         type='tel'
-                                        placeholder='010-0000-0000'
                                         pattern='[0-9]{2,3}-[0-9]{3,4}-[0-9]{3,4}'
                                         maxLength={13}
                                         style={{ width: '60%' }}

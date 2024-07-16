@@ -33,6 +33,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 const MENU_ID_LEFT_GRID = 'students_context_menu';
 const MENU_ID_RIGHT_GRID = 'delete_context_menu';
 const MENU_ID_RENTAL_GRID = 'rental_context_menu';
+const MENU_ID_RETURN_GRID = 'return_context_menu';
 
 function WorkNote(args) {
   const { user, getUser } = useUser();                              // 사용자 정보
@@ -113,6 +114,8 @@ function WorkNote(args) {
   const [selectedRentalStudent, setSelectedRentalStudent] = useState(null);
   const [rentalAmount, setRentalAmount] = useState(0);
   const [rentalPopOverOpen, setRentalPopOverOpen] = useState(false);
+  const [selectedRentalRow, setSelectedRentalRow] = useState(null);
+  const [isReturnGridRowSelect, setIsReturnGridRowSelect] = useState(false);
 
   const searchStudentGridRef = useRef();
   const rentalSearchStudentGridRef = useRef();
@@ -138,6 +141,10 @@ function WorkNote(args) {
 
   const { show: showRentalMenu } = useContextMenu({
     id: MENU_ID_RENTAL_GRID
+  });
+
+  const { show: showReturnMenu } = useContextMenu({
+    id: MENU_ID_RETURN_GRID
   });
 
   // 최초 Grid Render Event
@@ -234,7 +241,7 @@ function WorkNote(args) {
   ]);
 
   const [rentalProductColumnDefs] = useState([
-    { field: "productName", headerName: "물품명", flex: 2, cellStyle: { textAlign: "center" }},
+    { field: "productName", headerName: "물품명", flex: 2, cellStyle: { textAlign: "left" }},
     { field: "productAmount", headerName: "재고", flex: 1, cellStyle: { textAlign: "center" }, 
       valueParser: (params) => {
         const value = parseInt(params.newValue, 10);
@@ -248,7 +255,7 @@ function WorkNote(args) {
     { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
     { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }},
-    { field: "productName", headerName: "물품명", flex: 3, cellStyle: { textAlign: "center" }},
+    { field: "productName", headerName: "물품명", flex: 3, cellStyle: { textAlign: "left" }},
   ]);
 
   // 기본 컬럼 속성 정의 (공통 부분)
@@ -2080,31 +2087,67 @@ function WorkNote(args) {
   };
 
   function handleRentalGridContextMenu(event) {
-    const api = rentalProductGridRef.current.api;
-    const rowIndex = event.target.parentNode.getAttribute('row-index');
-
-    if (rowIndex !== null) {
-      api.ensureIndexVisible(rowIndex);
-      api.forEachNode((node) => {
-        if (node.rowIndex == rowIndex) {
-          node.setSelected(true, true);
+    if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
+      return;
+    }else{
+      const api = rentalProductGridRef.current.api;
+      const rowIndex = event.target.parentNode.getAttribute('row-index');
+  
+      if (rowIndex !== null) {
+        api.ensureIndexVisible(rowIndex);
+        api.forEachNode((node) => {
+          if (node.rowIndex == rowIndex) {
+            node.setSelected(true, true);
+          }
+        });
+        
+        const selectedRow = api.getSelectedRows()[0];
+        if (selectedRow) {
+          setSelectedRentalProductRow(selectedRow);
+          setIsRentalGridRowSelect(true);
         }
-      });
-      
-      const selectedRow = api.getSelectedRows()[0];
-      if (selectedRow) {
-        setSelectedRentalProductRow(selectedRow);
-        setIsRentalGridRowSelect(true);
+  
+        showRentalMenu({
+          event,
+          props: {
+            key: 'value'
+          }
+        });
       }
-
-      showRentalMenu({
-        event,
-        props: {
-          key: 'value'
-        }
-      });
     }
-  }
+  };
+
+  function handleReturnGridContextMenu(event) {
+    if(event.target.classList.value.includes("ag-header-cell-label") || event.target.classList.value.includes("ag-center-cols-viewport") || event.target.classList.value.includes("ag-header-cell") || event.target.classList.value.includes("ag-icon-menu") || event.target.classList.value.includes("ag-cell-label-container")) {
+      return;
+    }else{
+      const api = rentalListGridRef.current.api;
+      const rowIndex = event.target.parentNode.getAttribute('row-index');
+  
+      if (rowIndex !== null) {
+        api.ensureIndexVisible(rowIndex);
+        api.forEachNode((node) => {
+          if (node.rowIndex == rowIndex) {
+            node.setSelected(true, true);
+          }
+        });
+        
+        const selectedRow = api.getSelectedRows()[0];
+        if (selectedRow) {
+          setSelectedRentalRow(selectedRow);
+          setIsReturnGridRowSelect(true);
+        }
+  
+        showReturnMenu({
+          event,
+          props: {
+            key: 'value'
+          }
+        });
+      }
+    }
+  };
+
 
   const handleEmergencyStudent = () => {
     toggleManageEmergencyModal();
@@ -2815,6 +2858,25 @@ function WorkNote(args) {
     fetchRentalData();
   }, [fetchRentalData]);
 
+  const returnProduct = async () => {
+    if(selectedRentalRow) {
+      const response = await axios.post(`${BASE_URL}/api/workNote/saveReturn`, {
+        rowId: selectedRentalRow.id,
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        productId: selectedRentalRow.productId,
+        productAmount: selectedRentalRow.productAmount
+      });
+
+      if(response.data === 'success') {
+        const infoMessage = "물품 반납이 정상적으로 처리되었습니다";
+        NotiflixInfo(infoMessage, true, '320px');
+        fetchRentalData();
+        fetchRentalProdectData();
+      }
+    }
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh' }}>
@@ -2844,7 +2906,7 @@ function WorkNote(args) {
                       </Popover>
                     </Label>
                     <Col className="d-flex justify-content-end pr-2">
-                      <IoMdSettings onClick={handleManageRentalProduct} style={{ fontSize: 18, cursor: 'pointer' }} />
+                      <IoMdSettings onClick={handleManageRentalProduct} style={{ fontSize: 18, cursor: 'pointer', marginTop: 3 }} />
                     </Col>
                   </Row>
                   <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }} onContextMenu={handleRentalGridContextMenu}>
@@ -2871,11 +2933,11 @@ function WorkNote(args) {
                         물품 대여 이용 안내
                       </PopoverHeader>
                       <PopoverBody>
-                        우측 관리 버튼을 클릭하여 대여물품을 등록하시면 하단 목록에서 대여물품을 관리하실 수 있습니다. <span style={{ color: 'red' }}>물품 우클릭</span> 시 바로 대여를 희망하는 학생을 선택하여 물품 대여를 등록하실 수 있습니다
+                        대여 목록에서 <span style={{ color: 'red' }}>우클릭</span> 후 반납 클릭 시 바로 해당 물품을 반납 처리하실 수 있습니다. 반납 처리 시 재고에 즉시 반영됩니다.
                       </PopoverBody>
                     </Popover>
                   </Label>
-                  <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }}>
+                  <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }} onContextMenu={handleReturnGridContextMenu}>
                     <AgGridReact
                       rowHeight={24}
                       ref={rentalListGridRef}
@@ -3034,7 +3096,10 @@ function WorkNote(args) {
                           <Item id="deleteWorkNote" onClick={deleteWorkNote}>보건일지 내역 삭제</Item>
                       </Menu>
                       <Menu id={MENU_ID_RENTAL_GRID} animation="fade">
-                          <Item id="rentalProduct" onClick={rentalProduct}>물품 대여</Item>
+                        <Item id="rentalProduct" onClick={rentalProduct}>물품 대여</Item>
+                      </Menu>
+                      <Menu id={MENU_ID_RETURN_GRID} animation="fade">
+                        <Item id="returnProduct" onClick={returnProduct}>물품 반납</Item>
                       </Menu>
                     </div>
                   </Col>
