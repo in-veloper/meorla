@@ -112,6 +112,7 @@ function WorkNote(args) {
   const [rentalProductModal, setRentalProductModal] = useState(false);
   const [selectedRentalStudent, setSelectedRentalStudent] = useState(null);
   const [rentalAmount, setRentalAmount] = useState(0);
+  const [rentalPopOverOpen, setRentalPopOverOpen] = useState(false);
 
   const searchStudentGridRef = useRef();
   const rentalSearchStudentGridRef = useRef();
@@ -156,6 +157,7 @@ function WorkNote(args) {
   const toggleRegistRentalProductModal = () => setRegistRentalProductModal(!registRentalProductModal);
   const toggleManageEmergencyModal = () => setManageEmergencytModal(!manageEmergencyModal);
   const toggleRentalProductModal = () => setRentalProductModal(!rentalProductModal);
+  const toggleRentalPopOver = () => setRentalPopOverOpen(!rentalPopOverOpen);
 
   const customCellRenderer = (params) => {
     const { value } = params;
@@ -2788,7 +2790,7 @@ function WorkNote(args) {
         const infoMessage = "물품 대여가 정상적으로 처리되었습니다";
         NotiflixInfo(infoMessage, true, '320px');
         fetchRentalProdectData();
-        // fetchRentalData();
+        fetchRentalData();
         toggleRentalProductModal();
       }
     }
@@ -2829,22 +2831,21 @@ function WorkNote(args) {
               <Col md="5">
                 <div style={{ border: '1.5px solid lightgray', borderRadius: 3 }}>
                   <Row className="d-flex align-items-center no-gutters">
-
-                  <Label className="m-0 pl-2 pt-1 font-weight-bold">
-                    대여물품 목록
-                    <IoInformationCircleOutline className="text-muted" id="rental-product-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
-                    <Popover flip target="rental-product-popover" isOpen={rentalProductPopOverOpen} toggle={toggleRentalProductPopOver} trigger="focus">
-                      <PopoverHeader>
-                        대여 물품 관리 안내
-                      </PopoverHeader>
-                      <PopoverBody>
-                        우측 관리 버튼을 클릭하여 대여물품을 등록하시면 하단 목록에서 대여물품을 관리하실 수 있습니다. <span style={{ color: 'red' }}>물품 우클릭</span> 시 바로 대여를 희망하는 학생을 선택하여 물품 대여를 등록하실 수 있습니다
-                      </PopoverBody>
-                    </Popover>
-                  </Label>
-                  <Col className="d-flex justify-content-end pr-2">
-                    <IoMdSettings onClick={handleManageRentalProduct} style={{ fontSize: 18, cursor: 'pointer' }} />
-                  </Col>
+                    <Label className="m-0 pl-2 pt-1 font-weight-bold">
+                      대여물품 목록
+                      <IoInformationCircleOutline className="text-muted" id="rental-product-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
+                      <Popover flip target="rental-product-popover" isOpen={rentalProductPopOverOpen} toggle={toggleRentalProductPopOver} trigger="focus">
+                        <PopoverHeader>
+                          대여 물품 관리 안내
+                        </PopoverHeader>
+                        <PopoverBody>
+                          우측 관리 버튼을 클릭하여 대여물품을 등록하시면 하단 목록에서 대여물품을 관리하실 수 있습니다. <span style={{ color: 'red' }}>물품 우클릭</span> 시 바로 대여를 희망하는 학생을 선택하여 물품 대여를 등록하실 수 있습니다
+                        </PopoverBody>
+                      </Popover>
+                    </Label>
+                    <Col className="d-flex justify-content-end pr-2">
+                      <IoMdSettings onClick={handleManageRentalProduct} style={{ fontSize: 18, cursor: 'pointer' }} />
+                    </Col>
                   </Row>
                   <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }} onContextMenu={handleRentalGridContextMenu}>
                     <AgGridReact
@@ -2862,7 +2863,18 @@ function WorkNote(args) {
               </Col>
               <Col className="pl-0">
                 <div style={{ border: '1.5px solid lightgray', borderRadius: 3 }}>
-                  <Label className="m-0 pl-2 pt-1 font-weight-bold">대여 목록</Label>
+                  <Label className="m-0 pl-2 pt-1 font-weight-bold">
+                    대여 목록
+                    <IoInformationCircleOutline className="text-muted" id="rental-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
+                    <Popover flip target="rental-popover" isOpen={rentalPopOverOpen} toggle={toggleRentalPopOver} trigger="focus">
+                      <PopoverHeader>
+                        물품 대여 이용 안내
+                      </PopoverHeader>
+                      <PopoverBody>
+                        우측 관리 버튼을 클릭하여 대여물품을 등록하시면 하단 목록에서 대여물품을 관리하실 수 있습니다. <span style={{ color: 'red' }}>물품 우클릭</span> 시 바로 대여를 희망하는 학생을 선택하여 물품 대여를 등록하실 수 있습니다
+                      </PopoverBody>
+                    </Popover>
+                  </Label>
                   <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }}>
                     <AgGridReact
                       rowHeight={24}
