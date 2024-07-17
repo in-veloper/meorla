@@ -893,37 +893,31 @@ function User() {
   };
 
   const saveResetPassword = () => {
-    if(!resetPasswordVerified) {
-      const warnMessage = "이메일 인증을 완료해주세요";
+    if(initialPassword.length === 0) {
+      const warnMessage = "초기화할 비밀번호를 입력해주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }else if(!validatePassword(initialPassword)) {
+      const warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다";
       NotiflixWarn(warnMessage);
       return;
     }else{
-      if(initialPassword.length === 0) {
-        const warnMessage = "초기화할 비밀번호를 입력해주세요";
-        NotiflixWarn(warnMessage);
-        return;
-      }else if(!validatePassword(initialPassword)) {
-        const warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다";
-        NotiflixWarn(warnMessage);
-        return;
-      }else{
-        axios.post(`${BASE_URL}/api/reset-password`, { userId: user.userId, newPassword: initialPassword })
-          .then((response) => {
-            if (response.data === 'success') {
-              const infoMessage = "비밀번호가 초기화 되었습니다";
-              NotiflixInfo(infoMessage);
-              togglePasswordSettingModal();
-            } else {
-              const warnMessage = "비밀번호 초기화에 실패하였습니다";
-              NotiflixWarn(warnMessage);
-            }
-          })
-          .catch((error) => {
-            console.log("비밀번호 초기화 중 ERROR", error);
-            const warnMessage = "비밀번호 초기화 중 문제가 발생하였습니다<br/>관리자에게 문의해 주세요";
+      axios.post(`${BASE_URL}/api/reset-password`, { userId: user.userId, newPassword: initialPassword })
+        .then((response) => {
+          if (response.data === 'success') {
+            const infoMessage = "비밀번호가 초기화 되었습니다";
+            NotiflixInfo(infoMessage);
+            togglePasswordSettingModal();
+          } else {
+            const warnMessage = "비밀번호 초기화에 실패하였습니다";
             NotiflixWarn(warnMessage);
-        });
-      }
+          }
+        })
+        .catch((error) => {
+          console.log("비밀번호 초기화 중 ERROR", error);
+          const warnMessage = "비밀번호 초기화 중 문제가 발생하였습니다<br/>관리자에게 문의해 주세요";
+          NotiflixWarn(warnMessage);
+      });
     }
   };
 
@@ -2184,7 +2178,11 @@ function User() {
             <Col className="mt-0 mb-0">
               <Button onClick={resetPassword}>비밀번호 초기화</Button>
             </Col>
-            <Button className="mr-1" onClick={saveResetPassword}>저장</Button>
+            {!showVerification ? (
+              <Button className="mr-1" onClick={savePassword}>저장</Button>
+            ) : (
+              <Button className="mr-1" onClick={saveResetPassword}>저장</Button>
+            )}
             <Button onClick={togglePasswordSettingModal}>취소</Button>
           </ModalFooter>
       </Modal>
