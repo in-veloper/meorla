@@ -487,7 +487,6 @@ function Community() {
         } catch (error) {
             console.log("자료공유 파일 업로드 중 ERROR", error);
         }
-
     };
 
     const fetchResourceSharingData = useCallback(async () => {

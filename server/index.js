@@ -1976,6 +1976,38 @@ app.get('/api/dashboard/getMemo', async (req, res) => {
     });
 });
 
+app.post("/api/dashboard/saveAnnounce", async (req, res) => {
+    const { userId, userName, schoolCode, announceTitle, announceContent, fileName, fileUrl, category } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.uploadFile (userId, schoolCode, category, fileName, fileUrl) VALUES (?,?,?,?,?)";
+    db.query(sqlQuery, [userId, schoolCode, category, fileName, fileUrl], (err, result) => {
+        if(err) {
+            console.log("공지사항 업로드 파일 정보 INSERT 처리 중 ERROR", err);
+        }else{
+            const sqlQuery2 = "INSERT INTO teaform_db.announce (userId, userName, schoolCode, announceTitle, announceContent, fileName, fileUrl) VALUES (?,?,?,?,?,?,?)"
+            db.query(sqlQuery2, [userId, userName, schoolCode, announceTitle, announceContent, fileName, fileUrl], (err, result) => {
+                if(err) {
+                    console.log("공지사항 글 INSERT 처리 중 ERROR", err);
+                }else{
+                    res.send('success');
+                }
+            });
+        }
+    });
+});
+
+app.get("/api/dashboard/getAnnounce", async (req, res) => {
+    const sqlQuery = "SELECT * FROM teaform_db.announce ORDER BY createdAt DESC";
+
+    db.query(sqlQuery, [], (err, result) => {
+        if(err) {
+            console.log("공지사항 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.post('/api/qnaRequest/saveQnaRequest', async (req, res) => {
     const { userId, userName, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret } = req.body;
 

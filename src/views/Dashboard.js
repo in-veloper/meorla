@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState, useCallback} from "react";
-import {Card, CardTitle, Row, Col, UncontrolledAlert, Input, Button} from "reactstrap";
+import {Card, CardTitle, Row, Col, UncontrolledAlert, Input, Button, Modal, ModalHeader, ModalBody, ModalFooter, Label} from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 import ReactQuill from "react-quill";
+import { useDropzone } from "react-dropzone";
 import "react-quill/dist/quill.snow.css";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -24,13 +25,24 @@ function Dashboard() {
   const [entireScheduleRowData, setEntireScheduleRowData] = useState([]);
   const [filteredScheduleRowData, setFilteredScheduleRowData] = useState([]);
   const [memoData, setMemoData] = useState("");
+  const [announceWriteModal, setAnnounceWriteModal] = useState(false);
+  const [titleValue, setTitleValue] = useState("");
+  const [announceContentData, setAnnounceContentData] = useState("");
+  const [uploadedFileUrl, setUploadedFileUrl] = useState(null);
+  const [uploadedFileName, setUploadedFileName] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileMessage, setFileMessage] = useState(<div className='d-flex justify-content-center align-items-center text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>);
+  const [announceData, setAnnounceData] = useState([]);
 
   const qrGridRef = useRef(null);
   const visitRequestGridRef = useRef(null);
   const todayScheduleGridRef = useRef(null);
   const entireScheduleGridRef = useRef(null);
-  const gridRef = useRef(null);
+  const announceGridRef = useRef(null);
   const quillRef = useRef(null);
+  const announceQuillRef = useRef(null);
+
+  const toggleAnnounceWriteModal = () => setAnnounceWriteModal(!announceWriteModal);
 
   const [rowData] = useState([
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
@@ -38,14 +50,11 @@ function Dashboard() {
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
   ]);
 
-  const [columnDefs] = useState([
-    { field: "registeredDate", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "studentName", headerName: "이름", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "symptom", headerName: "증상", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "treatAction", headerName: "처치사항", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "dosageAction", headerName: "투약사항", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "measureAction", headerName: "조치사항", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "bedRest", headerName: "침상안정", flex: 1, cellStyle: { textAlign: "center" } }
+  const [announcColumnDefs] = useState([
+    { field: "announceTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "center" } },
+    { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" } },
+    { field: "dosageAction", headerName: "첨부파일 여부", flex: 1, cellStyle: { textAlign: "center" } }
   ]);
 
   const eventPeriodFormatter = (params) => {
@@ -70,6 +79,12 @@ function Dashboard() {
   const replyFormatter = (params) => {
     if(params.data.reply) return "답변";
     else return "미답변";
+  };
+
+  const notEditDefaultColDef = {
+    sortable: true,
+    resizable: true,
+    filter: true
   };
 
   const [qrColumnDefs] = useState([
@@ -241,6 +256,116 @@ function Dashboard() {
     fetchMemoData()
   }, [fetchMemoData]);
 
+  const handleAnnounceQuillChange = (content, delta, source, editor) => {
+    setAnnounceContentData(editor.getContents());
+  };
+
+  const handleFileDelete = () => {
+    setUploadedFileUrl(null);
+    setUploadedFileName(null);
+    setSelectedFile(null);
+    setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br />파일을 업로드 해주세요</div>);
+  };
+  
+  const onDrop = useCallback((acceptedFiles, fileRejections) => {
+    if (acceptedFiles.length > 0) {
+        setSelectedFile(acceptedFiles[0]);
+        setUploadedFileUrl(null);
+        setUploadedFileName(acceptedFiles[0].name);
+        setFileMessage(
+            <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
+                {acceptedFiles[0].name}
+                <Button close onClick={() => handleFileDelete()} />
+            </div>
+        );
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, open } = useDropzone({
+    onDrop,
+    multiple: false,
+    noClick: uploadedFileUrl !== null, // 파일이 업로드된 상태에서는 클릭 비활성화
+  });
+
+  const resetAnnounceWrite = () => {
+    setTitleValue("");
+    setAnnounceContentData("");
+    setSelectedFile(null);
+    setUploadedFileUrl(null);
+    setUploadedFileName(null);
+    setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>);
+  };
+
+  const saveAnnounceWrite = async () => {
+    const payload = { content: announceContentData };
+
+    let fileName = null;
+    let fileUrl = null;
+
+    if (selectedFile) {
+        let formData = new FormData();
+        const encodedFileName = encodeURIComponent(selectedFile.name).replace(/%20/g, "+");
+        formData.append("uploadPath", `${user.userId}/announceFiles`);
+        formData.append("file", new File([selectedFile], encodedFileName, { type: selectedFile.type }));
+
+        const config = { headers: { "Content-Type": "multipart/form-data" }};
+
+        try{
+            const fileUploadResponse = await axios.post(`${BASE_URL}/upload/image`, formData, config);
+
+            if(fileUploadResponse.status === 200) {
+                const { filename, fileUrl: newFileUrl } = fileUploadResponse.data;
+                fileName = filename;
+                fileUrl = newFileUrl;
+            }
+        } catch (error) {
+            console.log("공지사항 파일 업로드 중 ERROR", error);
+            return; // 파일 업로드 실패 시 함수 종료
+        }
+    }
+
+    try{
+        const response = await axios.post(`${BASE_URL}/api/dashboard/saveAnnounce`, {
+            userId: user.userId,
+            userName: user.name,
+            schoolCode: user.schoolCode,
+            announceTitle: titleValue,
+            announceContent: JSON.stringify(payload),
+            fileName: fileName,
+            fileUrl: fileUrl,
+            category: "announce"
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "공지사항이 정상적으로 등록되었습니다";
+            NotiflixInfo(infoMessage);
+            toggleAnnounceWriteModal();
+            fetchAnnounceData();
+            resetAnnounceWrite();
+        }
+    } catch (error) {
+        console.log("자료공유 파일 업로드 중 ERROR", error);
+    }
+  };
+
+  const fetchAnnounceData = useCallback(async () => {
+    if(user) {
+        const response = await axios.get(`${BASE_URL}/api/dashboard/getAnnounce`, {});
+
+        if(response.data) {
+            setAnnounceData(response.data);
+        }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchAnnounceData();
+  }, [fetchAnnounceData]);
+
+  const handleAnnounceWrite = () => {
+    toggleAnnounceWriteModal();
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh' ,display: 'flex', flexDirection: 'column' }}>
@@ -260,7 +385,7 @@ function Dashboard() {
                 </Col>
                 {isAdmin && (
                   <Col className="d-flex justify-content-end">
-                    <Button className="m-0 pb-0 pt-0" size="sm">공지사항 작성</Button>
+                    <Button className="m-0 pb-0 pt-0" size="sm" onClick={handleAnnounceWrite}>공지사항 작성</Button>
                   </Col>
                 )}
               </Row>
@@ -269,9 +394,10 @@ function Dashboard() {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
                   rowHeight={35}
-                  ref={gridRef}
-                  rowData={rowData}
-                  columnDefs={columnDefs}
+                  ref={announceGridRef}
+                  rowData={announceData}
+                  columnDefs={announcColumnDefs}
+                  defaultColDef={notEditDefaultColDef}
                 />
               </div>
             </Card>
@@ -294,6 +420,7 @@ function Dashboard() {
                   ref={qrGridRef}
                   rowData={qnaRequestData}
                   columnDefs={qrColumnDefs}
+                  defaultColDef={notEditDefaultColDef}
                 />
               </div>
             </Card>
@@ -318,6 +445,7 @@ function Dashboard() {
                   ref={visitRequestGridRef}
                   rowData={visitRequestList}
                   columnDefs={visitRequestColumnDefs}
+                  defaultColDef={notEditDefaultColDef}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">보건실 방문 요청 내역이 없습니다</span>' } 
                 />
               </div>
@@ -338,9 +466,10 @@ function Dashboard() {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
                   rowHeight={35}
-                  ref={gridRef}
+                  ref={announceGridRef}
                   rowData={rowData}
-                  columnDefs={columnDefs}
+                  columnDefs={announcColumnDefs}
+                  defaultColDef={notEditDefaultColDef}
                 />
               </div>
             </Card>
@@ -365,6 +494,7 @@ function Dashboard() {
                   ref={todayScheduleGridRef}
                   rowData={todayScheduleRowData}
                   columnDefs={eventColumnDefs}
+                  defaultColDef={notEditDefaultColDef}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">오늘 등록된 일정이 없습니다</span>' } 
                 />
               </div>
@@ -388,6 +518,7 @@ function Dashboard() {
                   ref={entireScheduleGridRef}
                   rowData={filteredScheduleRowData}
                   columnDefs={eventColumnDefs}
+                  defaultColDef={notEditDefaultColDef}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 일정이 없습니다</span>' } 
                 />
               </div>
@@ -420,6 +551,72 @@ function Dashboard() {
             </Card>
           </Col>
         </Row>
+
+        <Modal isOpen={announceWriteModal} toggle={toggleAnnounceWriteModal} centered style={{ minWidth: '32%' }}>
+          <ModalHeader toggle={toggleAnnounceWriteModal}><b className="text-muted">공지사항 글쓰기</b></ModalHeader>
+          <ModalBody className="pb-0">
+            <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                <Col md="1" className="text-center">
+                    <Label>제목</Label>
+                </Col>
+                <Col md="11" className="pr-4">
+                    <Input 
+                        id="communityTitle"
+                        type="text"
+                        value={titleValue}
+                        onChange={(e) => setTitleValue(e.target.value)}
+                    />
+                </Col>
+            </Row>
+            <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                <Col md="1" className="text-center">
+                    <Label>내용</Label>
+                </Col>
+                <Col md="11" className="pr-4">
+                    <div style={{ height: '20.6vh' }}>
+                        <ReactQuill
+                            ref={announceQuillRef}
+                            style={{ height: "14vh" }}
+                            theme="snow"
+                            modules={modules}
+                            formats={formats}
+                            value={announceContentData || ""}
+                            onChange={handleAnnounceQuillChange}
+                        />
+                    </div>
+                </Col>
+            </Row>
+            <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3" style={{ marginLeft: 2}}>
+                <Col md="1" className="text-center">
+                    <Label>파일</Label>
+                </Col>
+                <Col md="11" style={{ border: '1px solid lightgrey', borderRadius: 3 }}>
+                    {uploadedFileUrl ? (
+                        <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
+                            <a href={uploadedFileUrl} download>{uploadedFileName}</a>
+                            <Button close onClick={handleFileDelete} />
+                        </div>
+                    ) : (
+                        <div {...getRootProps({ className: 'dropzone' })} style={{ width: '100%', height: '5vh', paddingTop: '7px', textAlign: 'center' }}>
+                            <input {...getInputProps()} />
+                            {fileMessage}
+                        </div>
+                    )}
+                </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter className="p-0">
+              <Row style={{ width: '100%'}}>
+                  <Col className="d-flex justify-content-start">
+                      <Button onClick={resetAnnounceWrite}>초기화</Button>
+                  </Col>
+                  <Col className="d-flex justify-content-end">
+                      <Button className="mr-1" color="secondary" onClick={saveAnnounceWrite}>저장</Button>
+                      <Button color="secondary" onClick={toggleAnnounceWriteModal}>취소</Button>
+                  </Col>
+              </Row>
+          </ModalFooter>
+        </Modal>
       </div>
     </>
   );

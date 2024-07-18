@@ -2916,6 +2916,7 @@ function WorkNote(args) {
                       rowData={rentalProductRowData} 
                       columnDefs={rentalProductColumnDefs}
                       defaultColDef={notEditDefaultColDef}
+                      suppressCellFocus={true}
                       headerHeight={0}                    
                       overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 대여물품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       rowSelection="single"
@@ -2944,6 +2945,7 @@ function WorkNote(args) {
                       rowData={rentalListRowData} 
                       columnDefs={rentalListColumnDefs}
                       defaultColDef={notEditDefaultColDef}
+                      suppressCellFocus={true}
                       headerHeight={0}                    
                       overlayNoRowsTemplate={ '<span style="color: #6c757d;">대여중인 물품이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                       rowSelection="single"
@@ -3768,6 +3770,7 @@ function WorkNote(args) {
                 ref={onBedStudentListGridRef}
                 rowData={onBedStudentListData}
                 columnDefs={onBedStudentListColumnDefs}
+                defaultColDef={notEditDefaultColDef}
                 overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                 overlayLoadingTemplate={
                   '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
@@ -3833,6 +3836,7 @@ function WorkNote(args) {
                     ref={protectStudentGridRef}
                     rowData={protectStudentsRowData}
                     columnDefs={protectStudentColumnDefs}
+                    defaultColDef={notEditDefaultColDef}
                     overlayNoRowsTemplate={ '<span>등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                     overlayLoadingTemplate={
                       '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
