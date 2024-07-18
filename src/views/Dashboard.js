@@ -33,6 +33,11 @@ function Dashboard() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileMessage, setFileMessage] = useState(<div className='d-flex justify-content-center align-items-center text-muted'>이 곳을 클릭하거나 드래그하여 <br/>파일을 업로드 해주세요</div>);
   const [announceData, setAnnounceData] = useState([]);
+  const [announceDetailModal, setAnnounceDetailModal] = useState(false);
+  const [announceSelectedRow, setAnnounceSelectedRow] = useState(null);
+  const [announceTitleDetailValue, setAnnounceTitleDetailValue] = useState("");
+  const [announceDetailContentData, setAnnounceDetailContentData]  = useState("");
+  const [announceContentDetailValue, setAnnounceContentDetailValue] = useState("");
 
   const qrGridRef = useRef(null);
   const visitRequestGridRef = useRef(null);
@@ -43,6 +48,7 @@ function Dashboard() {
   const announceQuillRef = useRef(null);
 
   const toggleAnnounceWriteModal = () => setAnnounceWriteModal(!announceWriteModal);
+  const toggleAnnounceDetailModal = () => setAnnounceDetailModal(!announceDetailModal);
 
   const [rowData] = useState([
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
@@ -287,6 +293,24 @@ function Dashboard() {
     noClick: uploadedFileUrl !== null, // 파일이 업로드된 상태에서는 클릭 비활성화
   });
 
+  // 공지사항 모달 열릴 시 Dropzone 파일 메시지 설정
+  useEffect(() => {
+    if(announceDetailModal && announceSelectedRow && announceSelectedRow.fileUrl) {
+        setUploadedFileUrl(announceSelectedRow.fileUrl);
+        setUploadedFileName(announceSelectedRow.fileName);
+        setFileMessage(
+            <div className='d-flex justify-content-center align-items-center text-muted pt-2'>
+                <a href={announceSelectedRow.fileUrl} download>{announceSelectedRow.fileName}</a>
+                <Button close onClick={() => handleFileDelete()} />
+            </div>
+        );
+    } else if (announceDetailModal && !announceSelectedRow) {
+        setUploadedFileUrl(null);
+        setUploadedFileName(null);
+        setFileMessage(<div className='text-muted'>이 곳을 클릭하거나 드래그하여 <br />파일을 업로드 해주세요</div>);
+    }
+  }, [announceDetailModal, setAnnounceSelectedRow]);
+
   const resetAnnounceWrite = () => {
     setTitleValue("");
     setAnnounceContentData("");
@@ -366,6 +390,34 @@ function Dashboard() {
     toggleAnnounceWriteModal();
   };
 
+  const handleAnnounceDetailQuillChange = (content, delta, source, editor) => {
+    setAnnounceContentDetailValue(editor.getContents());
+  };
+
+  const updateAnnounce = () => {
+
+  };
+
+  const deleteAnnounce = () => {
+
+  };
+
+  const announceDoubleClick = (params) => {
+    const selectedRow = params.data;
+
+    setAnnounceSelectedRow(selectedRow);
+    setAnnounceTitleDetailValue(selectedRow.announceTitle);
+    setAnnounceContentDetailValue(selectedRow.announceContent);
+    toggleAnnounceDetailModal();
+
+    const parsedContent = JSON.parse(selectedRow.announceContent);
+    setAnnounceDetailContentData(parsedContent.content);
+
+    if (announceQuillRef.current && announceQuillRef.current.getEditor) {
+      announceQuillRef.current.getEditor().setContents(parsedContent.content);
+    }
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh' ,display: 'flex', flexDirection: 'column' }}>
@@ -398,6 +450,7 @@ function Dashboard() {
                   rowData={announceData}
                   columnDefs={announcColumnDefs}
                   defaultColDef={notEditDefaultColDef}
+                  onRowDoubleClicked={announceDoubleClick}
                 />
               </div>
             </Card>
@@ -617,6 +670,92 @@ function Dashboard() {
               </Row>
           </ModalFooter>
         </Modal>
+
+        <Modal isOpen={announceDetailModal} toggle={toggleAnnounceDetailModal} centered style={{ minWidth: '32%' }}>
+          <ModalHeader toggle={toggleAnnounceDetailModal}><b className="text-muted">공지사항 상세</b></ModalHeader>
+          <ModalBody className="pb-0">
+              <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                  <Col md="1" className="text-center">
+                      <Label>제목</Label>
+                  </Col>
+                  <Col md="11" className="pr-4">
+                      <Input 
+                          id="communityTitle"
+                          type="text"
+                          defaultValue={announceSelectedRow ? announceSelectedRow.announceTitle : ""}
+                          onChange={(e) => setAnnounceTitleDetailValue(e.target.value)}
+                          readOnly={!isAdmin}
+                      />
+                  </Col>
+              </Row>
+              <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                  <Col md="1" className="text-center">
+                      <Label>내용</Label>
+                  </Col>
+                  <Col md="11" className="pr-4">
+                      {isAdmin ? (
+                          <div style={{ height: '20.6vh' }}>
+                              <ReactQuill
+                                  ref={announceQuillRef}
+                                  style={{ height: "14vh" }}
+                                  theme="snow"
+                                  modules={modules}
+                                  formats={formats}
+                                  defaultValue={announceDetailContentData || ""}
+                                  onChange={handleAnnounceDetailQuillChange}
+                              />
+                          </div>
+                      ) : (
+                          <div style={{ height: '26vh'}}>
+                              <ReactQuill
+                                  ref={announceQuillRef}
+                                  style={{ height: "24.5vh" }}
+                                  theme="snow"
+                                  modules={{ toolbar: false }}
+                                  readOnly={true}
+                                  value={announceDetailContentData || ""}
+                              />
+                          </div>
+                      )}
+                  </Col>
+              </Row>
+              <Row className="d-flex align-items-center text-muted no-gutters pt-0 pr-4 pb-3" style={{ marginLeft: 2 }}>
+                  <Col md="1" className="text-center">
+                      <Label>파일</Label>
+                  </Col>
+                  <Col className="p-2" md="11" style={{ border: '1px solid lightgrey', borderRadius: 3 }}>
+                      {isAdmin ? (
+                          <div {...getRootProps({className: 'dropzone'})} style={{ width: '100%', height: '5vh', paddingTop: '7px', textAlign: 'center' }}>
+                              <input {...getInputProps()}/>
+                              {fileMessage}
+                          </div>
+                      ) : (
+                          announceSelectedRow && announceSelectedRow.fileUrl ? (
+                              <b><a href={announceSelectedRow.fileUrl} download>{announceSelectedRow.fileName}</a></b>
+                          ) : (
+                              <div className="text-muted">파일 없음</div>
+                          )
+                      )}
+                  </Col>
+              </Row>
+          </ModalBody>
+          <ModalFooter className="p-0">
+              <Row style={{ width: '100%'}}>
+                  {isAdmin ? (
+                      <Col className="d-flex justify-content-end">
+                          <Button onClick={updateAnnounce}>수정</Button>
+                          <Button className="ml-1" onClick={deleteAnnounce}>삭제</Button>
+                          <Button className="ml-1" onClick={toggleAnnounceDetailModal}>취소</Button>
+                      </Col>
+                  ) : (
+                      <Col className="d-flex justify-content-end">
+                          <Button onClick={toggleAnnounceDetailModal}>취소</Button>
+                      </Col>
+                  )}
+              </Row>
+          </ModalFooter>
+        </Modal>
+
       </div>
     </>
   );
