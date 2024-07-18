@@ -3,6 +3,7 @@ import {Card, CardTitle, Row, Col, UncontrolledAlert, Input, Button, Modal, Moda
 import { useUser } from "contexts/UserContext";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
+import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
 import axios from "axios";
 import moment from 'moment';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
@@ -422,12 +423,77 @@ function Dashboard() {
     setAnnounceContentDetailValue(editor.getContents());
   };
 
-  const updateAnnounce = () => {
+  const updateAnnounce = async () => {
+    const payload = { content: announceContentDetailValue };
+    let fileUrl = uploadedFileUrl;
+    let fileName = uploadedFileName;
 
+    if(selectedFile) {
+      let formData = new FormData();
+      const encodedFileName = encodeURIComponent(selectedFile.name).replace(/%20/g, "+");
+      formData.append("uploadPath", `${user.userId}/resourceFiles`);
+      formData.append("file", new File([selectedFile], encodedFileName, { type: selectedFile.type }));
+
+      const config = { header: { "Content-Type": "multipart/form-data" }};
+
+      try {
+        const fileUploadResponse = await axios.post(`${BASE_URL}/upload/image`, formData, config);
+
+        if(fileUploadResponse.status === 200) {
+            const { filename, fileUrl: newFileUrl } = fileUploadResponse.data;
+            fileName = filename;
+            fileUrl = newFileUrl;
+        }
+      } catch (error) {
+          console.log("공지사항 파일 업로드 중 ERROR", error);
+          return;
+      }
+    }
+
+    const response = await axios.post(`${BASE_URL}/api/dashboard/updateAnnounce`, {
+      userId: user.userId,
+      schoolCode: user.schoolCode,
+      rowId: announceSelectedRow.id,
+      announceTitle: announceTitleDetailValue,
+      announceContent: JSON.stringify(payload),
+      fileName: fileName,
+      fileUrl: fileUrl
+    });
+
+    if(response.data === 'success') {
+      const infoMessage = "공지사항 글이 정상적으로 수정되었습니다";
+      NotiflixInfo(infoMessage);
+      fetchAnnounceData();
+      toggleAnnounceDetailModal();
+    }
   };
 
   const deleteAnnounce = () => {
+    if(announceSelectedRow) {
+      const confirmTitle = "공지사항 글 삭제";
+      const confirmMessage = "선택하신 공지사항 글을 삭제하시겠습니까?";
 
+      const yesCallback = async () => {
+        const response = await axios.post(`${BASE_URL}/api/dashboard/deleteAnnounce`, {
+          rowId: announceSelectedRow.id,
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        });
+
+        if(response.data === 'success') {
+          const infoMessage = "공지사항 글이 정상적으로 삭제되었습니다";
+          NotiflixInfo(infoMessage);
+          fetchAnnounceData();
+          toggleAnnounceDetailModal();
+        }
+      };
+
+      const noCallback = () => {
+        return;
+      };
+
+      NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+    }
   };
 
   const announceDoubleClick = (params) => {

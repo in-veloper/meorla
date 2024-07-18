@@ -2008,6 +2008,82 @@ app.get("/api/dashboard/getAnnounce", async (req, res) => {
     });
 });
 
+app.post("/api/dashboard/updateAnnounce", upload.single('file'), async (req, res) => {
+    const { userId, schoolCode, rowId, announceTitle, announceContent, fileName, fileUrl } = req.body;
+
+    let updatedFileName = fileName;
+    let updatedFileUrl = fileUrl;
+
+    // 파일이 존재하는 경우 새 파일 업로드
+    if(req.file) {
+        const file = req.file;
+        const encodedFileName = encodeURIComponent(file.originalname).replace(/%20/g, "+");
+
+        let formData = new FormData();
+        formData.append("uploadPath", `${userId}/announceFiles`);
+        formData.append("file", fs.createReadStream(file.path));
+
+        const config = { header: { ...formData.getHeaders() }};
+
+        try {
+            const fileUploadResponse = await axios.post(`${BASE_URL}/upload/image`, formData, config);
+
+            if(fileUploadResponse.status === 200) {
+                const { filename, fileUrl: newFileUrl } = fileUploadResponse.data;
+                updatedFileName = filename;
+                updatedFileUrl = newFileUrl;
+            }
+        } catch (error) {
+            console.log("공지사항 파일 업로드 중 ERROR", error);
+        }
+    }
+
+    const sqlQuery = "UPDATE teaform_db.announce SET announceTitle = ?, announceContent = ?, fileName = ?, fileUrl = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [announceTitle, announceContent, updatedFileName, updatedFileUrl, userId, schoolCode, rowId], (err, result) => {
+        if (err) {
+            console.log("공지사항 글 UPDATE 처리 중 ERROR", err);
+        } else {
+            res.send('success');
+        }
+    });
+});
+
+app.post("/api/dashboard/deleteAnnounce", async (req, res) => {
+    const { rowId, userId, schoolCode } = req.body;
+
+    // 삭제할 파일 정보 획득
+    const sqlQueryGetFile = "SELECT fileUrl FROM teaform_db.announce WHERE id = ? AND userId = ? AND schoolCode = ?";
+    db.query(sqlQueryGetFile, [rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("공지사항 글 첨부 파일 URL 조회 중 ERROR", err);
+        }else{
+            const fileUrl = result[0]?.fileUrl;
+
+            if(fileUrl) {
+                // 파일 삭제 수행
+                const filePath = path.join(__dirname, 'public', fileUrl);
+                console.log("파일 경로:", filePath)
+                fs.unlink(filePath, (err) => {
+                    if(err) {
+                        console.log("파일 삭제 처리 중 ERROR", err);
+                    }else{
+                        console.log("파일 삭제 완료");
+                    }
+                });
+            }
+
+            const sqlQuery = "DELETE FROM teaform_db.announce WHERE id = ? AND userId = ? AND schoolCode = ?";
+            db.query(sqlQuery, [rowId, userId, schoolCode], (err, result) => {
+                if(err) {
+                    console.log("공지사항 글 DELETE 처리 중 ERROR", err);
+                }else{
+                    res.send('success');
+                }
+            });
+        }
+    });
+});
+
 app.post('/api/qnaRequest/saveQnaRequest', async (req, res) => {
     const { userId, userName, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret } = req.body;
 
@@ -2263,7 +2339,7 @@ app.post("/api/community/updateResourceSharing", upload.single('file'), async (r
         const encodedFileName = encodeURIComponent(file.originalname).replace(/%20/g, "+");
 
         let formData = new FormData();
-        formData.append("uploadPath", `${userId}/resourceFIles`);
+        formData.append("uploadPath", `${userId}/resourceFiles`);
         formData.append("file", fs.createReadStream(file.path));
 
         const config = { header: { ...formData.getHeaders() }};
