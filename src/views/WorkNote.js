@@ -3076,9 +3076,6 @@ function WorkNote(args) {
                           rowSelection="single"
                           onSelectionChanged={onGridSelectionChanged}
                           suppressCellFocus={true}
-                          overlayLoadingTemplate={
-                            '<object style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%) scale(2)" type="image/svg+xml" data="https://ag-grid.com/images/ag-grid-loading-spinner.svg" aria-label="loading"></object>'
-                          }
                         />
                       </div>
                     </div>
@@ -3182,6 +3179,7 @@ function WorkNote(args) {
                           defaultColDef={notEditDefaultColDef}
                           overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                           rowSelection="single"
+                          suppressCellFocus={true}
                           onRowClicked={personalStudentRowClicked}
                         />
                       </div>
@@ -3224,6 +3222,7 @@ function WorkNote(args) {
                             overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleSymptomRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
+                            suppressCellFocus={true}
                           />
                         </div>
                       </CardBody>
@@ -3255,6 +3254,7 @@ function WorkNote(args) {
                             overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleBodyPartsRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
+                            suppressCellFocus={true}
                           />
                         </div>
                       </CardBody>
@@ -3296,6 +3296,7 @@ function WorkNote(args) {
                             overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleMedicationRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
+                            suppressCellFocus={true}
                           />
                         </div>
                       </CardBody>
@@ -3329,6 +3330,7 @@ function WorkNote(args) {
                             overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내용이 없습니다</span>' }  // 표시할 데이터가 없을 시 출력 문구
                             onSelectionChanged={(event) => handleTreatmentMatterRowSelect(event.api.getSelectedRows())}
                             rowSelection="single"
+                            suppressCellFocus={true}
                           />
                         </div>
                       </CardBody>

@@ -44,11 +44,31 @@ function Dashboard() {
   const todayScheduleGridRef = useRef(null);
   const entireScheduleGridRef = useRef(null);
   const announceGridRef = useRef(null);
+  const gridRef = useRef(null);
   const quillRef = useRef(null);
   const announceQuillRef = useRef(null);
 
   const toggleAnnounceWriteModal = () => setAnnounceWriteModal(!announceWriteModal);
   const toggleAnnounceDetailModal = () => setAnnounceDetailModal(!announceDetailModal);
+
+  const isFileContainRenderer = (params) => {
+    if(params.data.fileName) {
+      return <b>Y</b>
+    }else{
+      return 'N'
+    }
+  };
+
+  const registDateFormatter = (params) => {
+    const dateTime = params.data.createdAt;
+
+    let dateValue = dateTime.split("T")[0];
+    let timeValue = dateTime.split("T")[1];
+    const returnDateValue = dateValue.split("-")[0] + "년 " + parseInt(dateValue.split("-")[1]).toString() + "월 " + parseInt(dateValue.split("-")[2]).toString() + "일   ";
+    const returnTimeValue = (timeValue.split(":")[0] === "00" ? "00" : parseInt(timeValue.split(":")[0]).toString()) + "시 " + (timeValue.split(":")[1] === "00" ? "00" : parseInt(timeValue.split(":")[1]).toString()) + "분";
+
+    return returnDateValue + returnTimeValue;
+  };
 
   const [rowData] = useState([
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
@@ -56,11 +76,18 @@ function Dashboard() {
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
   ]);
 
-  const [announcColumnDefs] = useState([
+  const [announceColumnDefs] = useState([
     { field: "announceTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "center" } },
-    { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "createdAt", headerName: "등록일", flex: 1, cellStyle: { textAlign: "center" } },
-    { field: "dosageAction", headerName: "첨부파일 여부", flex: 1, cellStyle: { textAlign: "center" } }
+    { field: "createdAt", headerName: "등록일", flex: 1.5, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+    { field: "fileName", headerName: "첨부파일 여부", flex: 1, cellStyle: { textAlign: "center" }, cellRenderer: isFileContainRenderer }
+  ]);
+
+  const [columnDefs] = useState([
+    { field: "sGrade", headerName: "학년", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sClass", headerName: "반", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sNumber", headerName: "번호", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sGender", headerName: "성별", flex: 1, cellStyle: { textAlign: "center" }},
+    { field: "sName", headerName: "이름", flex: 2, cellStyle: { textAlign: "center" }}
   ]);
 
   const eventPeriodFormatter = (params) => {
@@ -377,7 +404,8 @@ function Dashboard() {
         const response = await axios.get(`${BASE_URL}/api/dashboard/getAnnounce`, {});
 
         if(response.data) {
-            setAnnounceData(response.data);
+            const responseData = response.data;
+            setAnnounceData(responseData);
         }
     }
   }, [user]);
@@ -448,9 +476,12 @@ function Dashboard() {
                   rowHeight={35}
                   ref={announceGridRef}
                   rowData={announceData}
-                  columnDefs={announcColumnDefs}
+                  columnDefs={announceColumnDefs}
                   defaultColDef={notEditDefaultColDef}
                   onRowDoubleClicked={announceDoubleClick}
+                  suppressCellFocus={true}
+                  rowSelection="single"
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 공지사항이 없습니다</span>' } 
                 />
               </div>
             </Card>
@@ -474,6 +505,7 @@ function Dashboard() {
                   rowData={qnaRequestData}
                   columnDefs={qrColumnDefs}
                   defaultColDef={notEditDefaultColDef}
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 문의 및 요청사항이 없습니다</span>' } 
                 />
               </div>
             </Card>
@@ -519,10 +551,11 @@ function Dashboard() {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
                   rowHeight={35}
-                  ref={announceGridRef}
+                  ref={gridRef}
                   rowData={rowData}
-                  columnDefs={announcColumnDefs}
+                  columnDefs={columnDefs}
                   defaultColDef={notEditDefaultColDef}
+                  overlayNoRowsTemplate={ '<span style="color: #6c757d;">커뮤니티 알림 내역이 없습니다</span>' } 
                 />
               </div>
             </Card>
