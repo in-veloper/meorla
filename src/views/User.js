@@ -1551,19 +1551,19 @@ function User() {
                     <Col className="ml-auto" lg="3" md="6" xs="6">
                       <h5>
                         12 <br />
-                        <small>Files</small>
+                        <small>알림</small>
                       </h5>
                     </Col>
                     <Col className="ml-auto mr-auto" lg="4" md="6" xs="6">
                       <h5>
                         2GB <br />
-                        <small>Used</small>
+                        <small>등록 일정</small>
                       </h5>
                     </Col>
                     <Col className="mr-auto" lg="3">
                       <h5>
                         24,6$ <br />
-                        <small>Spent</small>
+                        <small>남은 사용일</small>
                       </h5>
                     </Col>
                   </Row>
@@ -2339,14 +2339,9 @@ function User() {
                   </AccordionItemButton>
                 </AccordionItemHeading>
                 <AccordionItemPanel>
-                  <strong>
-                    This is the first item's accordion body.
-                  </strong>
-                  You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the{' '}
-                  <code>
-                    .accordion-body
-                  </code>
-                  , though the transition does limit overflow.
+                  엑셀파일로 저장 시 저장하고자 하는 <strong style={{ color: '#F56954' }}>인원 선택사항을 30명으로 선택</strong> 후 저장하셔야 합니다.<br/>
+                  이관하고자 하는 이전 프로그램과 미올라 플랫폼의 구조가 정확히 일치하지 않기 때문에 
+                  이관 후 내용이 매끄럽지 못하더라도 양해 부탁드립니다.
                 </AccordionItemPanel>
               </AccordionItem>
               <AccordionItem>
@@ -2356,14 +2351,9 @@ function User() {
                   </AccordionItemButton>
                 </AccordionItemHeading>
                 <AccordionItemPanel>
-                  <strong>
-                    This is the second item's accordion body.
-                  </strong>
-                  You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the{' '}
-                  <code>
-                    .accordion-body
-                  </code>
-                  , though the transition does limit overflow.
+                  엑셀파일로 출력 시 출력 옵션 선택사항 중 <strong style={{ color: '#F56954' }}>시간표시 옵션을 체크</strong> 후 엑셀파일로 저장하여야 합니다.<br/>
+                  이관하고자 하는 이전 프로그램과 미올라 플랫폼의 구조가 정확히 일치하지 않기 때문에 
+                  이관 후 내용이 매끄럽지 못하더라도 양해 부탁드립니다.
                 </AccordionItemPanel>
               </AccordionItem>
               <AccordionItem>
@@ -2373,14 +2363,8 @@ function User() {
                   </AccordionItemButton>
                 </AccordionItemHeading>
                 <AccordionItemPanel>
-                  <strong>
-                    This is the third item's accordion body.
-                  </strong>
-                  You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the{' '}
-                  <code>
-                    .accordion-body
-                  </code>
-                  , though the transition does limit overflow.₩
+                  이관하고자 하는 이전 프로그램과 미올라 플랫폼의 구조가 정확히 일치하지 않기 때문에 
+                  이관 후 내용이 매끄럽지 못하더라도 양해 부탁드립니다.
                 </AccordionItemPanel>
               </AccordionItem>
             </Accordion>
@@ -2428,7 +2412,7 @@ function User() {
       </Modal>
 
       <Modal isOpen={migrationWorkNoteModalOpen} backdrop={true} toggle={toggleMigrationWorkNoteModal} centered={true} autoFocus={false} style={{ minWidth: '80%' }}>
-        <ModalHeader className="text-muted" toggle={toggleMigrationWorkNoteModal} closebutton="true">이관 보건일지</ModalHeader>
+        <ModalHeader className="text-muted" toggle={toggleMigrationWorkNoteModal} closebutton="true">이관 보건일지 등록 내역</ModalHeader>
         <ModalBody>
           <div className="ag-theme-alpine" style={{ height: '50vh' }}>
             <AgGridReact

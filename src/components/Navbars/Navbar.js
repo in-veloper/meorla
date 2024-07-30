@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form, Badge, Tooltip, CustomInput } from "reactstrap";
+import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Container, Modal, ModalHeader, ModalBody, Row, Col, ModalFooter, Button, Form, Badge, Tooltip, CustomInput, Label, Input } from "reactstrap";
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 import axios from "axios";
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
@@ -14,6 +14,7 @@ import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from 'react-router-dom';
 import routes from "routes.js";
 import { getSocket } from "components/Socket/socket";
+import { Block } from 'notiflix/build/notiflix-block-aio';
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -47,6 +48,18 @@ function Header(props) {
   const [pmStationTooltipOpen, setPmStationTooltipOpen] = useState(false);
   const [notifyPmChecked, setNotifyPmChecked] = useState(false);
   const [selectedStation, setSelectedStation] = useState("");
+  const [passwordSettingModal, setPasswordSettingModal] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [initialPassword, setInitialPassword] = useState("");
+  const [verificationCode, setVerificationCode] = useState('');
+  const [emailCode, setEmailCode] = useState('');
+  const [resetPasswordVerified, setResetPasswordVerified] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [visitRequestList, setVisitRequestList] = useState([]);
 
   const gridRef = useRef();
   
@@ -97,6 +110,7 @@ function Header(props) {
 
   const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
   const togglePmStationTooltip = () => setPmStationTooltipOpen(!pmStationTooltipOpen);
+  const togglePasswordSettingModal = () => setPasswordSettingModal(!passwordSettingModal);
 
   const getBrand = () => {
     let brandName = "Default Brand";
@@ -663,6 +677,186 @@ function Header(props) {
     const userId = user ? user.userId : null;
     if(userId) logout(userId);
   };
+
+  const handlePasswordSettingModal = (e) => {
+    e.preventDefault();
+    togglePasswordSettingModal();
+    setShowVerification(false);
+    setVerificationCode("");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setInitialPassword("");
+  };
+
+  const savePassword = async () => {
+    if(newPassword !== confirmPassword) {
+      const warnMessage = "새 비밀번호와 확인 비밀번호가 일치하지 않습니다";
+      NotiflixWarn(warnMessage, '350px');
+    } else if(!validatePassword(newPassword)) {
+      const warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }else{
+      const response = await axios.post(`${BASE_URL}/api/user/changePassword`, {
+        userId: user.userId,
+        schoolCode: user.schoolCode,
+        oldPassword: currentPassword,
+        newPassword: newPassword
+      });
+
+      if(response.data) {
+        if(response.data === 'NMCP') {
+          const warnMessage = "현재 비밀번호가 일치하지 않습니다";
+          NotiflixWarn(warnMessage);
+        }else if(response.data === 'NFU') {
+          const warnMessage = "사용자를 찾을 수 없습니다";
+          NotiflixWarn(warnMessage);
+        } else if(response.data === 'success') {
+          // api 처리하고 메시지 출력하는것부터 처리
+          const infoMessage = "비밀번호가 정상적으로 변경되었습니다";
+          NotiflixInfo(infoMessage);
+          togglePasswordSettingModal();
+        }
+      }
+    }
+  };
+
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const handleVerifyCode = () => {
+    if(verificationCode.length === 0) {
+      const warnMessage = "인증코드를 입력해주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }else{
+      if(verificationCode === emailCode) {
+        const infoMessage = "정상적으로 인증되었습니다";
+        NotiflixInfo(infoMessage);
+        setResetPasswordVerified(true);
+      }else{
+        const warnMessage = "인증코드가 일치하지 않습니다";
+        NotiflixWarn(warnMessage);
+        return;
+      }
+    }
+  };
+
+  const resetPassword = async () => {
+    const confirmTitle = "비밀번호 초기화";
+    const confirmMessage = "가입하신 이메일로 인증 후 초기화 하실수 있습니다<br/>초기화 하시겠습니까?";
+
+    const yesCallback = async () => {
+      await sendVerificationCode();
+    };
+
+    const noCallback = () => {
+      return;
+    };
+
+    NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '330px');
+  };
+
+  const sendVerificationCode = async () => {
+    Block.dots('.passwordSettingModal', '인증코드 메일 발송중');
+
+    try {
+      const response = await axios.post(`${BASE_URL}/api/send-password-reset-code`, { 
+        email: currentUser.email 
+      });
+  
+      if (response.data.success) {
+        setEmailCode(response.data.verificationCode);
+        setTimeLeft(180);
+        setShowVerification(true);
+        startTimer();
+
+        Block.remove('.passwordSettingModal');
+      } else {
+        const warnMessage = "인증코드 전송에 실패했습니다<br/>다시 시도해 주세요";
+        NotiflixWarn(warnMessage);
+      }
+    } catch (error) {
+      console.log("비밀번호 초기화 인증코드 전송 중 ERROR", error);
+    }finally{
+      Block.remove('.passwordSettingModal');
+    }
+  };
+
+  const startTimer = () => {
+    const timerInterval = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timerInterval);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+  };
+
+  const saveResetPassword = () => {
+    if(initialPassword.length === 0) {
+      const warnMessage = "초기화할 비밀번호를 입력해주세요";
+      NotiflixWarn(warnMessage);
+      return;
+    }else if(!validatePassword(initialPassword)) {
+      const warnMessage = "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다";
+      NotiflixWarn(warnMessage);
+      return;
+    }else{
+      axios.post(`${BASE_URL}/api/reset-password`, { userId: user.userId, newPassword: initialPassword })
+        .then((response) => {
+          if (response.data === 'success') {
+            const infoMessage = "비밀번호가 초기화 되었습니다";
+            NotiflixInfo(infoMessage);
+            togglePasswordSettingModal();
+          } else {
+            const warnMessage = "비밀번호 초기화에 실패하였습니다";
+            NotiflixWarn(warnMessage);
+          }
+        })
+        .catch((error) => {
+          console.log("비밀번호 초기화 중 ERROR", error);
+          const warnMessage = "비밀번호 초기화 중 문제가 발생하였습니다<br/>관리자에게 문의해 주세요";
+          NotiflixWarn(warnMessage);
+      });
+    }
+  };
+
+  const fetchVisitRequest = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/workNote/getVisitRequest`, {
+        params: {
+          schoolCode: user.schoolCode,
+          isRead: false
+        }
+      });
+
+      if(response.data) setVisitRequestList(response.data);
+    }
+  }, [user]);
+
+  useEffect(() => {
+   fetchVisitRequest(); 
+  }, [fetchVisitRequest]);
+
+  const handleAlarmList = () => {
+    if(visitRequestList.length > 0) {
+      return visitRequestList.map((request, index) => (
+        <>
+          <DropdownItem tag="a" onClick={handleClickAlarm}><b>보건실 방문 요청</b>&nbsp;&nbsp;&nbsp;{request.sGrade}학년 {request.sClass}반 {request.sNumber}번 {request.sName}</DropdownItem>
+        </>
+      ))
+    }
+  };
+
+  const handleClickAlarm = () => {
+    navigate('/meorla/workNote');
+  };
   
   return (
     <Navbar
@@ -811,10 +1005,8 @@ function Header(props) {
                   <span className="d-lg-none d-md-block">Some Actions</span>
                 </p>
               </DropdownToggle>
-              <DropdownMenu right>
-                <DropdownItem tag="a">Action</DropdownItem>
-                <DropdownItem tag="a">Another Action</DropdownItem>
-                <DropdownItem tag="a">Something else here</DropdownItem>
+              <DropdownMenu right style={{ maxHeight: 400, overflowY: 'auto' }}>
+                {handleAlarmList()}
               </DropdownMenu>
             </Dropdown>
             {/* <NavItem>
@@ -857,7 +1049,7 @@ function Header(props) {
               <DropdownMenu right>
                 <DropdownItem tag="a">사용자 메뉴얼</DropdownItem>
                 <DropdownItem tag="a" onClick={() => navigate('/meorla/user-page')}>사용자 정보</DropdownItem>
-                <DropdownItem tag="a">비밀번호 초기화</DropdownItem>
+                <DropdownItem tag="a" onClick={handlePasswordSettingModal}>비밀번호 초기화</DropdownItem>
                 <DropdownItem tag="a" onClick={onLogout}>로그아웃</DropdownItem>
               </DropdownMenu>
             </Dropdown>
@@ -912,6 +1104,108 @@ function Header(props) {
             <Button color="secondary" onClick={toggleModal}>취소</Button>
           </ModalFooter>
        </Modal>
+
+       <Modal isOpen={passwordSettingModal} toggle={togglePasswordSettingModal} centered style={{ minWidth: '20%' }}>
+          <ModalHeader toggle={togglePasswordSettingModal}><b className="text-muted">비밀번호 설정</b></ModalHeader>
+          <ModalBody className="pb-0 passwordSettingModal">
+            <Form className="mt-2 mb-3" onSubmit={savePassword}>
+              <Row className="no-gutters" style={{ display: showVerification ? 'none' : '' }}>
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">현재 비밀번호</Label>
+                </Col>
+                <Col md="8">
+                  <Input 
+                    type="password"
+                    value={currentPassword}
+                    style={{ width: '90%' }}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    hidden={showVerification}
+                  />
+                </Col>
+              </Row>
+              <Row className="mt-2 no-gutters" style={{ display: showVerification ? 'none' : '' }}>
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">새 비밀번호</Label>
+                </Col>
+                <Col md="8">
+                  <Input 
+                    type="password"
+                    value={newPassword}
+                    style={{ width: '90%' }}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    hidden={showVerification}
+                  />
+                </Col>
+              </Row>
+              <Row className="mt-2 no-gutters" style={{ display: showVerification ? 'none' : '' }}>
+                <Col md="4" className="text-center align-tiems-center">
+                  <Label className="text-muted">비밀번호 확인</Label>
+                </Col>
+                <Col md="8">
+                  <Input
+                    type="password"
+                    id="updatedCommonPassword"
+                    style={{ width: '90%' }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </Col>
+              </Row>
+              {showVerification && (
+                <div>
+                  <Row className="d-flex align-items-center mt-2 no-gutters">
+                    <Col md="4" className="text-center align-tiems-center">
+                      <Label className="text-muted">비밀번호 초기화</Label>
+                    </Col>
+                    <Col md="8">
+                      <Row className="d-flex align-items-center">
+                        <Col md="4">
+                          <Input 
+                            type="text"
+                            placeholder="인증코드"
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value)}
+                            style={{ width: '100%', marginRight: '10px' }}
+                          />
+                        </Col>
+                        <Col md="2">
+                          <span>{Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}</span>
+                        </Col>
+                        <Col md="6">
+                          <Button size="sm" onClick={handleVerifyCode}>인증 코드 확인</Button>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+                  <Row className="mt-3 no-gutters">
+                    <Col md="4" className="text-center align-items-center">
+                      <Label className="text-muted">새 비밀번호</Label>
+                    </Col>
+                    <Col md="8">
+                      <Input 
+                        type="password"
+                        value={initialPassword}
+                        style={{ width: '88%' }}
+                        onChange={(e) => setInitialPassword(e.target.value)}
+                      />
+                    </Col>
+                  </Row>
+                </div>
+              )}
+            </Form>
+          </ModalBody>
+          <ModalFooter>
+            <Col className="mt-0 mb-0">
+              <Button onClick={resetPassword}>비밀번호 초기화</Button>
+            </Col>
+            {!showVerification ? (
+              <Button className="mr-1" onClick={savePassword}>저장</Button>
+            ) : (
+              <Button className="mr-1" onClick={saveResetPassword}>저장</Button>
+            )}
+            <Button onClick={togglePasswordSettingModal}>취소</Button>
+          </ModalFooter>
+      </Modal>
     </Navbar>
   );
 }

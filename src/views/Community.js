@@ -13,6 +13,7 @@ import { LiaCrownSolid } from "react-icons/lia";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import { useDropzone } from "react-dropzone";
 import NotiflixConfirm from "components/Notiflix/NotiflixConfirm";
+import { PiArrowFatRightBold } from "react-icons/pi";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -57,13 +58,32 @@ function Community() {
     const [uploadedFileName, setUploadedFileName] = useState(null);
     const [myResourceSharingModal, setMyResourceSharingModal] = useState(false);
     const [myResourceSharingData, setMyResourceSharingData] = useState(null);
+    const [interactWriteModal, setInteractWriteModal] = useState(false);
+    const [interactTitleValue, setInteractTitleValue] = useState("");
+    const [interactContentData, setInteractContentData] = useState("");
+    const [selectedStartRegionOption, setSelectedStartRegionOption] = useState("");
+    const [selectedDesireRegionOption, setSelectedDesireRegionOption] = useState("");
+    const [interactData, setInteractData] = useState([]);
+    const [interactPinnedRows, setInteractPinnedRows] = useState([]);
+    const [interactSelectedRow, setInteractSelectedRow] = useState(null);
+    const [interactStartRegionDetailValue, setInteractStartRegionDetailValue] = useState("");
+    const [interactDesireRegionDetailValue, setInteractDesireRegionDetailValue] = useState("");
+    const [interactTitleDetailValue, setInteractTitleDetailValue] = useState("");
+    const [interactContentDetailValue, setInteractContentDetailValue] = useState("");
+    const [interactDetailContentData, setInteractDetailContentData] = useState("");
+    const [interactDetailModal, setInteractDetailModal] = useState(false);
+    const [myInteractModal, setMyInteractModal] = useState(false);
+    const [myInteractData, setMyInteractData] = useState([]);
 
     const opinionSharingGridRef = useRef(null);
     const resourceSharingGridRef = useRef(null);
     const opinionQuillRef = useRef(null);
     const resourceQuillRef = useRef(null);
+    const interactQuillRef = useRef(null);
     const myOpinionSharingGridRef = useRef(null);
     const myResourceSharingGridRef = useRef(null);
+    const interactGridRef = useRef(null);
+    const myInteractGridRef = useRef(null);
 
     const toggleOpinionWriteModal = () => setOpinionWriteModal(!opinionWriteModal);
     const toggleOpinionDetailModal = () => setOpinionDetailModal(!opinionDetailModal);
@@ -71,6 +91,11 @@ function Community() {
     const toggleResourceWriteModal = () => setResourceWriteModal(!resourceWriteModal);
     const toggleResourceDetailModal = () => setResourceDetailModal(!resourceDetailModal);
     const toggleMyResourceSharingModal = () => setMyResourceSharingModal(!myResourceSharingModal);
+    const toggleInteractWriteModal = () => setInteractWriteModal(!interactWriteModal);
+    const toggleInteractDetailModal = () => setInteractDetailModal(!interactDetailModal);
+    const toggleMyInteractModal = () => setMyInteractModal(!myInteractModal);
+
+    const regions = ['서울특별시', '부산광역시', '대구광역시', '인천광역시', '광주광역시', '대전광역시', '울산광역시', '세종특별자치시', '경기도', '강원도', '충청북도', '충청남도', '전라북도', '전라남도', '경상북도', '경상남도', '제주특별자치도'];
 
     const defaultColDef = {
         sortable: true,
@@ -140,6 +165,24 @@ function Community() {
         { field: "recommendationCount", headerName: "추천수", flex: 1, cellStyle: { textAlign: "center" } }
     ]);
 
+    const [interactColDef] = useState([
+        { field: "title", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+        { field: "startRegion", headerName: "근무지역", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "desireRegion", headerName: "희망지역", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } }
+    ]);
+
+    const [myInteractColDef] = useState([
+        { field: "title", headerName: "제목", flex: 3, cellStyle: { textAlign: "left" } },
+        { field: "startRegion", headerName: "근무지역", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "desireRegion", headerName: "희망지역", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "userName", headerName: "작성자", flex: 1, cellStyle: { textAlign: "center" } },
+        { field: "createdAt", headerName: "작성일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
+        { field: "views", headerName: "조회수", flex: 1, cellStyle: { textAlign: "center" } }
+    ]);
+
     const modules = {
         toolbar: [
           [{ header: [1, 2, false] }],
@@ -200,6 +243,9 @@ function Community() {
         }else if(selectedMenu === "resourceSharing") {
             toggleResourceWriteModal();
             resetResourceWrite();
+        }else if(selectedMenu === "interact") {
+            toggleInteractWriteModal();
+            resetInteractWrite();
         }
     };
 
@@ -255,12 +301,20 @@ function Community() {
         setResourceContentData(editor.getContents());
     };
 
+    const handleInteractQuillChange = (content, delta, source, editor) => {
+        setInteractContentData(editor.getContents());
+    };
+
     const handleOpinionDetailQuillChange = (content, delta, source, editor) => {
         setOpinionContentDetailValue(editor.getContents());
     };
 
     const handleResourceDetailQuillChange = (content, delta, source, editor) => {
         setResourceContentDetailValue(editor.getContents());
+    };
+
+    const handleInteractDetailQuillChange = (content, delta, source, editor) => {
+        setInteractContentDetailValue(editor.getContents());
     };
 
     const handleSelectOpinionCategoryOption = (e) => {
@@ -323,6 +377,14 @@ function Community() {
         });
 
         if(response.data === "success") fetchResourceSharingData();
+    };
+
+    const interactIncrementViewCount = async (rowId) => {
+        const response = await axios.post(`${BASE_URL}/api/community/interactIncrementViewCount`, {
+            rowId: rowId
+        });
+
+        if(response.data === "success") fetchInteractData();
     };
 
     const updateOpinionSharing = async () => {
@@ -680,6 +742,136 @@ function Community() {
         color: selectedMenu === menu ? '#FFF' : '#66615B'
     });
 
+    const resetInteractWrite = () => {
+        setInteractTitleValue("");
+        setInteractContentData("");
+        setSelectedStartRegionOption("서울특별시");
+        setSelectedDesireRegionOption("서울특별시");
+    };
+
+    const saveInteractWrite = async () => {
+        const payload = { content: interactContentData };
+
+        const response = await axios.post(`${BASE_URL}/api/community/saveInteract`, {
+            userId: user.userId,
+            userName: user.name,
+            schoolCode: user.schoolCode,
+            startRegion: selectedStartRegionOption,
+            desireRegion: selectedDesireRegionOption,
+            title: interactTitleValue,
+            content: JSON.stringify(payload)
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "시도교류 글이 정상적으로 등록되었습니다";
+            NotiflixInfo(infoMessage);
+            toggleInteractWriteModal();
+            // fetchOpinionSharingData();
+            resetInteractWrite();
+        }
+    };
+
+    const fetchInteractData = useCallback(async () => {
+        if(user) {
+            const response = await axios.get(`${BASE_URL}/api/community/getInteract`, {});
+
+            if(response.data) {
+                const responseData = response.data;
+                setInteractData(responseData);
+
+                const sortedData = responseData.sort((a, b) => b.recommendationCount - a.recommendationCount);
+                setInteractPinnedRows(sortedData.slice(0, 3));
+            }
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchInteractData();
+    }, [fetchInteractData]);
+
+    const interactDoubleClick = async (params) => {
+        const selectedRow = params.data;
+        
+        setInteractSelectedRow(selectedRow);
+        setInteractStartRegionDetailValue(selectedRow.startRegion);
+        setInteractDesireRegionDetailValue(selectedRow.desireRegion);
+        setInteractTitleDetailValue(selectedRow.title);
+        setInteractContentDetailValue(selectedRow.content);
+        setIsEditMode(params.data.userId === user.userId);
+        toggleInteractDetailModal();
+
+        const parsedContent = JSON.parse(selectedRow.content);
+        setInteractDetailContentData(parsedContent.content);
+
+        if (interactQuillRef.current && interactQuillRef.current.getEditor) {
+            interactQuillRef.current.getEditor().setContents(parsedContent.content);
+        }
+
+        await interactIncrementViewCount(params.data.id);
+    };
+
+    const updateInteract = async () => {
+        const payload = { content: interactContentDetailValue };
+
+        const response = await axios.post(`${BASE_URL}/api/community/updateInteract`, {
+            userId: user.userId,
+            schoolCode: user.schoolCode,
+            rowId: interactSelectedRow.id,
+            startRegion: interactStartRegionDetailValue,
+            desireRegion: interactDesireRegionDetailValue,
+            title: interactTitleDetailValue,
+            content: JSON.stringify(payload)
+        });
+
+        if(response.data === 'success') {
+            const infoMessage = "시도교류 글이 정상적으로 수정되었습니다";
+            NotiflixInfo(infoMessage);
+            fetchInteractData();
+            toggleInteractDetailModal();
+        }
+    };
+
+    const deleteInteract = () => {
+        if(interactSelectedRow) {
+            const confirmTitle = "시도교류 글 삭제";
+            const confirmMessage = "선택하신 시도교류 글을 삭제하시겠습니까?";
+            
+            const yesCallback = async () => {
+                const response = await axios.post(`${BASE_URL}/api/community/deleteInteract`, {
+                    rowId: interactSelectedRow.id,
+                    userId: user.userId,
+                    schoolCode: user.schoolCode
+                });
+
+                if(response.data === 'success') {
+                    const infoMessage = "시도교류 글이 정상적으로 삭제되었습니다";
+                    NotiflixInfo(infoMessage);
+                    fetchInteractData();
+                    toggleInteractDetailModal();
+                }
+            };
+
+            const noCallback = () => {
+                return;
+            };
+
+            NotiflixConfirm(confirmTitle, confirmMessage, yesCallback, noCallback, '320px');
+        }
+    };
+
+    const handleMyInteractView = () => {
+        toggleMyInteractModal();
+    };
+
+    useEffect(() => {
+        if(interactData && user) {
+            const filteredData = interactData.filter(item => (
+                item.userId === user.userId
+            ));
+            setMyInteractData(filteredData);
+        }
+    }, [interactData]);
+
     return (
         <>
             <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
@@ -695,9 +887,9 @@ function Community() {
                             <NavItem>
                                 <NavLink id="interact" onClick={moveCommunityMenu} active={selectedMenu === 'interact'} style={getNavLinkStyle('interact')}>시도교류</NavLink>
                             </NavItem>
-                            <NavItem>
+                            {/* <NavItem>
                                 <NavLink id="bambooForest" onClick={moveCommunityMenu} active={selectedMenu === 'bambooForest'} style={getNavLinkStyle('bambooForest')}>대나무숲</NavLink>
-                            </NavItem>
+                            </NavItem> */}
                         </Nav>
                     </Col>
                     <Col md="5">
@@ -757,11 +949,13 @@ function Community() {
                             )}
                             {selectedMenu === 'interact' && (
                                 <AgGridReact
-                                    ref={gridRef}
-                                    rowData={rowData} 
-                                    columnDefs={columnDefs} 
+                                    ref={interactGridRef}
+                                    rowData={interactData} 
+                                    columnDefs={interactColDef} 
                                     defaultColDef={defaultColDef}
+                                    onRowDoubleClicked={interactDoubleClick}
                                     overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 시도교류 글이 없습니다</span>' }
+                                    pinnedTopRowData={interactPinnedRows}
                                 />
                             )}
                             {selectedMenu === 'bambooForest' && (
@@ -785,7 +979,7 @@ function Community() {
                         <Button className="ml-1" onClick={handleMyResourceSharingView}>내가 쓴 자료공유 글</Button>
                     )}
                     {selectedMenu === 'interact' && (
-                        <Button className="ml-1">내가 쓴 시도교류 글</Button>
+                        <Button className="ml-1" onClick={handleMyInteractView}>내가 쓴 시도교류 글</Button>
                     )}
                     {selectedMenu === 'bambooForest' && (
                         <Button className="ml-1">내가 쓴 대나무숲 글</Button>
@@ -794,7 +988,7 @@ function Community() {
             </div>
 
             <Modal isOpen={opinionWriteModal} toggle={toggleOpinionWriteModal} centered style={{ minWidth: '32%' }}>
-                <ModalHeader toggle={toggleOpinionWriteModal}><b className="text-muted">의견공유 글쓰기</b></ModalHeader>
+                <ModalHeader toggle={toggleOpinionWriteModal}><b className="text-muted">의견공유 등록</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Row className="d-flex align-items-center text-muted no-gutters">
                         <Col md="1" className="text-center">
@@ -977,7 +1171,7 @@ function Community() {
             </Modal>
 
             <Modal isOpen={resourceWriteModal} toggle={toggleResourceWriteModal} centered style={{ minWidth: '32%' }}>
-                <ModalHeader toggle={toggleResourceWriteModal}><b className="text-muted">자료공유 글쓰기</b></ModalHeader>
+                <ModalHeader toggle={toggleResourceWriteModal}><b className="text-muted">자료공유 등록</b></ModalHeader>
                 <ModalBody className="pb-0">
                     <Row className="d-flex align-items-center text-muted no-gutters">
                         <Col md="1" className="text-center">
@@ -1184,6 +1378,219 @@ function Community() {
                 </ModalBody>
                 <ModalFooter>
                     <Button onClick={toggleMyResourceSharingModal}>닫기</Button>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={interactWriteModal} toggle={toggleInteractWriteModal} centered style={{ minWidth: '32%' }}>
+                <ModalHeader toggle={toggleInteractWriteModal}><b className="text-muted">시도교류 등록</b></ModalHeader>
+                <ModalBody className="pb-0">
+                    <Row className="align-items-center no-gutters pl-2 pr-4">
+                        <Col md="2" className="text-left">
+                            <Label>근무지역</Label>
+                        </Col>
+                        <Col md="3" className="pr-0">
+                            <Input
+                                id="startRegion"
+                                name="startRegion"
+                                type="select"
+                                style={{ width: '100%' }}
+                                value={selectedStartRegionOption}
+                                onChange={(e) => setSelectedStartRegionOption(e.target.value)}
+                            >
+                                {regions.map((region, index) => (
+                                    <option key={index} value={region}>{region}</option>
+                                ))}
+                            </Input>
+                        </Col>
+                        <Col md="2" className="text-center text-muted pb-2" style={{ fontSize: 20 }}>
+                            <PiArrowFatRightBold/>
+                        </Col>
+                        <Col md="2" className="text-left">
+                            <Label>희망지역</Label>
+                        </Col>
+                        <Col md="3" className="d-flex justify-content-end">
+                            <Input
+                                id="desireRegion"
+                                name="desireRegion"
+                                type="select"
+                                style={{ width: '100%' }}
+                                value={selectedDesireRegionOption}
+                                onChange={(e) => setSelectedDesireRegionOption(e.target.value)}
+                            >
+                                {regions.map((region, index) => (
+                                    <option key={index} value={region}>{region}</option>
+                                ))}
+                            </Input>
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>제목</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            <Input 
+                                id="communityTitle"
+                                type="text"
+                                value={interactTitleValue}
+                                onChange={(e) => setInteractTitleValue(e.target.value)}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>내용</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            <div style={{ height: '24.6vh'}}>
+                                <ReactQuill
+                                    ref={interactQuillRef}
+                                    style={{ height: "18vh" }}
+                                    theme="snow"
+                                    modules={modules}
+                                    formats={formats}
+                                    value={interactContentData || ""}
+                                    onChange={handleInteractQuillChange}
+                                />
+                            </div>
+                        </Col>
+                    </Row>
+                </ModalBody>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        <Col className="d-flex justify-content-start">
+                            <Button onClick={resetInteractWrite}>초기화</Button>
+                        </Col>
+                        <Col className="d-flex justify-content-end">
+                            <Button className="mr-1" color="secondary" onClick={saveInteractWrite}>저장</Button>
+                            <Button color="secondary" onClick={toggleInteractWriteModal}>취소</Button>
+                        </Col>
+                    </Row>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={interactDetailModal} toggle={toggleInteractDetailModal} centered style={{ minWidth: '32%' }}>
+                <ModalHeader toggle={toggleInteractDetailModal}><b className="text-muted">시도교류 상세</b></ModalHeader>
+                <ModalBody className="pb-0">
+                    <Row className="align-items-center no-gutters pl-2 pr-4">
+                        <Col md="2" className="text-left">
+                            <Label>근무지역</Label>
+                        </Col>
+                        <Col md="3" className="pr-0">
+                            <Input
+                                id="startRegion"
+                                name="startRegion"
+                                type="select"
+                                style={{ width: '100%' }}
+                                defaultValue={interactSelectedRow ? interactSelectedRow.startRegion : "서울특별시"}
+                                onChange={(e) => setInteractStartRegionDetailValue(e.target.value)}
+                                disabled={!isEditMode}
+                            >
+                                {regions.map((region, index) => (
+                                    <option key={index} value={region}>{region}</option>
+                                ))}
+                            </Input>
+                        </Col>
+                        <Col md="2" className="text-center text-muted pb-2" style={{ fontSize: 20 }}>
+                            <PiArrowFatRightBold/>
+                        </Col>
+                        <Col md="2" className="text-left">
+                            <Label>희망지역</Label>
+                        </Col>
+                        <Col md="3" className="d-flex justify-content-end">
+                            <Input
+                                id="desireRegion"
+                                name="desireRegion"
+                                type="select"
+                                style={{ width: '100%' }}
+                                defaultValue={interactSelectedRow ? interactSelectedRow.desireRegion : "서울특별시"}
+                                onChange={(e) => setInteractDesireRegionDetailValue(e.target.value)}
+                                disabled={!isEditMode}
+                            >
+                                {regions.map((region, index) => (
+                                    <option key={index} value={region}>{region}</option>
+                                ))}
+                            </Input>
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>제목</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                            <Input 
+                                id="communityTitle"
+                                type="text"
+                                defaultValue={interactSelectedRow ? interactSelectedRow.title : ""}
+                                onChange={(e) => setInteractTitleDetailValue(e.target.value)}
+                                readOnly={!isEditMode}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className="d-flex align-items-center text-muted no-gutters pt-3">
+                        <Col md="1" className="text-center">
+                            <Label>내용</Label>
+                        </Col>
+                        <Col md="11" className="pr-4">
+                                {isEditMode ? (
+                                    <div style={{ height: '24.6vh'}}>
+                                        <ReactQuill
+                                            ref={interactQuillRef}
+                                            style={{ height: "18vh" }}
+                                            theme="snow"
+                                            modules={modules}
+                                            formats={formats}
+                                            defaultValue={interactDetailContentData || ""}
+                                            onChange={handleInteractDetailQuillChange}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div style={{ height: '26vh'}}>
+                                        <ReactQuill
+                                            ref={interactQuillRef}
+                                            style={{ height: "24.5vh" }}
+                                            theme="snow"
+                                            modules={{ toolbar: false }}
+                                            readOnly={true}
+                                            value={interactDetailContentData || ""}
+                                        />
+                                    </div>
+                                )}
+                        </Col>
+                    </Row>
+                </ModalBody>
+                <ModalFooter className="p-0">
+                    <Row style={{ width: '100%'}}>
+                        {isEditMode ? (
+                            <Col className="d-flex justify-content-end">
+                                <Button onClick={updateInteract}>수정</Button>
+                                <Button className="ml-1" onClick={deleteInteract}>삭제</Button>
+                                <Button className="ml-1" onClick={toggleInteractDetailModal}>취소</Button>
+                            </Col>
+                        ) : (
+                            <Col className="d-flex justify-content-end">
+                                <Button onClick={toggleInteractDetailModal}>취소</Button>
+                            </Col>
+                        )}
+                    </Row>
+                </ModalFooter>
+            </Modal>
+
+            <Modal isOpen={myInteractModal} toggle={toggleMyInteractModal} centered style={{ minWidth: '58%' }}>
+                <ModalHeader toggle={toggleMyInteractModal}><b className="text-muted">내 시도교류 글 내역</b></ModalHeader>
+                <ModalBody>
+                    <div className="ag-theme-alpine" style={{ height: '30vh'}}>
+                        <AgGridReact 
+                            ref={myInteractGridRef}
+                            rowData={myInteractData}
+                            columnDefs={myInteractColDef}
+                            defaultColDef={defaultColDef}
+                            onRowDoubleClicked={interactDoubleClick}
+                            overlayNoRowsTemplate={ '<span style="color: #6c757d;">등록된 내 시도교류 글 내역이 없습니다</span>' } 
+                        />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={toggleMyInteractModal}>닫기</Button>
                 </ModalFooter>
             </Modal>
         </>

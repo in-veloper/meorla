@@ -2238,6 +2238,19 @@ app.post('/api/community/resourceSharingIncrementViewCount', async (req, res) =>
     });
 });
 
+app.post('/api/community/interactIncrementViewCount', async (req, res) => {
+    const { rowId } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.interact SET views = views + 1 WHERE id = ?";
+    db.query(sqlQuery, [rowId], (err, result) => {
+        if(err) {
+            console.log("시도교류 조회수 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 app.post('/api/community/thumbsUp', async (req, res) => {
     const { viewType, userId, postId } = req.body;
 
@@ -2401,6 +2414,56 @@ app.post("/api/community/deleteResourceSharing", async (req, res) => {
             });
         }
     });
+});
+
+app.post('/api/community/saveInteract', async (req, res) => {
+    const { userId, userName, schoolCode, startRegion, desireRegion, title, content } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.interact (userId, userName, schoolCode, startRegion, desireRegion, title, content) VALUES (?,?,?,?,?,?,?)";
+    db.query(sqlQuery, [userId, userName, schoolCode, startRegion, desireRegion, title, content], (err, result) => {
+        if(err) {
+            console.log("시도교류 글 INSERT 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.get('/api/community/getInteract', async (req, res) => {
+    const sqlQuery = "SELECT rs.*, COUNT(rec.postId) AS recommendationCount FROM teaform_db.interact AS rs LEFT JOIN teaform_db.recommendations AS rec ON rs.id = rec.postId GROUP BY rs.id ORDER BY rs.createdAt DESC";
+    
+    db.query(sqlQuery, [], (err, result) => {
+        if(err) {
+            console.log("시도교류 글 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.post('/api/community/updateInteract', async (req, res) => {
+    const { userId, schoolCode, rowId, startRegion, desireRegion, title, content } = req.body;
+
+    const sqlQuery = "UPDATE teaform_db.interact SET startRegion = ?, desireRegion = ?, title = ?, content = ? WHERE userId = ? AND schoolCode = ? AND id = ?";
+    db.query(sqlQuery, [startRegion, desireRegion, title, content, userId, schoolCode, rowId], (err, result) => {
+        if(err) {
+            console.log("커뮤니티 시도교류 글 UPDATE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
+app.post('/api/community/deleteInteract', async (req, res) => {
+    const { rowId, userId, schoolCode } = req.body;
+     const sqlQuery = "DELETE FROM teaform_db.interact WHERE id = ? AND userId = ? AND schoolCode = ?";
+     db.query(sqlQuery, [rowId, userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("시도교류 글 DELETE 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+     });
 });
 
 app.get('/api/statistics/getSymptomData', async (req, res) => {

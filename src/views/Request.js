@@ -203,9 +203,17 @@ function RequesterLogin({onLogin}) {
 
     return (
         <>
-            <div className="content d-flex justify-content-center align-items-center" style={{ height: isBrowser ? '83.3vh' : contentHeight, backgroundColor: '#f6f5f7' }}>
+            <div className="content d-flex justify-content-center align-items-center" style={{ height: isBrowser ? '100vh' : contentHeight, backgroundColor: '#f6f5f7' }}>
                 <BrowserView>
                     <Card style={{ width: '400px', height: 'auto' }}>
+                        <CardBody className="text-center">
+                            <h4><b>서비스 준비중</b></h4>
+                            <p>PC로 접속하는 보건실 방문 요청 페이지는</p>
+                            <p>현재 서비스 준비중입니다</p>
+                            <p>빠른 시일 내에 준비될 수 있도록 하겠습니다</p>
+                        </CardBody>
+                    </Card>
+                    {/* <Card style={{ width: '400px', height: 'auto' }}>
                         <CardBody className="mt-2">
                             <Row className="mt-2 align-items-center">    
                                 <Col md="4" className="text-center">
@@ -248,7 +256,7 @@ function RequesterLogin({onLogin}) {
                                 <Button className="ml-1">초기화</Button>
                             </Row>
                         </CardFooter>
-                    </Card>
+                    </Card> */}
                 </BrowserView>
 
                 <MobileView>

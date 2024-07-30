@@ -30,15 +30,22 @@ function Statistics() {
 
     const fetchSymptomCategory = useCallback(async() => {
         if(user) {
-            const response = await axios.get(`${BASE_URL}/api/statistics/getSymptomCategory`, {
-                params: {
-                    userId: user.userId,
-                    schoolCode: user.schoolCode
+            try {
+                const response = await axios.get(`${BASE_URL}/api/statistics/getSymptomCategory`, {
+                    params: {
+                        userId: user.userId,
+                        schoolCode: user.schoolCode
+                    }
+                });
+    
+                if(response.data && response.data.length > 0 && response.data[0].hasOwnProperty('symptom_categorys')) {
+                    setSymptomCategorys(response.data[0].symptom_categorys);
+                }else{
+                    setSymptomCategorys([]);
                 }
-            });
-
-            if(response.data) {
-                setSymptomCategorys(response.data[0].symptom_categorys);
+            } catch (error) {
+                console.log("증상 카테고리 데이터 조회 중 ERROR", error);
+                setSymptomCategorys([]);
             }
         }
     }, [user]);
@@ -409,7 +416,7 @@ function Statistics() {
                                         layout="vertical"
                                         width={500}
                                         height={300}
-                                        data={sortedStudentVisitData}
+                                        data={sortedStudentVisitData.length ? sortedStudentVisitData: [{ name: '', visits: 0 }]}
                                         margin={{
                                             top: 20,
                                             right: 35,
@@ -463,7 +470,7 @@ function Statistics() {
                                 <ResponsiveContainer width="100%" height={320}>
                                     <PieChart>
                                         <Pie
-                                            data={bodyPartsData}
+                                            data={bodyPartsData.length ? bodyPartsData : [{ name: '등록된 데이터 없음', value: 1 }]}
                                             cx="50%"
                                             cy="50%"
                                             labelLine={false}
@@ -480,7 +487,7 @@ function Statistics() {
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div style={{ width: '30%', padding: '10px', alignContent: 'center' }}>
-                                    {sortedBodyPartsData.map((entry, index) => (
+                                    {(sortedBodyPartsData.length ? sortedBodyPartsData : [{ name: '데이터 없음', value: 1 }]).map((entry, index) => (
                                         <div key={`legend-${index}`} className="d-flex align-content-center mb-2">
                                             <span style={{ backgroundColor: COLORS[index % COLORS.length], display: 'inline-block', width: '20px', height: '20px', marginRight: '5px' }}></span>
                                             {entry.name}

@@ -2892,7 +2892,7 @@ function WorkNote(args) {
               <div style={{ borderRight: '1.5px dashed lightgray', marginBottom: 10, marginTop: 10 }}></div>
               <Col md="5">
                 <div style={{ border: '1.5px solid lightgray', borderRadius: 3 }}>
-                  <Row className="d-flex align-items-center no-gutters">
+                  <Row className="d-flex align-items-center no-gutters" style={{ backgroundColor: '#F6F6F6' }}>
                     <Label className="m-0 pl-2 pt-1 font-weight-bold">
                       대여물품 목록
                       <IoInformationCircleOutline className="text-muted" id="rental-product-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
@@ -2926,18 +2926,20 @@ function WorkNote(args) {
               </Col>
               <Col className="pl-0">
                 <div style={{ border: '1.5px solid lightgray', borderRadius: 3 }}>
-                  <Label className="m-0 pl-2 pt-1 font-weight-bold">
-                    대여 목록
-                    <IoInformationCircleOutline className="text-muted" id="rental-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
-                    <Popover flip target="rental-popover" isOpen={rentalPopOverOpen} toggle={toggleRentalPopOver} trigger="focus">
-                      <PopoverHeader>
-                        물품 대여 이용 안내
-                      </PopoverHeader>
-                      <PopoverBody>
-                        대여 목록에서 <span style={{ color: 'red' }}>우클릭</span> 후 반납 클릭 시 바로 해당 물품을 반납 처리하실 수 있습니다. 반납 처리 시 재고에 즉시 반영됩니다.
-                      </PopoverBody>
-                    </Popover>
-                  </Label>
+                  <Row className="d-flex align-items-center no-gutters" style={{ backgroundColor: '#F6F6F6' }}>
+                    <Label className="m-0 pl-2 pt-1 font-weight-bold">
+                      대여 목록
+                      <IoInformationCircleOutline className="text-muted" id="rental-popover" style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 5 }} />
+                      <Popover flip target="rental-popover" isOpen={rentalPopOverOpen} toggle={toggleRentalPopOver} trigger="focus">
+                        <PopoverHeader>
+                          물품 대여 이용 안내
+                        </PopoverHeader>
+                        <PopoverBody>
+                          대여 목록에서 <span style={{ color: 'red' }}>우클릭</span> 후 반납 클릭 시 바로 해당 물품을 반납 처리하실 수 있습니다. 반납 처리 시 재고에 즉시 반영됩니다.
+                        </PopoverBody>
+                      </Popover>
+                    </Label>
+                  </Row>
                   <div className="ag-theme-alpine pt-1" style={{ height: '6.7vh' }} onContextMenu={handleReturnGridContextMenu}>
                     <AgGridReact
                       rowHeight={24}
