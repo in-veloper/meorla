@@ -443,6 +443,19 @@ app.get("/api/user/checkMatchIdEmail", async (req, res) => {
     });
 });
 
+app.post("/api/user/insertLoginHistory", async (req, res) => {
+    const { schoolName, name, email, userId, schoolCode, loginDateTime } = req.body;
+
+    const sqlQuery = "INSERT INTO teaform_db.loginHistory (schoolName, name, email, userId, schoolCode, loginDateTime) VALUES (?,?,?,?,?,?)";
+    db.query(sqlQuery, [schoolName, name, email, userId, schoolCode, loginDateTime], (err, result) => {
+        if(err) {
+            console.log("로그인 기록 INSERT 처리 중 ERROR", err);
+        }else{
+            res.send('success');
+        }
+    });
+});
+
 const verificationCodes = {};    // 간단한 메모리 저장소
 
 app.post("/api/send-email-verification", async (req, res) => {

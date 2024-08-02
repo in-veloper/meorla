@@ -158,6 +158,7 @@ function Login() {
                         const warnMessage = "비밀번호가 일치하지 않습니다";
                         NotiflixWarn(warnMessage);
                     }else{
+                        await handleLoginHistory(userData);
                         login(userData, accessToken);
                         navigate('/meorla/dashboard');
                     }
@@ -169,6 +170,18 @@ function Login() {
         } catch (error) {
             console.log("로그인 중 ERROR", error);
         }
+    };
+
+    const handleLoginHistory = async (userData) => {
+        const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        await axios.post(`${BASE_URL}/api/user/insertLoginHistory`, { 
+            schoolName: userData.schoolName,
+            name: userData.name,
+            email: userData.email,
+            userId: userData.userId,
+            schoolCode: userData.schoolCode,
+            loginDateTime: currentDateTime
+        });
     };
 
     // 인증 코드 확인 및 회원가입으로 이동
