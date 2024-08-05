@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState, useCallback} from "react";
-import {Card, CardTitle, Row, Col, UncontrolledAlert, Input, Button, Modal, ModalHeader, ModalBody, ModalFooter, Label} from "reactstrap";
+import {Card, CardTitle, Row, Col, Alert, Input, Button, Modal, ModalHeader, ModalBody, ModalFooter, Label} from "reactstrap";
 import { useUser } from "contexts/UserContext";
 import NotiflixWarn from "components/Notiflix/NotiflixWarn";
 import NotiflixInfo from "components/Notiflix/NotiflixInfo";
@@ -40,6 +40,8 @@ function Dashboard() {
   const [announceDetailContentData, setAnnounceDetailContentData]  = useState("");
   const [announceContentDetailValue, setAnnounceContentDetailValue] = useState("");
   const [communityData, setCommunityData] = useState([]);
+  const [alertData, setAlertData] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(true);
 
   const qrGridRef = useRef(null);
   const visitRequestGridRef = useRef(null);
@@ -424,6 +426,9 @@ function Dashboard() {
         if(response.data) {
             const responseData = response.data;
             setAnnounceData(responseData);
+
+            if(response.data.length > 0) setAlertData(response.data[0]);
+            else setAlertData(null);
         }
     }
   }, [user]);
@@ -543,16 +548,35 @@ function Dashboard() {
     fetchCommunityData();
   }, [fetchCommunityData]);
 
+  const handleClickAlert = (params) => {
+    const selectedRow = params;
+
+    setAnnounceSelectedRow(selectedRow);
+    setAnnounceTitleDetailValue(selectedRow.announceTitle);
+    setAnnounceContentDetailValue(selectedRow.announceContent);
+    toggleAnnounceDetailModal();
+
+    const parsedContent = JSON.parse(selectedRow.announceContent);
+    setAnnounceDetailContentData(parsedContent.content);
+
+    if (announceQuillRef.current && announceQuillRef.current.getEditor) {
+      announceQuillRef.current.getEditor().setContents(parsedContent.content);
+    }
+  };
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh' ,display: 'flex', flexDirection: 'column' }}>
-        <UncontrolledAlert color="info" fade={false}>
-          <span>
-            <b>알림 &nbsp; </b>
-            This is a regular notification made with
-            color="info"
-          </span>
-        </UncontrolledAlert>
+        {alertData && alertVisible && (
+          <div onClick={() => handleClickAlert(alertData)}>
+            <Alert color="info" fade={false}>
+                <span>
+                  <b>알림 &nbsp; </b>
+                  {alertData.announceTitle}
+                </span>
+            </Alert>
+          </div>
+        )}
         <Row style={{ flex: '1 1 auto'}}>
           <Col md="7">
             <CardTitle>
