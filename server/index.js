@@ -456,6 +456,32 @@ app.post("/api/user/insertLoginHistory", async (req, res) => {
     });
 });
 
+app.get('/api/user/getScheduleCount', async (req, res) => {
+    const { userId, schoolCode } = req.query;
+
+    const sqlQuery = "SELECT COUNT(*) AS totalScheduleCount FROM teaform_db.workSchedule WHERE userId = ? AND schoolCode = ?";
+    db.query(sqlQuery, [userId, schoolCode], (err, result) => {
+        if(err) {
+            console.log("사용자 정보 페이지 일정 개수 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
+app.get('/api/user/getAlarmCount', async (req, res) => {
+    const { schoolCode, isRead } = req.query;
+
+    const sqlQuery = "SELECT COUNT(*) AS totalAlarmCount FROM teaform_db.visitRequest WHERE schoolCode = ? AND isRead = ?";
+    db.query(sqlQuery, [schoolCode, isRead], (err, result) => {
+        if(err) {
+            console.log("사용자 정보 페이지 알림 개수 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 const verificationCodes = {};    // 간단한 메모리 저장소
 
 app.post("/api/send-email-verification", async (req, res) => {

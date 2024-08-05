@@ -84,6 +84,8 @@ function User() {
   const [isRegisteredSWN, setIsRegisteredSWN] = useState(false);
   const [migrationWorkNoteData, setMigrationWorkNoteData] = useState([]);
   const [migrationWorkNoteModalOpen, setMigrationWorkNoteModalOpen] = useState(false);
+  const [scheduleCount, setScheduleCount] = useState(0);
+  const [alarmCount, setAlarmCount] = useState(0);
 
   const studentTableGridRef = useRef(null);     
   const teacherTableGridRef = useRef(null);                                // 등록한 명렬표 출력 Grid Reference
@@ -1497,6 +1499,44 @@ function User() {
     }
   };
 
+  const fetchScheduleCount = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/user/getScheduleCount`, { 
+        params: {
+          userId: user.userId,
+          schoolCode: user.schoolCode
+        }
+      });
+
+      if(response.data) {
+        setScheduleCount(response.data[0].totalScheduleCount);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchScheduleCount();
+  }, [fetchScheduleCount]);
+
+  const fetchAlarmCount = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/user/getAlarmCount`, { 
+        params: {
+          schoolCode: user.schoolCode,
+          isRead: false
+        }
+      });
+
+      if(response.data) {
+        setAlarmCount(response.data[0].totalAlarmCount);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchAlarmCount();
+  }, [fetchAlarmCount]);
+
   return (
     <>
       <div className="content" style={{ height: '84.8vh' }}>
@@ -1550,13 +1590,13 @@ function User() {
                   <Row>
                     <Col className="ml-auto" lg="3" md="6" xs="6">
                       <h5>
-                        12 <br />
+                        {alarmCount} <br />
                         <small>알림</small>
                       </h5>
                     </Col>
                     <Col className="ml-auto mr-auto" lg="4" md="6" xs="6">
                       <h5>
-                        2GB <br />
+                        {scheduleCount} <br />
                         <small>등록 일정</small>
                       </h5>
                     </Col>

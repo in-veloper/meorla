@@ -112,7 +112,7 @@ function FixedPlugin(props) {
               block
               className="btn-round"
             >
-              Download now
+              문의 및 요청
             </Button>
           </li>
           <li className="button-container">
@@ -123,10 +123,10 @@ function FixedPlugin(props) {
               className="btn-round"
               outline
             >
-              <i className="nc-icon nc-paper" /> Documentation
+              <i className="nc-icon nc-paper" /> 사용자 메뉴얼 다운로드
             </Button>
           </li>
-          <li className="header-title">Want more components?</li>
+          <li className="header-title">더 궁금하신 사항은?</li>
           <li className="button-container">
             <Button
               href="https://www.creative-tim.com/product/paper-dashboard-pro-react?ref=pdr-fixed-plugin"
@@ -135,7 +135,7 @@ function FixedPlugin(props) {
               className="btn-round"
               target="_blank"
             >
-              Get pro version
+              관리자에게 메일로 문의
             </Button>
           </li>
         </ul>

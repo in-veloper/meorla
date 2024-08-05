@@ -851,6 +851,12 @@ function Header(props) {
           <DropdownItem tag="a" onClick={handleClickAlarm}><b>보건실 방문 요청</b>&nbsp;&nbsp;&nbsp;{request.sGrade}학년 {request.sClass}반 {request.sNumber}번 {request.sName}</DropdownItem>
         </>
       ))
+    }else{
+      return (
+        <>
+          <DropdownItem tag="a">알림 내역 없음</DropdownItem>
+        </>
+      )
     }
   };
 
@@ -984,9 +990,6 @@ function Header(props) {
             >
               <DropdownToggle caret nav>
                 <i className="nc-icon nc-bookmark-2" />
-                {/* <p>
-                  <span className="d-lg-none d-md-block">Some Actions</span>
-                </p> */}
               </DropdownToggle>
               <DropdownMenu className="text-muted" right>
                 {dropdownBookmarkItems}
@@ -1001,9 +1004,6 @@ function Header(props) {
             >
               <DropdownToggle caret nav>
                 <i className="nc-icon nc-bell-55" />
-                <p>
-                  <span className="d-lg-none d-md-block">Some Actions</span>
-                </p>
               </DropdownToggle>
               <DropdownMenu right style={{ maxHeight: 400, overflowY: 'auto' }}>
                 {handleAlarmList()}

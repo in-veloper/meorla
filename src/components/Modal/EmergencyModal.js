@@ -112,9 +112,11 @@ const EmergencyModal = ({ manageEmergencyModal, toggleManageEmergencyModal, sear
     const onSearchStudentInEmergencyManagement = async (criteria) => {
         try {
             const studentData = await fetchStudentData(criteria);
-    
-            searchStudentInEmergencyManagementGridRef.current.api.setRowData(studentData);
-            setSearchStudentInEmergencyManagementRowData(studentData);
+            
+            if(searchStudentInEmergencyManagementGridRef.current) {
+                searchStudentInEmergencyManagementGridRef.current.api.setRowData(studentData);
+                setSearchStudentInEmergencyManagementRowData(studentData);
+            }
     
             if(masked) {
                 const maskedStudentData = studentData.map(student => ({
