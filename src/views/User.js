@@ -1501,7 +1501,7 @@ function User() {
     <>
       <div className="content" style={{ height: '84.8vh' }}>
         <Row>
-          <Col md="4">
+          <Col md="3">
             <Card className="card-user" style={{ height: '523px', border: '1px solid lightgray' }}> {/* 높이 임의 설정 - 수정필요 (반응형) */}
               <div className="image">
                 <input 
@@ -1563,7 +1563,7 @@ function User() {
                     <Col className="mr-auto" lg="3">
                       <h5>
                         24,6$ <br />
-                        <small>남은 사용일</small>
+                        <small>잔여일</small>
                       </h5>
                     </Col>
                   </Row>
@@ -1609,7 +1609,7 @@ function User() {
               </CardBody>
             </Card>
           </Col>
-          <Col md="8">
+          <Col md="9">
             <Card className="card-user" style={{ border: '1px solid lightgray' }}>
               <CardHeader>
                 <CardTitle className="text-muted" tag="h5"><b>사용자 정보</b></CardTitle>

@@ -2097,6 +2097,17 @@ app.post("/api/dashboard/deleteAnnounce", async (req, res) => {
     });
 });
 
+app.get('/api/dashboard/getCommunity', async (req, res) => {
+    const sqlQuery = "SELECT id, osTitle AS title, createdAt, 'opinionSharing' AS category FROM teaform_db.opinionSharing UNION ALL SELECT id, rsTitle AS title, createdAt, 'resourceSharing' AS category FROM teaform_db.resourceSharing UNION ALL SELECT id, title, createdAt, 'interact' AS category FROM teaform_db.interact ORDER BY createdAt DESC";
+    db.query(sqlQuery, [], (err, result) => {
+        if(err) {
+            console.log("대시보드 커뮤니티 글 조회 중 ERROR", err);
+        }else{
+            res.json(result);
+        }
+    });
+});
+
 app.post('/api/qnaRequest/saveQnaRequest', async (req, res) => {
     const { userId, userName, schoolCode, writingCategory, qnaRequestTitle, qnaRequestContent, isSecret } = req.body;
 

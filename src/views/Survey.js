@@ -61,7 +61,7 @@ function Survey() {
                         </div>
                     </div>
                 </Card>
-                <Card className="ml-4" style={{ width: '48.4%', height: '75.1vh', border: '1px solid lightgray', float: 'left', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Card className="ml-4" style={{ width: '48.2%', height: '75.1vh', border: '1px solid lightgray', float: 'right', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <div className="iphone-preview" style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <div className="iphone" style={{ maxWidth: '100%', maxHeight: '90%' }}>
                             <div className="notch">

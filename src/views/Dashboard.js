@@ -39,12 +39,14 @@ function Dashboard() {
   const [announceTitleDetailValue, setAnnounceTitleDetailValue] = useState("");
   const [announceDetailContentData, setAnnounceDetailContentData]  = useState("");
   const [announceContentDetailValue, setAnnounceContentDetailValue] = useState("");
+  const [communityData, setCommunityData] = useState([]);
 
   const qrGridRef = useRef(null);
   const visitRequestGridRef = useRef(null);
   const todayScheduleGridRef = useRef(null);
   const entireScheduleGridRef = useRef(null);
   const announceGridRef = useRef(null);
+  const communityGridRef = useRef(null);
   const gridRef = useRef(null);
   const quillRef = useRef(null);
   const announceQuillRef = useRef(null);
@@ -71,6 +73,15 @@ function Dashboard() {
     return returnDateValue + returnTimeValue;
   };
 
+  const communityCategoryFormatter = (params) => {
+    const categoryValue = params.data.category;
+
+    if(categoryValue === "opinionSharing") return "의견공유";
+    else if(categoryValue === "resourceSharing") return "자료공유";
+    else if(categoryValue === "interact") return "시도교류";
+    else return "";
+  };
+
   const [rowData] = useState([
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
     { registeredDate: "Toyota", studentName: "Celica", symptom: "Celica", treatAction: "Celica",  dosageAction: "Celica", measureAction: "Celica", bedRest: "Celica" },
@@ -81,6 +92,12 @@ function Dashboard() {
     { field: "announceTitle", headerName: "제목", flex: 3, cellStyle: { textAlign: "center" } },
     { field: "createdAt", headerName: "등록일", flex: 1.5, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter },
     { field: "fileName", headerName: "첨부파일 여부", flex: 1, cellStyle: { textAlign: "center" }, cellRenderer: isFileContainRenderer }
+  ]);
+
+  const [communityColumnDefs] = useState([
+    { field: "category", headerName: "게시판 분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: communityCategoryFormatter },
+    { field: "title", headerName: "제목", flex: 3, cellStyle: { textAlign: "center" } },
+    { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter }
   ]);
 
   const [columnDefs] = useState([
@@ -512,6 +529,20 @@ function Dashboard() {
     }
   };
 
+  const fetchCommunityData = useCallback(async () => {
+    if(user) {
+      const response = await axios.get(`${BASE_URL}/api/dashboard/getCommunity`, {});
+
+      if(response.data) {
+        setCommunityData(response.data);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchCommunityData();
+  }, [fetchCommunityData]);
+
   return (
     <>
       <div className="content" style={{ height: '84.1vh' ,display: 'flex', flexDirection: 'column' }}>
@@ -617,9 +648,9 @@ function Dashboard() {
               <div className="ag-theme-alpine" style={{ height: '20.5vh' }}>
                 <AgGridReact 
                   rowHeight={35}
-                  ref={gridRef}
-                  rowData={rowData}
-                  columnDefs={columnDefs}
+                  ref={communityGridRef}
+                  rowData={communityData}
+                  columnDefs={communityColumnDefs}
                   defaultColDef={notEditDefaultColDef}
                   overlayNoRowsTemplate={ '<span style="color: #6c757d;">커뮤니티 알림 내역이 없습니다</span>' } 
                 />
