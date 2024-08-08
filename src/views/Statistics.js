@@ -307,7 +307,7 @@ function Statistics() {
     return (
         <>
             <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
-                <Row className="pl-3 pr-3" style={{ marginBottom: '-5px' }}>
+                <Row className="pl-3 pr-3" style={{ marginBottom: '-5px', flex: '0 1 auto' }}>
                     <Table bordered className="stats-table text-center text-muted">
                         <thead>
                         <tr>
@@ -343,9 +343,9 @@ function Statistics() {
                         </tbody>
                     </Table>
                 </Row>
-                <Row className="d-flex no-gutters w-100" style={{ flex: '1 1 auto' }}>
-                    <Col className="mr-2" style={{ width: '49%' }}>
-                        <Card style={{ border: '1px solid lightgray', height: '95%' }}>
+                <Row className="d-flex no-gutters w-100" style={{ flex: '1 1 0' }}>
+                    <Col className="mr-2" style={{ width: '49%', display: 'flex', flexDirection: 'column' }}>
+                        <Card style={{ border: '1px solid lightgray', flex: '1 1 0' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">
@@ -362,10 +362,10 @@ function Statistics() {
                                 </Row>
                             </div>
                             <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center' }}>
-                                <ResponsiveContainer width="100%" height={320}>
+                                <ResponsiveContainer width="100%" height={310}>
                                     <BarChart
                                         width={500}
-                                        height={300}
+                                        height={290}
                                         data={fullHourlyData}
                                         margin={{
                                             top: 20,
@@ -393,8 +393,8 @@ function Statistics() {
                             </div>
                         </Card>
                     </Col>
-                    <Col className="ml-2" style={{ width: '49%' }}>
-                        <Card style={{ border: '1px solid lightgray', height: '95%' }}>
+                    <Col className="ml-2" style={{ width: '49%', display: 'flex', flexDirection: 'column' }}>
+                        <Card style={{ border: '1px solid lightgray', flex: '1 1 0' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">
@@ -411,11 +411,11 @@ function Statistics() {
                                 </Row>
                             </div>
                             <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={320}>
+                                <ResponsiveContainer width="100%" height={310}>
                                     <BarChart
                                         layout="vertical"
                                         width={500}
-                                        height={300}
+                                        height={290}
                                         data={sortedStudentVisitData.length ? sortedStudentVisitData: [{ name: '', visits: 0 }]}
                                         margin={{
                                             top: 20,
@@ -447,9 +447,9 @@ function Statistics() {
                         </Card>
                     </Col>
                 </Row>
-                <Row className="d-flex no-gutters w-100" style={{ flex: '1 1 auto'}}>
-                    <Col className="mr-2" style={{ maxWidth: '39%' }}>
-                        <Card style={{ border: '1px solid lightgray', height: '100%' }}>
+                <Row className="d-flex no-gutters w-100" style={{ flex: '1 1 0'}}>
+                    <Col className="mr-2" style={{ maxWidth: '39%', display: 'flex', flexDirection: 'column' }}>
+                        <Card style={{ border: '1px solid lightgray', flex: '1 1 0' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">
@@ -467,7 +467,7 @@ function Statistics() {
 
                             </div>
                             <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between' }}>
-                                <ResponsiveContainer width="100%" height={320}>
+                                <ResponsiveContainer width="100%" height={310}>
                                     <PieChart>
                                         <Pie
                                             data={bodyPartsData.length ? bodyPartsData : [{ name: '등록된 데이터 없음', value: 1 }]}
@@ -475,7 +475,7 @@ function Statistics() {
                                             cy="50%"
                                             labelLine={false}
                                             label={renderCustomizedLabel}
-                                            outerRadius={150}
+                                            outerRadius={140}
                                             fill="#8884d8"
                                             dataKey="value"
                                         >
@@ -497,8 +497,8 @@ function Statistics() {
                             </div>
                         </Card>
                     </Col>
-                    <Col className="ml-2" style={{ maxWidth: '60%' }}>
-                        <Card style={{ border: '1px solid lightgray', height: '100%' }}>
+                    <Col className="ml-2" style={{ maxWidth: '60%', display: 'flex', flexDirection: 'column' }}>
+                        <Card style={{ border: '1px solid lightgray', flex: '1 1 0' }}>
                             <div style={{ padding: '10px', borderBottom: '1px dashed lightgray', textAlign: 'center', fontWeight: 'bold' }}>
                                 <Row className="d-flex align-items-center no-gutters">
                                     <Col className="d-flex justify-content-start pl-3">
@@ -515,7 +515,7 @@ function Statistics() {
                                 </Row>
                             </div>
                             <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between', paddingRight: 25 }}>
-                                <ResponsiveContainer width="48%" height={290} style={{ marginTop: 30 }}>
+                                <ResponsiveContainer width="48%" height={280} style={{ marginTop: 30 }}>
                                     <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                                         <CartesianGrid />
                                         <XAxis type="number" dataKey="systolicBloodPressure" name="수축기 혈압" domain={[0, 200]} label={{ value: '수축 혈압', position: 'insideRight', offset: 0, dy: 12, dx: 13 }} />
@@ -524,7 +524,7 @@ function Statistics() {
                                         <Scatter name="학생" data={bloodPressureData} fill="#EC5353" />
                                     </ScatterChart>
                                 </ResponsiveContainer>
-                                <ResponsiveContainer width="48%" height={290} style={{ marginTop: 30 }}>
+                                <ResponsiveContainer width="48%" height={280} style={{ marginTop: 30 }}>
                                     <LineChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="date" domain={['dataMin', 'dataMax']} label={{ value: '날짜', position: 'insideRight', offset: 0, dy: 12, dx: 20 }} />

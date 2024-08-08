@@ -632,7 +632,7 @@ function Login() {
                     </div>
                 </Carousel>
             </Card>
-            <Container id="container">
+            <Container id="container" style={{ height: '50%' }}>
                 <Row>
                     <Col className={`form-container sign-up-container ${isRightPanelActive ? 'right-panel-active' : ''}`} style={{ overflowY: 'auto' }}>
                         <Form id="registForm" action="registUser">

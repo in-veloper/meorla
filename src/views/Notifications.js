@@ -85,7 +85,7 @@ function Notifications() {
 
   return (
     <>
-      <div className="content">
+      <div className="content" style={{ height: '84.1vh', display: 'flex', flexDirection: 'column' }}>
 
 
       <div>
