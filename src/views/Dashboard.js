@@ -97,8 +97,8 @@ function Dashboard() {
   ]);
 
   const [communityColumnDefs] = useState([
-    { field: "category", headerName: "게시판 분류", flex: 1, cellStyle: { textAlign: "center" }, valueFormatter: communityCategoryFormatter },
-    { field: "title", headerName: "제목", flex: 3, cellStyle: { textAlign: "center" } },
+    { field: "category", headerName: "게시판 분류", flex: 1.5, cellStyle: { textAlign: "center" }, valueFormatter: communityCategoryFormatter },
+    { field: "title", headerName: "제목", flex: 2.5, cellStyle: { textAlign: "center" } },
     { field: "createdAt", headerName: "등록일", flex: 2, cellStyle: { textAlign: "center" }, valueFormatter: registDateFormatter }
   ]);
 
@@ -578,7 +578,7 @@ function Dashboard() {
           </div>
         )}
         <Row style={{ flex: '1 1 auto'}}>
-          <Col md="7">
+          <Col md="6">
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">
                 <Col md="6">
@@ -607,7 +607,7 @@ function Dashboard() {
               </div>
             </Card>
           </Col>
-          <Col md="5">
+          <Col md="6">
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">
                 <Col md="6">
@@ -633,7 +633,7 @@ function Dashboard() {
           </Col>
         </Row>
         <Row style={{ flex: '1 1 auto' }}>
-          <Col md="6">
+          <Col md="7">
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">
                 <Col md="6">
@@ -657,7 +657,7 @@ function Dashboard() {
               </div>
             </Card>
           </Col>
-          <Col md="6">
+          <Col md="5">
             <CardTitle>
               <Row className="no-gutters pl-1 pr-1">
                 <Col md="6">
