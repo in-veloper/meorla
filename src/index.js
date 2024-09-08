@@ -12,6 +12,7 @@ import Login from "views/Login";
 import { connectSocket } from "components/Socket/socket";
 import PrivateRoute from "components/Route/PrivateRoute";
 import ExternalView from "views/Request";
+import SurveyPhone from "views/SurveyPhone";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const serverUrl = `${BASE_URL}`;
@@ -36,6 +37,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Login/>} />
       <Route path="/dashboard" element={<Navigate to="/meorla/dashboard" replace />} />
       <Route path="/meorla/request/*" element={<ExternalView />} />
+      <Route path="/meorla/surveyPhone/*" element={<SurveyPhone />} />
       <Route path="/meorla/*" element={<PrivateRoute><AdminLayout /></PrivateRoute>} />
     </Routes>
   );

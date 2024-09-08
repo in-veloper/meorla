@@ -1,15 +1,27 @@
 import React, { useState, useRef } from "react";
-import { Row, Col, Card, CardBody, Button, Input, Label } from "reactstrap";
+import { Row, Col, Card, CardBody, Button, Input, Label, Modal, ModalHeader, ModalBody, InputGroup, InputGroupText, ModalFooter } from "reactstrap";
 import HealthExaminationSurveyForm from "components/SurveyForm/HealthExaminationSurveyForm";
 import { useReactToPrint } from "react-to-print";
 import SurveyPhoneView from "components/SurveyForm/SurveyPhoneView";
 import '../assets/css/survey.css';
+import NotiflixInfo from "components/Notiflix/NotiflixInfo";
+import { useUser } from "contexts/UserContext";
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 function Survey() {
+    const { user } = useUser();
     const [surveyTopic, setSurveyTopic] = useState("");
+    const [surveyURLModal, setSurveyURLModal] = useState(false);
+    const [surveyURLValue, setSurveyURLValue] = useState("");
 
     const surveyFormRef = useRef(null);
+
+    const toggleSurveyURLModal = () => {
+        setSurveyURLModal(!surveyURLModal);
+        const surveyURL = `${BASE_URL}/meorla/surveyPhone/` + user.schoolCode;
+        setSurveyURLValue(surveyURL);
+    };
 
 
     const handleHealthStateSurvey = () => {
@@ -25,6 +37,16 @@ function Survey() {
         content: () => surveyFormRef.current,
         documentTitle: '건강실태조사'
     });
+
+    const handleEalimeLink = () => {
+        toggleSurveyURLModal();
+    };
+
+    const clipboardSurveyURL = () => {
+        const URLText = document.getElementById("surveyURL").value;
+        navigator.clipboard.writeText(URLText);
+        NotiflixInfo("설문 이알리미 링크 URL이 클립보드에 복사되었습니다", true, '350px');
+    };
 
     return (
         <>
@@ -49,7 +71,7 @@ function Survey() {
                                 <Button className="ml-1" onClick={printSurveyForm}>프린트</Button>
                             </Col>
                             <Col md="4" className="d-flex justify-content-end">
-                                <Button>이알리미 링크 생성</Button>
+                                <Button onClick={handleEalimeLink}>이알리미 링크 생성</Button>
                             </Col>
                         </Row>
                     </CardBody>
@@ -75,6 +97,29 @@ function Survey() {
                     </div>
                 </Card>
             </div>
+
+            <Modal isOpen={surveyURLModal} toggle={toggleSurveyURLModal} centered style={{ minWidth: '15%' }}>
+                <ModalHeader><b className="text-muted">설문 이알리미 링크</b></ModalHeader>
+                <ModalBody>
+                    <Row className="d-flex align-items-center justify-content-center no-gutters">
+                        <InputGroup>
+                            <Input 
+                                id="surveyURL"
+                                defaultValue={surveyURLValue}
+                                onChange={(e) => setSurveyURLValue(e.target.value)}
+                            />
+                            <InputGroupText onClick={clipboardSurveyURL}>
+                                클립보드 복사
+                            </InputGroupText>
+                        </InputGroup>
+                    </Row>
+                </ModalBody>
+                <ModalFooter>
+                    <Row className="d-flex justify-content-end no-gutters w-100">
+                        <Button color="secondary" onClick={toggleSurveyURLModal}>취소</Button>
+                    </Row>
+                </ModalFooter>
+            </Modal>
         </>
     );
 };
