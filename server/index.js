@@ -753,10 +753,10 @@ app.get("/api/studentsTable/getStudentInfoBySearch", async (req, res) => {
 });
 
 app.get("/api/studentsTable/getStudentInfoBySearchInRequest", async (req, res) => {
-    const { userId, schoolCode, sGrade, sClass, sNumber, sName } = req.query;
+    const { schoolCode, sGrade, sClass, sNumber, sName } = req.query;
     
-    let sqlQuery = "SELECT * FROM teaform_db.students WHERE userId = ? AND schoolCode = ?";
-    const queryParams = [userId, schoolCode];
+    let sqlQuery = "SELECT * FROM teaform_db.students WHERE schoolCode = ?";
+    const queryParams = [schoolCode];
 
     if (sGrade) {
         sqlQuery += " AND sGrade = ?";

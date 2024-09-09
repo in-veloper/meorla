@@ -61,13 +61,13 @@ const GetRoutes = () => {
       //   component: <Examination />,
       //   layout: "/meorla",
       // },
-      {
-        path: "/certificate",
-        name: "증명서 발급",
-        icon: "nc-icon nc-badge",
-        component: <Notifications />,
-        layout: "/meorla",
-      },
+      // {
+      //   path: "/certificate",
+      //   name: "증명서 발급",
+      //   icon: "nc-icon nc-badge",
+      //   component: <Notifications />,
+      //   layout: "/meorla",
+      // },
       {
         path: "/community",
         name: "커뮤니티",

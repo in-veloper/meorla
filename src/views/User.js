@@ -1602,7 +1602,7 @@ function User() {
                     </Col>
                     <Col className="mr-auto" lg="3">
                       <h5>
-                        24,6$ <br />
+                        76 <br />
                         <small>잔여일</small>
                       </h5>
                     </Col>

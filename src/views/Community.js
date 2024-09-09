@@ -1384,9 +1384,9 @@ function Community() {
             <Modal isOpen={interactWriteModal} toggle={toggleInteractWriteModal} centered style={{ minWidth: '32%' }}>
                 <ModalHeader toggle={toggleInteractWriteModal}><b className="text-muted">시도교류 등록</b></ModalHeader>
                 <ModalBody className="pb-0">
-                    <Row className="align-items-center no-gutters pl-2 pr-4">
+                    <Row className="align-items-center no-gutters pl-3 pr-4">
                         <Col md="2" className="text-left">
-                            <Label>근무지역</Label>
+                            <Label className="text-muted">근무지역</Label>
                         </Col>
                         <Col md="3" className="pr-0">
                             <Input
@@ -1406,7 +1406,7 @@ function Community() {
                             <PiArrowFatRightBold/>
                         </Col>
                         <Col md="2" className="text-left">
-                            <Label>희망지역</Label>
+                            <Label className="text-muted">희망지역</Label>
                         </Col>
                         <Col md="3" className="d-flex justify-content-end">
                             <Input
