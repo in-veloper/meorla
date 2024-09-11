@@ -141,6 +141,8 @@ function RequesterLogin({onLogin}) {
                 }
             });
 
+            console.log(response)
+
             if(response.data) commonPassword = response.data[0].commonPassword;
         }
         
@@ -565,7 +567,7 @@ function Request({onLogOut}) {
     const fetchStudentData = async (criteria) => {
         try {
           const { iGrade, iClass, iNumber, iName } = criteria;
-          
+
           if(schoolCode) {
             const response = await axios.get(`${BASE_URL}/api/studentsTable/getStudentInfoBySearchInRequest`, {
               params: {
