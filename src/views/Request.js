@@ -802,7 +802,7 @@ function Request({onLogOut}) {
                             {generateBedBox()}
                         </Row>
                     </Card>
-                    <Card className="mb-3" style={{ width: '100%', height: '105vh', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+                    <Card className="mb-3" style={{ width: '100%', height: '100%', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                         <CardHeader className="text-muted text-center pt-2" style={{ fontSize: '17px' }}>
                             <b>보건실 방문 요청</b>
                         </CardHeader>
@@ -975,10 +975,9 @@ function Request({onLogOut}) {
                             </Row>
                         </CardBody>
                         <CardFooter style={{ borderTop: '1px solid lightgray' }}>
-                            <Row>
+                            <Row className="d-flex justify-content-center">
                                 <nav className="footer-nav">
-                                    <span className="text-muted pl-2" style={{ fontWeight: 'bold' }}>MEORLA</span>
-                                    <span className="copyright ml-4">
+                                    <span className="copyright">
                                         &copy; {" "}
                                         Copyright 이해 컴퍼니. All right reserved.
                                     </span>
