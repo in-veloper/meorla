@@ -134,6 +134,8 @@ function RequesterLogin({onLogin}) {
         let commonPassword = "";
 
         if(schoolName && schoolCode) {
+            console.log(schoolCode)
+            console.log(schoolName)
             const response = await axios.get(`${BASE_URL}/api/request/getCommonPassword`, {
                 params: {
                     schoolCode: schoolCode,
