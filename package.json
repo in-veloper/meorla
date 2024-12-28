@@ -103,8 +103,5 @@
     "typescript": "5.0.4"
   },
   "overrides": {
-    "svgo": "3.0.2",
-    "chokidar": "3.5.3",
-    "@babel/core": "7.18.6"
   }
 }
